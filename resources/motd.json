@@ -1,0 +1,84 @@
+﻿/*
+
+Exemples de formatage :
+
+<a href='https://secure.boufbowl.com/fr/creer-un-compte'>test de lien</a><br />
+<span color='#ff0000'>test</span><br />
+<span color='#00ff00'>de&nbsp;</span><br />
+<span color='#0000ff'>couleurs</span><br />
+<img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /><br />
+<p textAlign='left'>à gauche</p>
+<p textAlign='center'>au milieu</p>
+<p textAlign='right'>à droite</p>
+
+*/
+{
+    "motd_title" : {
+        "fr" : "Mise à jour 1.3.0.",
+        "en" : "Gobbowl has been updated!",
+        "de" : "Update 1.3.0.",
+        "es" : "¡Jálabol está actualizado!"
+    },
+    "motd_content" : {
+        "fr" : "
+            Vous rêviez de pouvoir gagner des récompenses utilisables dans Boufbowl ? À partir de mercredi 25 avril, vous pourrez gagner un stade et un personnage exclusifs en remportant des tournois payants !<br />
+			<br />
+			Les nouveaux gains de tournoi se répartiront de la manière suivante :<br /><br />
+			Tournoi du mercredi : <br />
+			1re place : Gain du pack complet.<br />
+			2-3e places : Gain du stade seulement.<br />
+			<br />
+			Tournoi du samedi :<br />
+			1re place : Gain du pack complet.<br />
+			2-3e places : Gain du personnage seulement.<br />
+			<br />
+			Bien entendu, les Bowltons récompenseront toujours les meilleurs d’entre vous.<br />
+            <br />
+            <a href='http://www.boufbowl.com/fr/communaute/news/289077-recompenses-boufbowl-exclusives-tournoi-payant'>Plus d'infos ici</a>.<br />",
+        "en" : "
+            So you've been dreaming about winning prizes that you can use in Gobbowl? Starting April 25, you'll be able to win an exclusive stadium and character by participating in a new tournament!<br />
+			<br />
+			The new tournament prizes will be distributed as following:<br /><br />
+			Wednesday Tournament:<br />
+			1st place: Full Pack<br />
+			2nd and 3rd place: Stadium Only<br />
+			<br />
+			Saturday Tournament:<br />
+			1st place: Full Pack<br />
+			2nd and 3rd place: Character Only<br />
+			<br />
+			And of course, Gobbowken awards will always be waiting for the best of you!<br />
+            <br />
+            <a href='http://www.gobbowl.com/en/community/news/289083-new-gobbowl-tournament-prizes'>Full details here</a>.<br />",
+        "de" : "
+            Ihr wollt Siegprämien gewinnen, die ihr direkt in Fressball verwenden könnt? Ab Mittwoch, den 25. April, könnt ihr in den kostenpflichtigen Turnieren ein exklusives Stadion und einen exklusiven Charakter für eure Mannschaft gewinnen!<br />
+			<br />
+			Die neuen Gewinne sind wie folgt in den Turnieren zu erhalten: <br /><br />
+			Mittwochsturnier:<br />
+			1. Platz: Das Sadida-Pack, bestehend aus Stadion und Charakter<br />
+			2.-3. Platz: Das Sadida-Stadions<br />
+			<br />
+			Samstagsturnier:<br />
+			1. Platz: Das Sadida-Pack, bestehend aus Stadion und Charakter<br />
+			2.-3. Platz: Der exklusive Charakter<br />
+			<br />
+			Selbstverständlich erhaltet ihr zusätzlich zu diesen Gewinnen weiterhin je nach Platzierung die Balljetons.<br />
+            <br />
+            <a href='http://www.fressball.com/de/spielergemeinde/news/289079-siegpraemien-den-kostenpflichtigen-turnieren'>Mehr erfahren</a>.<br />",
+        "es" : "
+            ¿Soñaban con ganar resompensas utilisables en Jalaból? A partir del miercoles 25 de abril, pueden ganar un estadio y un personaje exclusivo al ganar los torneos pagos (que pueden inscribirse con tickets) No son nada caros, ¡¡Les dan 2 por 700 ogrinas!! ver aquí<br />
+			<br />
+			Los nuevos premios de torneos se repartirán de la siguiente forma:<br /><br />
+			Torneo de los miércoles:<br />
+			1er lugar: Gana el pack completo<br />
+			2-3er lugar: Gana solo el estadio<br />
+			<br />
+			Torneo del sábado:<br />
+			1er lugar: Gana el pack completo.<br />
+			2-3er lugar: Gana solo el personaje<br />
+			<br />
+			Por supuesto que las jalichas seguirán activadas y también las recibirán al ganar (como de costumbre)<br />
+            <br />
+            <a href='http://www.jalabol.com/es/comunidad/noticias/289081-recompensas-exclusivas-torneo-pago'>Saber más</a>.<br />"
+    } 
+}

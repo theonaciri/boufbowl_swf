@@ -1,0 +1,411 @@
+{
+    "stadiumsPath" : "../assets/models/stadiums/",
+    "stadiums" :  {
+        "FARMSTEAD" : {
+            "path" : "006_prairies/model.dae",
+            
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff0000",
+            "centerPlacementZoneAlpha" : "0.25",
+            "frontRightPlacementZoneColor" : "0x00ff00",
+            "frontRightPlacementZoneAlpha" : "0.25",
+            "frontLeftPlacementZoneColor" : "0x0000ff",
+            "frontLeftPlacementZoneAlpha" : "0.25",
+            "backRightPlacementZoneColor" : "0xffff00",
+            "backRightPlacementZoneAlpha" : "0.25",
+            "backLeftPlacementZoneColor" : "0x00ffff",
+            "backLeftPlacementZoneAlpha" : "0.25",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/music_tactic_loop_01.mp3",
+                "music/music_tactic_loop_02.mp3",
+                "music/music_tactic_loop_03.mp3",
+                "music/music_tactic_loop_04.mp3"
+            ],
+            "resolutionMusics" : [
+                "music/music_resolution_loop_01.mp3",
+                "music/music_resolution_loop_02.mp3",
+                "music/music_resolution_loop_03.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumFarm",
+            "ambiantTrackName" : "ambient/amb_larzac.mp3",
+            "reboundCutsceneName" : "balle_sol",
+            "publicHappyCutsceneName" : "Illustration_bouftous_contents",
+            "hasPublic" : "false",
+            "publicHappySound" : "interactions/reac_bouftous.mp3"
+        },
+        "BRAKMAR" : {
+            "path" : "009_brakmar/model.dae",
+            
+            "cellStrokeColor" : "0xbbbbbb",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0x777777",
+            "centerPlacementZoneAlpha" : "0.33",
+            "frontRightPlacementZoneColor" : "0x555555",
+            "frontRightPlacementZoneAlpha" : "0.33",
+            "frontLeftPlacementZoneColor" : "0x555577",
+            "frontLeftPlacementZoneAlpha" : "0.33",
+            "backRightPlacementZoneColor" : "0x777788",
+            "backRightPlacementZoneAlpha" : "0.33",
+            "backLeftPlacementZoneColor" : "0x777777",
+            "backLeftPlacementZoneAlpha" : "0.33",
+            
+            "riskyZoneStartColor" : "0xffff00",
+            "riskyZoneStartAlpha" : "0.2",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.2",
+            
+            "forbiddenZoneColor" : "0x320e31",
+            "forbiddenZoneAlpha" : "0.33",
+            
+            "safeZoneColor" : "0x55bb55",
+            "safeZoneAlpha" : "0.2",
+            
+            "strategicMusics" : [
+                "music/tactique_brakmar_01.mp3",
+                "music/tactique_brakmar_02.mp3"
+            ],
+            "resolutionMusics" : [
+                "music/brakmar_resolution_01.mp3",
+                "music/brakmar_resolution_02.mp3",
+                "music/brakmar_resolution_03.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumBrakmar",
+            "ambiantTrackName" : "ambient/amb_stadium_brakmar.mp3",
+            "reboundCutsceneName" : "balle_sol_brak",
+            "publicHappyCutsceneName" : "Illustration_foule_contente",
+            "hasPublic" : "true",
+            "publicHappySound" : "interactions/reac_public_03.mp3"
+        },
+        "BONTA" : {
+            "path" : "005_bonta/model.dae", 
+
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff0000",
+            "centerPlacementZoneAlpha" : "0.25",
+            "frontRightPlacementZoneColor" : "0x00ff00",
+            "frontRightPlacementZoneAlpha" : "0.25",
+            "frontLeftPlacementZoneColor" : "0x0000ff",
+            "frontLeftPlacementZoneAlpha" : "0.25",
+            "backRightPlacementZoneColor" : "0xffff00",
+            "backRightPlacementZoneAlpha" : "0.25",
+            "backLeftPlacementZoneColor" : "0x00ffff",
+            "backLeftPlacementZoneAlpha" : "0.25",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/bonta_tactique_01.mp3",
+                "music/bonta_tactique_02.mp3"
+            ],
+            
+            "resolutionMusics" : [
+                "music/bonta_resolution_01.mp3",
+                "music/bonta_resolution_02.mp3"
+            ],            
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumBonta",
+            "ambiantTrackName" : "ambient/amb_statium_bonta_01.mp3",
+            "reboundCutsceneName" : "balle_sol_bonta",
+            "publicHappyCutsceneName" : "Illustration_foule_contente",
+            "hasPublic" : "true",
+            "publicHappySound" : "interactions/reac_public_03.mp3"
+        },
+        "BEACH" : {
+            "path" : "007_sable/model.dae",
+            
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff0000",
+            "centerPlacementZoneAlpha" : "0.25",
+            "frontRightPlacementZoneColor" : "0x00ff00",
+            "frontRightPlacementZoneAlpha" : "0.25",
+            "frontLeftPlacementZoneColor" : "0x0000ff",
+            "frontLeftPlacementZoneAlpha" : "0.25",
+            "backRightPlacementZoneColor" : "0xffff00",
+            "backRightPlacementZoneAlpha" : "0.25",
+            "backLeftPlacementZoneColor" : "0x00ffff",
+            "backLeftPlacementZoneAlpha" : "0.25",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/music_tactic_loop_01.mp3",
+                "music/music_tactic_loop_02.mp3",
+                "music/music_tactic_loop_03.mp3",
+                "music/music_tactic_loop_04.mp3"
+            ],
+            
+            "resolutionMusics" : [
+                "music/plage_resolution_01.mp3",
+                "music/plage_resolution_02.mp3",
+                "music/plage_resolution_03.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumBeach",
+            "ambiantTrackName" : "ambient/amb_plage.mp3",
+            "reboundCutsceneName" : "balle_sol_plage",
+            "publicHappyCutsceneName" : "Illustration_crabes_contents",
+            "hasPublic" : "false",
+            "publicHappySound" : "interactions/reac_crabes.mp3"
+        },
+        "FRIGOST" : {
+            "path" : "008_glace/model.dae",
+            
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff0000",
+            "centerPlacementZoneAlpha" : "0.25",
+            "frontRightPlacementZoneColor" : "0x00ff00",
+            "frontRightPlacementZoneAlpha" : "0.25",
+            "frontLeftPlacementZoneColor" : "0x0000ff",
+            "frontLeftPlacementZoneAlpha" : "0.25",
+            "backRightPlacementZoneColor" : "0xffff00",
+            "backRightPlacementZoneAlpha" : "0.25",
+            "backLeftPlacementZoneColor" : "0x00ffff",
+            "backLeftPlacementZoneAlpha" : "0.25",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/frigost_tactique_01.mp3",
+                "music/frigost_tactique_02.mp3",
+                "music/frigost_tactique_03.mp3"
+            ],
+            
+            "resolutionMusics" : [
+                "music/frigost_resolution_01.mp3",
+                "music/frigost_resolution_02.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumFrigost",
+            "ambiantTrackName" : "ambient/amb_frigost.mp3",
+            "reboundCutsceneName" : "balle_sol_glace",
+            "publicHappyCutsceneName" : "Illustration_frigost_content",
+            "hasPublic" : "false",
+            "publicHappySound" : "interactions/reac_yetis.mp3"
+        },
+        "KARA" : {
+            "path" : "010_kara/model.dae",
+            
+            "cellStrokeColor" : "0x5cc0f7",
+            "cellStrokeAlpha" : "0.3",
+            
+            "centerPlacementZoneColor" : "0x0068ff",
+            "centerPlacementZoneAlpha" : "0.3",
+            "frontRightPlacementZoneColor" : "0x9729ff",
+            "frontRightPlacementZoneAlpha" : "0.2",
+            "frontLeftPlacementZoneColor" : "0xff297c",
+            "frontLeftPlacementZoneAlpha" : "0.2",
+            "backRightPlacementZoneColor" : "0x122eff",
+            "backRightPlacementZoneAlpha" : "0.2",
+            "backLeftPlacementZoneColor" : "0xfff912",
+            "backLeftPlacementZoneAlpha" : "0.1",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/mexico_tactique_01.mp3",
+                "music/mexico_tactique_02.mp3"
+            ],
+            "resolutionMusics" : [
+                "music/mexico_resolution_01.mp3",
+                "music/mexico_resolution_02.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumKara",
+            "ambiantTrackName" : "ambient/amb_mexico.mp3",
+            "reboundCutsceneName" : "balle_sol_canyon",
+            "publicHappyCutsceneName" : "Illustration_canyon_contents",
+            "hasPublic" : "false",
+            "publicHappySound" : "interactions/reac_public_03.mp3"
+        },
+        "FOREST" : {
+            "path" : "012_foret/model.dae",
+            
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff0000",
+            "centerPlacementZoneAlpha" : "0.25",
+            "frontRightPlacementZoneColor" : "0x00ff00",
+            "frontRightPlacementZoneAlpha" : "0.25",
+            "frontLeftPlacementZoneColor" : "0x0000ff",
+            "frontLeftPlacementZoneAlpha" : "0.25",
+            "backRightPlacementZoneColor" : "0xffff00",
+            "backRightPlacementZoneAlpha" : "0.25",
+            "backLeftPlacementZoneColor" : "0x00ffff",
+            "backLeftPlacementZoneAlpha" : "0.25",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/sadida_tactique_01.mp3"
+            ],
+            "resolutionMusics" : [
+                "music/sadida_resolution_01.mp3",
+                "music/sadida_resolution_02.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumForest",
+            "ambiantTrackName" : "ambient/amb_sadida.mp3",
+            "reboundCutsceneName" : "balle_sol_forest",
+            "publicHappyCutsceneName" : "Illustration_forest_contents",
+            "hasPublic" : "true",
+            "publicHappySound" : "interactions/reac_public_03.mp3"
+        },
+        "BALLOTIN" : {
+            "path" : "019_sain_ballotin/model.dae",
+            
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff0000",
+            "centerPlacementZoneAlpha" : "0.25",
+            "frontRightPlacementZoneColor" : "0x00ff00",
+            "frontRightPlacementZoneAlpha" : "0.25",
+            "frontLeftPlacementZoneColor" : "0x0000ff",
+            "frontLeftPlacementZoneAlpha" : "0.25",
+            "backRightPlacementZoneColor" : "0xffff00",
+            "backRightPlacementZoneAlpha" : "0.25",
+            "backLeftPlacementZoneColor" : "0x00ffff",
+            "backLeftPlacementZoneAlpha" : "0.25",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/st_ballotin_tactique.mp3"
+            ],
+            "resolutionMusics" : [
+                "music/st_ballotin_resolution_01.mp3",
+                "music/st_ballotin_resolution_02.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumBallotin",
+            "ambiantTrackName" : "ambient/amb_st_ballotin.mp3",
+            "reboundCutsceneName" : "balle_sol_ballotin",
+            "publicHappyCutsceneName" : "Illustration_ballotin_contents",
+            "hasPublic" : "true",
+            "publicHappySound" : "interactions/reac_public_03.mp3"
+        },
+        "PIXEL" : {
+            "path" : "011_pixel/model.dae",
+            
+            "cellStrokeColor" : "0x333333",
+            "cellStrokeAlpha" : "0.1",
+            
+            "centerPlacementZoneColor" : "0xff8133",
+            "centerPlacementZoneAlpha" : "0.40",
+            "frontRightPlacementZoneColor" : "0xff49c3",
+            "frontRightPlacementZoneAlpha" : "0.40",
+            "frontLeftPlacementZoneColor" : "0x1b74d6",
+            "frontLeftPlacementZoneAlpha" : "0.40",
+            "backRightPlacementZoneColor" : "0x11bcff",
+            "backRightPlacementZoneAlpha" : "0.40",
+            "backLeftPlacementZoneColor" : "0xc6ff28",
+            "backLeftPlacementZoneAlpha" : "0.40",
+            
+            "riskyZoneStartColor" : "0xee5500",
+            "riskyZoneStartAlpha" : "0.1",
+            "riskyZoneEndColor" : "0xff0000",
+            "riskyZoneEndAlpha" : "0.25",
+            
+            "forbiddenZoneColor" : "0x320E31",
+            "forbiddenZoneAlpha" : "0.2",
+            
+            "safeZoneColor" : "0x000000",
+            "safeZoneAlpha" : "0.0",
+            
+            "strategicMusics" : [
+                "music/8_bits_tactique_01.mp3",
+                "music/8_bits_tactique_02.mp3"
+            ],
+            
+            "resolutionMusics" : [
+                "music/8_bits_resolution_01.mp3",
+                "music/8_bits_resolution_02.mp3"
+            ],
+            
+            "introScriptClass" : "com.ankamagames.boufbowl.client.match.resolution.interactions.IntroStadiumPixel",
+            "ambiantTrackName" : "",
+            "reboundCutsceneName" : "balle_sol_pixel",
+            "publicHappyCutsceneName" : "Illustration_pixel_contents",
+            "hasPublic" : "true",
+            "publicHappySound" : "interactions/reac_public_03.mp3"
+        }
+    }
+}

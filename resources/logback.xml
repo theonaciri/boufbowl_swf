@@ -1,0 +1,30 @@
+<configuration>
+
+    <appender name="STDOUT" class="com.reider.log4AS3.appenders.ConsoleAppender">
+        <layout class="com.reider.log4AS3.layouts.PatternLayout">
+            <Pattern>%date %class %level %msg</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="SOCKET" class="com.ankamagames.xgaming.utils.logging.targets.SocketTarget">
+        <layout class="com.reider.log4AS3.layouts.PatternLayout">
+            <Pattern>%date %class %level %msg</Pattern>
+        </layout>
+        <host>${server.match.host}</host>
+        <port>8881</port>
+    </appender>
+
+    <logger name="SYSTEM_INFO">
+        <level value="INFO" />
+        <appender-ref ref="SOCKET" />
+    </logger>
+    <logger name="MATCH_STATE">
+        <level value="INFO" />
+        <appender-ref ref="SOCKET" />
+    </logger>
+    <root>
+        <level value="WARN" />
+        <appender-ref ref="SOCKET" />
+    </root>
+
+</configuration>

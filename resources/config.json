@@ -1,0 +1,52 @@
+{
+  "version": "1.9.6|add24395578e",
+  "premiumServiceEnabled": "true",
+  "assetsPreloadingEnabled": "true",
+  "soundBasePath": "../assets/sounds/",
+  "tiphonBasePath": "../assets/sprites",
+  "sound": {
+    "enabled": "true",
+    "masterVolume": "1.0"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": "9900"
+  },
+  "showStats": "false",
+  "chrono": {
+    "enabled": "true",
+    "placementDuration": "120",
+    "firstTurnDuration": "300",
+    "turnDuration": "120"
+  },
+  "3dActivated": "false",
+  "optionsVisibility": [
+    {
+      "sound": "true"
+    },
+    {
+      "server": "false"
+    },
+    {
+      "stats": "false"
+    },
+    {
+      "chrono": "false"
+    },
+    {
+      "scene3d": "false"
+    },
+    {
+      "shortcuts": "true"
+    }
+  ],
+  "facebookEnabled": "false",
+  "facebookAppId": "272597262771073",
+  "facebookChannelUrl": "http://dl.ak.ankama.com/games/boufbowl/web/facebook/channel.html",
+  "facebookCanvasUrl": "http://apps.facebook.com/boufbowl/",
+  "facebookPermissions": [
+    "publish_stream",
+    "publish_actions"
+  ],
+  "displayUncaughtError": "true"
+}
