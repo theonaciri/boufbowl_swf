@@ -1,0 +1,239 @@
+"""Translate authoritative engine outcomes into the original resolution contract.
+
+Presentation ticks include pauses for original interaction animations. Authority,
+probability draws and final states always remain in the recorded engine result.
+"""
+from copy import deepcopy
+import math
+
+from tools.flash_protocol import ProtocolError
+
+
+def cell(position):
+    q, r = position["q"], position["r"]
+    if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (q, r)):
+        raise ProtocolError("Invalid axial position")
+    x, y, z = round(q), round(r), round(-q - r)
+    differences = abs(x - q), abs(y - r), abs(z + q + r)
+    if differences[0] > differences[1] and differences[0] > differences[2]:
+        x = -y - z
+    elif differences[1] > differences[2]:
+        y = -x - z
+    return {"x": int(x), "y": int(y)}
+
+
+def distance(a, b):
+    x, y = a["x"] - b["x"], a["y"] - b["y"]
+    return max(abs(x), abs(y), abs(x + y))
+
+
+def path(a, b):
+    current, result = deepcopy(a), [deepcopy(a)]
+    for _ in range(100):
+        if current == b:
+            return result
+        choices = [{"x": current["x"] + x, "y": current["y"] + y}
+                   for x, y in ((1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1))]
+        current = min(choices, key=lambda c: distance(c, b))
+        result.append(current)
+    raise ProtocolError("Movement path exceeds pitch limits")
+
+
+def maneuver(success=True, score=10):
+    return {"success": bool(success), "outcome": 3, "difficulty": 0,
+            "score": {"inherentScore": int(score), "finalScore": int(score)}}
+
+
+def adapt_turn(record):
+    initial, result = record["initial"], record["result"]
+    events = result["events"]
+    allowed = {"ability", "move", "stand_up", "pickup", "dodge", "duel", "damage", "ko", "ball_drop",
+               "throw", "ball_move", "catch", "catch_fail", "ball_land", "goal", "final_state"}
+    unknown = {e["type"] for e in events} - allowed
+    if unknown:
+        raise ProtocolError(f"Unmapped simulation events: {sorted(unknown)}")
+    entities = {e["id"]: deepcopy(e) for e in initial["entities"] if e["hp"] > 0}
+    actions = {}
+    for order in record["orders"]:
+        for action in order["actions"]:
+            actions.setdefault(action["entity_id"], []).append(action)
+    tracks = {}
+    clocks = {identity: 0 for identity in entities}
+    positions = {identity: cell(e["position"]) for identity, e in entities.items()}
+    for identity, entity in entities.items():
+        actor_actions = actions.get(identity, [])
+        activated = any(a["action_type"] == "ability" for a in actor_actions)
+        order = {"boufbowlerId": str(identity)}
+        if activated:
+            order["classOrder"] = True
+        else:
+            allocation = next((a["params"].get("elements") for a in actor_actions if a["params"].get("elements")), {})
+            selected = [value for name, value in (("TERRE", 1), ("AIR", 2), ("FEU", 3), ("EAU", 4))
+                        for _ in range(allocation.get(name, 0))]
+            regular = {"elements": selected, "targetCell": cell(entity["position"])}
+            for action in actor_actions:
+                if action["action_type"] == "move":
+                    regular["targetCell"] = cell(action["params"]["target_position"])
+                elif action["action_type"] == "follow":
+                    regular["targetBoufbowler"] = str(action["params"]["target_entity_id"])
+                elif action["action_type"] == "throw" and action["params"].get("target_entity_id") is not None:
+                    regular["passTargetId"] = str(action["params"]["target_entity_id"])
+            order["regularOrder"] = regular
+        tracks[identity] = {"boufbowlerId": str(identity), "order": order, "item": [], "movementTest": maneuver()}
+    interactions, abilities, pending_passes = [], [], []
+    holder = initial["ball"]["holder_entity_id"]
+    ball_position = cell(initial["ball"]["position"])
+    offset = 1
+    factor = result["tick_duration"] * 1000 / 50
+
+    def move(identity, end, target=None):
+        if identity not in tracks:
+            raise ProtocolError("Scenario references an unavailable actor")
+        target = deepcopy(target if target is not None else positions[identity])
+        if end <= clocks[identity]:
+            return
+        tracks[identity]["item"].append({"type": 1, "movement": {"positions": path(positions[identity], target),
+                                                                "startTick": clocks[identity], "endTick": end}})
+        positions[identity] = target
+        clocks[identity] = end
+
+    def participant(identity, role=1, has_ball=None, damage=0, status=None):
+        entity = entities[identity]
+        return {"boufbowlerId": str(identity), "role": role, "hasBall": holder == identity if has_ball is None else has_ball,
+                "status": status if status is not None else 4 if entity["hp"] <= 0 else 3 if entity["status"]["knocked_down"] else 1,
+                "damageTaken": max(0, int(damage))}
+
+    def interaction(kind, start, duration, participants, **details):
+        nonlocal offset
+        start = max(start, max(clocks.values(), default=0))
+        end = start + duration
+        identity = len(interactions) + 1
+        for actor in tracks:
+            move(actor, start)
+        for actor_data in participants:
+            actor = int(actor_data["boufbowlerId"])
+            tracks[actor]["item"].append({"type": 2, "interactionId": identity,
+                                         "movement": {"positions": [deepcopy(positions[actor])], "startTick": start, "endTick": end}})
+            clocks[actor] = end
+        for actor in tracks:
+            move(actor, end)
+        entry = {"interactionId": identity, "interactionDetails": {"type": kind, "startTick": start, "endTick": end,
+                 "isCutscene": False, "participants": participants, **details}}
+        interactions.append(entry)
+        offset += duration
+        return entry
+
+    for index, event in enumerate(events):
+        kind, tick, actor, params = event["type"], event["tick"], event.get("actor"), event["params"]
+        start = max(1, round(tick * factor) + offset)
+        if kind == "move":
+            target = cell(params["position"])
+            if actor in tracks and target != positions[actor]:
+                move(actor, max(start + max(1, round(factor)), clocks[actor] + 1), target)
+        elif kind == "ability":
+            targets = []
+            for target in params["targets"]:
+                if target not in tracks:
+                    continue
+                entity = entities[target]
+                healed = min(entity["max_hp"], entity["hp"] + int(params.get("heal", 0)))
+                targets.append({"boufbowlerId": str(target), "preResolutionHitPointsDelta": healed - entity["hp"]})
+                entity["hp"] = healed
+            abilities.append({"boufbowlerId": str(actor), "target": targets})
+        elif kind == "stand_up":
+            entities[actor]["status"]["knocked_down"] = False
+        elif kind == "pickup":
+            interaction(11, start, 14, [participant(actor, has_ball=False)], maneuverTest=maneuver(),
+                        pickupDetails={"ballPosition": deepcopy(ball_position)})
+            holder = actor
+            ball_position = deepcopy(positions[actor])
+        elif kind in ("duel", "dodge"):
+            defender = params["defender"]
+            damage, knocked = {}, set()
+            dispersion = None
+            for auxiliary in events[index + 1:]:
+                if auxiliary["tick"] != tick or auxiliary["type"] not in {"damage", "ko", "ball_drop"}:
+                    break
+                victim = auxiliary.get("actor")
+                if auxiliary["type"] == "damage":
+                    damage[victim] = damage.get(victim, 0) + auxiliary["params"]["damage"]
+                elif auxiliary["type"] == "ko":
+                    knocked.add(victim)
+                else:
+                    dispersion = cell(auxiliary["params"]["position"])
+            statuses = {}
+            for victim in (actor, defender):
+                future_hp = entities[victim]["hp"] - damage.get(victim, 0)
+                statuses[victim] = 4 if future_hp <= 0 else 3 if victim in knocked else 1
+            scores = [{"inherentScore": entities[victim]["stats"]["strength"],
+                       "finalScore": entities[victim]["stats"]["strength"]} for victim in (actor, defender)]
+            fight_details = {"ballDispersion": dispersion} if dispersion else {}
+            interaction(20, start, 30, [participant(actor, 4, damage=damage.get(actor, 0), status=statuses[actor]),
+                                       participant(defender, 5, damage=damage.get(defender, 0), status=statuses[defender])],
+                        fightTest={"winner": 5 if kind == "dodge" else 4, "outcome": 3,
+                                   "type": 4 if kind == "dodge" else 1, "score": scores}, fightDetails=fight_details)
+        elif kind == "damage":
+            if actor in entities:
+                entities[actor]["hp"] = params["hp"]
+        elif kind == "ko":
+            if actor in entities:
+                entities[actor]["status"]["knocked_down"] = True
+        elif kind == "ball_drop":
+            holder = None
+            ball_position = cell(params["position"])
+        elif kind == "throw":
+            target = params.get("target_entity_id")
+            destination = cell(params["target_position"])
+            if target not in tracks or target == actor:
+                candidates = [e for e in tracks if e != actor]
+                target = min(candidates, key=lambda e: distance(positions[e], destination))
+            entry = interaction(21, start, 15, [participant(actor, 2, has_ball=True), participant(target, 3, has_ball=False)],
+                                maneuverTest=maneuver(params["success"], entities[actor]["stats"]["precision"]),
+                                passDetails={"receptionScoreEstimate": entities[target]["stats"]["precision"], "ballTarget": destination,
+                                             "nextInteractionId": 0, "targetId": str(target)})
+            pending_passes.append({"entry": entry, "thrower": actor, "target": target,
+                                   "origin": deepcopy(positions[actor]), "destination": destination})
+            holder = None
+        elif kind in ("catch", "ball_land"):
+            flight = pending_passes.pop(0) if pending_passes else None
+            if kind == "catch":
+                origin = flight["origin"] if flight else deepcopy(ball_position)
+                same_team = flight and entities[flight["thrower"]]["team_id"] == entities[actor]["team_id"]
+                if same_team:
+                    entry = interaction(14, start, 15, [participant(actor, has_ball=False)], maneuverTest=maneuver(),
+                                        receptionDetails={"ballOriginPosition": origin})
+                else:
+                    entry = interaction(15, start, 15, [participant(actor, has_ball=False)], maneuverTest=maneuver(),
+                                        interceptionDetails={"ballOriginPosition": origin})
+                holder = actor
+                ball_position = deepcopy(positions[actor])
+            else:
+                landing = cell(params["position"])
+                entry = interaction(13, start, 12, [], onGroundDetails={"ballOriginPosition": flight["origin"] if flight else deepcopy(ball_position),
+                                                                       "groundPosition": landing})
+                holder = None
+                ball_position = landing
+            if flight:
+                flight["entry"]["interactionDetails"]["passDetails"]["nextInteractionId"] = entry["interactionId"]
+        elif kind == "goal":
+            interaction(12, start, 40, [participant(actor, has_ball=True)], touchdownDetails={"touchdownDuringRun": True})
+            holder = None
+        # ball_move is expressed by the original pass arc. Failed candidate
+        # catches are retained in the authoritative audit, while the rendered
+        # flight links to its eventual catch/rebound outcome.
+    for flight in pending_passes:
+        entry = interaction(13, max(clocks.values()), 12, [], onGroundDetails={"ballOriginPosition": flight["origin"],
+                                                                            "groundPosition": flight["destination"]})
+        flight["entry"]["interactionDetails"]["passDetails"]["nextInteractionId"] = entry["interactionId"]
+    finals = {e["entity_id"]: e for e in result["final_entity_states"]}
+    end = max(max(clocks.values(), default=1), round(max(e["tick"] for e in events) * factor) + offset + 1)
+    for identity in tracks:
+        target = cell(finals[identity]["position"])
+        if positions[identity] != target:
+            move(identity, end, target)
+        else:
+            move(identity, end)
+        if not tracks[identity]["item"]:
+            move(identity, end + 1)
+    return {"boufbowlerTracks": list(tracks.values()), "interaction": interactions, "classOrder": abilities,
+            "turn": result["turn_number"], "turnEndTick": max(clocks.values(), default=1)}

@@ -15,9 +15,9 @@
   "showStats": "false",
   "chrono": {
     "enabled": "true",
-    "placementDuration": "120",
-    "firstTurnDuration": "300",
-    "turnDuration": "120"
+    "placementDuration": "60",
+    "firstTurnDuration": "60",
+    "turnDuration": "60"
   },
   "3dActivated": "false",
   "optionsVisibility": [

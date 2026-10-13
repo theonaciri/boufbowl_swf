@@ -1,0 +1,1594 @@
+{
+  "format_version": 1,
+  "name": "all-class-abilities-1 engine interaction probe",
+  "rules_version": "boufbowl-custom-1",
+  "description": "Authoritative engine result rendered through the original client.",
+  "steps": [
+    {
+      "channel": "MATCH",
+      "type": "MATCH_INFORMATION",
+      "after_ms": 0,
+      "hex": "08b1098a4bd10b08818080808080801010011ad9050a40080b1a0b4d6f636b204c65667420312a0c080c100a180a200a28103003300b38014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a40080c1a0b4d6f636b204c65667420322a0c080c100a180a200a28103003300c38014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a40080d1a0b4d6f636b204c65667420332a0c080c100a180a200a28103003300d38014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a40080e1a0b4d6f636b204c65667420342a0c080c100a180a200a28103003300e38014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a40080f1a0b4d6f636b204c65667420352a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4008101a0b4d6f636b204c65667420362a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4008111a0b4d6f636b204c65667420372a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4008121a0b4d6f636b204c65667420382a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4008131a0b4d6f636b204c65667420392a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4108141a0c4d6f636b204c6566742031302a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c301189601120b4d6f636b20706c617965721a0b4d6f636b207465616d203122070828106418c8012a0908e60110e60118e6013206082810281828380042060800100018004801500122e3050a4108151a0c4d6f636b20526967687420312a0c080c100a180a200a28103003300238014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4108161a0c4d6f636b20526967687420322a0c080c100a180a200a28103003300338014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4108171a0c4d6f636b20526967687420332a0c080c100a180a200a28103003300438014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4108181a0c4d6f636b20526967687420342a0c080c100a180a200a28103003300538014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a4108191a0c4d6f636b20526967687420352a0c080c100a180a200a28103003300638014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a41081a1a0c4d6f636b20526967687420362a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a41081b1a0c4d6f636b20526967687420372a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a41081c1a0c4d6f636b20526967687420382a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a41081d1a0c4d6f636b20526967687420392a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c3011896010a42081e1a0d4d6f636b2052696768742031302a0c080c100a180a200a28103003300138014806520808e601108201181e5a06081e10321850620908eb0110c301189601120b4d6f636b20706c617965721a0b4d6f636b207465616d2032220708c801106418282a0908e60110e60118e6013206082810281828380042060800100018004801500138014001",
+      "decoded": {
+        "placementZone": [],
+        "id": "9007199254740993",
+        "side": 1,
+        "leftRoster": {
+          "characters": [
+            {
+              "id": "11",
+              "name": "Mock Left 1",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 11,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "12",
+              "name": "Mock Left 2",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 12,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "13",
+              "name": "Mock Left 3",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 13,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "14",
+              "name": "Mock Left 4",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 14,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "15",
+              "name": "Mock Left 5",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "16",
+              "name": "Mock Left 6",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "17",
+              "name": "Mock Left 7",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "18",
+              "name": "Mock Left 8",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "19",
+              "name": "Mock Left 9",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "20",
+              "name": "Mock Left 10",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            }
+          ],
+          "nickname": "Mock player",
+          "name": "Mock team 1",
+          "firstColor": {
+            "r": 40,
+            "g": 100,
+            "b": 200
+          },
+          "secondColor": {
+            "r": 230,
+            "g": 230,
+            "b": 230
+          },
+          "patternColor": {
+            "r": 40,
+            "g": 40,
+            "b": 40
+          },
+          "firstColorIsDark": false,
+          "ranking": {
+            "wins": 0,
+            "draws": 0,
+            "defeats": 0
+          },
+          "sigilBackground": 1,
+          "sigilCharge": 1
+        },
+        "rightRoster": {
+          "characters": [
+            {
+              "id": "21",
+              "name": "Mock Right 1",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 2,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "22",
+              "name": "Mock Right 2",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 3,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "23",
+              "name": "Mock Right 3",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 4,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "24",
+              "name": "Mock Right 4",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 5,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "25",
+              "name": "Mock Right 5",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 6,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "26",
+              "name": "Mock Right 6",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "27",
+              "name": "Mock Right 7",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "28",
+              "name": "Mock Right 8",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "29",
+              "name": "Mock Right 9",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            },
+            {
+              "id": "30",
+              "name": "Mock Right 10",
+              "attributes": {
+                "earth": 12,
+                "fire": 10,
+                "air": 10,
+                "water": 10,
+                "maxHitPoints": 16,
+                "hitPointRegenRate": 3
+              },
+              "boufbowlerClass": 1,
+              "gender": 1,
+              "paletteId": 6,
+              "hairColor": {
+                "r": 230,
+                "g": 130,
+                "b": 30
+              },
+              "eyeColor": {
+                "r": 30,
+                "g": 50,
+                "b": 80
+              },
+              "skinColor": {
+                "r": 235,
+                "g": 195,
+                "b": 150
+              }
+            }
+          ],
+          "nickname": "Mock player",
+          "name": "Mock team 2",
+          "firstColor": {
+            "r": 200,
+            "g": 100,
+            "b": 40
+          },
+          "secondColor": {
+            "r": 230,
+            "g": 230,
+            "b": 230
+          },
+          "patternColor": {
+            "r": 40,
+            "g": 40,
+            "b": 40
+          },
+          "firstColorIsDark": false,
+          "ranking": {
+            "wins": 0,
+            "draws": 0,
+            "defeats": 0
+          },
+          "sigilBackground": 1,
+          "sigilCharge": 1
+        },
+        "matchStadium": 1,
+        "skipIntro": true
+      }
+    },
+    {
+      "channel": "MATCH",
+      "type": "FIELD_STATE",
+      "after_ms": 1000,
+      "hex": "08b3099a4be4010a06080210e0d4031208080b1204080910031208080c1204080910011208080d1204080910001208080e1204080910021208080f120408091004120808151204080a1003120808161204080a1001120808171204080a1000120808181204080a1002120808191204080a10041a080801120408001000226c1208080b1001181020011208080c1001181020011208080d1001181020011208080e1001181020011208080f10011810200112080815100118102001120808161001181020011208081710011810200112080818100118102001120808191001181020012801300038004001",
+      "decoded": {
+        "boufbowlerPositions": [
+          {
+            "id": "11",
+            "position": {
+              "x": -5,
+              "y": -2
+            }
+          },
+          {
+            "id": "12",
+            "position": {
+              "x": -5,
+              "y": -1
+            }
+          },
+          {
+            "id": "13",
+            "position": {
+              "x": -5,
+              "y": 0
+            }
+          },
+          {
+            "id": "14",
+            "position": {
+              "x": -5,
+              "y": 1
+            }
+          },
+          {
+            "id": "15",
+            "position": {
+              "x": -5,
+              "y": 2
+            }
+          },
+          {
+            "id": "21",
+            "position": {
+              "x": 5,
+              "y": -2
+            }
+          },
+          {
+            "id": "22",
+            "position": {
+              "x": 5,
+              "y": -1
+            }
+          },
+          {
+            "id": "23",
+            "position": {
+              "x": 5,
+              "y": 0
+            }
+          },
+          {
+            "id": "24",
+            "position": {
+              "x": 5,
+              "y": 1
+            }
+          },
+          {
+            "id": "25",
+            "position": {
+              "x": 5,
+              "y": 2
+            }
+          }
+        ],
+        "phaseInfos": {
+          "phase": 2,
+          "remainingTime": 60000
+        },
+        "boufballState": {
+          "status": 1,
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        "teamState": {
+          "boufbowlerStates": [
+            {
+              "id": "11",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "12",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "13",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "14",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "15",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "21",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "22",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "23",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "24",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            },
+            {
+              "id": "25",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 1
+            }
+          ],
+          "turn": 1,
+          "leftSideScore": 0,
+          "rightSideScore": 0,
+          "period": 1
+        }
+      }
+    },
+    {
+      "channel": "MATCH",
+      "type": "RESOLUTION_SCENARIO",
+      "after_ms": 4000,
+      "hex": "08a50daa6ae8050a26080b1204080b18011a0e0801120a0a040809100310001802220c0801100318002204081410140a26080c1204080c18011a0e0801120a0a040809100110001802220c0801100318002204081410140a26080d1204080d18011a0e0801120a0a040809100010001802220c0801100318002204081410140a26080e1204080e18011a0e0801120a0a040809100210001802220c0801100318002204081410140a26080f1204080f18011a0e0801120a0a040809100410001802220c0801100318002204081410140a2608151204081518011a0e0801120a0a04080a100310001802220c0801100318002204081410140a2608161204081618011a0e0801120a0a04080a100110001802220c0801100318002204081410140a2608171204081718011a0e0801120a0a04080a100010001802220c0801100318002204081410140a2608181204081818011a0e0801120a0a04080a100210001802220c0801100318002204081410140a2608191204081918011a0e0801120a0a04080a100410001802220c080110031800220408141014180120023220080b1204080b10001204080c10001204080d10001204080e10001204080f10003220080c1204080b10001204080c10001204080d10001204080e10001204080f10003220080d1204080b10001204080c10001204080d10001204080e10001204080f10003220080e1204080b10001204080c10001204080d10001204080e10001204080f10003220080f1204080b10001204080c10001204080d10001204080e10001204080f10003220081512040815100012040816100012040817100012040818100012040819100032200816120408151000120408161000120408171000120408181000120408191000322008171204081510001204081610001204081710001204081810001204081910003220081812040815100012040816100012040817100012040818100012040819100032200819120408151000120408161000120408171000120408181000120408191000",
+      "decoded": {
+        "boufbowlerTracks": [
+          {
+            "boufbowlerId": "11",
+            "order": {
+              "boufbowlerId": "11",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": -5,
+                      "y": -2
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "12",
+            "order": {
+              "boufbowlerId": "12",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": -5,
+                      "y": -1
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "13",
+            "order": {
+              "boufbowlerId": "13",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": -5,
+                      "y": 0
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "14",
+            "order": {
+              "boufbowlerId": "14",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": -5,
+                      "y": 1
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "15",
+            "order": {
+              "boufbowlerId": "15",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": -5,
+                      "y": 2
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "21",
+            "order": {
+              "boufbowlerId": "21",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": 5,
+                      "y": -2
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "22",
+            "order": {
+              "boufbowlerId": "22",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": 5,
+                      "y": -1
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "23",
+            "order": {
+              "boufbowlerId": "23",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": 5,
+                      "y": 0
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "24",
+            "order": {
+              "boufbowlerId": "24",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": 5,
+                      "y": 1
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          },
+          {
+            "boufbowlerId": "25",
+            "order": {
+              "boufbowlerId": "25",
+              "classOrder": true
+            },
+            "item": [
+              {
+                "type": 1,
+                "movement": {
+                  "positions": [
+                    {
+                      "x": 5,
+                      "y": 2
+                    }
+                  ],
+                  "startTick": 0,
+                  "endTick": 2
+                }
+              }
+            ],
+            "movementTest": {
+              "success": true,
+              "outcome": 3,
+              "difficulty": 0,
+              "score": {
+                "inherentScore": 10,
+                "finalScore": 10
+              }
+            }
+          }
+        ],
+        "interaction": [],
+        "classOrder": [
+          {
+            "boufbowlerId": "11",
+            "target": [
+              {
+                "boufbowlerId": "11",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "12",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "13",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "14",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "15",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "12",
+            "target": [
+              {
+                "boufbowlerId": "11",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "12",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "13",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "14",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "15",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "13",
+            "target": [
+              {
+                "boufbowlerId": "11",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "12",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "13",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "14",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "15",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "14",
+            "target": [
+              {
+                "boufbowlerId": "11",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "12",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "13",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "14",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "15",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "15",
+            "target": [
+              {
+                "boufbowlerId": "11",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "12",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "13",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "14",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "15",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "21",
+            "target": [
+              {
+                "boufbowlerId": "21",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "22",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "23",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "24",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "25",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "22",
+            "target": [
+              {
+                "boufbowlerId": "21",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "22",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "23",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "24",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "25",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "23",
+            "target": [
+              {
+                "boufbowlerId": "21",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "22",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "23",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "24",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "25",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "24",
+            "target": [
+              {
+                "boufbowlerId": "21",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "22",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "23",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "24",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "25",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          },
+          {
+            "boufbowlerId": "25",
+            "target": [
+              {
+                "boufbowlerId": "21",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "22",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "23",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "24",
+                "preResolutionHitPointsDelta": 0
+              },
+              {
+                "boufbowlerId": "25",
+                "preResolutionHitPointsDelta": 0
+              }
+            ]
+          }
+        ],
+        "turn": 1,
+        "turnEndTick": 2
+      }
+    },
+    {
+      "channel": "MATCH",
+      "type": "FIELD_STATE",
+      "after_ms": 1000,
+      "hex": "08b3099a4be4010a06080210e0d4031208080b1204080910031208080c1204080910011208080d1204080910001208080e1204080910021208080f120408091004120808151204080a1003120808161204080a1001120808171204080a1000120808181204080a1002120808191204080a10041a080801120408001000226c1208080b1001181020001208080c1001181020001208080d1001181020001208080e1001181020001208080f10011810200012080815100118102000120808161001181020001208081710011810200012080818100118102000120808191001181020002802300038004001",
+      "decoded": {
+        "boufbowlerPositions": [
+          {
+            "id": "11",
+            "position": {
+              "x": -5,
+              "y": -2
+            }
+          },
+          {
+            "id": "12",
+            "position": {
+              "x": -5,
+              "y": -1
+            }
+          },
+          {
+            "id": "13",
+            "position": {
+              "x": -5,
+              "y": 0
+            }
+          },
+          {
+            "id": "14",
+            "position": {
+              "x": -5,
+              "y": 1
+            }
+          },
+          {
+            "id": "15",
+            "position": {
+              "x": -5,
+              "y": 2
+            }
+          },
+          {
+            "id": "21",
+            "position": {
+              "x": 5,
+              "y": -2
+            }
+          },
+          {
+            "id": "22",
+            "position": {
+              "x": 5,
+              "y": -1
+            }
+          },
+          {
+            "id": "23",
+            "position": {
+              "x": 5,
+              "y": 0
+            }
+          },
+          {
+            "id": "24",
+            "position": {
+              "x": 5,
+              "y": 1
+            }
+          },
+          {
+            "id": "25",
+            "position": {
+              "x": 5,
+              "y": 2
+            }
+          }
+        ],
+        "phaseInfos": {
+          "phase": 2,
+          "remainingTime": 60000
+        },
+        "boufballState": {
+          "status": 1,
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        "teamState": {
+          "boufbowlerStates": [
+            {
+              "id": "11",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "12",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "13",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "14",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "15",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "21",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "22",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "23",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "24",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            },
+            {
+              "id": "25",
+              "status": 1,
+              "currentHitPoints": 16,
+              "remainingClassOrderUses": 0
+            }
+          ],
+          "turn": 2,
+          "leftSideScore": 0,
+          "rightSideScore": 0,
+          "period": 1
+        }
+      },
+      "wait_for": "ResolutionDoneMessage"
+    },
+    {
+      "channel": "MATCH",
+      "type": "MATCH_END",
+      "after_ms": 3000,
+      "hex": "08b409a24b1d088180808080808010180020002a060800100018003206080010001800",
+      "decoded": {
+        "id": "9007199254740993",
+        "leftScore": 0,
+        "rightScore": 0,
+        "leftRanking": {
+          "wins": 0,
+          "draws": 0,
+          "defeats": 0
+        },
+        "rightRanking": {
+          "wins": 0,
+          "draws": 0,
+          "defeats": 0
+        }
+      }
+    }
+  ]
+}

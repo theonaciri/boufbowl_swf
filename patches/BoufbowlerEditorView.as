@@ -101,7 +101,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.v
       
       internal function updateAttributes(param1:IClubBoufbowlerModel, param2:ClubModel) : void
       {
-         prevFieldPostureButton.visible = nextFieldPostureButton.visible = !param1.isUniqueCharacter;
+         prevFieldPostureButton.visible = nextFieldPostureButton.visible = true;
          this._classSelector.setSelectedPicture(param1.skinId);
          actualClassIndicator.updateSkin(param1.skinId);
          this.updateClassOrderInfos(param1.boufbowlerClass);
@@ -126,7 +126,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.v
       
       internal function updateAnimation(param1:AnimationKey, param2:IClubBoufbowlerModel) : void
       {
-         prevFieldPostureButton.visible = nextFieldPostureButton.visible = !param2.isUniqueCharacter;
+         prevFieldPostureButton.visible = nextFieldPostureButton.visible = true;
          this._boufbowlerSpriteHolder.currentAnimationKey = param1;
          this._boufbowlerSpriteHolder.updateAnimation(param2);
       }
@@ -335,6 +335,11 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.v
          }
          else
          {
+            if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode())
+            {
+               classOrderDesc = com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverAbilityDescription(param1);
+               return;
+            }
             classOrderDesc = "<span fontWeight=\"bold\" fontSize=\"12\">" + this._translator.getText(LangConstants.CLASS_ORDER_TITLE) + this._translator.getEnumTranslation(LangConstants.CLASSES_ORDER_NAME_ENUM,param1) + "</span><br />" + this._translator.getEnumTranslation(LangConstants.CLASSES_ORDER_TOOLTIP_DESC_ENUM,param1);
          }
       }

@@ -1,4 +1,4 @@
-﻿{
+{
     "web_login_url" : {
         "fr" : "http://www.boufbowl.com/fr",
         "en" : "http://www.gobbowl.com/en",
@@ -2003,152 +2003,10 @@
         "es" : "Partido de $1 contra $2"
     },
     "tournament_help_content" : {
-        "fr" : "
-            <br />
-            <span fontSize='22' fontWeight='bold'>Les tournois</span><br />
-            <br />
-            <br />
-            <span fontSize='16' fontWeight='bold'>Comment ça marche ?</span><br />
-            <br />
-            Pour vous inscrire aux tournois, il faut vous procurer des tickets tournois dans <a href='http://www.wakfu.com/fr/mmorpg/boutique/294-jeux-krosmoz/2365-tournois' target='_blank'>la boutique de notre site officiel !</a><br />
-            <br />
-            Les tournois ont lieu toutes les semaines à des dates et heures précises. Vous pouvez consulter le calendrier en jeu dans l'interface des tournois.<br />
-            <br />
-            Vous ne pouvez pas vous préinscrire. Il faut être présent entre l’heure de début et de fin du tournoi pour pouvoir y participer.<br />
-            <br />
-            Lorsque le tournoi commence, cliquez sur le bouton « S'inscrire et jouer » pour lancer le matchmaking . Vous dépensez votre ticket tournoi dès que vous jouez votre premier match pour la compétition.<br />
-            <br />
-            Les tournois sont à élimination directe.<br />
-            <br />
-            Tant que vous ne perdez pas, vous pouvez faire autant de matchs que vous le voulez jusqu'à la fermeture du tournoi. Mais cela signifie qu'à la première défaite vous serez hors-compétition. Vous gardez alors les points jusque là accumulés et devez attendre la fin du tournoi pour savoir quel sera votre placement dans le classement. Qui sait : vous serez peut-être assez bien classés pour obtenir une récompense ?<br />
-            <br />
-            Attention, vous ne pouvez pas vous réinscrire à un tournoi une fois votre match perdu.<br />
-            <br />
-            Un match de tournoi gagné vous rapporte 1 point. Le gagnant du tournoi est celui qui a obtenu le plus de points à la fin de l'évènement.<br />
-            <br />
-            En cas d'égalité en match, vous ne gagnez pas de points au classement mais vous pouvez jouer à nouveau.<br />
-            <br />
-            En cas d'égalités entre les joueurs, le classement se fait avec le système du goal average (différence entre le nombre de touchdowns encaissés / marqués).<br />
-            <br />
-            Les récompenses en Bowltons sont affichées sur la page principale du tournoi que vous aurez sélectionné.<br />
-            <br />
-            Les Bowltons gagnés sont envoyés sur votre compte DOFUS, via l'interface de cadeaux. Vous pouvez ensuite les échanger aux PNJ Boufbowlers de Bonta et Brâkmar qui se trouvent dans les stades de ces deux capitales !<br />
-            <br />
-            <br />
-            Le déroulement des tournois peut être lu dans tous ses détails <a href='http://www.boufbowl.com/fr/forum/1166-carnet-bord/810548-tournois-comment-marche' target='_blank'>en cliquant ici.</a><br />
-            <br />
-            Vous avez d'autres questions ? <a href='http://www.boufbowl.com/fr/forum/1186-tournois/810498-vos-questions-tournois-officiels' target='_blank'>Venez les poser sur le forum !</a><br />
-            <br />
-        ",
-        "en" : "
-            <br />
-            <span fontSize='22' fontWeight='bold'>Tournaments</span><br />
-            <br />
-            <br />
-            <span fontSize='16' fontWeight='bold'>How does it work?</span><br />
-            <br />
-            To be able to register to tournaments, you need to get tournament tickets on <a href='http://www.wakfu.com/en/mmorpg/boutique/294-other-krosmoz-games/2365-tournament-tickets'>the shop of our official website!</a><br />
-            <br />
-            Tournaments take place every week at set dates and hours. You can check the planning in game, in the tournament interface.<br />
-            <br />
-            You cannot pre-register. You have to be present when the tournament is runningn between the start and the end times.<br />
-            <br />
-            When the tournament starts, click on \"Register and play\" to get in match. You burn your tournament ticket as soon as you play your first match for the tournament.<br />
-            <br />
-            Tournament use direct elimination.<br />
-            <br />
-            As long as you don't lose a match, you can play as much as you want until the end of the tournament. This means that on the first loss, you won't be able to play anymore. You keep the points you earned and have to wait for the end of the tournament to know what your final ranking will be. Who knows, maybe you will be well ranked enough to get a reward?<br />
-            <br />
-            Attention, you cannot re-register to a tournement once you have lost a match.<br />
-            <br />
-            A victorious match is worth 1 point. The tournament winner is the player who have the largest number of points at the end of the event. <br />
-            <br />
-            In case of a match ending on a draw, you don't ear points but you can still play.<br />
-            <br />
-            When players have the same amount of points in the rankings, touchdown difference is used to rank them.<br />
-            <br />
-            Gobbowken rewards are displayed on the tournament page.<br />
-            <br />
-            Gobbowken you have been rewarded are sent to your DOFUS account, though the present interface. You can then trade them with Gobbowlers BPCs at Bonta and Brakmar stadiums.<br />
-            <br />      
-        ",
-        "de" : " <br />
-            <span fontSize='22' fontWeight='bold'>Die Turniere</span><br />
-            <br />
-            <br />
-            <span fontSize='16' fontWeight='bold'>1. Wie kann man teilnehmen?</span><br />
-            <br />
-            Für die Anmeldung bei einem Turnier, benötigt ihr Turnier-Tickets, die ihr im <a href='http://www.wakfu.com/de/mmorpg/shop/294-andere-krosmoz-spiele/2365-turniertickets' target='_blank'>Shop auf der offiziellen Webseite</a> erwerben könnt!<br />
-            <br />
-            Die Turniere finden im wöchentlichen Rhythmus an bestimmten Tagen zu festgelegten Zeiten statt. Den Terminkalender für die Turniere könnt ihr in eben jener Benutzeroberfläche im Spiel aufrufen.<br />
-            <br />
-            Eine Voranmeldung ist nicht möglich. Ihr müsst zu Beginn und am Ende eines Turniers anwesend sein, wenn ihr an einem Turnier teilnehmen wollt.<br />
-            <br />
-            Klickt bei Turnierbeginn den Button \"Anmelden und Spielen\" an, um einen Gegner zugewiesen zu bekommen. Euer Turnierticket wird ausgegeben, sobald ihr das erste Match des Turniers beginnt.<br />
-            <br />
-            Alle Turniere funktionieren nach einfachem KO-System.<br />
-            <br />
-            Solange ihr kein Match verliert, könnt ihr so oft gegen andere antreten, wie ihr wollt und zwar bis das zeitliche Ende des Turniers erreicht wird. Aber bedenkt, dass ihr ab der ersten Niederlage aus dem Turnier ausscheidet. Dabei behaltet ihr eure maximal erreichte Punktzahl. Am Ende des Turniers wird dann euer Platz im Ranking angezeigt. Wer weiß: Vielleicht wart ihr ja sogar gut genug, um eine Belohnung zu erhalten?<br />
-            <br />
-            Hinweis: Wenn ihr während des Turniers ein Match verliert, dann könnt ihr euch nicht erneut zu diesem Turnier anmelden.<br />
-            <br />
-            Für jedes gewonnene Match erhaltet ihr 1 Punkt. Der Sieger des Turniers ist derjenige, der am Ende des Turnieres die meisten Punkte besitzt.<br />
-            <br />
-            Geht ein Match unentschieden aus, erhaltet ihr keine Punkte fürs Ranking, könnt jedoch weiterspielen.<br />
-            <br />
-            Sollte es zum Punktegleichstand zwischen zwei Spielern kommen, dann entscheidet der Touchdownwert. (Differenz erhaltener Touchdowns zu gelungenen Touchdowns).<br />
-            <br />
-            Die Belohnungen in Form von Balljetons werden auf der Hauptseite des jeweiligen Turniers aufgelistet.<br />
-            <br />
-            Die gewonnenen Balljetons werden über die Benutzeroberfläche für Geschenke auf euren DOFUS-Account übertragen. Ihr könnt diese dann bei den Fressballer-NSCs in den Stadien von Bonta und Brâkmar eintauschen!<br />
-            <br />
-            <br />
-            Der Ablauf der Turniere wird <a href='http://www.boufbowl.com/de/forum/' target='_blank'>im Forum aufgelistet.</a><br />
-            <br />
-            Habt ihr noch weitere Fragen? <a href='http://www.boufbowl.com/de/forum/' target='_blank'>Stellt eure Fragen im Forum!</a><br />
-            <br />
-            <br />",
-        "es" : "
-            <br />
-            <span fontSize='22' fontWeight='bold'>Los torneos</span><br />
-            <br />
-            <br />
-            <span fontSize='16' fontWeight='bold'>¿Cómo funcionan?</span><br />
-            <br />
-            Para inscribirse en los torneos, es necesario obtener tickets en <a href='http://www.wakfu.com/es/mmorpg/tienda/294-otros-juegos-krosmoz/2365-tickets-torneo' target='_blank'>¡la tienda de nuestro sitio oficial!</a><br />
-            <br />
-            Una vez que realicen la compra, conéctense al juego.<br />
-            <br />
-            Deben hacer un clic sobre el botón «Torneos».<br />
-            <br />
-            Los torneos se realizan todas las semanas en fechas y horas precisas. Pueden consultar el calendario dentro del juego en la interface de torneos.<br />
-            <br />
-            No se pueden pre-inscribir. Es necesario estar presente a la hora del comienzo del torneo para poder participar.<br />
-            <br />
-            Cuando el torneo comienza, deben hacer un clic sobre el botón «Inscribirse y jugar» para lanzar el matchmaking. Gastarán su ticket de torneo desde el momento en que jueguen el 1er partido de la competición.<br />
-            <br />
-            Los torneos son a eliminatoria directa.<br />
-            <br />
-            Mientras no pierdan, pueden jugar todos los partidos que deseen hasta el cierre del torneo. Pero eso significa que a la 1er derrota estarán fuera de competición. Ustedes guardan los puntos que hayan acumulado y deberán esperar al final del torneo para saber cual será su posición en la clasificación definitiva. Debemos preguntarnos: ¿Estoy suficientemente bien clasificado y arriba de la tabla para obtener una recompensa ? Recuerden, ¡El misterio se revela al final!<br />
-            <br />
-            Atención, no se pueden reinscribir a un torneo una vez que hayan perdido un partido.<br />
-            <br />
-            Un partido de torneo ganado les da 1 punto. El ganador del torneo es el que haya obtenido mas puntos al final del evento.<br />
-            <br />
-            En caso de empate de un partido, no ganará puntos ninguno de los 2, pero ambos podrán jugar de nuevo y seguir participando (atención amigos y hermanos de batalla).<br />
-            <br />
-            En caso de empate en la clasificación final, la selección se realizará con el sistema de goal average (El que tenga mas cantidad de touchdowns realizados/marcados).<br />
-            <br />
-            Las recompensas en jalichas se muestran en la página principal del torneo que hayan seleccionado.<br />
-            <br />
-            Las Jalichas ganadas se enviarán directo a la cuenta DOFUS y aparecerán al conectare en la clásica interfaz de regalos. Luego las ¡pueden intercambiar con los PNJ jalabolistas en Bonta y Brakmar que se encuentran en los estadios de las dos capitales!<br />
-            <br />
-            <br />
-            Pueden leer el desarrollo de los torneos con todos sus detalles haciendo <a href='http://www.jalabol.com/es/forum/1109-estadio-jalabol/394380-torneos-llegado' target='_blank'>clic aquí</a><br />
-            <br />
-            ¿Tienen más preguntas? <a href='http://www.jalabol.com/es/forum/1109-estadio-jalabol' target='_blank'>¡anímense a preguntarnos en el foro!</a><br />
-            <br />
-        "
+        "en": "Free local league. Play CPU matches during the event. Wins and draws add points; defeats do not eliminate you. Results and rankings are saved.",
+        "fr": "Ligue locale gratuite. Jouez contre l'ordinateur pendant l'événement. Les victoires et les matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les résultats sont sauvegardés.",
+        "de": "Kostenlose lokale Liga. Spiele während des Events gegen den Computer. Siege und Unentschieden bringen Punkte; Niederlagen führen nicht zum Ausscheiden. Ergebnisse werden gespeichert.",
+        "es": "Liga local gratuita. Juega contra el ordenador durante el evento. Las victorias y los empates suman puntos; las derrotas no te eliminan. Los resultados se guardan."
     },
     "tournament_past_tournament_button" : {
         "fr" : "Historique",
@@ -2215,10 +2073,10 @@
         }
     },
     "tournament_elimination_rule" : {
-        "fr" : "Marque 1 point pour chaque victoire au sein du tournoi. <br />En cas de défaite, tu quitteras automatiquement le tournoi avec les points déjà empochés.",
-        "en" : "You score 1 point for each tournament match you win. <br />If you are defeated, you will automatically be knocked out of the tournament with the points you have accumulated so far.",
-        "de" : "Jeder Sieg im Verlauf des Turniers gibt 1 Punkt. <br />Bei einer Niederlage wird das Turnier automatisch verlassen, allerdings mit allen bisher gewonnenen Siegpunkten!",
-        "es" : "Marca 1 punto por cada victoria durante el torneo. <br />En caso de derrota, quedarás automáticamente eliminado del torneo con los puntos que hayas ganado."
+        "en": "Free local league. Play CPU matches during the event. Wins and draws add points; defeats do not eliminate you. Results and rankings are saved.",
+        "fr": "Ligue locale gratuite. Jouez contre l'ordinateur pendant l'événement. Les victoires et les matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les résultats sont sauvegardés.",
+        "de": "Kostenlose lokale Liga. Spiele während des Events gegen den Computer. Siege und Unentschieden bringen Punkte; Niederlagen führen nicht zum Ausscheiden. Ergebnisse werden gespeichert.",
+        "es": "Liga local gratuita. Juega contra el ordenador durante el evento. Las victorias y los empates suman puntos; las derrotas no te eliminan. Los resultados se guardan."
     },  
     "tournament_multiple_registration_rule" :   {
         /* TODO : Pas utilisé */

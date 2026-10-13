@@ -1,0 +1,567 @@
+{
+  "meta": {
+    "version": "0.1",
+    "description": "Active gameplay and match pacing parameters. Presentation is configured separately in replay_presentation.json. Five players per team and three element slots are game-format invariants."
+  },
+  "network": {
+    "server_url": "ws://localhost:3000"
+  },
+  "general": {
+    "base_hp": 15,
+    "actions_per_character": 3,
+    "turns_per_match": 18,
+    "time_per_turn_seconds": 90,
+    "placement_zones_count": 5
+  },
+  "classes": {
+    "Sram": {
+      "description": "Spécialiste FEU - Expert en esquive et réception",
+      "specialty": "FEU",
+      "strength": 9,
+      "agility": 13,
+      "endurance": 9,
+      "precision": 9
+    },
+    "Iop": {
+      "description": "Spécialiste TERRE - Guerrier brutal et puissant",
+      "specialty": "TERRE",
+      "strength": 13,
+      "agility": 8,
+      "endurance": 12,
+      "precision": 7
+    },
+    "Feca": {
+      "description": "Spécialiste AIR - Maître des passes et de la précision",
+      "specialty": "AIR",
+      "strength": 8,
+      "agility": 10,
+      "endurance": 9,
+      "precision": 13
+    },
+    "Xelor": {
+      "description": "Spécialiste EAU - Rapide et endurant",
+      "specialty": "EAU",
+      "strength": 9,
+      "agility": 11,
+      "endurance": 11,
+      "precision": 9
+    },
+    "Default": {
+      "description": "Classe générique - Équilibré",
+      "specialty": "NONE",
+      "strength": 10,
+      "agility": 10,
+      "endurance": 10,
+      "precision": 10
+    },
+    "Sadida": {
+      "description": "Roster class profile",
+      "specialty": "NONE",
+      "strength": 11,
+      "agility": 8,
+      "endurance": 12,
+      "precision": 9
+    },
+    "Sacrier": {
+      "description": "Roster class profile",
+      "specialty": "NONE",
+      "strength": 12,
+      "agility": 9,
+      "endurance": 12,
+      "precision": 7
+    },
+    "Osamodas": {
+      "description": "Roster class profile",
+      "specialty": "NONE",
+      "strength": 9,
+      "agility": 11,
+      "endurance": 9,
+      "precision": 11
+    },
+    "Pandawa": {
+      "description": "Roster class profile",
+      "specialty": "NONE",
+      "strength": 11,
+      "agility": 9,
+      "endurance": 11,
+      "precision": 9
+    },
+    "Cra": {
+      "description": "Roster class profile",
+      "specialty": "AIR",
+      "strength": 8,
+      "agility": 10,
+      "endurance": 8,
+      "precision": 14
+    },
+    "Eniripsa": {
+      "description": "Roster class profile",
+      "specialty": "EAU",
+      "strength": 7,
+      "agility": 11,
+      "endurance": 12,
+      "precision": 10
+    },
+    "Ecaflip": {
+      "description": "Roster class profile",
+      "specialty": "NONE",
+      "strength": 10,
+      "agility": 12,
+      "endurance": 8,
+      "precision": 10
+    },
+    "Enutrof": {
+      "description": "Roster class profile",
+      "specialty": "NONE",
+      "strength": 10,
+      "agility": 8,
+      "endurance": 13,
+      "precision": 9
+    },
+    "Rogue": {
+      "description": "Rogue",
+      "specialty": "NONE",
+      "strength": 10,
+      "agility": 10,
+      "endurance": 10,
+      "precision": 10
+    },
+    "Zobal": {
+      "description": "Zobal",
+      "specialty": "NONE",
+      "strength": 10,
+      "agility": 10,
+      "endurance": 10,
+      "precision": 10
+    }
+  },
+  "actions": {
+    "element_effects": {
+      "terre": {
+        "attack_bonus_per": 1
+      },
+      "feu": {
+        "used_for_pickup": true,
+        "used_for_reception": true
+      },
+      "air": {
+        "range_modifier": 1
+      }
+    }
+  },
+  "ball": {
+    "base_range": 7,
+    "pickup_range": 2.0,
+    "throw_speed_cells_per_sec": 8.0,
+    "arc_height_cells": 2.5,
+    "catch_radius_cells": 2.0,
+    "intercept_radius_cells": 2.0,
+    "intercept_height_threshold": 1.5
+  },
+  "combat": {
+    "duel": {
+      "damage_on_win": 4,
+      "damage_on_tie": 2
+    },
+    "revive": {
+      "required_eau_actions_to_get_up": 1
+    },
+    "trigger_distance_cells": 1.0,
+    "fight_duration_penalty_cells": 1.0
+  },
+  "probabilities": {
+    "air_precision_per_action": 0.15
+  },
+  "tick_system": {
+    "tick_dt_seconds": 0.1,
+    "max_ticks_per_turn": 100,
+    "tick_animation_duration_seconds": 0.5
+  },
+  "movement": {
+    "base_speed_cells_per_sec": 2.0,
+    "speed_per_endurance": 0.15,
+    "eau_speed_bonus_per_action": 0.4,
+    "terre_speed_penalty_per_action": 0.2,
+    "air_speed_bonus_per_action": 0.1,
+    "base_movement_range": 7,
+    "eau_range_bonus_per_action": 2,
+    "air_range_bonus_per_action": 3,
+    "terre_range_penalty_per_action": 1
+  },
+  "pitch": {
+    "hex_size": 1.73,
+    "width": 36,
+    "height": 21
+  },
+  "simulation": {
+    "stand_up_ticks": 5,
+    "throw_delay_ticks": 1,
+    "catch_base": 0.35,
+    "catch_stat": 0.03,
+    "catch_feu": 0.1,
+    "catch_air": 0.05,
+    "throw_base": 0.4,
+    "throw_stat": 0.03,
+    "distance_penalty": 0.02,
+    "probability_min": 0.05,
+    "probability_max": 0.99,
+    "fall_base": 0.15,
+    "fall_per_power": 0.1,
+    "fall_max": 0.9
+  },
+  "stadiums": {
+    "standard": {
+      "name": "Standard (provisional rules)",
+      "turns_per_match": 18,
+      "class_ability_uses": 1,
+      "verified": false
+    },
+    "village_de_kara": {
+      "name": "Village de Kara",
+      "turns_per_match": 14,
+      "class_ability_uses": 2,
+      "verified": true,
+      "source": "Finale-Tournoi-de-Nowel-Boufbowl.mp4 at 02:00"
+    },
+    "ile_des_wabbits": {
+      "name": "Île des Wabbits",
+      "turns_per_match": 10,
+      "class_ability_uses": 1,
+      "verified": true,
+      "source": "FerrariVict vs Yamermane - Stade 8 Bits - Boufbowl.mp4 at 01:00"
+    }
+  },
+  "abilities": {
+    "Iop": {
+      "name": "Cri de force (provisoire)",
+      "verified": false,
+      "heal": 0,
+      "element": "TERRE",
+      "bonus": 1
+    },
+    "Sram": {
+      "name": "Ruse collective (provisoire)",
+      "verified": false,
+      "heal": 0,
+      "element": "FEU",
+      "bonus": 1
+    },
+    "Feca": {
+      "name": "Soutien collectif (provisoire)",
+      "verified": false,
+      "heal": 3,
+      "bonus": 0
+    },
+    "Xelor": {
+      "name": "Acceleration (provisoire)",
+      "verified": false,
+      "heal": 0,
+      "element": "EAU",
+      "bonus": 1
+    },
+    "Default": {
+      "name": "Second souffle (provisoire)",
+      "verified": false,
+      "heal": 2,
+      "bonus": 0
+    }
+  },
+  "ai": {
+    "default_personality": "balanced",
+    "default_level": "normal",
+    "personalities": {
+      "balanced": {
+        "progress": 20,
+        "risk": 18,
+        "aggression": 16,
+        "spacing": 30,
+        "passing": 24,
+        "defense": 15
+      },
+      "bruiser": {
+        "progress": 16,
+        "risk": 5,
+        "aggression": 32,
+        "spacing": 20,
+        "passing": 8,
+        "defense": 8
+      },
+      "playmaker": {
+        "progress": 18,
+        "risk": 22,
+        "aggression": 8,
+        "spacing": 35,
+        "passing": 40,
+        "defense": 12
+      },
+      "guardian": {
+        "progress": 12,
+        "risk": 28,
+        "aggression": 16,
+        "spacing": 30,
+        "passing": 20,
+        "defense": 30
+      }
+    },
+    "levels": {
+      "beginner": {
+        "search_radius": 5,
+        "threat_radius": 1,
+        "pass_min_gain": 4,
+        "passes": false,
+        "abilities": false
+      },
+      "normal": {
+        "search_radius": 10,
+        "threat_radius": 2,
+        "pass_min_gain": 2,
+        "passes": true,
+        "abilities": false
+      },
+      "expert": {
+        "search_radius": 14,
+        "threat_radius": 3,
+        "pass_min_gain": 1,
+        "passes": true,
+        "abilities": true
+      }
+    },
+    "decision_delay_ms": 500
+  },
+  "progression": {
+    "win_xp": 100,
+    "loss_xp": 25,
+    "draw_xp": 50,
+    "win_kamas": 50,
+    "rating_step": 25,
+    "level_base_xp": 100
+  },
+  "match_pacing": {
+    "placement_wait_ms": 60000,
+    "halftime_pause_ms": 5000,
+    "turn_end_pause_ms": 1000,
+    "resolution_buffer_ticks": 2
+  },
+  "placement": {
+    "ball_exclusion_radius_cells": 3,
+    "zone_layout": {
+      "upper_split": 0.4,
+      "lower_split": 0.67,
+      "lower_middle_height": 0.5
+    }
+  },
+  "ladder": {
+    "qualifying_matches": 3,
+    "legendary_rating": 1500,
+    "page_size": 6
+  },
+  "team_roster": {
+    "roster_size": 10,
+    "max_teams": 10,
+    "premium_classes": [
+      "Zobal"
+    ],
+    "unlock_kamas": 200,
+    "starting_classes": [
+      "Sram",
+      "Sacrier",
+      "Iop",
+      "Feca",
+      "Xelor"
+    ],
+    "characters": [
+      {
+        "id": "Masqueraider_Intrepid_male",
+        "display_name": "Zobal intrépide",
+        "class_name": "Zobal",
+        "skin_class": "Masqueraider_Intrepid",
+        "gender": "male",
+        "named": false
+      },
+      {
+        "id": "Masqueraider_Psychopath_male",
+        "display_name": "Zobal psychopathe",
+        "class_name": "Zobal",
+        "skin_class": "Masqueraider_Psychopath",
+        "gender": "male",
+        "named": false
+      },
+      {
+        "id": "Masqueraider_Coward_male",
+        "display_name": "Zobal pleutre",
+        "class_name": "Zobal",
+        "skin_class": "Masqueraider_Coward",
+        "gender": "male",
+        "named": false
+      },
+      {
+        "id": "Masqueraider_Intrepid_female",
+        "display_name": "Zobal intrépide",
+        "class_name": "Zobal",
+        "skin_class": "Masqueraider_Intrepid",
+        "gender": "female",
+        "named": false
+      },
+      {
+        "id": "Masqueraider_Psychopath_female",
+        "display_name": "Zobal psychopathe",
+        "class_name": "Zobal",
+        "skin_class": "Masqueraider_Psychopath",
+        "gender": "female",
+        "named": false
+      },
+      {
+        "id": "Masqueraider_Coward_female",
+        "display_name": "Zobal pleutre",
+        "class_name": "Zobal",
+        "skin_class": "Masqueraider_Coward",
+        "gender": "female",
+        "named": false
+      },
+      {
+        "id": "Kriss_male",
+        "display_name": "Kriss la Krass",
+        "class_name": "Default",
+        "skin_class": "Kriss",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Pita_male",
+        "display_name": "Pita Smisse",
+        "class_name": "Default",
+        "skin_class": "Pita",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Maude_female",
+        "display_name": "Maude",
+        "class_name": "Default",
+        "skin_class": "Maude",
+        "gender": "female",
+        "named": true
+      },
+      {
+        "id": "MaskedBoufbowler_male",
+        "display_name": "Le Boufbowler Masqué",
+        "class_name": "Default",
+        "skin_class": "MaskedBoufbowler",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Goultard_male",
+        "display_name": "Goultard le Barbare",
+        "class_name": "Default",
+        "skin_class": "Goultard",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Amalia_female",
+        "display_name": "Amalia Sheran Sharm",
+        "class_name": "Default",
+        "skin_class": "Amalia",
+        "gender": "female",
+        "named": true
+      },
+      {
+        "id": "Miranda_female",
+        "display_name": "Miranda",
+        "class_name": "Default",
+        "skin_class": "Miranda",
+        "gender": "female",
+        "named": true
+      },
+      {
+        "id": "Evangelyne_female",
+        "display_name": "Evangelyne",
+        "class_name": "Default",
+        "skin_class": "Evangelyne",
+        "gender": "female",
+        "named": true
+      },
+      {
+        "id": "Ruel_male",
+        "display_name": "Ruel Stroud",
+        "class_name": "Default",
+        "skin_class": "Ruel",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Chauchane_female",
+        "display_name": "Chauchane",
+        "class_name": "Default",
+        "skin_class": "Chauchane",
+        "gender": "female",
+        "named": true
+      },
+      {
+        "id": "Kabrok_male",
+        "display_name": "Kabrok",
+        "class_name": "Default",
+        "skin_class": "Kabrok",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Brumen_male",
+        "display_name": "Brumen Tinctorias",
+        "class_name": "Default",
+        "skin_class": "Brumen",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Harebourg_male",
+        "display_name": "Comte Harebourg",
+        "class_name": "Default",
+        "skin_class": "Harebourg",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "PanDiego_male",
+        "display_name": "Pan Diego",
+        "class_name": "Default",
+        "skin_class": "PanDiego",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Ironman_male",
+        "display_name": "Ironman",
+        "class_name": "Default",
+        "skin_class": "Ironman",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "JackChaferton_male",
+        "display_name": "Jack Chaferton",
+        "class_name": "Default",
+        "skin_class": "JackChaferton",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Armand_male",
+        "display_name": "Armand",
+        "class_name": "Default",
+        "skin_class": "Armand",
+        "gender": "male",
+        "named": true
+      },
+      {
+        "id": "Skunk_male",
+        "display_name": "Skunk",
+        "class_name": "Default",
+        "skin_class": "Skunk",
+        "gender": "male",
+        "named": true
+      }
+    ]
+  }
+}

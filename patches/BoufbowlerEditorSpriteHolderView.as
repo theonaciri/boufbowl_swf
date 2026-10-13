@@ -27,31 +27,17 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.v
 
       override public function updateBoufbowler(param1:IBoufbowlerModel) : void
       {
-         if(!param1.isUniqueCharacter)
-         {
-            super.updateBoufbowler(param1);
-            return;
-         }
-         // Hero animation SWLs are absent from the supplied archive. Render
-         // the genuine character artwork instead of requesting missing skins.
-         removeBoufbowlerAnimation();
-         if(_heroPreview == null)
-            _heroPreview = _illustrationFactory.getBoufbowlerIllustration(BoufbowlerPosingType.DEFAULT,false);
-         _heroPreview.update(param1);
-         _heroPreview.scaleX = _heroPreview.scaleY = 0.30;
-         addChild(_heroPreview);
+         super.updateBoufbowler(param1);
       }
 
       override public function removeBoufbowlerAnimation() : void
       {
-         if(_heroPreview != null && _heroPreview.parent == this)
-            removeChild(_heroPreview);
          super.removeBoufbowlerAnimation();
       }
 
       override public function updateAnimation(param1:IBoufbowlerModel) : void
       {
-         if(!param1.isUniqueCharacter) super.updateAnimation(param1);
+         super.updateAnimation(param1);
       }
 
       override protected function getAnimation(param1:IBoufbowlerModel) : AnimationKey

@@ -8,6 +8,11 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
+import tempfile
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 
 
 def run(command, *, env=None, timeout=600):
@@ -17,6 +22,7 @@ def run(command, *, env=None, timeout=600):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--air-sdk", type=Path, required=True)
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--ffdec", type=Path, required=True)
     parser.add_argument("--android-sdk", type=Path, default=Path.home() / "Android/Sdk")
     parser.add_argument("--jdk", type=Path, required=True, help="JDK 17 or newer directory")
@@ -24,6 +30,7 @@ def main():
     parser.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime")
     parser.add_argument("--keystore", type=Path, help="Optional PKCS12 signing certificate")
     args = parser.parse_args()
+    game_config = load_config(args.config)
     android = Path(__file__).resolve().parent
     root = android.parent
     build = android / "build"
@@ -35,6 +42,7 @@ def main():
         if target.exists():
             shutil.rmtree(target)
         shutil.copytree(root / name, target)
+    apply_resources(stage / "resources", game_config)
     # Android's VP6 decoder produces artifacts on these legacy FLV clips.
     # Cache H.264/AAC copies; all original media stays intact in the desktop tree.
     video_cache = build / "video-cache"
@@ -60,7 +68,7 @@ def main():
         file.write_text(data)
     config_file = stage / "resources/config.json"
     config = json.loads(config_file.read_text())
-    config["3dActivated"] = "true"
+    config["3dActivated"] = str(game_config["general"]["android_scene_3d"]).lower()
     config_file.write_text(json.dumps(config, indent=2) + "\n")
     # No remote logging socket is needed in an offline Android application.
     (stage / "resources/logback.xml").write_text(
@@ -74,13 +82,24 @@ def main():
     adt = args.air_sdk.resolve() / "lib/adt.jar"
     swf_name = "boufbowl-client-1.9.6.swf"
     replacements = []
-    sources = sorted((android / "patches").glob("*.as"))
+    sources_by_name = {source.name: source for source in (root / "patches").glob("*.as")}
+    sources_by_name.update({source.name: source for source in (android / "patches").glob("*.as")})
+    sources = sorted(sources_by_name.values())
     for source in sources:
         text = source.read_text()
         package = re.search(r"\bpackage\s+([\w.]+)", text).group(1)
         replacements.extend([package + "." + source.stem, source])
-    run([java, "-jar", args.ffdec.resolve(), "-replace", root / "bin" / swf_name,
-         stage / "bin" / swf_name, *replacements], timeout=180)
+    with tempfile.TemporaryDirectory(prefix=".configured-patches-", dir=build) as temporary:
+        startup = Path(temporary) / "StartUpApplicationCommand.as"
+        startup.write_text(startup_source((android / "patches/StartUpApplicationCommand.as").read_text(), game_config, android=True))
+        for index in range(0, len(replacements), 2):
+            if replacements[index].endswith(".StartUpApplicationCommand"):
+                replacements[index + 1] = startup
+        flashvars = Path(temporary) / "FlashVarsManager.as"
+        flashvars.write_text(flashvars_source((root / "patches/FlashVarsManager.as").read_text(), game_config))
+        replacements.extend(["com.ankamagames.xgaming.utils.flashvars.FlashVarsManager", flashvars])
+        run([java, "-jar", args.ffdec.resolve(), "-replace", root / "bin" / swf_name,
+             stage / "bin" / swf_name, *replacements], timeout=180)
 
     if args.keystore:
         certificate = args.keystore.resolve()

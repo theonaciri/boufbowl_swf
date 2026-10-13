@@ -48,6 +48,7 @@ package com.ankamagames.boufbowl.client.premiumservice.clubcustomisation.control
          var current:ClubModel = injector.getInstance(ClubModel);
          var edited:ClubModel = this._clubEdition.customizedClub;
          current.setup(edited.clubInformation,edited.boufbowlers,false);
+         StartUpApplicationCommand.persistClub(current);
          StartUpApplicationCommand.showHome();
       }
       

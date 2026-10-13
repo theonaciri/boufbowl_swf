@@ -1,0 +1,2631 @@
+{
+  "format_version": 1,
+  "rules_version": "boufbowl-custom-1",
+  "stat_semantics": "replacement-engine-provisional",
+  "initial": {
+    "entities": [
+      {
+        "id": 11,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": -2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 12,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": -1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 13,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": 0
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 14,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": 1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 15,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": 2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 21,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": -2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 22,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": -1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 23,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": 0
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 24,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": 1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 25,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": 2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      }
+    ],
+    "ball": {
+      "position": {
+        "q": 0,
+        "r": 0
+      },
+      "holder_entity_id": null,
+      "in_flight": false
+    },
+    "tick": 0
+  },
+  "orders": [
+    {
+      "player_id": "flash-probe-0",
+      "turn_number": 1,
+      "nonce": "flash-probe-0-1",
+      "team_index": 0,
+      "actions": [
+        {
+          "entity_id": 11,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": -3,
+              "r": -2
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 12,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": -3,
+              "r": -1
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 13,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": -3,
+              "r": 0
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 14,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": -3,
+              "r": 1
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 15,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": -3,
+              "r": 2
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "player_id": "flash-probe-1",
+      "turn_number": 1,
+      "nonce": "flash-probe-1-1",
+      "team_index": 1,
+      "actions": [
+        {
+          "entity_id": 21,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": 3,
+              "r": -2
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 22,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": 3,
+              "r": -1
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 23,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": 3,
+              "r": 0
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 24,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": 3,
+              "r": 1
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        },
+        {
+          "entity_id": 25,
+          "action_type": "move",
+          "params": {
+            "target_position": {
+              "q": 3,
+              "r": 2
+            },
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 0,
+              "EAU": 3
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "result": {
+    "turn_number": 1,
+    "seed": 12345,
+    "tick_duration": 0.1,
+    "initial_state_hash": "4817251f09c8f72309e03b82397ca021bcabac6ce71a855f0cac673490ac675b",
+    "events": [
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 21,
+        "params": {
+          "position": {
+            "q": 5,
+            "r": -2
+          },
+          "precise_position": {
+            "q": 45300,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 50000,
+            "r": -20000
+          },
+          "end_position": {
+            "q": 45300,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 22,
+        "params": {
+          "position": {
+            "q": 5,
+            "r": -1
+          },
+          "precise_position": {
+            "q": 45300,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 50000,
+            "r": -10000
+          },
+          "end_position": {
+            "q": 45300,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 23,
+        "params": {
+          "position": {
+            "q": 5,
+            "r": 0
+          },
+          "precise_position": {
+            "q": 45300,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 50000,
+            "r": 0
+          },
+          "end_position": {
+            "q": 45300,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 24,
+        "params": {
+          "position": {
+            "q": 5,
+            "r": 1
+          },
+          "precise_position": {
+            "q": 45300,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 50000,
+            "r": 10000
+          },
+          "end_position": {
+            "q": 45300,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 25,
+        "params": {
+          "position": {
+            "q": 5,
+            "r": 2
+          },
+          "precise_position": {
+            "q": 45300,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 50000,
+            "r": 20000
+          },
+          "end_position": {
+            "q": 45300,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 11,
+        "params": {
+          "position": {
+            "q": -5,
+            "r": -2
+          },
+          "precise_position": {
+            "q": -45300,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -50000,
+            "r": -20000
+          },
+          "end_position": {
+            "q": -45300,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": -5,
+            "r": -1
+          },
+          "precise_position": {
+            "q": -45300,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -50000,
+            "r": -10000
+          },
+          "end_position": {
+            "q": -45300,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 13,
+        "params": {
+          "position": {
+            "q": -5,
+            "r": 0
+          },
+          "precise_position": {
+            "q": -45300,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -50000,
+            "r": 0
+          },
+          "end_position": {
+            "q": -45300,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 14,
+        "params": {
+          "position": {
+            "q": -5,
+            "r": 1
+          },
+          "precise_position": {
+            "q": -45300,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -50000,
+            "r": 10000
+          },
+          "end_position": {
+            "q": -45300,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 0,
+        "type": "move",
+        "actor": 15,
+        "params": {
+          "position": {
+            "q": -5,
+            "r": 2
+          },
+          "precise_position": {
+            "q": -45300,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -50000,
+            "r": 20000
+          },
+          "end_position": {
+            "q": -45300,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 22,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": -1
+          },
+          "precise_position": {
+            "q": 40600,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 45300,
+            "r": -10000
+          },
+          "end_position": {
+            "q": 40600,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 23,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 0
+          },
+          "precise_position": {
+            "q": 40600,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 45300,
+            "r": 0
+          },
+          "end_position": {
+            "q": 40600,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 24,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 1
+          },
+          "precise_position": {
+            "q": 40600,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 45300,
+            "r": 10000
+          },
+          "end_position": {
+            "q": 40600,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 25,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 2
+          },
+          "precise_position": {
+            "q": 40600,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 45300,
+            "r": 20000
+          },
+          "end_position": {
+            "q": 40600,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 11,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": -2
+          },
+          "precise_position": {
+            "q": -40600,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -45300,
+            "r": -20000
+          },
+          "end_position": {
+            "q": -40600,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": -1
+          },
+          "precise_position": {
+            "q": -40600,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -45300,
+            "r": -10000
+          },
+          "end_position": {
+            "q": -40600,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 13,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 0
+          },
+          "precise_position": {
+            "q": -40600,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -45300,
+            "r": 0
+          },
+          "end_position": {
+            "q": -40600,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 14,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 1
+          },
+          "precise_position": {
+            "q": -40600,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -45300,
+            "r": 10000
+          },
+          "end_position": {
+            "q": -40600,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 15,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 2
+          },
+          "precise_position": {
+            "q": -40600,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -45300,
+            "r": 20000
+          },
+          "end_position": {
+            "q": -40600,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 1,
+        "type": "move",
+        "actor": 21,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": -2
+          },
+          "precise_position": {
+            "q": 40600,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 45300,
+            "r": -20000
+          },
+          "end_position": {
+            "q": 40600,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 23,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 0
+          },
+          "precise_position": {
+            "q": 40000,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40600,
+            "r": 0
+          },
+          "end_position": {
+            "q": 40000,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 23,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 0
+          },
+          "precise_position": {
+            "q": 35900,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40000,
+            "r": 0
+          },
+          "end_position": {
+            "q": 35900,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 24,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 1
+          },
+          "precise_position": {
+            "q": 40000,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40600,
+            "r": 10000
+          },
+          "end_position": {
+            "q": 40000,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 24,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 1
+          },
+          "precise_position": {
+            "q": 35900,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40000,
+            "r": 10000
+          },
+          "end_position": {
+            "q": 35900,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 25,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 2
+          },
+          "precise_position": {
+            "q": 40000,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40600,
+            "r": 20000
+          },
+          "end_position": {
+            "q": 40000,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 25,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": 2
+          },
+          "precise_position": {
+            "q": 35900,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40000,
+            "r": 20000
+          },
+          "end_position": {
+            "q": 35900,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 11,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": -2
+          },
+          "precise_position": {
+            "q": -40000,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40600,
+            "r": -20000
+          },
+          "end_position": {
+            "q": -40000,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 11,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": -2
+          },
+          "precise_position": {
+            "q": -35900,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40000,
+            "r": -20000
+          },
+          "end_position": {
+            "q": -35900,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": -1
+          },
+          "precise_position": {
+            "q": -40000,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40600,
+            "r": -10000
+          },
+          "end_position": {
+            "q": -40000,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": -1
+          },
+          "precise_position": {
+            "q": -35900,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40000,
+            "r": -10000
+          },
+          "end_position": {
+            "q": -35900,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 13,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 0
+          },
+          "precise_position": {
+            "q": -40000,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40600,
+            "r": 0
+          },
+          "end_position": {
+            "q": -40000,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 13,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 0
+          },
+          "precise_position": {
+            "q": -35900,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40000,
+            "r": 0
+          },
+          "end_position": {
+            "q": -35900,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 14,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 1
+          },
+          "precise_position": {
+            "q": -40000,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40600,
+            "r": 10000
+          },
+          "end_position": {
+            "q": -40000,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 14,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 1
+          },
+          "precise_position": {
+            "q": -35900,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40000,
+            "r": 10000
+          },
+          "end_position": {
+            "q": -35900,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 15,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 2
+          },
+          "precise_position": {
+            "q": -40000,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40600,
+            "r": 20000
+          },
+          "end_position": {
+            "q": -40000,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 15,
+        "params": {
+          "position": {
+            "q": -4,
+            "r": 2
+          },
+          "precise_position": {
+            "q": -35900,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -40000,
+            "r": 20000
+          },
+          "end_position": {
+            "q": -35900,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 21,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": -2
+          },
+          "precise_position": {
+            "q": 40000,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40600,
+            "r": -20000
+          },
+          "end_position": {
+            "q": 40000,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 21,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": -2
+          },
+          "precise_position": {
+            "q": 35900,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40000,
+            "r": -20000
+          },
+          "end_position": {
+            "q": 35900,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 22,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": -1
+          },
+          "precise_position": {
+            "q": 40000,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40600,
+            "r": -10000
+          },
+          "end_position": {
+            "q": 40000,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 2,
+        "type": "move",
+        "actor": 22,
+        "params": {
+          "position": {
+            "q": 4,
+            "r": -1
+          },
+          "precise_position": {
+            "q": 35900,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 40000,
+            "r": -10000
+          },
+          "end_position": {
+            "q": 35900,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 24,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 1
+          },
+          "precise_position": {
+            "q": 31200,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 35900,
+            "r": 10000
+          },
+          "end_position": {
+            "q": 31200,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 25,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 2
+          },
+          "precise_position": {
+            "q": 31200,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 35900,
+            "r": 20000
+          },
+          "end_position": {
+            "q": 31200,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 11,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": -2
+          },
+          "precise_position": {
+            "q": -31200,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -35900,
+            "r": -20000
+          },
+          "end_position": {
+            "q": -31200,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": -1
+          },
+          "precise_position": {
+            "q": -31200,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -35900,
+            "r": -10000
+          },
+          "end_position": {
+            "q": -31200,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 13,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": 0
+          },
+          "precise_position": {
+            "q": -31200,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -35900,
+            "r": 0
+          },
+          "end_position": {
+            "q": -31200,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 14,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": 1
+          },
+          "precise_position": {
+            "q": -31200,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -35900,
+            "r": 10000
+          },
+          "end_position": {
+            "q": -31200,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 15,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": 2
+          },
+          "precise_position": {
+            "q": -31200,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -35900,
+            "r": 20000
+          },
+          "end_position": {
+            "q": -31200,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 21,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": -2
+          },
+          "precise_position": {
+            "q": 31200,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 35900,
+            "r": -20000
+          },
+          "end_position": {
+            "q": 31200,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 22,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": -1
+          },
+          "precise_position": {
+            "q": 31200,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 35900,
+            "r": -10000
+          },
+          "end_position": {
+            "q": 31200,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 3,
+        "type": "move",
+        "actor": 23,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 0
+          },
+          "precise_position": {
+            "q": 31200,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 35900,
+            "r": 0
+          },
+          "end_position": {
+            "q": 31200,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 25,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 2
+          },
+          "precise_position": {
+            "q": 30000,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 31200,
+            "r": 20000
+          },
+          "end_position": {
+            "q": 30000,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 11,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": -2
+          },
+          "precise_position": {
+            "q": -30000,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -31200,
+            "r": -20000
+          },
+          "end_position": {
+            "q": -30000,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": -1
+          },
+          "precise_position": {
+            "q": -30000,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -31200,
+            "r": -10000
+          },
+          "end_position": {
+            "q": -30000,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 13,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": 0
+          },
+          "precise_position": {
+            "q": -30000,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -31200,
+            "r": 0
+          },
+          "end_position": {
+            "q": -30000,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 14,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": 1
+          },
+          "precise_position": {
+            "q": -30000,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -31200,
+            "r": 10000
+          },
+          "end_position": {
+            "q": -30000,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 15,
+        "params": {
+          "position": {
+            "q": -3,
+            "r": 2
+          },
+          "precise_position": {
+            "q": -30000,
+            "r": 20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": -31200,
+            "r": 20000
+          },
+          "end_position": {
+            "q": -30000,
+            "r": 20000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 21,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": -2
+          },
+          "precise_position": {
+            "q": 30000,
+            "r": -20000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 31200,
+            "r": -20000
+          },
+          "end_position": {
+            "q": 30000,
+            "r": -20000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 22,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": -1
+          },
+          "precise_position": {
+            "q": 30000,
+            "r": -10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 31200,
+            "r": -10000
+          },
+          "end_position": {
+            "q": 30000,
+            "r": -10000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 23,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 0
+          },
+          "precise_position": {
+            "q": 30000,
+            "r": 0,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 31200,
+            "r": 0
+          },
+          "end_position": {
+            "q": 30000,
+            "r": 0
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "move",
+        "actor": 24,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 1
+          },
+          "precise_position": {
+            "q": 30000,
+            "r": 10000,
+            "scale": 10000
+          },
+          "start_position": {
+            "q": 31200,
+            "r": 10000
+          },
+          "end_position": {
+            "q": 30000,
+            "r": 10000
+          }
+        }
+      },
+      {
+        "tick": 4,
+        "type": "final_state",
+        "actor": -1,
+        "params": {
+          "final_entity_states": [
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 11,
+              "position": {
+                "q": -3,
+                "r": -2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 12,
+              "position": {
+                "q": -3,
+                "r": -1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 13,
+              "position": {
+                "q": -3,
+                "r": 0
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 14,
+              "position": {
+                "q": -3,
+                "r": 1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 15,
+              "position": {
+                "q": -3,
+                "r": 2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 21,
+              "position": {
+                "q": 3,
+                "r": -2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 22,
+              "position": {
+                "q": 3,
+                "r": -1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 23,
+              "position": {
+                "q": 3,
+                "r": 0
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 24,
+              "position": {
+                "q": 3,
+                "r": 1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 25,
+              "position": {
+                "q": 3,
+                "r": 2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            }
+          ],
+          "final_ball_state": {
+            "position": {
+              "q": 0,
+              "r": 0
+            },
+            "holder_entity_id": null,
+            "in_flight": false
+          }
+        }
+      }
+    ],
+    "final_state_hash": "7ebce2b19135a66ac19fbb47fbb938c8d1074d8b64f3a6ec49cd2fa807a4470f",
+    "protocol_version": "1.0.0",
+    "simulation_version": "2.5.0",
+    "final_entity_states": [
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 11,
+        "position": {
+          "q": -3,
+          "r": -2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 12,
+        "position": {
+          "q": -3,
+          "r": -1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 13,
+        "position": {
+          "q": -3,
+          "r": 0
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 14,
+        "position": {
+          "q": -3,
+          "r": 1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 15,
+        "position": {
+          "q": -3,
+          "r": 2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 21,
+        "position": {
+          "q": 3,
+          "r": -2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 22,
+        "position": {
+          "q": 3,
+          "r": -1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 23,
+        "position": {
+          "q": 3,
+          "r": 0
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 24,
+        "position": {
+          "q": 3,
+          "r": 1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 25,
+        "position": {
+          "q": 3,
+          "r": 2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      }
+    ],
+    "final_ball_state": {
+      "position": {
+        "q": 0,
+        "r": 0
+      },
+      "holder_entity_id": null,
+      "in_flight": false
+    },
+    "final_world_state": {
+      "entities": [
+        {
+          "id": 11,
+          "team_id": 0,
+          "position": {
+            "q": -3,
+            "r": -2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 12,
+          "team_id": 0,
+          "position": {
+            "q": -3,
+            "r": -1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 13,
+          "team_id": 0,
+          "position": {
+            "q": -3,
+            "r": 0
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 14,
+          "team_id": 0,
+          "position": {
+            "q": -3,
+            "r": 1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 15,
+          "team_id": 0,
+          "position": {
+            "q": -3,
+            "r": 2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 21,
+          "team_id": 1,
+          "position": {
+            "q": 3,
+            "r": -2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 22,
+          "team_id": 1,
+          "position": {
+            "q": 3,
+            "r": -1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 23,
+          "team_id": 1,
+          "position": {
+            "q": 3,
+            "r": 0
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 24,
+          "team_id": 1,
+          "position": {
+            "q": 3,
+            "r": 1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 25,
+          "team_id": 1,
+          "position": {
+            "q": 3,
+            "r": 2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 3
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        }
+      ],
+      "ball": {
+        "position": {
+          "q": 0,
+          "r": 0
+        },
+        "holder_entity_id": null,
+        "in_flight": false
+      },
+      "tick": 4
+    },
+    "score": [
+      0,
+      0
+    ]
+  }
+}

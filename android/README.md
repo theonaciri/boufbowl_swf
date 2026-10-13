@@ -1,8 +1,8 @@
 # Boufbowl Offline for Android
 
 The APK packages the modified Flash client with the AIR Android runtime and all
-90 game asset files. It runs the original ActionScript game. Wine and a separate
-game or asset server are not needed on Android.
+game assets. It runs the original ActionScript client without Wine. Assets are
+local; persistent matches connect to the Linux replacement server.
 
 ## Install
 
@@ -17,9 +17,8 @@ to confirm the movement order.
 
 Offline menus, the tutorial, and the unlocked character roster are included.
 The two special-character teams are **Offline Legends** and **Offline Heroes**.
-Customization changes last for the current session. Online matches still need
-a game server. The hero previews use original illustrations; the archive did
-not contain their individual animated skins.
+Customization persists when connected to the replacement server. Missing regular
+and hero animations use Cra while retaining original character illustrations.
 
 The APK is signed with a local development certificate. Keep that certificate
 if you want future builds to install as updates. Its private key is stored in
@@ -27,10 +26,12 @@ if you want future builds to install as updates. Its private key is stored in
 
 ## Rebuild on Linux
 
-Requirements: **AIR SDK 51.4**, **JPEXS FFDec 26.3.0**, **JDK 17 or newer**, and
+Requirements: **AIR SDK 51.4**, **JPEXS FFDec 26.3.0**, **JDK 17**, and
 the Android SDK with platform 35 and build tools 35.0.1, plus **FFmpeg** with
 the `libx264` encoder. AIR invokes Gradle,
 which downloads build dependencies the first time.
+Use JDK 17 for AIR 51.4.1.2: JDK 21 was not detected by its Android Gradle
+packager and caused it to fall back to the legacy D8 path, which failed.
 
 From `boufbowl_swf`:
 
@@ -83,3 +84,16 @@ Screenshots: [Home](evidence/home.png), [Legends](evidence/legends.png),
 Sources: [AIR packaging](https://airsdk.dev/docs/building/air-developer-tool/commands/package),
 [AIR asset URLs](https://airsdk.dev/docs/development/security/security-sandboxes),
 [AIR LoaderContext](https://airsdk.dev/reference/actionscript/3.0/flash/system/LoaderContext.html).
+
+## Replacement server build
+
+The current build merges all shared gameplay/Cra fallback patches with Android
+platform overrides. It defaults to live server mode. Enter the Linux computer's
+LAN URL in the connection panel; start that service with
+`python3 -m backend.server --host 0.0.0.0 --port 9900`. Android hosts the client;
+the authoritative server and SQLite database run on Linux.
+
+The latest replacement-server APK was compiled and its package/signature checked
+on Ubuntu. No Android device/emulator is currently attached, so the new live
+backend flows have not been verified on Android hardware. The earlier emulator
+checks above apply to the prior offline build.

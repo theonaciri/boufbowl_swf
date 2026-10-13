@@ -1,0 +1,6304 @@
+{
+  "format_version": 1,
+  "framing": {
+    "length_bytes": 4,
+    "endian": "big",
+    "max_payload_bytes": 131072
+  },
+  "messages": {
+    "AccountInformationMessage": {
+      "source": "protocol/AccountInformationMessage.as",
+      "sha256": "d3d90c946f64d786e67b933e8d01188fe4f8346fe72b4e191cd7b64d606edacc",
+      "fields": [
+        {
+          "name": "nickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "administrator",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "moderator",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "lang",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "facebookUid",
+          "tag": 7,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "AwaitingOpponentMessage": {
+      "source": "protocol/AwaitingOpponentMessage.as",
+      "sha256": "ef4ad5150a1ce4841169969a1505ea76c7f6d3839d7e7c746a06c13cfb89f759",
+      "fields": []
+    },
+    "BallOnGroundDetails": {
+      "source": "protocol/BallOnGroundDetails.as",
+      "sha256": "090475fe1bf63dc0015a7ff23f21d6458d08408966a0b780a0347d4e3c84913e",
+      "fields": [
+        {
+          "name": "groundPosition",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "ballOriginPosition",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "Coordinates": {
+      "source": "protocol/BoufballState/Coordinates.as",
+      "sha256": "1a9c6557277e733eb39f98dcf01c047386f20269c03d90ca8409212126f56763",
+      "fields": [
+        {
+          "name": "x",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "y",
+          "tag": 2,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "BoufballState": {
+      "source": "protocol/BoufballState.as",
+      "sha256": "02559741996fc76f226c58a0fa4650178f8fb22b6094d8b7b305c6bd1b11e04b",
+      "fields": [
+        {
+          "name": "status",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "position",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "holderId",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "coordinates",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "Coordinates",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "BoufbowlMessage": {
+      "source": "protocol/BoufbowlMessage.as",
+      "sha256": "4b1549891e3acf88bc33e176eb400476ebd335fc072a5e81900cb103690f1270",
+      "fields": [
+        {
+          "name": "type",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "waitingList",
+          "tag": 1101,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "WaitingListMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "challengeError",
+          "tag": 1102,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ChallengeErrorMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "challengeCreated",
+          "tag": 1103,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ChallengeCreatedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "challengeProposal",
+          "tag": 1104,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ChallengeProposalMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "challengeCanceled",
+          "tag": 1105,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ChallengeCanceledMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "tournamentOfferCanceled",
+          "tag": 1106,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentOfferCanceledMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchSpectateError",
+          "tag": 1107,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchSpectateErrorMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchSpectatorJoinNotification",
+          "tag": 1108,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchSpectatorJoinNotificationMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchSpectatorPartNotification",
+          "tag": 1109,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchSpectatorPartNotificationMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchInformation",
+          "tag": 1201,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchInformationMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "teamState",
+          "tag": 1202,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TeamStateMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "fieldState",
+          "tag": 1203,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FieldStateMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchEnd",
+          "tag": 1204,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchEndMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "opponentDisconnected",
+          "tag": 1205,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "OpponentDisconnectedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "opponentReconnected",
+          "tag": 1206,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "OpponentReconnectedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "awaitingOpponent",
+          "tag": 1207,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "AwaitingOpponentMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "rulesConstants",
+          "tag": 1300,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RulesConstantsMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "accountInformation",
+          "tag": 1301,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "AccountInformationMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "predefinedClubs",
+          "tag": 1400,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PredefinedClubsMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "invalidNameError",
+          "tag": 1401,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "InvalidNameErrorMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "clubInformation",
+          "tag": 1500,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClubInformationMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "rankingData",
+          "tag": 1501,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RankingDataMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchResumeForewarning",
+          "tag": 1502,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchResumeForewarningMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "ladderData",
+          "tag": 1600,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LadderDataMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "ladderRequestError",
+          "tag": 1601,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LadderRequestErrorMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "resolutionScenario",
+          "tag": 1701,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ResolutionScenarioMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "creditInfo",
+          "tag": 1801,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CreditInfoMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "premiumAssetList",
+          "tag": 1802,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PremiumAssetListMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "customisationSessionAccepted",
+          "tag": 1803,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CustomisationSessionAcceptedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "customisationSessionRejected",
+          "tag": 1804,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CustomisationSessionRejectedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "customisationAccepted",
+          "tag": 1805,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CustomisationAcceptedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "customisationRefused",
+          "tag": 1806,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CustomisationRefusedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "premiumContentUpdated",
+          "tag": 1807,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PremiumContentUpdatedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "pingResult",
+          "tag": 1951,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PingResultMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "timeResult",
+          "tag": 1952,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TimeResultMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "whoisResult",
+          "tag": 1953,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "WhoisResultMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "statsResult",
+          "tag": 1954,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "StatsResultMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "moderationResult",
+          "tag": 1955,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ModerationResultMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchRequest",
+          "tag": 2101,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "cancelMatchRequest",
+          "tag": 2102,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CancelMatchRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "challengeAnswer",
+          "tag": 2103,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ChallengeAnswerMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchSpectateRequest",
+          "tag": 2104,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchSpectateRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "orders",
+          "tag": 2201,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "OrdersMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "placement",
+          "tag": 2202,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PlacementMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "introductionDone",
+          "tag": 2203,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "IntroductionDoneMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "surrender",
+          "tag": 2204,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "SurrenderMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "stopSpectating",
+          "tag": 2205,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "StopSpectatingMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "predefinedClubSelection",
+          "tag": 2400,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PredefinedClubSelectionMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "xGamingWrapper",
+          "tag": 2500,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "XGamingWrapperMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "ladderByLeagueRequest",
+          "tag": 2600,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LadderByLeagueRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "ladderByNickRequest",
+          "tag": 2601,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LadderByNickRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "resolutionDone",
+          "tag": 2701,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ResolutionDoneMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "customisationSessionRequest",
+          "tag": 2801,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CustomisationSessionRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "cancelCustomisationSession",
+          "tag": 2802,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "CancelCustomisationSessionMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "updatePremiumContent",
+          "tag": 2803,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "UpdatePremiumContentMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "boufbowlerAppearanceChange",
+          "tag": 2811,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAppearanceChangeMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "boufbowlerAttributesChange",
+          "tag": 2812,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAttributesChangeMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "clubAppearanceChange",
+          "tag": 2813,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClubAppearanceChangeMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "fullTeamChange",
+          "tag": 2814,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FullTeamChangeMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "forcedFullTeamChange",
+          "tag": 2815,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ForcedFullTeamChangeMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "pingRequest",
+          "tag": 2951,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PingRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "timeRequest",
+          "tag": 2952,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TimeRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "whoisRequest",
+          "tag": 2953,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "WhoisRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "statsRequest",
+          "tag": 2954,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "StatsRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "msgAllRequest",
+          "tag": 2955,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MsgAllRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "moderationRequest",
+          "tag": 2956,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ModerationRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchCreationRequest",
+          "tag": 3101,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchCreationRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "interserverMatchSpectateRequest",
+          "tag": 3102,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "InterserverMatchSpectateRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchCreationResponse",
+          "tag": 4101,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchCreationResponseMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchFinished",
+          "tag": 4102,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchFinishedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "impossibleClientConnection",
+          "tag": 4103,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ImpossibleClientConnectionMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchSpectateResponse",
+          "tag": 4104,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchSpectateResponseMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "interserverStopSpectatingNotification",
+          "tag": 4105,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "InterserverStopSpectatingNotificationMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "outstandingTournaments",
+          "tag": 12001,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "OutstandingTournamentsMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "pastTournaments",
+          "tag": 12002,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PastTournamentsMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "tournamentLeaderboard",
+          "tag": 12004,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "tournamentClosed",
+          "tag": 12005,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentClosedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "roundSkipped",
+          "tag": 12006,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RoundSkippedMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "runningTournamentMatches",
+          "tag": 12007,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RunningTournamentMatchesMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "linkFacebookAccount",
+          "tag": 21001,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LinkFacebookAccountMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "outstandingTournamentsRequest",
+          "tag": 22001,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "OutstandingTournamentsRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "tournamentLeaderboardRequest",
+          "tag": 22002,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardRequestMessage",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "runningTournamentMatchesRequest",
+          "tag": 22003,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RunningTournamentMatchesRequestMessage",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "BoufbowlerAppearance": {
+      "source": "protocol/BoufbowlerAppearance.as",
+      "sha256": "2392f40f2c2680b24d7ff4c4c8c9663db5c2d03607bce7d5cc2ff5134e6387fa",
+      "fields": [
+        {
+          "name": "name",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "gender",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "uniqueCharacter",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "paletteId",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "hairColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "eyeColor",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "skinColor",
+          "tag": 7,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "BoufbowlerAppearanceChangeMessage": {
+      "source": "protocol/BoufbowlerAppearanceChangeMessage.as",
+      "sha256": "02cdb663b4a0f4e4756d1ae50e7ec971fe4ba847fae5399f94a3e892cb91c8e6",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "appearance",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAppearance",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "BoufbowlerAttributes": {
+      "source": "protocol/BoufbowlerAttributes.as",
+      "sha256": "d3425ecd60c956309974ab38328383058fd55d3063b5cd700d533909f1f379bc",
+      "fields": [
+        {
+          "name": "earth",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "fire",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "air",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "water",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "maxHitPoints",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "hitPointRegenRate",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "BoufbowlerAttributesChangeMessage": {
+      "source": "protocol/BoufbowlerAttributesChangeMessage.as",
+      "sha256": "ea12f4cf457b1e62d8938f7084a2f723d9efe68905de794560f7c112002bca29",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerClass",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "appearance",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAppearance",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "BoufbowlerData": {
+      "source": "protocol/BoufbowlerData.as",
+      "sha256": "3e6498f0f55361959de60b8bf3dcce50618733510e2b2a44cdec59af2711a57c",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "name",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "attributes",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAttributes",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerClass",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "gender",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "uniqueCharacter",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "paletteId",
+          "tag": 9,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "hairColor",
+          "tag": 10,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "eyeColor",
+          "tag": 11,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "skinColor",
+          "tag": 12,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "BoufbowlerPaletteDescription": {
+      "source": "protocol/BoufbowlerPaletteDescription.as",
+      "sha256": "d317a126654c28d6fb3e9a3b0318538a34a013644dde18a5aebf31aa6531ed8b",
+      "fields": [
+        {
+          "name": "paletteId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "defaultForClass",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "defaultForCharacter",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "hairColor",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "eyeColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "skinColor",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "BoufbowlerPosition": {
+      "source": "protocol/BoufbowlerPosition.as",
+      "sha256": "72f16704f7eecea6f0533e1c0e0857f3db7a1e71efc17f37a6446711a544750e",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "position",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "BoufbowlerState": {
+      "source": "protocol/BoufbowlerState.as",
+      "sha256": "755d68db8f28bb2f4bd5df9763cfeddd5087e8165f42a2c7659373bc3d3d39de",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "status",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "currentHitPoints",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "remainingClassOrderUses",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "updatedAttributes",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAttributes",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "BoufbowlerTrack": {
+      "source": "protocol/BoufbowlerTrack.as",
+      "sha256": "1fac74a2f895097763c79c134a3be0071630034047e0955253ee749b14db7a82",
+      "fields": [
+        {
+          "name": "boufbowlerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "order",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "Order",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "item",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TrackItem",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "movementTest",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MovementTest",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "CancelCustomisationSessionMessage": {
+      "source": "protocol/CancelCustomisationSessionMessage.as",
+      "sha256": "bec927b7a27e7714a37c399ac63f30eff010f5eece5a6444a6816df88084534f",
+      "fields": []
+    },
+    "CancelMatchRequestMessage": {
+      "source": "protocol/CancelMatchRequestMessage.as",
+      "sha256": "ca173814a07721cabbae866f2512314519c7d1f4db9fe0c63ff670e4c192dd75",
+      "fields": []
+    },
+    "Challenge": {
+      "source": "protocol/Challenge.as",
+      "sha256": "d6d2b8a9cb7361541b2000060cc6d6c0f3081791ce4130aaedf39d2a6d4df2db",
+      "fields": [
+        {
+          "name": "guestNickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "matchStadium",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ChallengeAnswerMessage": {
+      "source": "protocol/ChallengeAnswerMessage.as",
+      "sha256": "40452b9cdae563b7fa83090d2476742f307271b440bef55704ac3a8ddc6b0586",
+      "fields": [
+        {
+          "name": "offerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "answer",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ChallengeCanceledMessage": {
+      "source": "protocol/ChallengeCanceledMessage.as",
+      "sha256": "72cee623895508215c066603a3613bb8572b78394d0b89e76fdea92f25e55bac",
+      "fields": [
+        {
+          "name": "offerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ChallengeCreatedMessage": {
+      "source": "protocol/ChallengeCreatedMessage.as",
+      "sha256": "7621c6f1a49b0afd45950d10a90efadf77e6af4d0799cec86f552d2e834086b5",
+      "fields": [
+        {
+          "name": "offerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ChallengeErrorMessage": {
+      "source": "protocol/ChallengeErrorMessage.as",
+      "sha256": "fb314feae1d5b35a30e9b6cbe43ee5b64f5dd70bdc89d7dcb26c3cfd465120ee",
+      "fields": [
+        {
+          "name": "error",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ChallengeProposalMessage": {
+      "source": "protocol/ChallengeProposalMessage.as",
+      "sha256": "a6c3ec6e8d4c1f0670ac974f73a8f7ddff8dac02bee9cca2eb09eef62d59f089",
+      "fields": [
+        {
+          "name": "offerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "hostNickname",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "matchStadium",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ClassAttributes": {
+      "source": "protocol/ClassAttributes.as",
+      "sha256": "9aee2ecece3bf4bd3db21c6c34be5e1e388afc680788ef26fd6c829c5aa9b651",
+      "fields": [
+        {
+          "name": "boufbowlerClass",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "role",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "attributes",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAttributes",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ClassOrderInformation": {
+      "source": "protocol/ClassOrderInformation.as",
+      "sha256": "3f7e29e2d0a5bf8fded9f173109cd52a2dbb5723c621bbc0b42def364bb536e8",
+      "fields": [
+        {
+          "name": "boufbowlerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "target",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClassOrderTarget",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "zobalMask",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "ClassOrderTarget": {
+      "source": "protocol/ClassOrderTarget.as",
+      "sha256": "18899dc3c5fff8910e9ec4daf00f82eb8f29a939d6ae1a92c006f620c4484b47",
+      "fields": [
+        {
+          "name": "boufbowlerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "preResolutionHitPointsDelta",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "postResolutionHitPointsDelta",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "ClientMatchPhaseInfos": {
+      "source": "protocol/ClientMatchPhaseInfos.as",
+      "sha256": "ee6204207f97a32955b6c5909649c81f36e19935797253a8ffdfc9a2b062d04f",
+      "fields": [
+        {
+          "name": "phase",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "remainingTime",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "ClubAppearanceChangeMessage": {
+      "source": "protocol/ClubAppearanceChangeMessage.as",
+      "sha256": "18bb30bd201764b30a821e32eb7e040de77db0ca39e33d832b7e96a7d8aa136e",
+      "fields": [
+        {
+          "name": "clubName",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "paletteId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColorIsDark",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColor",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "secondColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "patternColor",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "blazonField",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "blazonCharge",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ClubInformationMessage": {
+      "source": "protocol/ClubInformationMessage.as",
+      "sha256": "a5e3c53be51613f72b65e13f9c77c11a5f55df6c6fe960cff5001ad191e4b32f",
+      "fields": [
+        {
+          "name": "clubId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubName",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowler",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "paletteId",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "secondColor",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "patternColor",
+          "tag": 7,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "sigilBackground",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilCharge",
+          "tag": 9,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "isPredefinedClub",
+          "tag": 10,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "isInvalidClub",
+          "tag": 11,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "ClubPaletteDescription": {
+      "source": "protocol/ClubPaletteDescription.as",
+      "sha256": "a972456de2cf5afa48b1431314bf9d8c111be944796994d0a8e7d52faf1774c3",
+      "fields": [
+        {
+          "name": "paletteId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "darkColor",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "lightColor",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "patternColor",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "ClubSummary": {
+      "source": "protocol/ClubSummary.as",
+      "sha256": "939618bbfbd830f915b5daa542032186787a3eb1ff57553405d874c1e05ec9ca",
+      "fields": [
+        {
+          "name": "clubName",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubFirstColor",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubSecondColor",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubPatternColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilBackground",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilCharge",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ColorData": {
+      "source": "protocol/ColorData.as",
+      "sha256": "05c0cbe7aba995ec893e735faef7f650a62b7ffd2501e7dfeeab65fa06e59fb3",
+      "fields": [
+        {
+          "name": "r",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "g",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "b",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ContentDataDescription": {
+      "source": "protocol/ContentDataDescription.as",
+      "sha256": "87a8cb2fa908d0e42fd795f27be0583c982089069060f052284f2b1d7b2858fd",
+      "fields": [
+        {
+          "name": "stadium",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "StadiumDescription",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "uniqueCharacter",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "UniqueCharacterDescription",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "clubPalette",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClubPaletteDescription",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "boufbowlerPalette",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerPaletteDescription",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "sigilBackground",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "SigilBackgroundDescription",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "sigilCharge",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "SigilChargeDescription",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "ContentDataItem": {
+      "source": "protocol/ContentDataItem.as",
+      "sha256": "63e9a01661724ac3bca5c2c5d947f4eaaf385dd7b1c2cc5dec253c310e24c153",
+      "fields": [
+        {
+          "name": "availability",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "webId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "description",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ContentDataDescription",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "CreditInfoMessage": {
+      "source": "protocol/CreditInfoMessage.as",
+      "sha256": "6a7a70ad88072d47b22b19543c05db98249f1067f6b700f614e36106f47a50b7",
+      "fields": [
+        {
+          "name": "fullTeamChangeCredit",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubAppearanceChangeCredit",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerAttributesChangeCredit",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerAppearanceChangeCredit",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "CustomisationAcceptedMessage": {
+      "source": "protocol/CustomisationAcceptedMessage.as",
+      "sha256": "6957f514cb1c4e98860b1b69c93f72000129089e646b6cd5c2a09aa3641b23cf",
+      "fields": []
+    },
+    "CustomisationRefusedMessage": {
+      "source": "protocol/CustomisationRefusedMessage.as",
+      "sha256": "0ec0914f04b28ef0588f30431b8355d3e48da5df80c523d9958ef41553353c47",
+      "fields": [
+        {
+          "name": "reason",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubNameError",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "NameErrorItem",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "invalidName",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "CustomisationSessionAcceptedMessage": {
+      "source": "protocol/CustomisationSessionAcceptedMessage.as",
+      "sha256": "d4aefa6ce4aef978a861e8384bd48b0debb1a46befbf7c92588e586bb7c039d1",
+      "fields": [
+        {
+          "name": "customisationType",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "CustomisationSessionRejectedMessage": {
+      "source": "protocol/CustomisationSessionRejectedMessage.as",
+      "sha256": "fa182062d91132a7e8f94124aa7474925085e06046d15b423de2555275bc39c6",
+      "fields": [
+        {
+          "name": "reason",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "CustomisationSessionRequestMessage": {
+      "source": "protocol/CustomisationSessionRequestMessage.as",
+      "sha256": "57e651165c693517834275afc2d028555388f33c56da6ea591225f3bedf484c5",
+      "fields": [
+        {
+          "name": "type",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "FallDetails": {
+      "source": "protocol/FallDetails.as",
+      "sha256": "d30c8960d4f126be0fe0b9fae147820ae81d1b1932a44af40d877a7d305c2043",
+      "fields": [
+        {
+          "name": "ballDispersion",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "FieldStateMessage": {
+      "source": "protocol/FieldStateMessage.as",
+      "sha256": "4b81ca1923b3fd8d5dc8dd84ceb7e5fad538e0b6a3e197d7d8f93149f555c00c",
+      "fields": [
+        {
+          "name": "phaseInfos",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClientMatchPhaseInfos",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "boufbowlerPositions",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerPosition",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "boufballState",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufballState",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "teamState",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TeamStateMessage",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "FightDetails": {
+      "source": "protocol/FightDetails.as",
+      "sha256": "b24e555be6219021fc0dc1bf4209c059544bebc22eebff073d5d8076bceaa55b",
+      "fields": [
+        {
+          "name": "ballDispersion",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "FightTest": {
+      "source": "protocol/FightTest.as",
+      "sha256": "49f054a4c8a6747c6a4c74555fa075ca80da47a3549bad1734d87b27c62a6db0",
+      "fields": [
+        {
+          "name": "winner",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "outcome",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "type",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "score",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TestScore",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "ForcedFullTeamChangeMessage": {
+      "source": "protocol/ForcedFullTeamChangeMessage.as",
+      "sha256": "71dfe11e60bccbfd56c800ac595431eedbe95a5fa6394740518908ef7389dcc8",
+      "fields": [
+        {
+          "name": "change",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FullTeamChange",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "FullTeamChange": {
+      "source": "protocol/FullTeamChange.as",
+      "sha256": "3d4c0b482cca18ac7c803fdce8393eb75db08e6678974ec90ce94f95852290a8",
+      "fields": [
+        {
+          "name": "clubAppearanceChange",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClubAppearanceChangeMessage",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerAttributesChange",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerAttributesChangeMessage",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "FullTeamChangeMessage": {
+      "source": "protocol/FullTeamChangeMessage.as",
+      "sha256": "b7306989f382649b269447aa0dd5d2640ba48908755c144131d3e322ffbf7627",
+      "fields": [
+        {
+          "name": "change",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FullTeamChange",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "GridCoordinates": {
+      "source": "protocol/GridCoordinates.as",
+      "sha256": "706cafbde8c987f7b8235371b35d55a8cc0b024eb06d16f33d10f59c21df1c96",
+      "fields": [
+        {
+          "name": "x",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "y",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ImpossibleClientConnectionMessage": {
+      "source": "protocol/ImpossibleClientConnectionMessage.as",
+      "sha256": "c5ddafcaa9649d6fef9c064f573e96a4f455b324ba700b720b0f9734e9278e38",
+      "fields": [
+        {
+          "name": "clientId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "InteractionDetails": {
+      "source": "protocol/InteractionDetails.as",
+      "sha256": "b886ee2e412f5698c540228c5c1a0e6105b0b03284600748f65830a49b095189",
+      "fields": [
+        {
+          "name": "participants",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ParticipantDetails",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "type",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "fightTest",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FightTest",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "maneuverTest",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ManeuverTest",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "startTick",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "endTick",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "isCutscene",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "touchdownDetails",
+          "tag": 9,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TouchdownDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "passDetails",
+          "tag": 10,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PassDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "receptionDetails",
+          "tag": 12,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ReceptionDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "onGroundDetails",
+          "tag": 11,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BallOnGroundDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "fightDetails",
+          "tag": 13,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FightDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "fallDetails",
+          "tag": 14,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "FallDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "pickupDetails",
+          "tag": 15,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PickupDetails",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "interceptionDetails",
+          "tag": 16,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "InterceptionDetails",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "InteractionEntry": {
+      "source": "protocol/InteractionEntry.as",
+      "sha256": "1e3b155c8546b592a37e747483bc815b1a7e1e9610ef9c3aff137aa7f13347b1",
+      "fields": [
+        {
+          "name": "interactionId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "interactionDetails",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "InteractionDetails",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "InterceptionDetails": {
+      "source": "protocol/InterceptionDetails.as",
+      "sha256": "49dc4b568de450f76cb7997d295c808bb560d055e6ab1d5a0644265392f15f3d",
+      "fields": [
+        {
+          "name": "ballOriginPosition",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "InterserverMatchSpectateRequestMessage": {
+      "source": "protocol/InterserverMatchSpectateRequestMessage.as",
+      "sha256": "2521302142640849393ddb0899af21cc4e69e907e1ecaf36bd0b0843f9552f54",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "InterserverStopSpectatingNotificationMessage": {
+      "source": "protocol/InterserverStopSpectatingNotificationMessage.as",
+      "sha256": "14f0b4d5b34936355ff508c393dfce98a9808c50a19842aa7faad781af67dd23",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "IntroductionDoneMessage": {
+      "source": "protocol/IntroductionDoneMessage.as",
+      "sha256": "bf83c1a8bbc722946ab095dfe7f7499bc3491e37898c3adf8dc821a083066bf8",
+      "fields": []
+    },
+    "InvalidNameErrorMessage": {
+      "source": "protocol/InvalidNameErrorMessage.as",
+      "sha256": "666238a60600f011bbea91b5b947feb0f6c697d0da1b5a510054383299039817",
+      "fields": [
+        {
+          "name": "error",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "NameErrorItem",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "LadderByLeagueRequestMessage": {
+      "source": "protocol/LadderByLeagueRequestMessage.as",
+      "sha256": "5ab629048918af929e8097deea7f7c1da060585dbea3943cf0cc5ed737d93130",
+      "fields": [
+        {
+          "name": "league",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "subLeague",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "LadderByNickRequestMessage": {
+      "source": "protocol/LadderByNickRequestMessage.as",
+      "sha256": "34f5c872c7c434e8a6c56f6b9c56e20f090f5d58f9cf37ea78dde6209281de4c",
+      "fields": [
+        {
+          "name": "self",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "nickName",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "LadderDataMessage": {
+      "source": "protocol/LadderDataMessage.as",
+      "sha256": "69895aea8ef796394bff6e0c45a326b0c2287acf27386468140dc03cb5fe87af",
+      "fields": [
+        {
+          "name": "firstIndexToDisplay",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rows",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LadderRow",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "ownData",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LadderRow",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "league",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "subLeague",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "leagueInformations",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "LeagueInformation",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "LadderRequestErrorMessage": {
+      "source": "protocol/LadderRequestErrorMessage.as",
+      "sha256": "a8958c881ab4b627701653f4afce1a6b3a65f7f301f2f0cb3108330d6403b801",
+      "fields": [
+        {
+          "name": "error",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "LadderRow": {
+      "source": "protocol/LadderRow.as",
+      "sha256": "b963f86b4abfea7b9f5f6e0edddd20855a08066d6ae2a6e86183579a938473b9",
+      "fields": [
+        {
+          "name": "index",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "rank",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "player",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PlayerSummary",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "wins",
+          "tag": 9,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "draws",
+          "tag": 10,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "losses",
+          "tag": 11,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rating",
+          "tag": 12,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "LeagueInformation": {
+      "source": "protocol/LeagueInformation.as",
+      "sha256": "d2ce7d03024c63e2e9f2c59e58b6f8431657b206f8d5212145302a7325b018d9",
+      "fields": [
+        {
+          "name": "league",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "nonEmptySubleagues",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "LinkFacebookAccountMessage": {
+      "source": "protocol/LinkFacebookAccountMessage.as",
+      "sha256": "5d912a0eb962fcff7fbd85f7388ff292d6a5c932098de1e48d1b97244638f9e2",
+      "fields": [
+        {
+          "name": "facebookUid",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "userName",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "locale",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ManeuverTest": {
+      "source": "protocol/ManeuverTest.as",
+      "sha256": "c7f6adbe37f700217b3e03000d2e9bd84133d2e43ea64862af093e91986cefee",
+      "fields": [
+        {
+          "name": "success",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "outcome",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "difficulty",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "score",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TestScore",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MatchCreationRequestMessage": {
+      "source": "protocol/MatchCreationRequestMessage.as",
+      "sha256": "c2da2b162bc5e735350aea1e4bafacebe8cf8df3849153b764554a63c8a9c950",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "hostAccountId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "guestAccountId",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "parameters",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MatchParameters",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MatchCreationResponseMessage": {
+      "source": "protocol/MatchCreationResponseMessage.as",
+      "sha256": "a777589628fd66effda24d91c45dec14ce1fa41791d68aaa4447e8082ae37630",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "error",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MatchEndMessage": {
+      "source": "protocol/MatchEndMessage.as",
+      "sha256": "3122691b1e7bcbe5c863743c9cd3d426b1c8cd7a2cdf1473182ace23f9bd887f",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "winner",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "leftScore",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rightScore",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "leftRanking",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RankingData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rightRanking",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RankingData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "givenUp",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "tournamentId",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MatchFinishedMessage": {
+      "source": "protocol/MatchFinishedMessage.as",
+      "sha256": "cb1030f786617cee646950cc89dbe461d063ca04fba76a70707eab59de34a843",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MatchInformationMessage": {
+      "source": "protocol/MatchInformationMessage.as",
+      "sha256": "b3703beb4f8a7a5d81fc163fd518d6655ac75297e3c9bcda044f8c76cdd0f86f",
+      "fields": [
+        {
+          "name": "id",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "side",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "leftRoster",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "Roster",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rightRoster",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "Roster",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "placementZone",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ZoneData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "matchStadium",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "skipIntro",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MatchParameters": {
+      "source": "protocol/MatchParameters.as",
+      "sha256": "4bde6c5b866cb7c7e774769b827a8c6bc92772c1f47cd20d06956670066b84fe",
+      "fields": [
+        {
+          "name": "eventWeight",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "stadium",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "allowDraws",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "tournament",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MatchRequestMessage": {
+      "source": "protocol/MatchRequestMessage.as",
+      "sha256": "bc5746be76e28cb29533dd328a8b1c5d2321b104e76705a560b73e586e9a5654",
+      "fields": [
+        {
+          "name": "challenge",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "Challenge",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "tournamentId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MatchResumeForewarningMessage": {
+      "source": "protocol/MatchResumeForewarningMessage.as",
+      "sha256": "04964f1740a818992eebb6e6b468244cb678d76ccaa216dbc54acd408dc14c62",
+      "fields": []
+    },
+    "MatchSpectateErrorMessage": {
+      "source": "protocol/MatchSpectateErrorMessage.as",
+      "sha256": "d4f7b59462885689cd0035acdde922a2639b51e9248a7c46fab9d860b5fe080a",
+      "fields": [
+        {
+          "name": "error",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MatchSpectateRequestMessage": {
+      "source": "protocol/MatchSpectateRequestMessage.as",
+      "sha256": "bce77322a67855e8871280cf43463a3bd810fa9442ed07f2a7327e23ca94eb17",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "playerNickname",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MatchSpectateResponseMessage": {
+      "source": "protocol/MatchSpectateResponseMessage.as",
+      "sha256": "3013a4e3b56ce42000f0036e6f32e8df22625a2b34e02555d908c6a64caa3761",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "error",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MatchSpectatorJoinNotificationMessage": {
+      "source": "protocol/MatchSpectatorJoinNotificationMessage.as",
+      "sha256": "d619fc7b30040ac40f925f40d2070ba3bb461487fcbe8d21889d3f62275f063d",
+      "fields": [
+        {
+          "name": "nickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MatchSpectatorPartNotificationMessage": {
+      "source": "protocol/MatchSpectatorPartNotificationMessage.as",
+      "sha256": "a7e7a42c908857a68e43965ee1acefe40f23c5f1ed5b4027e38ae43d33ae0c59",
+      "fields": [
+        {
+          "name": "nickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ModerationRequestMessage": {
+      "source": "protocol/ModerationRequestMessage.as",
+      "sha256": "60e31a11e13ef48da69b07f816bc60a76dc14c1ae82aa3e1146e0a0226f7e2c4",
+      "fields": [
+        {
+          "name": "nickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "penalty",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "duration",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ModerationResultMessage": {
+      "source": "protocol/ModerationResultMessage.as",
+      "sha256": "209572ad33e9539fcbd14bcdbefcf618dae4427c628f364bf86214461068995b",
+      "fields": [
+        {
+          "name": "resultType",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "nickname",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "penalty",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "penaltyEndTime",
+          "tag": 4,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MovementSequence": {
+      "source": "protocol/MovementSequence.as",
+      "sha256": "c5983dee4cbc812fc84eb9b7ab2acbd41943bdb1938582a68cff23c3e8581ebd",
+      "fields": [
+        {
+          "name": "positions",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "startTick",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "endTick",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "MovementTest": {
+      "source": "protocol/MovementTest.as",
+      "sha256": "c60cce59fe8be075a452404be19893400e238c2ca3063530543b49d7f8730eb1",
+      "fields": [
+        {
+          "name": "success",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "outcome",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "difficulty",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "score",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TestScore",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "maneuverBonusMalus",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "MsgAllRequestMessage": {
+      "source": "protocol/MsgAllRequestMessage.as",
+      "sha256": "9de4b47e2b0763f797ffde3b7699d1fb2aa5e6ea958427f2019fa103a4b373a9",
+      "fields": [
+        {
+          "name": "message",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "NameErrorItem": {
+      "source": "protocol/NameErrorItem.as",
+      "sha256": "52c526943bba1a7bc9f66e0b48e46e58f2bdbfe70de025dd2a2f657be5073b81",
+      "fields": [
+        {
+          "name": "type",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "offendingText",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "minValue",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "maxValue",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "OpponentDisconnectedMessage": {
+      "source": "protocol/OpponentDisconnectedMessage.as",
+      "sha256": "03c78f36931d6877c248d647779055b5a49631a7cb03e78c50aa36bb178c093b",
+      "fields": []
+    },
+    "OpponentReconnectedMessage": {
+      "source": "protocol/OpponentReconnectedMessage.as",
+      "sha256": "e7a8203c8008313267f6301f02281463b7a89de7753d76a03fa80b0b0ee8ce0f",
+      "fields": []
+    },
+    "Order": {
+      "source": "protocol/Order.as",
+      "sha256": "1760905e67b11d912dfa0030ef17770def278974dff9a3140c9fe89c000bb7a7",
+      "fields": [
+        {
+          "name": "boufbowlerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "regularOrder",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RegularOrderData",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "classOrder",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "zobalMask",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "OrdersMessage": {
+      "source": "protocol/OrdersMessage.as",
+      "sha256": "f4a5afdc4fdfd256eca2fb7b4b2a328273063e83f624c0468ecbf290753d6f30",
+      "fields": [
+        {
+          "name": "orders",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "Order",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "turn",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "concedeTouchdown",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "OutstandingTournamentsMessage": {
+      "source": "protocol/OutstandingTournamentsMessage.as",
+      "sha256": "92ea0a02823cfdec0a1d69d2945ea78c48bbdee05c3947bf2da206c21af15840",
+      "fields": [
+        {
+          "name": "tournaments",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ScheduledTournamentData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "currentTime",
+          "tag": 2,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "OutstandingTournamentsRequestMessage": {
+      "source": "protocol/OutstandingTournamentsRequestMessage.as",
+      "sha256": "1349bcddd84aeed5133b820f70fc609b45595031bf28072fef8d55c64cdadca7",
+      "fields": []
+    },
+    "ParticipantDetails": {
+      "source": "protocol/ParticipantDetails.as",
+      "sha256": "9e2c077cdc924a46fbecd72e2a4e824a02cd5815811c0d342fb509cfd198f775",
+      "fields": [
+        {
+          "name": "boufbowlerId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "role",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "hasBall",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "status",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "stunDuration",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "damageTaken",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "fightBonusMalus",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "maneuverBonusMalus",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "PassDetails": {
+      "source": "protocol/PassDetails.as",
+      "sha256": "ee3aa8cdc699afed747abd547555682aceef2841295613881d7f4470d1b684c8",
+      "fields": [
+        {
+          "name": "receptionScoreEstimate",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "ballTarget",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "nextInteractionId",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "targetId",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PastTournamentsMessage": {
+      "source": "protocol/PastTournamentsMessage.as",
+      "sha256": "a9f717465ba257a3f452346f23246092c09b429d8eec4963ff947eb01cc144c4",
+      "fields": [
+        {
+          "name": "tournaments",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ScheduledTournamentData",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "PeriodInformations": {
+      "source": "protocol/PeriodInformations.as",
+      "sha256": "7eec188d79b0908143f01d726c863777be35c716513d3a9a359424d43e0e3b01",
+      "fields": [
+        {
+          "name": "status",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "remainingPeriodTurns",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PickupDetails": {
+      "source": "protocol/PickupDetails.as",
+      "sha256": "ed32b1088676ef6e8d73852dfd0a91f4803a2c627179ba93d4f757ae1616f0cd",
+      "fields": [
+        {
+          "name": "ballPosition",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PingRequestMessage": {
+      "source": "protocol/PingRequestMessage.as",
+      "sha256": "7ba9b9205c739e492b2f3898f9e4d6b9942e29710e3db341a0612646848cfec4",
+      "fields": [
+        {
+          "name": "timestamp",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PingResultMessage": {
+      "source": "protocol/PingResultMessage.as",
+      "sha256": "e68675024d0d19fd980746f3dac26419eca2026a87b9de66c8e5014a1ce563f9",
+      "fields": [
+        {
+          "name": "timestamp",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PlacementMessage": {
+      "source": "protocol/PlacementMessage.as",
+      "sha256": "08c814ba8cb7658ccd625ab72c4a2866fc30fdee4823e648140aeaf89c1755cf",
+      "fields": [
+        {
+          "name": "boufbowlerPositions",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerPosition",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "turn",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PlayerSummary": {
+      "source": "protocol/PlayerSummary.as",
+      "sha256": "39b759d26a3ae4ecbd7719221462e6181c366f50a5a6948c1df8087474164a4b",
+      "fields": [
+        {
+          "name": "nickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "club",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClubSummary",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "PredefinedClubInformation": {
+      "source": "protocol/PredefinedClubInformation.as",
+      "sha256": "655d2a90beef2355a9cd7eecc58ad9c8e3de9f8b0b731c08d8094e343e881080",
+      "fields": [
+        {
+          "name": "clubId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowler",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerData",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "PredefinedClubSelectionMessage": {
+      "source": "protocol/PredefinedClubSelectionMessage.as",
+      "sha256": "e382c88b0e89f66529f76d291d54826978f2fe1be9085c4db164813adfd664de",
+      "fields": [
+        {
+          "name": "clubId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubName",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "paletteId",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColorIsDark",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "secondColor",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "patternColor",
+          "tag": 7,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilBackground",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilCharge",
+          "tag": 9,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PredefinedClubsMessage": {
+      "source": "protocol/PredefinedClubsMessage.as",
+      "sha256": "0119ddddb93ce851328f1a861dcbbe321d7a88776574f3a8fe6b907844d729cb",
+      "fields": [
+        {
+          "name": "club",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PredefinedClubInformation",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "PremiumAssetListMessage": {
+      "source": "protocol/PremiumAssetListMessage.as",
+      "sha256": "20837b03c7f0b37300cbdebc0ab1abde29e70378a538ccf230427f628804e865",
+      "fields": [
+        {
+          "name": "contentData",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ContentDataItem",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "tournamentTicketCount",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "PremiumContentUpdatedMessage": {
+      "source": "protocol/PremiumContentUpdatedMessage.as",
+      "sha256": "6ad42541d148192358240f35c1653af380e5ab9ec0defbf9ba1f9917e4541bb6",
+      "fields": []
+    },
+    "RankingData": {
+      "source": "protocol/RankingData.as",
+      "sha256": "88c44c37bfb0748f06a136594db20a72339301247dddeb0c5fb8154619c5bb1d",
+      "fields": [
+        {
+          "name": "wins",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "draws",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "defeats",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rank",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "league",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "subLeague",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "RankingDataMessage": {
+      "source": "protocol/RankingDataMessage.as",
+      "sha256": "d2e38fa7e4a31a2ebfa9e3f0b6b41a4fcbd75dc645a9b575fd24e7141f7ae96f",
+      "fields": [
+        {
+          "name": "ranking",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RankingData",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ReceptionDetails": {
+      "source": "protocol/ReceptionDetails.as",
+      "sha256": "f9d657283a2d7ceeabbd70df29726c08b9bcdb5cae347ffdbf5d7a5c698224eb",
+      "fields": [
+        {
+          "name": "ballOriginPosition",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "nextInteractionId",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "RegularOrderData": {
+      "source": "protocol/RegularOrderData.as",
+      "sha256": "31cc375727859471f281995561e182aef54ad7dd0fdea92d6dbdee82053239e3",
+      "fields": [
+        {
+          "name": "elements",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "targetCell",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "targetBoufbowler",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "passTargetId",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "targetsBall",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "ResolutionDoneMessage": {
+      "source": "protocol/ResolutionDoneMessage.as",
+      "sha256": "264485e1acd8fe751e0726a3f04286bfe67debd82229f713d86d96defc4cec52",
+      "fields": [
+        {
+          "name": "turn",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ResolutionScenarioMessage": {
+      "source": "protocol/ResolutionScenarioMessage.as",
+      "sha256": "9a8a2fa827f02dd26153466fecaa3682ba9c67e2e9e93c6e6755b48553131ded",
+      "fields": [
+        {
+          "name": "boufbowlerTracks",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerTrack",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "interaction",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "InteractionEntry",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "turn",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "turnEndTick",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "periodInformations",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PeriodInformations",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "classOrder",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClassOrderInformation",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "Roster": {
+      "source": "protocol/Roster.as",
+      "sha256": "4125e307418d011424e8f270e060e31164d17e658a194d49ccd5b4e6977562f1",
+      "fields": [
+        {
+          "name": "characters",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerData",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "nickname",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "name",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColor",
+          "tag": 4,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "secondColor",
+          "tag": 5,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "patternColor",
+          "tag": 6,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ColorData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstColorIsDark",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "ranking",
+          "tag": 8,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RankingData",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilBackground",
+          "tag": 9,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "sigilCharge",
+          "tag": 10,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "RoundSkippedMessage": {
+      "source": "protocol/RoundSkippedMessage.as",
+      "sha256": "3a66caa60508c42af070b454339e2c75f7d520a9889d94481c5ca7f03328f976",
+      "fields": []
+    },
+    "RulesConstantsMessage": {
+      "source": "protocol/RulesConstantsMessage.as",
+      "sha256": "97ab052871435ba2b196b24e9f4cb0d203e055a8518a8bfcc58e9a22ae610879",
+      "fields": [
+        {
+          "name": "maxDistanceFactor",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "earthDistanceBonus",
+          "tag": 2,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "fireDistanceBonus",
+          "tag": 3,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "airDistanceBonus",
+          "tag": 4,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "waterDistanceBonus",
+          "tag": 5,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "placementPhaseDuration",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "ordersPhaseDuration",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "maxBoufbowlerCountPerRole",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "stadiumRules",
+          "tag": 9,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "StadiumRulesConstantsMessage",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "classAttributes",
+          "tag": 10,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClassAttributes",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "RunningTournamentMatch": {
+      "source": "protocol/RunningTournamentMatch.as",
+      "sha256": "253393ac806bc8cadec1adaa708224cbd0e6f68c2e2e157a4fbd4aab7f363310",
+      "fields": [
+        {
+          "name": "matchId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "firstPlayerNickname",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "secondPlayerNickname",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "RunningTournamentMatchesMessage": {
+      "source": "protocol/RunningTournamentMatchesMessage.as",
+      "sha256": "af7723091f6d25c9738697b91bbb55858e3ad6ea88504aaa386af04c22749741",
+      "fields": [
+        {
+          "name": "runningMatch",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "RunningTournamentMatch",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "RunningTournamentMatchesRequestMessage": {
+      "source": "protocol/RunningTournamentMatchesRequestMessage.as",
+      "sha256": "0486a20112d983b72b31ff4958e88e515398e0de1506b41612e32299f72fae3a",
+      "fields": []
+    },
+    "ScheduledTournamentData": {
+      "source": "protocol/ScheduledTournamentData.as",
+      "sha256": "aa40f826b77fc679ce88bc7a5aca9bc01fcf66085899cfaf4be3a1e9e7b1cdd3",
+      "fields": [
+        {
+          "name": "tournamentId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "tournamentType",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "startTime",
+          "tag": 3,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "endTime",
+          "tag": 4,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "stadium",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rewards",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "podium",
+          "tag": 7,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardEntry",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "ownRanking",
+          "tag": 8,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardEntry",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "lastRewarded",
+          "tag": 9,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardEntry",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "participantCount",
+          "tag": 10,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "participantInTheRunningCount",
+          "tag": 11,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "closed",
+          "tag": 12,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "price",
+          "tag": 13,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rounds",
+          "tag": 14,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TimeSlot",
+          "repeated": true,
+          "required": false
+        }
+      ]
+    },
+    "SigilBackgroundDescription": {
+      "source": "protocol/SigilBackgroundDescription.as",
+      "sha256": "9b21b690c1e76ee64b2952b47757d7932184788733f47351012cffab130306e7",
+      "fields": [
+        {
+          "name": "blazonField",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "SigilChargeDescription": {
+      "source": "protocol/SigilChargeDescription.as",
+      "sha256": "9a2b1cfb3f4e3af5fb24e8a22ac067aaf191539e741ca0ffaeeb2982e3cc428a",
+      "fields": [
+        {
+          "name": "blazonCharge",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "StadiumDescription": {
+      "source": "protocol/StadiumDescription.as",
+      "sha256": "6048cdc611122f95819da2b5733da9eb885c5005be69e2330b21f45d38814c5a",
+      "fields": [
+        {
+          "name": "stadium",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "StadiumRulesConstantsMessage": {
+      "source": "protocol/StadiumRulesConstantsMessage.as",
+      "sha256": "167c072f5e83c6de4246a0218def65bd38403d22272106c6ba82a29f3293692c",
+      "fields": [
+        {
+          "name": "stadium",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "matchTurnDuration",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "periodTurnDuration",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "classOrderUseByMatch",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "StatsRequestMessage": {
+      "source": "protocol/StatsRequestMessage.as",
+      "sha256": "dc922b32abcd44e3085d52cc0356affc5cbf575d762c1dd3a9179e0f5a7c024b",
+      "fields": []
+    },
+    "StatsResultMessage": {
+      "source": "protocol/StatsResultMessage.as",
+      "sha256": "711b9c8a61eae1cec8fa499db1ceb1b8dfa48cbe1ec49cc6502734566747d5d8",
+      "fields": [
+        {
+          "name": "connectedClients",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "currentMatchs",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "StopSpectatingMessage": {
+      "source": "protocol/StopSpectatingMessage.as",
+      "sha256": "a3d3bc77f87d30a683eadc619039dec14d952627f015b8e5db84709f9fcc4bbf",
+      "fields": []
+    },
+    "SurrenderMessage": {
+      "source": "protocol/SurrenderMessage.as",
+      "sha256": "0fa61a962a42ebc0549086c068b0e9fc9ff98f5b4e8340f879a2ee7a7bf847f8",
+      "fields": []
+    },
+    "TeamStateMessage": {
+      "source": "protocol/TeamStateMessage.as",
+      "sha256": "e7ba40c667fc1579cd579af55d3c71c0682f6de98f756af77b3ac2058af2cf92",
+      "fields": [
+        {
+          "name": "phaseInfos",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "ClientMatchPhaseInfos",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "boufbowlerStates",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "BoufbowlerState",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "placementBoufballSide",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "turn",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "leftSideScore",
+          "tag": 6,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "rightSideScore",
+          "tag": 7,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "period",
+          "tag": 8,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "TestScore": {
+      "source": "protocol/TestScore.as",
+      "sha256": "00827f2690e9894ba464f75d4867fa6cabc72bbad2fdba1cf5939f55d6923947",
+      "fields": [
+        {
+          "name": "inherentScore",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "finalScore",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "TimeRequestMessage": {
+      "source": "protocol/TimeRequestMessage.as",
+      "sha256": "c994be40439a1e469866bfd1e5668aff35cb7bd035d418cb023976c06586b8af",
+      "fields": []
+    },
+    "TimeResultMessage": {
+      "source": "protocol/TimeResultMessage.as",
+      "sha256": "dc21598b52b60c467d466e16f56e5d7f98e01531c4724af9e13a82ca6d63f34d",
+      "fields": [
+        {
+          "name": "timestamp",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "TimeSlot": {
+      "source": "protocol/TimeSlot.as",
+      "sha256": "425ed8a7a96181c478dd79a9d55c3134bd8bb44f8929a1f8b353f2ff3289e3b2",
+      "fields": [
+        {
+          "name": "startTime",
+          "tag": 1,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "endTime",
+          "tag": 2,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "TouchdownDetails": {
+      "source": "protocol/TouchdownDetails.as",
+      "sha256": "266b83e4efc0e0a28f4c59100de1981061bb277b0095ffc1daddb33c8a89e3d8",
+      "fields": [
+        {
+          "name": "touchdownDuringRun",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "wasConceded",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "TournamentClosedMessage": {
+      "source": "protocol/TournamentClosedMessage.as",
+      "sha256": "447dc361f881ed2d5463a44b73039536afd4645dfcd58aa497299665e0c9faf2",
+      "fields": [
+        {
+          "name": "tournamentId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "tournamentType",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "startTime",
+          "tag": 3,
+          "wire": "FIXED_64_BIT",
+          "scalar": "DOUBLE",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "TournamentLeaderboardEntry": {
+      "source": "protocol/TournamentLeaderboardEntry.as",
+      "sha256": "cdba776e30d2c17c4c27a1f7981f5f8b98913f02c14fbdf3a334fd87bab89bd4",
+      "fields": [
+        {
+          "name": "player",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "PlayerSummary",
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "tournamentPoints",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "eliminated",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "currentRank",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "reward",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "TournamentLeaderboardMessage": {
+      "source": "protocol/TournamentLeaderboardMessage.as",
+      "sha256": "646a886ccddde525e2a6ef8af509e9a4c3c431f6758a6073f66d966da79669b9",
+      "fields": [
+        {
+          "name": "tournamentId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "entries",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardEntry",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "playerEntry",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "TournamentLeaderboardEntry",
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "TournamentLeaderboardRequestMessage": {
+      "source": "protocol/TournamentLeaderboardRequestMessage.as",
+      "sha256": "63879e2e4b200feaa183f037ec7fcde2e18d6d3fe8c822ede26a12867e264df3",
+      "fields": [
+        {
+          "name": "tournamentId",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT64",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "TournamentOfferCanceledMessage": {
+      "source": "protocol/TournamentOfferCanceledMessage.as",
+      "sha256": "cd732b8b4128efe952c072b70c9984001b353bcea29c3d7bd4e8faaf8763f08f",
+      "fields": []
+    },
+    "TrackItem": {
+      "source": "protocol/TrackItem.as",
+      "sha256": "2d39b095bc0fee11e64b3733e2f5dcf0f34e6f6954155d3b27331beb4dc797f0",
+      "fields": [
+        {
+          "name": "type",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "movement",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "MovementSequence",
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "interactionId",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "UINT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "UniqueCharacterDescription": {
+      "source": "protocol/UniqueCharacterDescription.as",
+      "sha256": "8c461bf736be863e991693b53e444a92860f0d89687ef268bcb8621e822138b0",
+      "fields": [
+        {
+          "name": "uniqueCharacter",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "gender",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "boufbowlerClass",
+          "tag": 3,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "UpdatePremiumContentMessage": {
+      "source": "protocol/UpdatePremiumContentMessage.as",
+      "sha256": "118e1a45dd2802686f687b77f2f65f4f642615447a594a6ecf90addcf2037ddb",
+      "fields": []
+    },
+    "WaitingListMessage": {
+      "source": "protocol/WaitingListMessage.as",
+      "sha256": "f6762377a1c50bb1cab38cebff46466c82f64ce1c667471f74faa110269f332f",
+      "fields": [
+        {
+          "name": "availableClientCount",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "INT32",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "matchType",
+          "tag": 2,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "WhoisRequestMessage": {
+      "source": "protocol/WhoisRequestMessage.as",
+      "sha256": "606bed2c50aa864923a682cf2db4cfb48cf3fe7b594136e966a9f9e11495b656",
+      "fields": [
+        {
+          "name": "nickname",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "WhoisResultMessage": {
+      "source": "protocol/WhoisResultMessage.as",
+      "sha256": "36c132c3573c4a9c7bf80f7a978630742b524d2eac30c54dfb30592332ec985e",
+      "fields": [
+        {
+          "name": "resultType",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "nickname",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "clubname",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "STRING",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "administrator",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        },
+        {
+          "name": "moderator",
+          "tag": 5,
+          "wire": "VARINT",
+          "scalar": "BOOL",
+          "message": null,
+          "repeated": false,
+          "required": false
+        }
+      ]
+    },
+    "XGamingWrapperMessage": {
+      "source": "protocol/XGamingWrapperMessage.as",
+      "sha256": "3b0acbd5221e5624681fd636b10c926f6dc67bd4c3d74224ceebebd06469dc77",
+      "fields": [
+        {
+          "name": "content",
+          "tag": 1,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "XGamingMessage",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    },
+    "ZoneData": {
+      "source": "protocol/ZoneData.as",
+      "sha256": "e04939b4a26ed282e71ba60173ab4855c9ee87886c24ffe782cebf534224d252",
+      "fields": [
+        {
+          "name": "type",
+          "tag": 1,
+          "wire": "VARINT",
+          "scalar": "ENUM",
+          "message": null,
+          "repeated": false,
+          "required": true
+        },
+        {
+          "name": "cell",
+          "tag": 2,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": true,
+          "required": false
+        },
+        {
+          "name": "defaultCell",
+          "tag": 3,
+          "wire": "LENGTH_DELIMITED",
+          "scalar": "MESSAGE",
+          "message": "GridCoordinates",
+          "repeated": false,
+          "required": true
+        }
+      ]
+    }
+  },
+  "enums": {
+    "BoufballStatus": {
+      "ON_GROUND": 1,
+      "HELD": 2,
+      "IN_AIR": 3,
+      "OUT_OF_BOUNDS": 4,
+      "BUSY": 5
+    },
+    "BoufbowlMessage/Type": {
+      "WAITING_LIST": 1101,
+      "CHALLENGE_ERROR": 1102,
+      "CHALLENGE_CREATED": 1103,
+      "CHALLENGE_PROPOSAL": 1104,
+      "CHALLENGE_CANCELED": 1105,
+      "TOURNAMENT_OFFER_CANCELED": 1106,
+      "MATCH_SPECTATE_ERROR": 1107,
+      "MATCH_SPECTATOR_JOIN_NOTIFICATION": 1108,
+      "MATCH_SPECTATOR_PART_NOTIFICATION": 1109,
+      "MATCH_INFORMATION": 1201,
+      "TEAM_STATE": 1202,
+      "FIELD_STATE": 1203,
+      "MATCH_END": 1204,
+      "OPPONENT_DISCONNECTED": 1205,
+      "OPPONENT_RECONNECTED": 1206,
+      "AWAITING_OPPONENT": 1207,
+      "RULES_CONSTANTS": 1300,
+      "ACCOUNT_INFORMATION": 1301,
+      "PREDEFINED_CLUBS": 1400,
+      "INVALID_NAME_ERROR": 1401,
+      "CLUB_INFORMATION": 1500,
+      "RANKING_DATA": 1501,
+      "MATCH_RESUME_FOREWARNING": 1502,
+      "LADDER_DATA": 1600,
+      "LADDER_REQUEST_ERROR": 1601,
+      "RESOLUTION_SCENARIO": 1701,
+      "CREDIT_INFO": 1801,
+      "PREMIUM_ASSET_LIST": 1802,
+      "CUSTOMISATION_SESSION_ACCEPTED": 1803,
+      "CUSTOMISATION_SESSION_REJECTED": 1804,
+      "CUSTOMISATION_ACCEPTED": 1805,
+      "CUSTOMISATION_REFUSED": 1806,
+      "PREMIUM_CONTENT_UPDATED": 1807,
+      "PING_RESULT": 1951,
+      "TIME_RESULT": 1952,
+      "WHOIS_RESULT": 1953,
+      "STATS_RESULT": 1954,
+      "MODERATION_RESULT": 1955,
+      "MATCH_REQUEST": 2101,
+      "CANCEL_MATCH_REQUEST": 2102,
+      "CHALLENGE_ANSWER": 2103,
+      "MATCH_SPECTATE_REQUEST": 2104,
+      "ORDERS": 2201,
+      "PLACEMENT": 2202,
+      "INTRODUCTION_DONE": 2203,
+      "SURRENDER": 2204,
+      "STOP_SPECTATING": 2205,
+      "PREDEFINED_CLUB_SELECTION": 2400,
+      "X_GAMING_WRAPPER": 2500,
+      "LADDER_BY_LEAGUE_REQUEST": 2600,
+      "LADDER_BY_NICK_REQUEST": 2601,
+      "RESOLUTION_DONE": 2701,
+      "CUSTOMISATION_SESSION_REQUEST": 2801,
+      "CANCEL_CUSTOMISATION_SESSION": 2802,
+      "UPDATE_PREMIUM_CONTENT": 2803,
+      "BOUFBOWLER_APPEARANCE_CHANGE": 2811,
+      "BOUFBOWLER_ATTRIBUTES_CHANGE": 2812,
+      "CLUB_APPEARANCE_CHANGE": 2813,
+      "FULL_TEAM_CHANGE": 2814,
+      "FORCED_FULL_TEAM_CHANGE": 2815,
+      "PING_REQUEST": 2951,
+      "TIME_REQUEST": 2952,
+      "WHOIS_REQUEST": 2953,
+      "STATS_REQUEST": 2954,
+      "MSG_ALL_REQUEST": 2955,
+      "MODERATION_REQUEST": 2956,
+      "MATCH_CREATION_REQUEST": 3101,
+      "INTERSERVER_MATCH_SPECTATE_REQUEST": 3102,
+      "MATCH_CREATION_RESPONSE": 4101,
+      "MATCH_FINISHED": 4102,
+      "IMPOSSIBLE_CLIENT_CONNECTION": 4103,
+      "MATCH_SPECTATE_RESPONSE": 4104,
+      "INTERSERVER_STOP_SPECTATING_NOTIFICATION": 4105,
+      "OUTSTANDING_TOURNAMENTS": 12001,
+      "PAST_TOURNAMENTS": 12002,
+      "TOURNAMENT_LEADERBOARD": 12004,
+      "TOURNAMENT_CLOSED": 12005,
+      "ROUND_SKIPPED": 12006,
+      "RUNNING_TOURNAMENT_MATCHES": 12007,
+      "LINK_FACEBOOK_ACCOUNT": 21001,
+      "OUTSTANDING_TOURNAMENTS_REQUEST": 22001,
+      "TOURNAMENT_LEADERBOARD_REQUEST": 22002,
+      "RUNNING_TOURNAMENT_MATCHES_REQUEST": 22003
+    },
+    "BoufbowlerClass": {
+      "CRA": 1,
+      "ECAFLIP": 2,
+      "ENIRIPSA": 3,
+      "ENUTROF": 4,
+      "FECA": 5,
+      "IOP": 6,
+      "OSAMODAS": 7,
+      "PANDAWA": 8,
+      "ROUBLARD": 9,
+      "SACRIEUR": 10,
+      "SADIDA": 11,
+      "SRAM": 12,
+      "XELOR": 13,
+      "ZOBAL": 14
+    },
+    "BoufbowlerStatus": {
+      "OK": 1,
+      "STUN": 2,
+      "KO": 3,
+      "WOUNDED": 4
+    },
+    "ChallengeAnswer": {
+      "ABANDON": 1,
+      "ACCEPT": 2
+    },
+    "ClientMatchPhase": {
+      "PLACEMENT": 1,
+      "ORDERS": 2
+    },
+    "CustomisationError": {
+      "NO_PREMIUM_SERVICE": 1,
+      "ALREADY_IN_CUSTOMISATION_SESSION": 2,
+      "NO_CUSTOMISATION_SESSION": 3,
+      "WRONG_CUSTOMISATION_TYPE": 4,
+      "NOT_ENOUGH_CREDITS": 5,
+      "LOCKED_PREMIUM_ITEM": 6,
+      "UNIQUE_CHARACTER_AND_GENDER": 7,
+      "NO_CHANGES": 8,
+      "UNSPECIFIED_ERROR": 9,
+      "INVALID_CLUB_NAME": 10,
+      "INVALID_PALETTE_COLOR": 11,
+      "DUPLICATED_UNIQUE_SKIN": 12,
+      "INVALID_BOUFBOWLER_NAME": 13,
+      "INVALID_ROLE_COUNTS": 14
+    },
+    "CustomisationType": {
+      "FULL_TEAM": 1,
+      "CLUB_APPEARANCE": 2,
+      "BOUFBOWLER_ATTRIBUTES": 3,
+      "BOUFBOWLER_APPEARANCE": 4,
+      "CLUB_REBUILD": 5
+    },
+    "FightType": {
+      "BRAWL": 1,
+      "HIT_AND_RUN": 2,
+      "TACKLE": 3,
+      "DODGE": 4
+    },
+    "Gender": {
+      "MALE": 1,
+      "FEMALE": 2
+    },
+    "InteractionOutcomeType": {
+      "CRITICAL": 1,
+      "WIDE": 2,
+      "NORMAL": 3,
+      "AUTOMATIC": 4
+    },
+    "InteractionRole": {
+      "ONLY_PARTICIPANT": 1,
+      "PASS_THROWER": 2,
+      "PASS_RECEIVER": 3,
+      "FIRST_FIGHTER": 4,
+      "SECOND_FIGHTER": 5
+    },
+    "InteractionType": {
+      "FALL": 10,
+      "PICKUP": 11,
+      "TOUCHDOWN": 12,
+      "REBOUND": 13,
+      "RECEPTION": 14,
+      "INTERCEPTION": 15,
+      "OUT_OF_BOUND": 16,
+      "CONCEDED_TOUCHDOWN": 17,
+      "FIGHT": 20,
+      "PASS": 21,
+      "MOVEMENT_RESULT": 30,
+      "CLASS_ORDER": 31
+    },
+    "ItemAvailability": {
+      "BASE": 1,
+      "UNLOCKED": 2,
+      "LOCKED": 3,
+      "PROMOTIONAL": 4
+    },
+    "League": {
+      "LEAGUE_CRAQUELEUR": 1,
+      "LEAGUE_ABRAKNYDE": 2,
+      "LEAGUE_WABBIT": 3,
+      "LEAGUE_TOFU": 4,
+      "LEAGUE_PIOU": 5
+    },
+    "ModerationResultMessage/ResultType": {
+      "OK": 1,
+      "USER_NOT_FOUND": 2,
+      "USER_IS_MODERATOR": 3
+    },
+    "ModerationType": {
+      "KICK": 1,
+      "BAN": 2,
+      "MUTE": 3
+    },
+    "NameErrorItem/Type": {
+      "INVALID_CHARACTER": 1,
+      "INVALID_SIZE": 2,
+      "TOO_MANY_SEPARATORS": 3,
+      "TOO_MANY_SPECIAL_CHARS": 4,
+      "TOO_MANY_CONSECUTIVE_VOWELS": 5,
+      "TOO_MANY_CONSECUTIVE_CONSONANTS": 6,
+      "TOO_MANY_CONSECUTIVE_SEPARATORS": 7,
+      "WORD_WITHOUT_A_VOWEL": 8,
+      "TOO_MANY_SIMILAR_LETTERS": 9,
+      "TWO_BOUFBOWLERS_WITH_SAME_NAME": 10,
+      "STARTING_SEPARATOR": 11,
+      "ENDING_SEPARATOR": 12
+    },
+    "PeriodStatus": {
+      "PRE_HALF_TIME": 1,
+      "HALF_TIME": 2,
+      "PRE_MATCH_END": 3
+    },
+    "PlacementZoneType": {
+      "CENTER": 1,
+      "FRONT_RIGHT": 2,
+      "BACK_RIGHT": 3,
+      "BACK_LEFT": 4,
+      "FRONT_LEFT": 5
+    },
+    "RegularOrderData/Element": {
+      "EARTH": 1,
+      "AIR": 2,
+      "FIRE": 3,
+      "WATER": 4
+    },
+    "Role": {
+      "BLOCKER": 1,
+      "DODGER": 2,
+      "RUNNER": 3,
+      "THROWER": 4
+    },
+    "Side": {
+      "LEFT": 1,
+      "RIGHT": 2
+    },
+    "SigilBackground": {
+      "IBERIAN_BEND_SINISTER": 1,
+      "IBERIAN_BEND": 2,
+      "IBERIAN_PALE": 3,
+      "IBERIAN_CROSS": 4,
+      "TARGET_BEND": 5,
+      "TARGET_BEND_SINISTER": 6,
+      "TARGET_FESS": 7,
+      "TARGET_CROSS": 8,
+      "FRENCH_BEND": 9,
+      "FRENCH_BEND_SINISTER": 10,
+      "FRENCH_PALE": 11,
+      "FRENCH_FESS": 12,
+      "ENGLISH_PALE": 13,
+      "ENGLISH_BEND": 14,
+      "ENGLISH_BEND_SINISTER": 15,
+      "ENGLISH_CROSS": 16,
+      "SWISS_FESS": 17,
+      "SWISS_PALE": 18,
+      "SWISS_CROSS": 19,
+      "SWISS_BEND_SINISTER": 20,
+      "ROUND_CROSS": 21,
+      "ROUND_BEND_SINISTER": 22,
+      "ROUND_PALE": 23,
+      "ROUND_BEND": 24,
+      "NOTCHED_CROSS": 25,
+      "NOTCHED_PALE": 26,
+      "NOTCHED_FESS": 27,
+      "NOTCHED_BEND": 28,
+      "HEART_CROSS": 29,
+      "HEART_BEND_SINISTER": 30
+    },
+    "SigilCharge": {
+      "BOUCLIER": 1,
+      "POUPEE": 2,
+      "CHAMPCHAMP": 3,
+      "CRAQUEBOULE": 4,
+      "CROCGLAND": 5,
+      "SAC": 6,
+      "KOALAK": 7,
+      "FIREFOUX": 8,
+      "MINOTOROR": 9,
+      "MARTEAU": 10,
+      "TAURE": 11,
+      "COCHON": 12,
+      "CRAQUELEUR": 13,
+      "TOFU": 14,
+      "BANDIT": 15,
+      "ABRA": 16,
+      "VAMPYRE": 17,
+      "WABBIT": 18,
+      "BOUCLIERDENTS": 19,
+      "BONNET": 20,
+      "PERENOWEL": 21,
+      "BOUFBALLE": 22,
+      "EPEE": 23,
+      "TETEDEMORT": 24,
+      "VAMPYREMECHE": 25,
+      "LOVEBALL": 26,
+      "ENIFEE": 27
+    },
+    "Stadium": {
+      "FARMSTEAD": 1,
+      "BRAKMAR": 2,
+      "BEACH": 3,
+      "BONTA": 4,
+      "FRIGOST": 5,
+      "KARA": 6,
+      "FOREST": 7,
+      "BALLOTIN": 8,
+      "PIXEL": 9
+    },
+    "TournamentReward": {
+      "G20_I10_C10": 1,
+      "G10_I10_C10": 2,
+      "G0_I5_C10": 3,
+      "G0_I0_C10": 4,
+      "G30_I20_C20": 5,
+      "G20_I20_C20": 6,
+      "G0_I15_C10": 7,
+      "G0_I10_C0": 8,
+      "DOFUS_LIFETIME_SUBSCRIPTION": 9,
+      "BALLOTIN_FULL_PACK": 10,
+      "BALLOTIN_STADIUM_CHARACTER": 11,
+      "BALLOTIN_SIGIL_PALETTE": 12,
+      "BALLOTIN_PALETTE": 13,
+      "SADIDA_FULL_PACK_WE": 14,
+      "SADIDA_CHARACTER_WE": 15,
+      "SADIDA_FULL_PACK": 16,
+      "SADIDA_STADIUM": 17,
+      "WAKFU_G20_I10_C10": 18,
+      "WAKFU_G10_I10_C10": 19,
+      "WAKFU_G0_I5_C10": 20,
+      "WAKFU_G0_I0_C10": 21
+    },
+    "TrackItemType": {
+      "MOVEMENT": 1,
+      "INTERACTION": 2
+    },
+    "WaitingListMessage/MatchType": {
+      "RANDOM": 1,
+      "STANDARD_TOURNAMENT": 2,
+      "FIXED_SCHEDULE_TOURNAMENT": 3
+    },
+    "WhoisResultMessage/ResultType": {
+      "OK": 1,
+      "USER_NOT_FOUND": 2
+    },
+    "ZobalMask": {
+      "CLASS": 1,
+      "PSYCHO": 2,
+      "COWARD": 3
+    }
+  },
+  "network": {
+    "ACCOUNT_INFORMATION": {
+      "id": 1301,
+      "payload": "accountInformation",
+      "message": "AccountInformationMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "PREDEFINED_CLUBS": {
+      "id": 1400,
+      "payload": "predefinedClubs",
+      "message": "PredefinedClubsMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "LADDER_DATA": {
+      "id": 1600,
+      "payload": "ladderData",
+      "message": "LadderDataMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "LADDER_REQUEST_ERROR": {
+      "id": 1601,
+      "payload": "ladderRequestError",
+      "message": "LadderRequestErrorMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CLUB_INFORMATION": {
+      "id": 1500,
+      "payload": "clubInformation",
+      "message": "ClubInformationMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MATCH_RESUME_FOREWARNING": {
+      "id": 1502,
+      "payload": "matchResumeForewarning",
+      "message": "MatchResumeForewarningMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "RANKING_DATA": {
+      "id": 1501,
+      "payload": "rankingData",
+      "message": "RankingDataMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "WAITING_LIST": {
+      "id": 1101,
+      "payload": "waitingList",
+      "message": "WaitingListMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CHALLENGE_ERROR": {
+      "id": 1102,
+      "payload": "challengeError",
+      "message": "ChallengeErrorMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CHALLENGE_CREATED": {
+      "id": 1103,
+      "payload": "challengeCreated",
+      "message": "ChallengeCreatedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CHALLENGE_PROPOSAL": {
+      "id": 1104,
+      "payload": "challengeProposal",
+      "message": "ChallengeProposalMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CHALLENGE_CANCELED": {
+      "id": 1105,
+      "payload": "challengeCanceled",
+      "message": "ChallengeCanceledMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "TOURNAMENT_OFFER_CANCELED": {
+      "id": 1106,
+      "payload": "tournamentOfferCanceled",
+      "message": "TournamentOfferCanceledMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MATCH_SPECTATE_ERROR": {
+      "id": 1107,
+      "payload": "matchSpectateError",
+      "message": "MatchSpectateErrorMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MATCH_SPECTATOR_JOIN_NOTIFICATION": {
+      "id": 1108,
+      "payload": "matchSpectatorJoinNotification",
+      "message": "MatchSpectatorJoinNotificationMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MATCH_SPECTATOR_PART_NOTIFICATION": {
+      "id": 1109,
+      "payload": "matchSpectatorPartNotification",
+      "message": "MatchSpectatorPartNotificationMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MATCH_INFORMATION": {
+      "id": 1201,
+      "payload": "matchInformation",
+      "message": "MatchInformationMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MATCH_END": {
+      "id": 1204,
+      "payload": "matchEnd",
+      "message": "MatchEndMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "TEAM_STATE": {
+      "id": 1202,
+      "payload": "teamState",
+      "message": "TeamStateMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "FIELD_STATE": {
+      "id": 1203,
+      "payload": "fieldState",
+      "message": "FieldStateMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "OPPONENT_DISCONNECTED": {
+      "id": 1205,
+      "payload": "opponentDisconnected",
+      "message": "OpponentDisconnectedMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "OPPONENT_RECONNECTED": {
+      "id": 1206,
+      "payload": "opponentReconnected",
+      "message": "OpponentReconnectedMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "AWAITING_OPPONENT": {
+      "id": 1207,
+      "payload": "awaitingOpponent",
+      "message": "AwaitingOpponentMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "RULES_CONSTANTS": {
+      "id": 1300,
+      "payload": "rulesConstants",
+      "message": "RulesConstantsMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "INVALID_NAME_ERROR": {
+      "id": 1401,
+      "payload": "invalidNameError",
+      "message": "InvalidNameErrorMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "X_GAMING_WRAPPER": {
+      "id": 2500,
+      "payload": "xGamingWrapper",
+      "message": "XGamingWrapperMessage",
+      "handlers": [
+        "client/chat/network/ChatMessageHandler.as",
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "client_to_server"
+    },
+    "CREDIT_INFO": {
+      "id": 1801,
+      "payload": "creditInfo",
+      "message": "CreditInfoMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "PREMIUM_ASSET_LIST": {
+      "id": 1802,
+      "payload": "premiumAssetList",
+      "message": "PremiumAssetListMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "PREMIUM_CONTENT_UPDATED": {
+      "id": 1807,
+      "payload": "premiumContentUpdated",
+      "message": "PremiumContentUpdatedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CUSTOMISATION_SESSION_ACCEPTED": {
+      "id": 1803,
+      "payload": "customisationSessionAccepted",
+      "message": "CustomisationSessionAcceptedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CUSTOMISATION_SESSION_REJECTED": {
+      "id": 1804,
+      "payload": "customisationSessionRejected",
+      "message": "CustomisationSessionRejectedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CUSTOMISATION_ACCEPTED": {
+      "id": 1805,
+      "payload": "customisationAccepted",
+      "message": "CustomisationAcceptedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "CUSTOMISATION_REFUSED": {
+      "id": 1806,
+      "payload": "customisationRefused",
+      "message": "CustomisationRefusedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "PING_RESULT": {
+      "id": 1951,
+      "payload": "pingResult",
+      "message": "PingResultMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "TIME_RESULT": {
+      "id": 1952,
+      "payload": "timeResult",
+      "message": "TimeResultMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "WHOIS_RESULT": {
+      "id": 1953,
+      "payload": "whoisResult",
+      "message": "WhoisResultMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "MODERATION_RESULT": {
+      "id": 1955,
+      "payload": "moderationResult",
+      "message": "ModerationResultMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "STATS_RESULT": {
+      "id": 1954,
+      "payload": "statsResult",
+      "message": "StatsResultMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "OUTSTANDING_TOURNAMENTS": {
+      "id": 12001,
+      "payload": "outstandingTournaments",
+      "message": "OutstandingTournamentsMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "PAST_TOURNAMENTS": {
+      "id": 12002,
+      "payload": "pastTournaments",
+      "message": "PastTournamentsMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "TOURNAMENT_LEADERBOARD": {
+      "id": 12004,
+      "payload": "tournamentLeaderboard",
+      "message": "TournamentLeaderboardMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "TOURNAMENT_CLOSED": {
+      "id": 12005,
+      "payload": "tournamentClosed",
+      "message": "TournamentClosedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "ROUND_SKIPPED": {
+      "id": 12006,
+      "payload": "roundSkipped",
+      "message": "RoundSkippedMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "RUNNING_TOURNAMENT_MATCHES": {
+      "id": 12007,
+      "payload": "runningTournamentMatches",
+      "message": "RunningTournamentMatchesMessage",
+      "handlers": [
+        "client/network/LobbyMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "RESOLUTION_SCENARIO": {
+      "id": 1701,
+      "payload": "resolutionScenario",
+      "message": "ResolutionScenarioMessage",
+      "handlers": [
+        "client/match/MatchMessageHandler.as"
+      ],
+      "direction": "server_to_client"
+    },
+    "PREDEFINED_CLUB_SELECTION": {
+      "id": 2400,
+      "payload": "predefinedClubSelection",
+      "message": "PredefinedClubSelectionMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "LADDER_BY_LEAGUE_REQUEST": {
+      "id": 2600,
+      "payload": "ladderByLeagueRequest",
+      "message": "LadderByLeagueRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "LADDER_BY_NICK_REQUEST": {
+      "id": 2601,
+      "payload": "ladderByNickRequest",
+      "message": "LadderByNickRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "MATCH_REQUEST": {
+      "id": 2101,
+      "payload": "matchRequest",
+      "message": "MatchRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "CANCEL_MATCH_REQUEST": {
+      "id": 2102,
+      "payload": "cancelMatchRequest",
+      "message": "CancelMatchRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "CHALLENGE_ANSWER": {
+      "id": 2103,
+      "payload": "challengeAnswer",
+      "message": "ChallengeAnswerMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "MATCH_SPECTATE_REQUEST": {
+      "id": 2104,
+      "payload": "matchSpectateRequest",
+      "message": "MatchSpectateRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "ORDERS": {
+      "id": 2201,
+      "payload": "orders",
+      "message": "OrdersMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "PLACEMENT": {
+      "id": 2202,
+      "payload": "placement",
+      "message": "PlacementMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "INTRODUCTION_DONE": {
+      "id": 2203,
+      "payload": "introductionDone",
+      "message": "IntroductionDoneMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "SURRENDER": {
+      "id": 2204,
+      "payload": "surrender",
+      "message": "SurrenderMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "STOP_SPECTATING": {
+      "id": 2205,
+      "payload": "stopSpectating",
+      "message": "StopSpectatingMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "UPDATE_PREMIUM_CONTENT": {
+      "id": 2803,
+      "payload": "updatePremiumContent",
+      "message": "UpdatePremiumContentMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "CUSTOMISATION_SESSION_REQUEST": {
+      "id": 2801,
+      "payload": "customisationSessionRequest",
+      "message": "CustomisationSessionRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "CANCEL_CUSTOMISATION_SESSION": {
+      "id": 2802,
+      "payload": "cancelCustomisationSession",
+      "message": "CancelCustomisationSessionMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "BOUFBOWLER_APPEARANCE_CHANGE": {
+      "id": 2811,
+      "payload": "boufbowlerAppearanceChange",
+      "message": "BoufbowlerAppearanceChangeMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "BOUFBOWLER_ATTRIBUTES_CHANGE": {
+      "id": 2812,
+      "payload": "boufbowlerAttributesChange",
+      "message": "BoufbowlerAttributesChangeMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "CLUB_APPEARANCE_CHANGE": {
+      "id": 2813,
+      "payload": "clubAppearanceChange",
+      "message": "ClubAppearanceChangeMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "FULL_TEAM_CHANGE": {
+      "id": 2814,
+      "payload": "fullTeamChange",
+      "message": "FullTeamChangeMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "FORCED_FULL_TEAM_CHANGE": {
+      "id": 2815,
+      "payload": "forcedFullTeamChange",
+      "message": "ForcedFullTeamChangeMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "LINK_FACEBOOK_ACCOUNT": {
+      "id": 21001,
+      "payload": "linkFacebookAccount",
+      "message": "LinkFacebookAccountMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "PING_REQUEST": {
+      "id": 2951,
+      "payload": "pingRequest",
+      "message": "PingRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "TIME_REQUEST": {
+      "id": 2952,
+      "payload": "timeRequest",
+      "message": "TimeRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "WHOIS_REQUEST": {
+      "id": 2953,
+      "payload": "whoisRequest",
+      "message": "WhoisRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "STATS_REQUEST": {
+      "id": 2954,
+      "payload": "statsRequest",
+      "message": "StatsRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "MSG_ALL_REQUEST": {
+      "id": 2955,
+      "payload": "msgAllRequest",
+      "message": "MsgAllRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "MODERATION_REQUEST": {
+      "id": 2956,
+      "payload": "moderationRequest",
+      "message": "ModerationRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "OUTSTANDING_TOURNAMENTS_REQUEST": {
+      "id": 22001,
+      "payload": "outstandingTournamentsRequest",
+      "message": "OutstandingTournamentsRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "TOURNAMENT_LEADERBOARD_REQUEST": {
+      "id": 22002,
+      "payload": "tournamentLeaderboardRequest",
+      "message": "TournamentLeaderboardRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "RUNNING_TOURNAMENT_MATCHES_REQUEST": {
+      "id": 22003,
+      "payload": "runningTournamentMatchesRequest",
+      "message": "RunningTournamentMatchesRequestMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    },
+    "RESOLUTION_DONE": {
+      "id": 2701,
+      "payload": "resolutionDone",
+      "message": "ResolutionDoneMessage",
+      "handlers": [],
+      "direction": "client_to_server"
+    }
+  },
+  "external_message_types": [
+    "XGamingMessage"
+  ]
+}
