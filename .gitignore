@@ -1,0 +1,44 @@
+# Android packages, staging assets, and converted video cache
+/android/build/
+*.apk
+*.aab
+*.air
+*.airi
+.gradle/
+local.properties
+
+# Temporary SWF rebuild directories (keep the runnable SWFs in bin/)
+/bin/.tutorial-build-*/
+
+# Local screenshots and recordings
+/evidence/
+/android/evidence/
+
+# Python bytecode and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Logs and local tool caches
+*.log
+.cache/
+
+# Local signing certificates and environment settings
+*.p12
+*.pfx
+*.jks
+*.keystore
+.env
+.env.*
+!.env.example
+
+# Editor and desktop temporary files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns="http://ns.adobe.com/air/application/51.4">
+  <id>org.boufbowl.offline</id>
+  <versionNumber>1.0.0</versionNumber>
+  <filename>BoufbowlOffline</filename>
+  <name>Boufbowl Offline</name>
+  <description>Offline Boufbowl menus, character customization and tutorial.</description>
+  <initialWindow>
+    <content>bin/boufbowl-client-1.9.6.swf</content>
+    <visible>true</visible>
+    <width>1024</width>
+    <height>600</height>
+    <fullScreen>true</fullScreen>
+    <autoOrients>false</autoOrients>
+    <aspectRatio>landscape</aspectRatio>
+    <renderMode>cpu</renderMode>
+  </initialWindow>
+  <supportedProfiles>mobileDevice</supportedProfiles>
+  <android>
+    <manifestAdditions><![CDATA[
+      <manifest android:installLocation="auto">
+        <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="35"/>
+        <uses-permission android:name="android.permission.INTERNET"/>
+      </manifest>
+    ]]></manifestAdditions>
+  </android>
+</application>

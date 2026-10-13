@@ -22,6 +22,9 @@ classes = [
     "com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.controller.SendBoufbowlerCustomisationChangeCommand",
     "com.ankamagames.boufbowl.client.premiumservice.clubcustomisation.controller.ClubCustomisationConfirmCommand",
     "com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.controller.BoufbowlerCustomisationConfirmCommand",
+    "com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.model.BoufbowlerEditionModel",
+    "com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.view.BoufbowlerEditorSpriteHolderView",
+    "com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.view.BoufbowlerEditorView",
 ]
 replacements = []
 for cls in classes:

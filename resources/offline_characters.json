@@ -1,0 +1,146 @@
+{
+  "standard_classes": [
+    "Cra",
+    "Ecaflip",
+    "Eniripsa",
+    "Enutrof",
+    "Feca",
+    "Iop",
+    "Osamodas",
+    "Pandawa",
+    "Rogue",
+    "Sacrier",
+    "Sadida",
+    "Sram",
+    "Xelor",
+    "Masqueraider"
+  ],
+  "special_characters": [
+    {
+      "id": 501,
+      "name": "Kriss Krass",
+      "palette_id": 15,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 502,
+      "name": "Pita Smisse",
+      "palette_id": 16,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 503,
+      "name": "Maud",
+      "palette_id": 17,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 504,
+      "name": "The Masked Gobbowler",
+      "palette_id": 18,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 505,
+      "name": "Goultard the Barbarian",
+      "palette_id": 19,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 506,
+      "name": "Amalia Sheran Sharm",
+      "palette_id": 20,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 507,
+      "name": "Miranda",
+      "palette_id": 21,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 508,
+      "name": "Evangelyne",
+      "palette_id": 22,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 509,
+      "name": "Ruel Stroud",
+      "palette_id": 23,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 510,
+      "name": "Shosanne",
+      "palette_id": 24,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 511,
+      "name": "Kabrok",
+      "palette_id": 25,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 512,
+      "name": "Brumen Tinctorias",
+      "palette_id": 26,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 513,
+      "name": "Count Harebourg",
+      "palette_id": 27,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 514,
+      "name": "Pan Diego",
+      "palette_id": 28,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 515,
+      "name": "Ironman",
+      "palette_id": 34,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 516,
+      "name": "Jack Chaferton",
+      "palette_id": 35,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 517,
+      "name": "Armand",
+      "palette_id": 36,
+      "unlocked": true,
+      "preview": "original illustration"
+    },
+    {
+      "id": 518,
+      "name": "Skunk",
+      "palette_id": 37,
+      "unlocked": true,
+      "preview": "original illustration"
+    }
+  ]
+}

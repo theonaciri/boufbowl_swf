@@ -26,6 +26,8 @@ package com.ankamagames.boufbowl.client.application.controller
    import com.ankamagames.boufbowl.client.premiumservice.common.model.item.SigilBackgroundItem;
    import com.ankamagames.boufbowl.client.premiumservice.common.model.item.SigilChargeItem;
    import com.ankamagames.boufbowl.client.premiumservice.common.model.item.StadiumItem;
+   import com.ankamagames.boufbowl.client.premiumservice.common.model.item.UniqueCharacterItem;
+   import com.ankamagames.boufbowl.client.i18n.LangConstants;
    import com.ankamagames.boufbowl.client.proto.Converters;
    import com.ankamagames.boufbowl.config.IBoufbowlConfig;
    import com.ankamagames.boufbowl.protocol.CustomisationSessionAcceptedMessage;
@@ -135,6 +137,15 @@ package com.ankamagames.boufbowl.client.application.controller
          var backgrounds:LinkedMap = new LinkedMap();
          var charges:LinkedMap = new LinkedMap();
          var stadiums:LinkedMap = new LinkedMap();
+         var uniqueCharacters:LinkedMap = new LinkedMap();
+         // Unique IDs are from the client translations; attributes are preview data.
+         var heroes:Array = [
+            [501,10,1,15], [502,9,2,16], [503,10,2,17], [504,12,1,18],
+            [505,6,1,19], [506,11,2,20], [507,2,2,21], [508,1,2,22],
+            [509,4,1,23], [510,3,2,24], [511,7,1,25], [512,3,1,26],
+            [513,13,1,27], [514,8,1,28], [515,5,1,34], [516,12,1,35],
+            [517,11,1,36], [518,14,1,37]
+         ];
          var attributes:Map = new Map();
          var i:int;
          for(i=1;i<=14;i++)
@@ -143,13 +154,18 @@ package com.ankamagames.boufbowl.client.application.controller
             attributes.addItem(i,new ClassAttributesModel(i,1+(i%4),new BoufbowlerAttributesModel(12,10,10,10,16,3)));
          }
          clubPalettes.addItem(1,new ClubPaletteItem(1,0,1,colors,colors,colors));
+         for each(var hero:Array in heroes)
+         {
+            uniqueCharacters.addItem(hero[0],new UniqueCharacterItem(2,0,hero[0],hero[1],hero[2]));
+            palettes.addItem(hero[3],new BoufbowlerPaletteItem(2,0,hero[3],0,hero[0],hair,eyes,skin));
+         }
          for(i=1;i<=9;i++) stadiums.addItem(i,new StadiumItem(1,0,i));
          for(i=1;i<=8;i++)
          {
             backgrounds.addItem(i,new SigilBackgroundItem(1,0,i));
             charges.addItem(i,new SigilChargeItem(1,0,i));
          }
-         premium.updateCustomisationAssetsLists(stadiums,new LinkedMap(),clubPalettes,palettes,backgrounds,charges);
+         premium.updateCustomisationAssetsLists(stadiums,uniqueCharacters,clubPalettes,palettes,backgrounds,charges);
          premium.updateCustomisationCredits(10,10,10,10);
          premium.updateTournamentTickets(0);
          var rules:RulesConstants = injector.getInstance(RulesConstants);
@@ -179,6 +195,28 @@ package com.ankamagames.boufbowl.client.application.controller
             teams.addItem(team);
          }
          var current:ClubModel = injector.getInstance(ClubModel);
+         var translator:ITranslator = injector.getInstance(ITranslator);
+         for(var galleryIndex:int=0;galleryIndex<2;galleryIndex++)
+         {
+            var galleryRoster:LinkedMap = new LinkedMap();
+            for(i=0;i<10;i++)
+            {
+               var heroIndex:int = galleryIndex*10+i;
+               var galleryId:Int64 = new Int64(i+1);
+               if(heroIndex < heroes.length)
+               {
+                  hero = heroes[heroIndex];
+                  galleryRoster.addItem(galleryId,new ClubBoufbowlerModel(galleryId,translator.getEnumTranslation(LangConstants.UNIQUE_CHARACTER_NAME_ENUM,hero[0]),hero[1],hero[2],hero[0],1+(hero[1]%4),hero[3],2,hair[0],skin[0],eyes[0],colors[galleryIndex],new BoufbowlerAttributesModel(12,10,10,10,16,3)));
+               }
+               else
+               {
+                  galleryRoster.addItem(galleryId,new ClubBoufbowlerModel(galleryId,playerNames[i],i+1,1,0,1+((i+1)%4),i+1,1,hair[0],skin[0],eyes[0],colors[galleryIndex],new BoufbowlerAttributesModel(12,10,10,10,16,3)));
+               }
+            }
+            var gallery:ClubModel = new ClubModel();
+            gallery.setup(new ClubInformation(new UInt64(galleryIndex+4),galleryIndex == 0 ? "Offline Legends" : "Offline Heroes",1,1,1,colors[galleryIndex],Color3.WHITE,colors[galleryIndex]),galleryRoster,false);
+            teams.addItem(gallery);
+         }
          var first:ClubModel = teams.getItemAt(0);
          current.setup(first.clubInformation,first.boufbowlers,false);
          current.predefinedClubs = teams;

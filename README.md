@@ -1,5 +1,7 @@
 # Boufbowl offline menus and tutorial on Linux
 
+An Android APK and build instructions are available in [android/README.md](android/README.md).
+
 ## Requirements
 
 Use Linux with Python 3, Wine, and X11 or XWayland. Adobe Flash Player 32 is
@@ -14,7 +16,7 @@ the patched Flash client; they require no Boufbowl account or game server.
 Run this from any directory:
 
 ```sh
-/home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_tutorial/play.sh
+/home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_swf/play.sh
 ```
 
 The launcher starts the HTTP server on an available localhost port, then opens
@@ -24,7 +26,7 @@ playing. Closing Flash Player stops the server automatically.
 English is the default. To play in French:
 
 ```sh
-/home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_tutorial/play.sh --lang fr
+/home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_swf/play.sh --lang fr
 ```
 
 Supported language codes are `en`, `fr`, `de`, and `es`. Run the launcher again
@@ -33,7 +35,7 @@ to start a fresh offline session.
 To enter the tutorial directly:
 
 ```sh
-/home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_tutorial/play.sh --mode tutorial --lang en
+/home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_swf/play.sh --mode tutorial --lang en
 ```
 
 ## Browse the menus
@@ -44,7 +46,7 @@ The navigation strip at the upper right provides **Home**, **Teams**,
 | Screen | How to open it | Offline behavior |
 | --- | --- | --- |
 | Main menu | Default startup or **Home** | Shows a local team and ten players. |
-| Team selection | **Teams** | Browse three sample teams; choose colors, an emblem, and a valid team name. |
+| Team selection | **Teams** | Browse three sample teams and two special-character teams; choose colors, an emblem, and a valid team name. |
 | Team customization | **Customize the team** | Change the name, colors, and emblem; **OK** applies changes to the session. |
 | New team | **New team** | Opens the original team builder with local customization options. |
 | Player customization | Icons beside a player on Home | Explore appearance and composition; **OK** applies changes to the session. |
@@ -59,6 +61,50 @@ preview data. Edits last until the player closes; restarting resets them.
 Use alphabetic player names of 4–30 characters: the original validator rejects
 digits and names outside that length range.
 
+## Unlocked characters
+
+All 14 regular classes are available in both genders, together with all 18
+special characters named by the client. Open a player's customization menu,
+select a class on the left, then select a special character's starred portrait.
+Class changes are also enabled in the appearance editor for this offline copy.
+Click **OK**, then **Confirm**, to apply the choice to the current session.
+
+To browse the whole special roster quickly, open **Teams** and advance to
+**Offline Legends** (team 4/5) or **Offline Heroes** (team 5/5). These teams
+contain all 18 special characters. Goultard is the fifth player in Offline
+Legends; you can also select his starred portrait under the Iop class.
+
+| Character ID | Special character (English client name) |
+| --- | --- |
+| 501 | Kriss Krass |
+| 502 | Pita Smisse |
+| 503 | Maud |
+| 504 | The Masked Gobbowler |
+| 505 | Goultard the Barbarian |
+| 506 | Amalia Sheran Sharm |
+| 507 | Miranda |
+| 508 | Evangelyne |
+| 509 | Ruel Stroud |
+| 510 | Shosanne |
+| 511 | Kabrok |
+| 512 | Brumen Tinctorias |
+| 513 | Count Harebourg |
+| 514 | Pan Diego |
+| 515 | Ironman |
+| 516 | Jack Chaferton |
+| 517 | Armand |
+| 518 | Skunk |
+
+Regular classes: Cra, Ecaflip, Eniripsa, Enutrof, Feca, Iop, Osamodas, Pandawa,
+Rogue, Sacrier, Sadida, Sram, Xelor, and Masqueraider.
+
+Special characters use their original illustrations in the editor and team
+views. Their separate animated skin files were not included in the supplied
+archive, so the small editor preview also uses the illustration and hides the
+animation arrows. Regular characters retain their animated previews. Class
+attributes and colors remain offline preview data. The machine-readable roster
+is in [resources/offline_characters.json](resources/offline_characters.json).
+
 ## Start server and client separately
 
 Use this when you want to keep the asset server running between client sessions.
@@ -69,7 +115,7 @@ You do not need these steps when using `play.sh`.
 Serve the copy's root directory, which contains `bin/`, `assets/`, and `resources/`:
 
 ```sh
-cd /home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_tutorial
+cd /home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_swf
 python3 -m http.server 8765 --bind 127.0.0.1
 ```
 
@@ -81,7 +127,7 @@ Set up the same dedicated Wine environment used by the launcher and open the
 SWF through the server:
 
 ```sh
-cd /home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_tutorial/bin
+cd /home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_swf/bin
 export WINEPREFIX="${XDG_DATA_HOME:-$HOME/.local/share}/boufbowl-tutorial/wine"
 export WINEDEBUG=-all
 mkdir -p "$(dirname "$WINEPREFIX")"
@@ -140,7 +186,7 @@ requests. Manual mode shows diagnostics directly in the two terminals.
 The patched SWF is already built. To rebuild using JPEXS FFDec 26.3.0 and Java:
 
 ```sh
-cd /home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_tutorial
+cd /home/naciri_t/projects/Godot/BoufBowlExtraFiles/boufbowl_swf
 python3 patches/rebuild.py --ffdec /path/to/ffdec.jar
 ```
 
@@ -156,12 +202,22 @@ archive's missing `fleche_drop_01.mp3`. The rebuild reads the untouched
 original SWF and replaces these classes using
 [FFDec's script replacement command](https://github.com/jindrapetrik/jpexs-decompiler/wiki/Commandline-arguments).
 
+The SWF is a binary containing compiled ActionScript 3 bytecode and embedded
+assets. FFDec decompiles selected classes to `.as` source, recompiles the edited
+source to bytecode, and replaces those classes in a new SWF. The `.as` files are
+the readable patch sources; `rebuild.py` applies them to the original binary.
+
 ## Rendered verification
 
 Checked in Adobe Flash Player 32 under Wine: Home, team selection, team and
 player editors, saving colors and appearance, leaderboard, tournaments, match
 setup, options, tutorial entry and return to Home, and quitting the player.
 The automatic launcher exits successfully and stops its asset server on quit.
+Both special-character teams render all 18 original illustrations. Goultard can
+be selected and saved to the current team; switching between a special character
+and a regular character restores the appropriate preview and animation controls.
 
 Screenshots: [Home](evidence/home.png), [team selection](evidence/team-selection.png),
 [player editor](evidence/player-editor.png), [options](evidence/options.png).
+Character screenshots: [Goultard editor](evidence/goultard-editor.png),
+[Goultard saved](evidence/goultard-saved.png), [heroes team](evidence/heroes-team.png).
