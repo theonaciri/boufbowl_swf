@@ -8,6 +8,7 @@ probability intervals and periods longer than matches fail before builds.
 | Section | Runtime behavior |
 | --- | --- |
 | general | Language, server address, sound, scene presentation, customization and startup mode |
+| general.matchmaking | Rating window and widening, heartbeat timeout and total search timeout |
 | general.tournament | Free local league ID, stadium, Unix-second time window and win/draw/loss points |
 | rules.match | Turns, periods, ability budget, placement/planning deadlines, role limit and between-turn regeneration |
 | rules.classes | Earth/air/fire/water, health, regeneration and class roles; enforced on saved and match rosters |
@@ -28,6 +29,28 @@ placement and role limits; stadium match overrides expose its supported turn,
 period and ability-budget fields. Client distance previews and authoritative
 engine ranges have separate settings and different formulas; adjust both when
 changing range balance. Client previews do not determine simulation authority.
+
+Reception and scoring settings live under `rules.simulation.ball`:
+
+- `reception_requires_air` defaults to `true`: at least one AIR enables an airborne
+  catch/interception attempt. FEU alone enables ground pickup, not reception.
+  The older `actions.element_effects.feu.used_for_reception` field is retained for
+  configuration compatibility and no longer controls reception.
+- `goal_line_half_width` defaults to `12.5`, measured in client horizontal cell
+  units (`x = q + r/2`). A living, unstunned carrier scores at or beyond the
+  opponent's line. Crossing without the ball or crossing your own line cannot
+  score. This is independent of reserve columns and odd-row offsets.
+- Catch probability still uses `simulation.catch_base`, `catch_stat`, `catch_air`
+  and `catch_feu`, clamped by the configured probability bounds. A successful
+  throw and AIR allocation enable a chance to catch; they do not guarantee it.
+  The ball must also pass within the configured radius and catchable height.
+
+The placement silhouette is defined as readable row spans in
+`backend/placement.py`, reconstructed from the supplied reference. It reflects
+horizontally with the team's current terrain side, including even periods.
+`placement.ball_exclusion_radius_cells` requires cells to be at least that many
+hexes from the center; settings that erase a zone fail validation. An empty
+placement submission uses the five default zone positions.
 
 The replacement stat mapping is earth -> strength, fire -> agility, water ->
 endurance, air -> precision. Ability effects and server probability mechanics use
@@ -71,3 +94,13 @@ Unavailable stadium models fall back to Farmstead without changing stadium rules
 Missing character animations use Cra while preserving class and identity. Assets,
 music and cutscene mappings remain in `resources/stadiums.json`. See
 [backend operation](backend-operation.md) for service setup and replays.
+
+Rebuild simulation source overlays with `bun backend/build-worker.ts` (or Linux
+packaging's `--rebuild-worker`). The build substitutes `backend/simulator/ball.ts`
+for the sibling ball module without modifying archived or sibling files. Normal
+checkouts continue to use the distributed `backend/build/engine.js`.
+
+The corrected simulation is marked `+client-ball-2`. Older saved scenarios can
+still be exported and played, but re-simulation verification of recordings made
+under earlier reception/scoring algorithms can fail. Existing matches use the
+corrected default algorithm; explicit balance values remain snapshotted.

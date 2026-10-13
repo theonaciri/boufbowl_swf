@@ -42,7 +42,7 @@
       "publicHappySound": "interactions/reac_bouftous.mp3"
     },
     "BRAKMAR": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_brakmar/model.dae",
       "cellStrokeColor": "0xbbbbbb",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0x777777",
@@ -80,7 +80,7 @@
       "publicHappySound": "interactions/reac_public_03.mp3"
     },
     "BONTA": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_grass/model.dae",
       "cellStrokeColor": "0x333333",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0xff0000",
@@ -117,7 +117,7 @@
       "publicHappySound": "interactions/reac_public_03.mp3"
     },
     "BEACH": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_sand/model.dae",
       "cellStrokeColor": "0x333333",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0xff0000",
@@ -157,7 +157,7 @@
       "publicHappySound": "interactions/reac_crabes.mp3"
     },
     "FRIGOST": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_clouds/model.dae",
       "cellStrokeColor": "0x333333",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0xff0000",
@@ -195,7 +195,7 @@
       "publicHappySound": "interactions/reac_yetis.mp3"
     },
     "KARA": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_kara/model.dae",
       "cellStrokeColor": "0x5cc0f7",
       "cellStrokeAlpha": "0.3",
       "centerPlacementZoneColor": "0x0068ff",
@@ -232,7 +232,7 @@
       "publicHappySound": "interactions/reac_public_03.mp3"
     },
     "FOREST": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_meadow/model.dae",
       "cellStrokeColor": "0x333333",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0xff0000",
@@ -268,7 +268,7 @@
       "publicHappySound": "interactions/reac_public_03.mp3"
     },
     "BALLOTIN": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_wabbits/model.dae",
       "cellStrokeColor": "0x333333",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0xff0000",
@@ -304,7 +304,7 @@
       "publicHappySound": "interactions/reac_public_03.mp3"
     },
     "PIXEL": {
-      "path": "006_prairies/model.dae",
+      "path": "theme_prairies/model.dae",
       "cellStrokeColor": "0x333333",
       "cellStrokeAlpha": "0.1",
       "centerPlacementZoneColor": "0xff8133",

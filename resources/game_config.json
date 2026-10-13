@@ -1,7 +1,7 @@
 {
   "$schema": "./game_config.schema.json",
   "schema_version": 1,
-  "rules_version": "boufbowl-custom-1",
+  "rules_version": "boufbowl-custom-2",
   "general": {
     "language": "en",
     "server": {
@@ -26,6 +26,12 @@
       "win_points": 3,
       "draw_points": 1,
       "loss_points": 0
+    },
+    "matchmaking": {
+      "rating_window": 200,
+      "widen_per_second": 5,
+      "heartbeat_timeout": 30,
+      "search_timeout": 300
     }
   },
   "rules": {
@@ -121,7 +127,9 @@
         "arc_height_cells": 2.5,
         "catch_radius_cells": 2.0,
         "intercept_radius_cells": 2.0,
-        "intercept_height_threshold": 1.5
+        "intercept_height_threshold": 1.5,
+        "reception_requires_air": true,
+        "goal_line_half_width": 12.5
       },
       "combat": {
         "duel": {

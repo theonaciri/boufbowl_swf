@@ -33,6 +33,8 @@ def main():
                 else: raise RuntimeError('Client did not connect within 60 seconds')
                 time.sleep(1)
                 subprocess.run(['xdotool','mousemove','650','60','click','1'],check=True)
+                time.sleep(.5)
+                subprocess.run(['xdotool','mousemove','380','290','click','1'],check=True)
                 deadline=time.monotonic()+100;match=None
                 while time.monotonic()<deadline:
                     with service.store.lock:

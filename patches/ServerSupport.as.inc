@@ -16,6 +16,14 @@
       private static var serverPanel:Sprite;
       private static var serverProfileName:String;
       private static var serverEmbedded:Boolean = false;
+      private static var serverAuthMode:String = "device";
+      private static var serverAccountUsername:String;
+      private static var serverAccountBusy:Boolean = false;
+      private static var serverQueueWaiting:Boolean = false;
+      private static var serverSpectating:String;
+      private static var serverSubscriptions:Array=[];
+      public static function serverSubscribed(language:String) : Boolean { return serverSubscriptions.indexOf(language)>=0; }
+      private static var serverReplayFile:flash.net.FileReference;
 
       public static function serverMode() : Boolean { return serverActive; }
 
@@ -27,10 +35,14 @@
             serverLabel.defaultTextFormat = new TextFormat("_sans",12,0xffffff);
             serverLabel.background = true;
             serverLabel.backgroundColor = 0x20252b;
-            serverLabel.x = 10; serverLabel.y = 570; serverLabel.width = 1000; serverLabel.height = 24;
+            serverLabel.x = 10; serverLabel.y = 570; serverLabel.width = 512; serverLabel.height = 24;
             serverLabel.mouseEnabled = false;
          }
+         serverLabel.width = Math.min(512, Stage(app.contextInjector.getInstance(Stage)).stageWidth / 2);
+         serverLabel.wordWrap = true;
          serverLabel.text = text;
+         serverLabel.height = Math.min(72, serverLabel.textHeight + 6);
+         serverLabel.y = 594 - serverLabel.height;
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverLabel);
       }
 
@@ -53,7 +65,13 @@
          var oldProfileName:String = serverProfileName;
          var explicitLocal:Boolean = url == "";
          stopMock();
+         if(oldSession != null && !resume)
+         {
+            var chat:com.ankamagames.boufbowl.client.chat.model.IChatModel = app.contextInjector.getInstance(com.ankamagames.boufbowl.client.chat.model.IChatModel);
+            chat.clearMessages(); chat.clear();
+         }
          serverGeneration++;
+         serverAccountBusy = false;
          serverActive = true;
          clearTimeout(serverPollTimer);
          serverSending = false; serverPolling = false; serverQueue = [];
@@ -79,10 +97,11 @@
          serverStatus("Connecting to " + url);
          var clubs:Array = [];
          for(var index:int=0;index<teams.numItems;index++) clubs.push(serverSnapshot(teams.getItemAt(index)));
-         serverRequest("hello",{session:serverSession,nickname:profileName,clubs:clubs},function(response:Object):void {
+         serverRequest("hello",{session:serverSession,nickname:profileName,clubs:clubs,language:AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang},function(response:Object):void {
             if(!response.ok) { serverStatus("Connection failed: " + response.error); serverConnectionPanel(); return; }
             serverSession = String(response.session);
             serverStorage.data.session = serverSession;
+            if(response.auth_mode == "device") serverStorage.data.deviceSession = serverSession;
             serverCursor = Number(response.cursor);
             serverStorage.flush();
             connection.data.profile = profileName;
@@ -98,8 +117,20 @@
 
       private static function serverMetadata(response:Object) : void
       {
+         if(response.hasOwnProperty("spectating")) serverSpectating = response.spectating;
+         if(response.subscriptions != null) serverSubscriptions=response.subscriptions;
+         if(response.language != null) AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang=String(response.language);
          if(response.abilities != null) serverAbilities = response.abilities;
          if(response.club_names != null) serverNames = response.club_names;
+         if(response.auth_mode != null) serverAuthMode = String(response.auth_mode);
+         if(response.profile != null) serverAccountUsername = response.profile.account_username;
+         if(response.matchmaking != null)
+         {
+            var waiting:Boolean = response.matchmaking.status == "waiting";
+            if(waiting) serverStatus("Searching for an opponent (" + response.matchmaking.waiting_players + " players). Play opens search controls.");
+            else if(serverQueueWaiting) serverStatus(response.current_match != null ? "Opponent found" : "Search ended");
+            serverQueueWaiting = waiting;
+         }
          if(response.profile != null) AccountInformations(app.contextInjector.getInstance(AccountInformations)).nickname = response.profile.nickname;
          if(response.current_match != null) serverCurrentMatch = String(response.current_match);
          else if(response.hasOwnProperty("current_match")) serverCurrentMatch = null;
@@ -182,6 +213,8 @@
 
       private static function serverPacket(packet:Object) : void
       {
+         if(packet.channel == "COMMUNITY") { if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
+         if(mockActive && packet.channel == "MATCH") return;
          if(packet.type == "MATCH_INFORMATION") serverInMatch = true;
          if(packet.channel == "MATCH" && !serverInMatch) return;
          var data:ByteArray = new ByteArray();
@@ -271,15 +304,127 @@
       private static function serverPlay() : void
       {
          if(serverCurrentMatch != null) { startServer(serverBase.replace(/\/api\/$/,""),null,true); return; }
-         var creation:MatchCreationModel = app.contextInjector.getInstance(MatchCreationModel);
-         serverSend({operation:"cpu_match",stadium:creation.hasSelectedStadium ? creation.selectedStadium : 1});
+         serverDialog("Play",250);
+         var selected:int = 0;
+         var stadiums:Array = @ENABLED_STADIUMS@;
+         var names:Array = ["Any stadium","Farmstead","Brakmar","Beach","Bonta","Frigost","Kara","Forest","Ballotin","Pixel"];
+         var stadiumLabel:TextField = serverText(serverPanel,"Any stadium",20,45,430);
+         serverAction(serverPanel,"Change stadium",560,45,180,function():void {
+            selected = (selected + 1) % (stadiums.length + 1);
+            stadiumLabel.text = selected == 0 ? "Any stadium" : names[int(stadiums[selected-1])];
+         });
+         serverAction(serverPanel,"Find opponent",20,85,160,function():void {
+            serverClosePanel(); serverSend({operation:"queue_join",stadiums:selected == 0 ? stadiums : [stadiums[selected-1]]});
+         });
+         serverAction(serverPanel,"Play CPU",200,85,140,function():void {
+            serverClosePanel(); serverSend({operation:"cpu_match",stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
+         });
+         serverAction(serverPanel,"Cancel search",360,85,170,function():void { serverSend({operation:"queue_leave"}); });
+         serverAction(serverPanel,"Community",550,200,180,function():void { serverCommunityPanel("Friends"); });
+         serverText(serverPanel,"Challenge a player by nickname",20,130,500);
+         var guest:TextField = serverInput(serverPanel,"",20,160,490);
+         serverAction(serverPanel,"Challenge",540,160,180,function():void {
+            serverClosePanel(); serverSend({operation:"challenge",nickname:guest.text,stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
+         });
+      }
+
+      private static function serverClosePanel() : void
+      {
+         if(serverPanel != null && serverPanel.parent != null) serverPanel.parent.removeChild(serverPanel);
+      }
+
+      private static function serverDialog(title:String, height:int) : void
+      {
+         serverClosePanel(); serverPanel = new Sprite();
+         serverPanel.graphics.beginFill(0x20252b); serverPanel.graphics.drawRect(0,0,800,height); serverPanel.graphics.endFill();
+         serverPanel.x = 110; serverPanel.y = 150;
+         serverText(serverPanel,title,20,10,680);
+         serverAction(serverPanel,"Close",690,10,90,function():void { serverClosePanel(); });
+         Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
+      }
+
+      private static function serverText(parent:Sprite, text:String, x:int, y:int, width:int) : TextField
+      {
+         var field:TextField = new TextField(); field.defaultTextFormat = new TextFormat("_sans",15,0xffffff);
+         field.text = text; field.x = x; field.y = y; field.width = width; field.height = 28; parent.addChild(field); return field;
+      }
+
+      private static function serverInput(parent:Sprite, text:String, x:int, y:int, width:int, secret:Boolean = false) : TextField
+      {
+         var field:TextField = serverText(parent,text,x,y,width); field.type = "input";
+         field.background = true; field.backgroundColor = 0xffffff; field.textColor = 0x000000;
+         field.displayAsPassword = secret; parent.addChild(field); return field;
+      }
+
+      private static function serverAction(parent:Sprite, title:String, x:int, y:int, width:int, callback:Function) : void
+      {
+         var button:Sprite = new Sprite(); button.x=x; button.y=y; button.buttonMode=true;
+         button.graphics.beginFill(0x3578cf); button.graphics.drawRect(0,0,width,28); button.graphics.endFill();
+         var label:TextField = serverText(button,title,4,2,width-8); label.mouseEnabled=false;
+         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); }); parent.addChild(button);
+      }
+
+      private static function serverAccountPanel() : void
+      {
+         if(serverSession == null) { serverStatus("Connect to a server first"); return; }
+         if(serverCurrentMatch != null) { serverStatus("Finish or surrender your match before changing accounts"); return; }
+         serverDialog("Account: " + (serverAuthMode == "account" ? serverAccountUsername : "anonymous device"),330);
+         serverText(serverPanel,"Username",20,55,130);
+         var username:TextField = serverInput(serverPanel,serverAccountUsername != null ? serverAccountUsername : "",170,55,550);
+         serverText(serverPanel,"Password",20,95,130);
+         var password:TextField = serverInput(serverPanel,"",170,95,550,true);
+         serverText(serverPanel,"New password",20,135,150);
+         var replacement:TextField = serverInput(serverPanel,"",170,135,550,true);
+         serverText(serverPanel,"Recovery code",20,175,150);
+         var recovery:TextField = serverInput(serverPanel,"",170,175,550,true);
+         serverAction(serverPanel,"Log in",20,215,130,function():void { serverAccountRequest("login",username,password,replacement); });
+         serverAction(serverPanel,"Create / link",170,215,160,function():void { serverAccountRequest("register",username,password,replacement); });
+         serverAction(serverPanel,"Change password",350,215,200,function():void { serverAccountRequest("password",username,password,replacement); });
+         serverAction(serverPanel,"Log out",570,215,160,function():void { serverAccountRequest("logout",username,password,replacement); });
+         serverAction(serverPanel,"Use device profile",20,255,220,function():void { serverUseDevice(); });
+         serverAction(serverPanel,"Recover account",260,255,220,function():void { serverAccountRequest("recover",username,password,replacement,recovery); });
+         serverText(serverPanel,"Passwords: 10–128 characters. Create links this profile and preserves your clubs.",20,295,740);
+      }
+
+      private static function serverUseDevice() : void
+      {
+         if(serverAccountBusy) return;
+         serverStorage.data.session = serverStorage.data.deviceSession != null ? serverStorage.data.deviceSession : null;
+         serverStorage.flush(); serverClosePanel();
+         startServer(serverEmbedded ? "" : serverBase.replace(/\/api\/$/,""),serverProfileName);
+      }
+
+      private static function serverAccountRequest(action:String, username:TextField, password:TextField, replacement:TextField, recovery:TextField = null) : void
+      {
+         if(serverAccountBusy) return;
+         if(action == "logout" && serverAuthMode == "device") { serverStatus("You are already using the device profile"); return; }
+         serverAccountBusy = true;
+         var clubs:Array = []; for(var i:int=0;i<teams.numItems;i++) clubs.push(serverSnapshot(teams.getItemAt(i)));
+         serverRequest("account",{action:action,username:username.text,password:password.text,new_password:replacement.text,
+             recovery_code:recovery != null ? recovery.text : null,session:serverSession,nickname:serverProfileName,clubs:clubs},function(response:Object):void {
+            serverAccountBusy = false;
+            if(!response.ok) { serverStatus(response.error); return; }
+            password.text=""; replacement.text="";
+               if(action == "logout") { delete serverStorage.data.accountSession; serverUseDevice(); return; }
+            serverSession = String(response.session);
+            serverStorage.data.session = serverSession; serverStorage.data.accountSession = serverSession;
+            if(action == "password" || action == "recover") delete serverStorage.data.deviceSession;
+            serverStorage.flush(); serverClosePanel();
+            startServer(serverEmbedded ? "" : serverBase.replace(/\/api\/$/,""),serverProfileName);
+            if(response.recovery_code != null)
+            {
+               serverDialog("Save your recovery code",180);
+               serverText(serverPanel,"Keep this code privately. It can reset your password and is shown only now.",20,50,760);
+               serverInput(serverPanel,String(response.recovery_code),20,95,720);
+            }
+         });
       }
 
       private static function serverConnectionPanel() : void
       {
          if(serverPanel != null && serverPanel.parent != null) serverPanel.parent.removeChild(serverPanel);
          serverPanel = new Sprite();
-         serverPanel.graphics.beginFill(0x20252b); serverPanel.graphics.drawRect(0,0,800,155); serverPanel.graphics.endFill();
+         serverPanel.graphics.beginFill(0x20252b); serverPanel.graphics.drawRect(0,0,800,195); serverPanel.graphics.endFill();
          serverPanel.x = 110; serverPanel.y = 180;
          var title:TextField = new TextField(); title.defaultTextFormat = new TextFormat("_sans",16,0xffffff);
          title.text = "Connect to your Boufbowl server"; title.width = 760; title.height = 30; title.x = 20; title.y = 10;
@@ -288,7 +433,7 @@
          input.defaultTextFormat = new TextFormat("_sans",16,0x000000); input.width = 620; input.height = 30; input.x = 20; input.y = 50;
          input.text = serverEmbedded ? "" : serverBase != null ? serverBase.replace(/\/api\/$/,"") : @DEFAULT_URL@;
          serverPanel.addChild(input);
-         var profileLabel:TextField = new TextField(); profileLabel.text = "Profile:"; profileLabel.textColor = 0xffffff;
+         var profileLabel:TextField = new TextField(); profileLabel.text = "Device:"; profileLabel.textColor = 0xffffff;
          profileLabel.x = 20; profileLabel.y = 100; profileLabel.width = 80; profileLabel.height = 25;
          serverPanel.addChild(profileLabel);
          var profile:TextField = new TextField(); profile.type = "input"; profile.background = true; profile.backgroundColor = 0xffffff;
@@ -303,5 +448,191 @@
             serverPanel.parent.removeChild(serverPanel); startServer(input.text,profile.text);
          });
          serverPanel.addChild(button);
+         serverAction(serverPanel,"Account",660,95,100,function():void { serverAccountPanel(); });
+         serverAction(serverPanel,"Community",20,140,180,function():void { serverCommunityPanel("Friends"); });
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
+      }
+
+      private static function serverCommunityRequest(body:Object, complete:Function) : void
+      {
+         body.session = serverSession;
+         body.request_id=String(getTimer()) + "-" + String(Math.random());
+         serverRequest("community",body,function(response:Object):void {
+            if(!response.ok) { serverStatus("Community: " + response.error); return; }
+            serverMetadata(response); complete(response);
+         });
+      }
+
+      private static function serverCommunityPanel(tab:String, offset:int = 0, selected:String = "", before:Number = 0) : void
+      {
+         if(serverSession == null) { serverStatus("Connect first"); return; }
+         serverDialog("Community: " + tab,430); serverPanel.y=95;
+         var panel:Sprite=serverPanel;
+         var tabs:Array=["Friends","Rankings","History","Watch","Messages","Channels"];
+         for(var i:int=0;i<tabs.length;i++) serverCommunityTab(String(tabs[i]),20+i*125);
+         var listing:TextField=serverText(panel,"Loading...",20,85,760);
+         listing.height=220; listing.multiline=true; listing.wordWrap=true; listing.selectable=true;
+         var choice:TextField=serverInput(panel,selected,20,310,320);
+         serverText(panel,tab == "History" || tab == "Watch" ? "Match ID" : "Player nickname",350,310,180);
+         serverAction(panel,"Refresh",620,310,150,function():void { serverCommunityPanel(tab,offset,choice.text); });
+         listing.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void {
+            var character:int=listing.getCharIndexAtPoint(listing.mouseX,listing.mouseY);
+            if(character<0) return;
+            var line:String=listing.getLineText(listing.getLineIndexOfChar(character));
+            var found:Array;
+            if(tab == "Friends") { found=/^  (.*?) \((?:online|offline)/.exec(line); if(found != null) choice.text=found[1]; }
+            else if(tab == "Rankings") { found=/^\d+\. (.*?)   /.exec(line); if(found != null) choice.text=found[1]; }
+            else if(tab == "History" || tab == "Watch") { found=/^#(\d+)/.exec(line); if(found != null) choice.text=found[1]; }
+         });
+         var action:String=tab == "Friends" || tab == "Channels" ? "overview" : tab == "Rankings" ? "rankings" : tab == "History" ? "history" : tab == "Watch" ? "live" : "messages";
+         if(tab == "Messages")
+         {
+            listing.text="Enter a nickname and press Refresh to open a private conversation.";
+            var messageCursor:Number=0;
+            var messageRequest:Object={action:"messages",nickname:selected};
+            if(before>0) messageRequest.before=before;
+            if(selected != "") serverCommunityRequest(messageRequest,function(data:Object):void {
+               if(serverPanel != panel) return;
+               var lines:Array=[];
+               for each(var message:Object in data.messages) lines.push(message["from"] + ": " + message.message);
+               listing.text=lines.join("\n"); listing.scrollV=listing.maxScrollV; messageCursor=Number(data.before);
+            });
+            var draft:TextField=serverInput(panel,"",20,350,580);
+            serverAction(panel,"Send",620,350,150,function():void {
+               serverCommunityRequest({action:"message",nickname:choice.text,message:draft.text},function(data:Object):void { serverCommunityPanel("Messages",0,choice.text); });
+            });
+            serverAction(panel,"Older messages",20,390,180,function():void {
+               if(messageCursor>0) serverCommunityPanel("Messages",0,choice.text,messageCursor);
+            });
+            return;
+         }
+         serverCommunityRequest({action:action,offset:offset},function(data:Object):void {
+            if(serverPanel != panel) return;
+            var lines:Array=[];
+            if(tab == "Friends")
+            {
+               for each(var group:String in ["friends","incoming","outgoing","blocked"])
+               {
+                  lines.push(group.toUpperCase());
+                  for each(var friend:Object in data[group]) lines.push("  " + friend.nickname + (friend.online ? " (online" + (friend.match != null ? ", match " + friend.match : "") + ")" : " (offline)"));
+               }
+            }
+            else if(tab == "Channels")
+            {
+               choice.text=data.channels.join(",");
+               lines.push("Subscribed global languages: " + data.channels.join(", "));
+               lines.push("Each language is a separate room: fr, en, de, es.");
+               lines.push("The match room includes both teams and spectators.");
+               lines.push("Private conversations are saved and available in Messages.");
+               lines.push("Blocked players cannot message, invite, spectate or queue against you.");
+            }
+            else if(tab == "Rankings")
+               for each(var row:Object in data.rows) lines.push(row.rank + ". " + row.player.nickname + "   " + row.rating + " rating   W " + row.wins + " / D " + row.draws + " / L " + row.losses);
+            else
+               for each(var match:Object in data.matches) lines.push("#" + match.id + "  " + match.players.join(" vs ") + "  " + match.score.join(":") + (tab == "History" ? "  " + match.phase + " / " + match.turns + " turns" + (match.side == null ? " (watched)" : "") : "  turn " + match.turn));
+            listing.text=lines.length>0 ? lines.join("\n") : "No entries yet.";
+            if(data.hasOwnProperty("more"))
+            {
+               if(offset>0) serverAction(panel,"Previous",500,390,130,function():void { serverCommunityPanel(tab,Math.max(0,offset-20),choice.text); });
+               if(data.more) serverAction(panel,"Next",640,390,130,function():void { serverCommunityPanel(tab,offset+20,choice.text); });
+            }
+         });
+         if(tab == "Friends")
+         {
+            var verbs:Array=["add","accept","reject","remove","block","unblock","cancel"];
+            for(i=0;i<verbs.length;i++) serverFriendButton(String(verbs[i]),20+i*108,choice);
+            serverAction(panel,"Message",20,390,130,function():void { serverCommunityPanel("Messages",0,choice.text); });
+            serverAction(panel,"Challenge",165,390,145,function():void { serverClosePanel(); serverSend({operation:"challenge",nickname:choice.text,stadium:@ENABLED_STADIUMS@[0]}); });
+            serverAction(panel,"Spectate",325,390,145,function():void { serverCommunityRequest({action:"spectate",nickname:choice.text},function(data:Object):void { serverClosePanel(); }); });
+         }
+         else if(tab == "Rankings")
+            serverAction(panel,"Find player",20,350,160,function():void {
+               serverCommunityRequest({action:"rankings",nickname:choice.text},function(data:Object):void { serverCommunityPanel("Rankings",int(data.offset),choice.text); });
+            });
+         else if(tab == "History")
+         {
+            serverAction(panel,"Watch replay",20,350,180,function():void { serverLoadReplay(choice.text,false); });
+            serverAction(panel,"Save replay",220,350,180,function():void { serverLoadReplay(choice.text,true); });
+            serverAction(panel,"Open replay file",420,350,180,function():void {
+               if(serverCurrentMatch != null || serverSpectating != null) { serverStatus("Leave the match before opening a replay"); return; }
+               serverReplayFile=new flash.net.FileReference();
+               serverReplayFile.addEventListener(Event.SELECT,function(event:Event):void { serverReplayFile.load(); });
+               serverReplayFile.addEventListener(Event.COMPLETE,function(event:Event):void {
+                  try { serverStartReplay(com.adobe.serialization.json.JSON.decode(serverReplayFile.data.toString())); }
+                  catch(error:Error) { serverStatus("Invalid replay: " + error.message); }
+               });
+               serverReplayFile.browse([new flash.net.FileFilter("Boufbowl replay (*.json)","*.json")]);
+            });
+         }
+         else if(tab == "Watch")
+         {
+            serverAction(panel,"Spectate",20,350,180,function():void { serverCommunityRequest({action:"spectate",match:choice.text},function(data:Object):void { serverClosePanel(); }); });
+            serverAction(panel,"Stop spectating",220,350,200,function():void { serverCommunityRequest({action:"stop_spectating"},function(data:Object):void { serverSpectating=null; serverClosePanel(); showHome(); }); });
+         }
+         else if(tab == "Channels")
+         {
+            choice.text="en";
+            serverText(panel,"Languages separated by commas",350,310,260);
+            serverAction(panel,"Subscribe",20,350,180,function():void {
+               var languages:Array=choice.text.replace(/\s/g,"").split(",");
+               serverCommunityRequest({action:"channels",languages:languages,language:languages[0]},function(data:Object):void { AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang=languages[0]; serverCommunityPanel("Channels"); });
+            });
+            serverAction(panel,"Report player",220,350,180,function():void { serverReportPanel(); });
+         }
+      }
+
+      private static function serverCommunityTab(tab:String, x:int) : void
+      {
+         serverAction(serverPanel,tab,x,45,115,function():void { serverCommunityPanel(tab); });
+      }
+
+      private static function serverFriendButton(verb:String, x:int, choice:TextField) : void
+      {
+         serverAction(serverPanel,verb,x,350,100,function():void {
+            serverCommunityRequest({action:"friend",verb:verb,nickname:choice.text},function(data:Object):void { serverCommunityPanel("Friends",0,choice.text); });
+         });
+      }
+
+      private static function serverReportPanel() : void
+      {
+         serverDialog("Report a player to this server's operator",230);
+         var nickname:TextField=serverInput(serverPanel,"",20,55,400);
+         serverText(serverPanel,"Player nickname",440,55,300);
+         var reason:TextField=serverInput(serverPanel,"",20,100,750);
+         serverText(serverPanel,"Reason (stored locally for operator review)",20,140,750);
+         serverAction(serverPanel,"Submit report",20,180,200,function():void {
+            serverCommunityRequest({action:"report",nickname:nickname.text,reason:reason.text},function(data:Object):void { serverClosePanel(); serverStatus("Report saved for the server operator"); });
+         });
+      }
+
+      private static function serverLoadReplay(matchId:String, save:Boolean) : void
+      {
+         if(!save && (serverCurrentMatch != null || serverSpectating != null)) { serverStatus("Leave your current match before watching a replay"); return; }
+         serverRequest("replay",{session:serverSession,match:matchId},function(data:Object):void {
+            if(!data.ok) { serverStatus("Replay: " + data.error); return; }
+            if(save)
+            {
+               serverDialog("Replay ready to save",140);
+               serverAction(serverPanel,"Save JSON file",20,65,240,function():void {
+                  serverReplayFile=new flash.net.FileReference();
+                  serverReplayFile.save(com.adobe.serialization.json.JSON.encode(data.replay),"boufbowl-match-" + matchId + ".json");
+               });
+            }
+            else serverStartReplay(data.replay);
+         });
+      }
+
+      private static function serverStartReplay(replay:Object) : void
+      {
+         if(replay.format_version != 1 || !(replay.steps is Array) || replay.steps.length == 0) throw new Error("Unsupported replay file");
+         serverClosePanel(); stopMock(); serverInMatch=false;
+         mockFixture=replay; mockIndex=0; mockActive=true;
+         mockStatus("Playing saved match; Home exits playback"); scheduleMockStep();
+      }
+
+      public static function serverSetBlock(nickname:String, enabled:Boolean) : void
+      {
+         serverCommunityRequest({action:"friend",verb:enabled ? "block" : "unblock",nickname:nickname},function(data:Object):void {
+            serverStatus(nickname + (enabled ? " blocked" : " unblocked"));
+         });
       }

@@ -1,0 +1,104 @@
+{
+  "template": "assets/models/stadiums/006_prairies/model.dae",
+  "textures": {
+    "grass": {
+      "path": "assets/textures/stadiums/grass.png",
+      "region": [
+        30,
+        185,
+        838,
+        424
+      ],
+      "source": "../boufbowl/assets/courts/1632.webp",
+      "sha256": "3e7a900ef2eeb62e882c64c65f994ceaf754a657d466b52f4ebf97d74e946237"
+    },
+    "brakmar": {
+      "path": "assets/textures/stadiums/brakmar.png",
+      "region": [
+        0,
+        184,
+        914,
+        425
+      ],
+      "source": "../boufbowl/assets/courts/1634.webp",
+      "sha256": "5ee61041d7d67629c48ad321bce3701d937af6b63ad30d74f87a7f73fd80744b"
+    },
+    "sand": {
+      "path": "assets/textures/stadiums/sand.png",
+      "region": [
+        28,
+        185,
+        838,
+        424
+      ],
+      "source": "../boufbowl/assets/courts/1636.webp",
+      "sha256": "a2d5063b78c5f0012ed2532f0537b5c5d3cf48a8f47107feb38fe648b18c2085"
+    },
+    "prairies": {
+      "path": "assets/textures/stadiums/prairies.png",
+      "region": [
+        0,
+        184,
+        914,
+        425
+      ],
+      "source": "../boufbowl/assets/courts/1638.webp",
+      "sha256": "092ca97e8179c91e1da0748a3d749993e8ae2767407127138cdb272bb5664b58"
+    },
+    "kara": {
+      "path": "assets/textures/stadiums/kara.png",
+      "region": [
+        28,
+        184,
+        842,
+        425
+      ],
+      "source": "../boufbowl/assets/courts/1642.webp",
+      "sha256": "951f3996cd37e0c6e57cad61ceeb5ea12a85c464ead516833c041c62466583cd"
+    },
+    "meadow": {
+      "path": "assets/textures/stadiums/meadow.png",
+      "region": [
+        0,
+        165,
+        914,
+        464
+      ],
+      "source": "../boufbowl/assets/courts/1644.webp",
+      "sha256": "bef4bc9cfa2a159dfbb9aeeaaad1d0c989a700115201e86338170efc27c39fac"
+    },
+    "clouds": {
+      "path": "assets/textures/stadiums/clouds.png",
+      "region": [
+        0,
+        165,
+        914,
+        464
+      ],
+      "source": "../boufbowl/assets/courts/1646.webp",
+      "sha256": "39e53bcbbcb41ce12557451127b1fedaf18e8e0b93eb2947c856334f6ebdc03b"
+    },
+    "wabbits": {
+      "path": "assets/textures/stadiums/wabbits.png",
+      "region": [
+        0,
+        165,
+        914,
+        464
+      ],
+      "source": "../boufbowl/assets/courts/1648.webp",
+      "sha256": "0eb219c0d380c5d55b5b2acb554d09016eb18e08df31890baa7380e242cec63b"
+    }
+  },
+  "stadiums": {
+    "FARMSTEAD": "original",
+    "BRAKMAR": "brakmar",
+    "BEACH": "sand",
+    "BONTA": "grass",
+    "FRIGOST": "clouds",
+    "KARA": "kara",
+    "FOREST": "meadow",
+    "BALLOTIN": "wabbits",
+    "PIXEL": "prairies"
+  }
+}

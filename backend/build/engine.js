@@ -589,15 +589,15 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
   if (elapsed > 0 && height <= Math.round(cfg.ball.intercept_height_threshold * SCALE) && f.success) {
     const thrower = state.entities.find((e) => e.id === f.thrower);
     const reachable = state.entities.filter((e) => active(e) && e.id !== f.thrower && withinRadius(point(e), pos, e.team_id === thrower.team_id ? cfg.ball.catch_radius_cells : cfg.ball.intercept_radius_cells)).sort((a, b) => distanceSquared(point(a), pos) - distanceSquared(point(b), pos) || a.id - b.id);
-    if (onBlockedReception && cfg.actions.element_effects.feu.used_for_reception) {
+    if (onBlockedReception && (cfg.ball.reception_requires_air ?? true)) {
       const teams = new Set(reachable.map((e) => e.team_id));
       for (const team of teams) {
         const teammates = reachable.filter((e) => e.team_id === team);
-        if (!teammates.some((e) => e.elements.FEU >= 1))
+        if (!teammates.some((e) => e.elements.AIR >= 1))
           onBlockedReception(teammates[0].id);
       }
     }
-    const candidates = reachable.filter((e) => (!cfg.actions.element_effects.feu.used_for_reception || e.elements.FEU >= 1) && !f.attempted.includes(e.id));
+    const candidates = reachable.filter((e) => (!(cfg.ball.reception_requires_air ?? true) || e.elements.AIR >= 1) && !f.attempted.includes(e.id));
     for (const e of candidates) {
       f.attempted.push(e.id);
       const chance = clamp(cfg, cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
@@ -665,10 +665,9 @@ function resolveGoals(cfg, state, tick) {
   if (!e || !active(e))
     return [];
   const p = point(e), x = 2 * p.q + p.r;
-  const rowOffset = (e.position.r - 2 * Math.floor(e.position.r / 2)) * SCALE;
+  const goalLine = (cfg.ball.goal_line_half_width ?? 12.5) * 2 * SCALE;
   const attacksRight = e.team_id === 0 !== (state.sides_swapped ?? false);
-  const bounds = pitchBounds(cfg.pitch);
-  if (attacksRight ? x >= 2 * bounds.maxColumn * SCALE + rowOffset : x <= 2 * bounds.minColumn * SCALE + rowOffset) {
+  if (attacksRight ? x >= goalLine : x <= -goalLine) {
     e.status.carrying_ball = false;
     state.ball.holder_entity_id = null;
     state.ball.in_flight = false;
@@ -1205,8 +1204,18 @@ for await (const line of createInterface({ input: process.stdin })) {
     cfg.pitch.width_half = Math.floor(cfg.pitch.width / 2);
     cfg.pitch.height_half = Math.floor(cfg.pitch.height / 2);
     const orders = request.orders.map((order, team) => order ?? (request.cpu?.[team] ? new OpponentAI(cfg, request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world) : defaultOrder(`player-${team}`, request.turn, team, request.world.entities.filter((entity) => entity.team_id === team))));
+    for (let team = 0;team < orders.length; team++) {
+      if (!request.cpu?.[team])
+        continue;
+      const receivers = new Set(orders[team].actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id));
+      for (const action of orders[team].actions) {
+        if (action.action_type === "wait" && receivers.has(action.entity_id))
+          action.params.elements = { TERRE: 0, FEU: 0, AIR: 2, EAU: 1 };
+      }
+    }
     const warnings = [];
-    const result = simulateTurn4(cfg, request.world, orders[0], orders[1], request.turn, request.seed, (warning) => warnings.push(warning));
+    const result = simulateTurn4(cfg, request.world, orders[0], orders[1], request.turn, request.seed, (warning) => warnings.push(warning.code === "RECEPTION_REQUIRES_FEU" ? { ...warning, code: "RECEPTION_REQUIRES_AIR" } : warning));
+    result.simulation_version += "+client-ball-2";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + `
 `);
   } catch (error) {

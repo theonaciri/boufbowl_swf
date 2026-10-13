@@ -17,8 +17,8 @@ sudo apt install ./linux/build/BoufbowlOffline-linux-amd64.deb
 Launch **Boufbowl Offline** from the application menu, or run
 `/opt/boufbowl-offline/play.sh`. Alternatively extract
 `build/BoufbowlOffline-linux.tar.gz` and run its `play.sh`. **Play** on the toolbar
-starts a CPU match or resumes a checkpoint. Use the original Play menu for
-nickname challenges. `--mode tutorial` opens the tutorial; `--mode menus` opens
+opens human matchmaking, CPU games and nickname challenges, or resumes a checkpoint.
+**Server → Account** adds password login while keeping device profiles. `--mode tutorial` opens the tutorial; `--mode menus` opens
 the session preview. `--lang fr` selects French.
 
 Shared backend:

@@ -65,8 +65,51 @@ class Store:
             INSERT OR IGNORE INTO schema_versions VALUES(1);
         """)
         version = self.db.execute("SELECT MAX(version) FROM schema_versions").fetchone()[0]
-        if version != 1:
+        if version not in (1, 2, 3):
             raise ServiceError("DATABASE_VERSION", "Unsupported database version")
+        self.db.executescript("""
+            CREATE TABLE IF NOT EXISTS accounts(
+              username TEXT PRIMARY KEY COLLATE NOCASE,
+              profile_id TEXT NOT NULL UNIQUE REFERENCES profiles(id),
+              salt TEXT NOT NULL, password_hash TEXT NOT NULL, iterations INTEGER NOT NULL,
+              created REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS auth_attempts(
+              bucket TEXT PRIMARY KEY, failures INTEGER NOT NULL, reset_at REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS matchmaking_queue(
+              profile_id TEXT PRIMARY KEY REFERENCES profiles(id), stadiums_json TEXT NOT NULL,
+              joined REAL NOT NULL, heartbeat REAL NOT NULL);
+            INSERT OR IGNORE INTO schema_versions VALUES(2);
+        """)
+        if 'recovery_hash' not in {r[1] for r in self.db.execute('PRAGMA table_info(accounts)')}:
+            self.db.execute('ALTER TABLE accounts ADD COLUMN recovery_hash TEXT')
+        if 'kind' not in {r[1] for r in self.db.execute('PRAGMA table_info(sessions)')}:
+            self.db.execute("ALTER TABLE sessions ADD COLUMN kind TEXT NOT NULL DEFAULT 'device'")
+
+        self.db.executescript("""
+            CREATE TABLE IF NOT EXISTS presence(
+              profile_id TEXT PRIMARY KEY REFERENCES profiles(id), seen REAL NOT NULL,
+              language TEXT NOT NULL DEFAULT 'en');
+            CREATE TABLE IF NOT EXISTS friendships(
+              requester TEXT NOT NULL REFERENCES profiles(id), target TEXT NOT NULL REFERENCES profiles(id),
+              status TEXT NOT NULL CHECK(status IN ('pending','accepted')), created REAL NOT NULL,
+              PRIMARY KEY(requester,target), CHECK(requester<>target));
+            CREATE TABLE IF NOT EXISTS blocks(
+              owner TEXT NOT NULL REFERENCES profiles(id), target TEXT NOT NULL REFERENCES profiles(id),
+              created REAL NOT NULL, PRIMARY KEY(owner,target), CHECK(owner<>target));
+            CREATE TABLE IF NOT EXISTS chat_subscriptions(
+              profile_id TEXT NOT NULL REFERENCES profiles(id), language TEXT NOT NULL,
+              PRIMARY KEY(profile_id,language));
+            CREATE TABLE IF NOT EXISTS replay_access(
+              profile_id TEXT NOT NULL REFERENCES profiles(id), match_id INTEGER NOT NULL REFERENCES matches(id),
+              PRIMARY KEY(profile_id,match_id));
+            INSERT OR IGNORE INTO replay_access SELECT profile_id,match_id FROM spectators;
+            CREATE TABLE IF NOT EXISTS reports(
+              id INTEGER PRIMARY KEY AUTOINCREMENT, reporter TEXT NOT NULL REFERENCES profiles(id),
+              target TEXT NOT NULL REFERENCES profiles(id), reason TEXT NOT NULL, created REAL NOT NULL);
+            INSERT OR IGNORE INTO schema_versions VALUES(3);
+        """)
+        if 'language' not in {r[1] for r in self.db.execute('PRAGMA table_info(chat_messages)')}:
+            self.db.execute('ALTER TABLE chat_messages ADD COLUMN language TEXT')
 
     @contextmanager
     def transaction(self):
@@ -94,10 +137,16 @@ class Store:
         stats = {"wins": 0, "draws": 0, "defeats": 0, "rating": 1000}
         self.db.execute("INSERT INTO profiles VALUES(?,?,?,?,?)",
                         (identity, nickname, json.dumps(club), json.dumps(stats), time.time()))
+        return identity, self.issue_session(identity)
+
+    def issue_session(self, identity, kind='device'):
         token = secrets.token_urlsafe(32)
-        self.db.execute("INSERT INTO sessions VALUES(?,?,?)",
-                        (self.digest(token), identity, time.time() + 365 * 86400))
-        return identity, token
+        self.db.execute("INSERT INTO sessions(token_hash,profile_id,expires,kind) VALUES(?,?,?,?)",
+                        (self.digest(token), identity, time.time() + 365 * 86400, kind))
+        return token
+
+    def session_kind(self, token):
+        return self.db.execute('SELECT kind FROM sessions WHERE token_hash=?', (self.digest(token),)).fetchone()[0]
 
     def authenticate(self, token):
         if not isinstance(token, str) or not 16 <= len(token) <= 128:

@@ -2,7 +2,7 @@
 
 Run `./play.sh` (default server mode) or `./play.sh --mode server`. The launcher
 starts the local service, asset server and original Flash client. Use the toolbar
-**Play** button for a CPU match or resume a saved active match. The original Play
+**Play** button for human matchmaking, explicit CPU games, challenges or resume. The original Play
 menu supports challenges by saved player nickname; the recipient must accept.
 `--mode menus` and `--mode tutorial` keep the standalone preview/tutorial flows.
 
@@ -21,12 +21,15 @@ and the original client; the authoritative Python/Bun server runs on Linux.
 HTTP bearer transport is intended for local/LAN use. Put the service behind an
 HTTPS reverse proxy for Internet access and use its HTTPS URL in the client.
 
-Profiles use random device bearer sessions, with only token hashes stored in
-SQLite. Flash SharedObject retains the device token. A nickname selects a device
-profile; it is not a password or ownership proof. New devices create separate
-profiles. Ankama accounts, payments and Facebook linking are intentionally not
-recreated. Customization is free and class statistics are enforced by server
-configuration. Only owned roster identities can be edited.
+Profiles support anonymous device bearer sessions and optional username/password
+accounts. Token hashes are stored in SQLite; Flash SharedObject retains tokens.
+A device nickname is not a login credential. Account registration can link the
+current anonymous profile; password login restores it on another device. Recovery
+codes and password changes revoke older sessions. Remote password operations
+require HTTPS. See [accounts and matchmaking](accounts-and-matchmaking.md) for
+TLS setup, account controls, queue settings and migration. Ankama accounts,
+payments and Facebook linking are not recreated. Customization is free and class
+statistics are enforced by server configuration. Only owned identities are editable.
 
 The default database is `$XDG_DATA_HOME/boufbowl-offline/backend.sqlite`, or
 `~/.local/share/boufbowl-offline/backend.sqlite`. Override it with `--database`.
@@ -55,13 +58,15 @@ python3 -m backend.manage replay 1 /tmp/match-1.json --verify
 ```
 
 Authenticated `POST /api/replay` accepts session, match and optional verify
-fields; only participants can export their match. Replay does not change results
+fields; participants and registered spectators can export their match. Replay does not change results
 or statistics. Verification compares engine version, final state hash and events.
 An engine upgrade that changes those must preserve the prior worker for old
 record verification. Records include their complete rule snapshot.
 
-General/private/match chat uses the recovered original chat protocol. Messages
-are persisted; private recipients and match participants are checked. One-second
+General/private/match chat uses the recovered original chat protocol. Global
+rooms are isolated by language; private conversations are persisted and scoped
+to the two players. Match chat includes participants and spectators. Persistent
+blocks filter delivery and invitations. One-second
 message spacing is enforced. The original leaderboard reflects saved results.
 `general.tournament` configures a free local points league, its stadium, active
 time window (Unix seconds), and win/draw/loss points. Tournament match requests
@@ -82,3 +87,7 @@ The **Server** toolbar button opens connection settings and a device profile-nam
 field. Successful selections are remembered. On desktop, an empty URL selects
 the embedded local backend; Android needs a reachable server URL. An explicit
 `--profile` or `--server-url` overrides the saved selection for that launch.
+
+Use **Server → Community** for friends, rankings, match history, saved replay
+playback/downloads, live spectating, private conversations and subscriptions.
+See [community and replays](community-and-replays.md) for API and operator report review.

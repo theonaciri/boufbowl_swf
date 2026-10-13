@@ -5,6 +5,8 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
+import ssl
+import ipaddress
 from pathlib import Path
 import sys
 from urllib.parse import urlsplit, unquote
@@ -33,7 +35,9 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         route = urlsplit(self.path).path
         routes = {"/api/hello": self.server.service.hello, "/api/command": self.server.service.command,
-                  "/api/poll": self.server.service.poll, "/api/replay": self.replay}
+                  "/api/poll": self.server.service.poll, "/api/replay": self.replay,
+                  "/api/community": self.server.service.community,
+                  "/api/account": lambda body: self.server.service.account(body, self.client_address[0])}
         if route not in routes:
             self.send_error(404)
             return
@@ -44,6 +48,8 @@ class Handler(SimpleHTTPRequestHandler):
             body = json.loads(self.rfile.read(length))
             if not isinstance(body, dict):
                 raise ServiceError("BODY_INVALID", "Request body must be an object")
+            if route == '/api/account' and body.get('action') != 'logout' and not isinstance(self.connection,ssl.SSLSocket) and not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                raise ServiceError('ACCOUNT_TLS','Remote password authentication requires an HTTPS server')
             response = routes[route](body)
         except ServiceError as error:
             response = {"ok": False, "code": error.code, "error": str(error),
@@ -62,7 +68,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         route = urlsplit(self.path).path
         if route == "/api/health":
-            self.json_response({"ok": True, "service": "boufbowl-offline", "protocol": "1.9.6", "schema_version": 1,
+            self.json_response({"ok": True, "service": "boufbowl-offline", "protocol": "1.9.6", "schema_version": 3,
                                 "rules_version": self.server.service.config["rules_version"]})
             return
         if route == "/crossdomain.xml":
@@ -90,11 +96,20 @@ def main():
     parser.add_argument("--port", type=int, default=9900)
     parser.add_argument("--database", type=Path, default=default_database())
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument("--tls-cert", type=Path)
+    parser.add_argument("--tls-key", type=Path)
     args = parser.parse_args()
+    if bool(args.tls_cert) != bool(args.tls_key):
+        parser.error("Provide both --tls-cert and --tls-key")
     service = Service(args.database, load_config(args.config))
     server = ThreadingHTTPServer((args.host, args.port), partial(Handler, directory=str(ROOT)))
     server.service = service
-    print(f"Boufbowl backend: http://{args.host}:{args.port}; database: {args.database}", flush=True)
+    if args.tls_cert:
+        context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(args.tls_cert,args.tls_key)
+        server.socket=context.wrap_socket(server.socket,server_side=True)
+    scheme='https' if args.tls_cert else 'http'
+    print(f"Boufbowl backend: {scheme}://{args.host}:{args.port}; database: {args.database}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

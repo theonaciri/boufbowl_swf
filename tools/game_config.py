@@ -64,6 +64,11 @@ def resolve_stadium(config, stadium):
 
 
 def check_rules(rules, path):
+    from backend.placement import placement_zones
+    try:
+        placement_zones(2, exclusion=rules["simulation"]["placement"]["ball_exclusion_radius_cells"])
+    except ValueError as error:
+        raise ConfigError(f"{path}: {error}") from error
     match = rules["match"]
     if match["turns_per_period"] > match["turns_per_match"]:
         raise ConfigError(f"{path}: turns_per_period exceeds turns_per_match")
@@ -104,16 +109,20 @@ def apply_resources(directory, config):
     legacy["chrono"]["firstTurnDuration"] = str(match["planning_seconds"])
     legacy["chrono"]["turnDuration"] = str(match["planning_seconds"])
     path.write_text(json.dumps(legacy, indent=2) + "\n")
+    from tools.visual_assets import prepare_stadiums, palette_translations
+    art_paths = prepare_stadiums(directory.parent)
     stadium_path = directory / "stadiums.json"
     if stadium_path.exists():
         stadiums = json.loads(stadium_path.read_text())
-        for stadium in stadiums["stadiums"].values():
+        for name, stadium in stadiums["stadiums"].items():
+            if name in art_paths:
+                stadium["path"] = art_paths[name]
             if not (ROOT / "assets/models/stadiums" / stadium["path"]).exists():
                 stadium["path"] = stadiums["stadiums"]["FARMSTEAD"]["path"]
         stadium_path.write_text(json.dumps(stadiums, indent=2) + "\n")
     lang_path = directory / "lang.json"
     if lang_path.exists():
-        text = lang_path.read_text(encoding="utf-8-sig")
+        text = palette_translations(lang_path.read_text(encoding="utf-8-sig"))
         translations = {
             "en": "Free local league. Play CPU matches during the event. Wins and draws add points; defeats do not eliminate you. Results and rankings are saved.",
             "fr": "Ligue locale gratuite. Jouez contre l'ordinateur pendant l'événement. Les victoires et les matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les résultats sont sauvegardés.",
@@ -132,7 +141,8 @@ def apply_resources(directory, config):
 
 def startup_source(source, config, android=False):
     """Compile configured preview attributes and client-supported rules into AS3."""
-    source = str(source)
+    from tools.visual_assets import palette_source
+    source = palette_source(str(source))
     lines = []
     attributes = config["rules"]["classes"]
     for index, name in enumerate(CLASSES, 1):

@@ -151,6 +151,32 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(self.service.store.match(match['id'])['phase'],'ended')
         self.assertEqual(self.service.store.db.execute('SELECT COUNT(*) FROM match_results').fetchone()[0],2)
 
+    def test_empty_placement_submission_uses_default_zones(self):
+        self.command(self.alice, "cpu_match", stadium=1)
+        match=self.service.store.active_match(self.identity(self.alice))
+        self.protocol(self.alice,'PLACEMENT',{'turn':1,'boufbowlerPositions':[]})
+        match=self.service.store.match(match['id'])
+        self.assertEqual(match['phase'],'orders')
+        positions={tuple(e['position'].values()) for e in match['world']['entities'] if e['team_id']==0}
+        defaults={tuple(z['defaultCell'].values()) for z in self.service.match_information(match,1)['placementZone']}
+        self.assertEqual(positions,defaults)
+
+    def test_chat_advertises_language_keys_and_preserves_french_messages(self):
+        events=self.service.store.poll(self.identity(self.alice),0)
+        event=next(e for e in events if e['type']=='CHANNEL_AVAILABLE_NOTIFICATION')
+        options=self.service.chat_codec.open_envelope(bytes.fromhex(event['hex']))['payload']['options']
+        languages={o.get('lang') for o in options if o['channelType']==2}
+        self.assertEqual(languages,{'fr','en','de','es'})
+        self.assertTrue(all(o['rateLimit']==1 for o in options))
+        for player in (self.alice,self.bob):
+            self.service.community({'session':player['session'],'action':'channels','languages':['fr']})
+        data={'toChannel':{'channelType':2,'lang':'fr'},'message':'Bonjour'}
+        self.command(self.alice,'chat',hex=self.service.chat_codec.envelope('SEND_MESSAGE_TO_CHANNEL_REQUEST',data).hex())
+        event=next(e for e in self.service.store.poll(self.identity(self.bob),0) if e['type']=='RECEIVE_FROM_CHANNEL')
+        message=self.service.chat_codec.open_envelope(bytes.fromhex(event['hex']))['payload']
+        self.assertEqual(message['fromChannel'],{'channelType':2,'lang':'fr'})
+        self.assertEqual(message['message'],'Bonjour')
+
     def test_chat_private_messages_do_not_reach_other_profiles(self):
         charlie=self.service.hello({'nickname':'Charlie','clubs':[initial_club()]})
         before=self.service.store.db.execute('SELECT MAX(seq) FROM events').fetchone()[0]
@@ -180,6 +206,7 @@ class BackendTests(unittest.TestCase):
         match=self.service.store.active_match(self.identity(self.alice))
         replay=export_replay(self.service,match['id'],True,self.identity(self.alice))
         self.assertTrue(replay['verified'])
+        self.assertFalse(replay['completed'])
         self.assertEqual(replay['records'][0]['result']['turn_number'],1)
         with self.assertRaisesRegex(ServiceError,'participant'):
             export_replay(self.service,match['id'],False,self.identity(self.bob))

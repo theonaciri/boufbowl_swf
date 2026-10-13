@@ -57,11 +57,15 @@
             mockLabel.backgroundColor = 0x20252b;
             mockLabel.x = 10;
             mockLabel.y = 570;
-            mockLabel.width = 1000;
+            mockLabel.width = 512;
             mockLabel.height = 24;
             mockLabel.mouseEnabled = false;
          }
-         mockLabel.text = "Scripted mock: " + text;
+         mockLabel.width = Math.min(512,Stage(app.contextInjector.getInstance(Stage)).stageWidth / 2);
+         mockLabel.wordWrap=true;
+         mockLabel.text = "Replay: " + text;
+         mockLabel.height=Math.min(72,mockLabel.textHeight+6);
+         mockLabel.y=594-mockLabel.height;
          Stage(app.contextInjector.getInstance(Stage)).addChild(mockLabel);
          if(@TRACE_URL@ != "")
          {

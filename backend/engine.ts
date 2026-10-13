@@ -22,9 +22,21 @@ for await (const line of createInterface({ input: process.stdin })) {
     const orders = request.orders.map((order: any, team: number) => order ??
       (request.cpu?.[team] ? new OpponentAI(cfg, request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world)
         : defaultOrder(`player-${team}`, request.turn, team, request.world.entities.filter((entity: any) => entity.team_id === team))));
+    // CPU receivers must allocate AIR under the client's reception rules.
+    for (let team = 0; team < orders.length; team++) {
+      if (!request.cpu?.[team]) continue;
+      const receivers = new Set(orders[team].actions.filter((a: any) => a.action_type === "throw")
+        .map((a: any) => a.params.target_entity_id));
+      for (const action of orders[team].actions) {
+        if (action.action_type === "wait" && receivers.has(action.entity_id))
+          action.params.elements = { TERRE: 0, FEU: 0, AIR: 2, EAU: 1 };
+      }
+    }
     const warnings: unknown[] = [];
     const result = simulateTurn(cfg, request.world, orders[0], orders[1], request.turn, request.seed,
-      warning => warnings.push(warning));
+      warning => warnings.push(warning.code === "RECEPTION_REQUIRES_FEU"
+        ? { ...warning, code: "RECEPTION_REQUIRES_AIR" } : warning));
+    result.simulation_version += "+client-ball-2";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + "\n");
   } catch (error) {
     process.stdout.write(JSON.stringify({ ok: false, error: String(error) }) + "\n");

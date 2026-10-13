@@ -1,4 +1,4 @@
-"""Local database backup, replay export and deterministic replay verification."""
+"""Local database backup, recorded replay export/verification and report review."""
 import argparse,json
 from pathlib import Path
 from backend.server import default_database
@@ -13,7 +13,15 @@ def main():
     sub=parser.add_subparsers(dest='operation',required=True)
     backup=sub.add_parser('backup'); backup.add_argument('output',type=Path)
     replay=sub.add_parser('replay'); replay.add_argument('match',type=int); replay.add_argument('output',type=Path); replay.add_argument('--verify',action='store_true')
+    reports=sub.add_parser('reports'); reports.add_argument('--limit',type=int,default=50)
     args=parser.parse_args()
+    if args.operation=='reports':
+        store=Store(args.database)
+        try:
+            rows=store.db.execute('SELECT r.id,p.nickname AS reporter,t.nickname AS target,r.reason,r.created FROM reports r JOIN profiles p ON p.id=r.reporter JOIN profiles t ON t.id=r.target ORDER BY r.id DESC LIMIT ?', (max(1,min(500,args.limit)),)).fetchall()
+            print(json.dumps([dict(r) for r in rows],indent=2))
+        finally: store.close()
+        return
     if args.operation=='backup':
         store=Store(args.database)
         try: store.backup(args.output)

@@ -10,13 +10,14 @@ def inject_server(source, config, android=False):
     imports = "   import flash.net.SharedObject;\n   import flash.net.URLRequestMethod;\n"
     source = source.replace("   public class StartUpApplicationCommand", imports + "\n   public class StartUpApplicationCommand", 1)
     helper = (ROOT / "patches/ServerSupport.as.inc").read_text()
+    helper = helper.replace("@ENABLED_STADIUMS@", json.dumps([i for i,name in enumerate(("FARMSTEAD","BRAKMAR","BEACH","BONTA","FRIGOST","KARA","FOREST","BALLOTIN","PIXEL"),1) if config["stadiums"][name]["enabled"]]))
     host = config["general"]["server"]["host"]
     port = config["general"]["server"]["port"]
     helper = helper.replace("@DEFAULT_URL@", json.dumps(f"http://{host}:{port}" if android else ""))
     helper = helper.replace("@TRACE_URL@", json.dumps("" if android else "../__mock_trace"))
     source = source.replace("      private static function displayer()", helper + "\n      private static function displayer()", 1)
     source = re.sub(r"(public static function offlineRequest\(request:Object\) : void\s*\{)",
-                    r"\1\n         if(serverActive) { serverOutgoing(request); return; }", source, count=1)
+                    r"\1\n         if(serverActive && !mockActive) { serverOutgoing(request); return; }", source, count=1)
     source = re.sub(r"(public static function showHome\(\) : void\s*\{)", r"\1\n         serverInMatch = false;", source, count=1)
     source = re.sub(r"(public static function showTeams\(\) : void\s*\{)",
                     r'\1\n         if(serverActive) { serverSend({operation:"clubs"}); return; }', source, count=1)

@@ -19,6 +19,9 @@ original = args.original or root.parent / "swf_sources/boufbowl_client/bin/boufb
 config = load_config(args.config)
 config_source = args.config.read_bytes()
 classes = [
+    "com.ankamagames.boufbowl.client.match.MatchContextPart",
+    "com.ankamagames.boufbowl.client.chat.controller.command.ChatLocalCommand",
+    "com.ankamagames.boufbowl.client.chat.controller.channel.ReceiveChannelsConfigurationCommand",
     "com.ankamagames.boufbowl.BoufbowlClient",
     "com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand",
     "com.ankamagames.xgaming.utils.flashvars.FlashVarsManager",
@@ -37,6 +40,7 @@ classes = [
     "com.ankamagames.boufbowl.resolution.display.animation.BoufbowlerSprite",
     "com.ankamagames.boufbowl.client.clubselection.controller.PredefinedClubsCommand",
     "com.ankamagames.boufbowl.client.match.strategic.view.ClassOrderTextComputer",
+    "com.ankamagames.boufbowl.client.match.model.MatchModel",
 ]
 replacements = []
 for cls in classes:
@@ -44,10 +48,10 @@ for cls in classes:
 with tempfile.TemporaryDirectory(prefix=".tutorial-build-", dir=root / "bin") as tmp:
     startup = Path(tmp) / "StartUpApplicationCommand.as"
     startup.write_text(startup_source((root / "patches/StartUpApplicationCommand.as").read_text(), config))
-    replacements[3] = str(startup)
+    replacements[2*classes.index("com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand")+1] = str(startup)
     flashvars = Path(tmp) / "FlashVarsManager.as"
     flashvars.write_text(flashvars_source((root / "patches/FlashVarsManager.as").read_text(), config))
-    replacements[5] = str(flashvars)
+    replacements[2*classes.index("com.ankamagames.xgaming.utils.flashvars.FlashVarsManager")+1] = str(flashvars)
     output = Path(tmp) / "boufbowl-client-1.9.6.swf"
     subprocess.run([
         "java", "-jar", str(args.ffdec.resolve()), "-replace", str(original), str(output),

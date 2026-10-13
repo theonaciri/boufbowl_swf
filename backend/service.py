@@ -15,12 +15,16 @@ from tools.game_config import CLASSES, STADIUMS, load_config, merge, resolve_sta
 from tools.movement_adapter import grid
 from tools.game_config import ROOT
 from backend.social import Social
+from backend.community import Community
+from backend.accounts import Accounts
+from backend.matchmaking import Matchmaking
+from backend.placement import placement_zones
 
 CLASS_NAMES = ("Cra", "Ecaflip", "Eniripsa", "Enutrof", "Feca", "Iop", "Osamodas", "Pandawa",
                "Rogue", "Sacrier", "Sadida", "Sram", "Xelor", "Zobal")
 
 
-class Service(Social):
+class Service(Social, Accounts, Matchmaking, Community):
     def __init__(self, path, config=None, engine=None):
         self.config = deepcopy(config or load_config())
         self.store = Store(path)
@@ -39,6 +43,7 @@ class Service(Social):
         while not self.stopping.wait(1):
             try:
                 with self.store.transaction():
+                    self.match_queued_players()
                     for row in self.store.db.execute("SELECT state_json FROM matches").fetchall():
                         match = json.loads(row[0])
                         if match.get("phase") != "ended" and match.get("deadline", float("inf")) <= time.time():
@@ -122,23 +127,29 @@ class Service(Social):
                 "classAttributes": [{"boufbowlerClass": index, "role": rules["classes"]["overrides"].get(name, {}).get("role", 1 + index % 4),
                                      "attributes": self.attributes(index, rules)} for index, name in enumerate(CLASSES, 1)]}
 
+    def create_device(self, body):
+        clubs = body.get("clubs")
+        if not isinstance(clubs, list) or not 1 <= len(clubs) <= 20:
+            raise ServiceError("INVALID_CLUB", "Provide initial clubs")
+        normalized = {str(c["clubId"]): self.normalize_club(c) for c in clubs}
+        collection = {"active": next(iter(normalized)), "clubs": normalized}
+        return self.store.create_profile(body.get("nickname", "Local Player"), collection)
+
     def hello(self, body):
         with self.store.transaction():
             token = body.get("session")
             if token:
                 profile = self.store.authenticate(token)
             else:
-                clubs = body.get("clubs")
-                if not isinstance(clubs, list) or not 1 <= len(clubs) <= 20:
-                    raise ServiceError("INVALID_CLUB", "Provide initial clubs")
-                normalized = {str(c["clubId"]): self.normalize_club(c) for c in clubs}
-                collection = {"active": next(iter(normalized)), "clubs": normalized}
-                profile, token = self.store.create_profile(body.get("nickname", "Local Player"), collection)
+                profile, token = self.create_device(body)
+            self.touch(profile, body.get("language") if not self.store.db.execute("SELECT 1 FROM presence WHERE profile_id=?", (profile,)).fetchone() else None)
             cursor = self.store.db.execute("SELECT COALESCE(MAX(seq),0) FROM events WHERE profile_id=?", (profile,)).fetchone()[0]
             self.emit(profile, "RULES_CONSTANTS", self.rules_message(self.config["rules"]))
             self.emit(profile, "CLUB_INFORMATION", self.club(profile))
             self.emit_ranking(profile)
             self.chat_configuration(profile)
+            for offer in self.store.db.execute("SELECT * FROM challenges WHERE guest=? AND status='pending' AND expires>?", (profile,time.time())).fetchall():
+                self.emit(profile, "CHALLENGE_PROPOSAL", {"offerId": offer["id"], "hostNickname": self.store.profile(offer["host"])["nickname"], "matchStadium": offer["stadium"]})
             match = self.store.active_match(profile)
             if match:
                 side = self.side(match, profile)
@@ -146,14 +157,19 @@ class Service(Social):
                 self.emit(profile, "FIELD_STATE", self.field_state(match, 2 if match["phase"] == "resolution" else None), "MATCH")
                 if match["phase"] == "resolution":
                     self.emit(profile, "RESOLUTION_SCENARIO", match["scenario"], "MATCH")
-            return {"ok": True, "session": token, "cursor": cursor, "profile": self.public_profile(profile),
+            elif self.spectator_match(profile):
+                self.restore_spectating(profile, self.spectator_match(profile))
+            return {"ok": True, **self.channel_state(profile), "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None, "session": token, "cursor": cursor, "profile": self.public_profile(profile),
+                    "auth_mode": self.store.session_kind(token), "matchmaking": self.matchmaking_status(profile),
                     "abilities": (match["rules"] if match else self.config["rules"])["abilities"],
                     "current_match": str(match["id"]) if match else None,
                     "club_names": {key: club["clubName"] for key, club in self.collection(profile)["clubs"].items()}}
 
     def public_profile(self, profile):
         data = self.store.profile(profile)
-        return {"nickname": data["nickname"], "statistics": data["statistics"]}
+        account=self.store.db.execute('SELECT username FROM accounts WHERE profile_id=?',(profile,)).fetchone()
+        return {"nickname": data["nickname"], "statistics": data["statistics"],
+                "account_username": account['username'] if account else None}
 
     def command(self, body):
         with self.store.transaction():
@@ -173,6 +189,12 @@ class Service(Social):
             elif operation == "clubs":
                 self.emit(profile, "PREDEFINED_CLUBS", {"club": [{"clubId": c["clubId"], "boufbowler": c["boufbowler"]}
                                                                for c in self.collection(profile)["clubs"].values()]})
+            elif operation == "challenge":
+                self.challenge(profile, {"guestNickname": body["nickname"], "matchStadium": body.get("stadium",1)})
+            elif operation == "queue_join":
+                self.join_queue(profile, body.get("stadiums"))
+            elif operation == "queue_leave":
+                self.leave_queue(profile)
             elif operation == "cpu_match":
                 self.create_match(profile, None, body.get("stadium", 1))
             elif operation == "chat":
@@ -186,7 +208,7 @@ class Service(Social):
                 self.handle_protocol(profile, data["type"], data["payload"])
             else:
                 raise ServiceError("COMMAND_UNKNOWN", "Unknown backend operation")
-            response = {"ok": True, "profile": self.public_profile(profile),
+            response = {"ok": True, "profile": self.public_profile(profile), "matchmaking": self.matchmaking_status(profile),
                         "current_match": str(self.store.active_match(profile)["id"]) if self.store.active_match(profile) else None,
                         "club_names": {key: club["clubName"] for key, club in self.collection(profile)["clubs"].items()}}
             active = self.store.active_match(profile)
@@ -227,9 +249,18 @@ class Service(Social):
         key = STADIUMS[stadium - 1]
         if not self.config["stadiums"][key]["enabled"]:
             raise ServiceError("STADIUM_DISABLED", "This stadium is disabled")
+        if right and self.blocked(left, right):
+            raise ServiceError("PLAYER_UNAVAILABLE", "This player is unavailable")
         for participant in (left, right):
+            if participant and self.spectator_match(participant):
+                raise ServiceError("PLAYER_BUSY", "Stop spectating before playing")
             if participant and self.store.active_match(participant):
                 raise ServiceError("MATCH_ACTIVE", "A participant already has an active match")
+        for participant in (left, right):
+            if participant:
+                self.leave_queue(participant)
+                for offer in self.store.db.execute("SELECT * FROM challenges WHERE (host=? OR guest=?) AND status='pending'",(participant,participant)).fetchall():
+                    self.cancel_offer(offer)
         rules = resolve_stadium(self.config, key)
         left_club = self.club(left)
         right_club = self.club(right) if right else deepcopy(left_club)
@@ -241,12 +272,12 @@ class Service(Social):
                 player["attributes"] = self.attributes(player["boufbowlerClass"], rules)
             rosters.append({"characters": players, "nickname": self.store.profile((left, right)[side - 1])["nickname"] if (left, right)[side - 1] else "CPU",
                             "name": club["clubName"] if side == 1 or right else "CPU team",
-                            "firstColor": club["firstColor"] if side == 1 else {"r": 210, "g": 80, "b": 60},
+                            "firstColor": club["firstColor"] if side == 1 or right else {"r": 210, "g": 80, "b": 60},
                             "secondColor": club["secondColor"], "patternColor": club["patternColor"], "firstColorIsDark": False,
-                            "ranking": {"wins": 0, "draws": 0, "defeats": 0},
+                            "ranking": {k:self.store.profile((left,right)[side-1])["statistics"][k] if (left,right)[side-1] else 0 for k in ("wins","draws","defeats")},
                             "sigilBackground": club["sigilBackground"], "sigilCharge": club["sigilCharge"]})
         match = {"profiles": [left, right], "stadium": stadium, "rules": rules, "rules_version": self.config["rules_version"],
-                 "rosters": rosters, "phase": "placement", "turn": 1, "period": 1, "score": [0, 0], "seed": secrets.randbits(32),
+                 "created": time.time(), "rosters": rosters, "phase": "placement", "turn": 1, "period": 1, "score": [0, 0], "seed": secrets.randbits(32),
                  "orders": {}, "placements": {}, "acks": [], "world": self.initial_world(rosters, rules),
                  "deadline": time.time() + rules["match"]["placement_seconds"]}
         cursor = self.store.db.execute("INSERT INTO matches(state_json,updated) VALUES(?,?)", ("{}", time.time()))
@@ -255,6 +286,7 @@ class Service(Social):
             self.store.db.execute("INSERT INTO participants VALUES(?,?,?)", (match["id"], side, participant))
         self.store.save_match(match)
         for side, participant in enumerate((left, right), 1):
+            if participant: self.chat_configuration(participant)
             self.emit(participant, "MATCH_INFORMATION", self.match_information(match, side), "MATCH")
             self.emit(participant, "FIELD_STATE", self.field_state(match), "MATCH")
         return match
@@ -277,14 +309,8 @@ class Service(Social):
                 "tick": 0, "sides_swapped": swapped}
 
     def match_information(self, match, side):
-        centers = [(-7, 0), (-6, -3), (-8, -3), (-9, 3), (-6, 3)]
-        zones = [{"type": index, "defaultCell": {"x": x, "y": y},
-                  "cell": [{"x": x + dx, "y": y + dy} for dx, dy in ((0, 0), (1, 0), (0, 1), (-1, 0), (0, -1))]}
-                 for index, (x, y) in enumerate(centers, 1)]
-        if side == 2:
-            for zone in zones:
-                for cell in [zone["defaultCell"], *zone["cell"]]:
-                    cell["x"], cell["y"] = -cell["x"], -cell["y"]
+        zones = placement_zones(side, match["period"],
+                                match["rules"]["simulation"]["placement"]["ball_exclusion_radius_cells"])
         return {"id": str(match["id"]), "side": side, "leftRoster": match["rosters"][0], "rightRoster": match["rosters"][1],
                 "placementZone": zones, "matchStadium": match["stadium"], "skipIntro": True}
 
@@ -314,7 +340,10 @@ class Service(Social):
             if challenge and challenge["guestNickname"].strip().lower() not in ("cpu", "computer"):
                 self.challenge(profile, challenge)
             else:
-                self.create_match(profile, None, challenge["matchStadium"] if challenge else 1)
+                if challenge:
+                    self.create_match(profile, None, challenge["matchStadium"])
+                else:
+                    self.join_queue(profile)
         elif name == "CHALLENGE_ANSWER":
             self.answer_challenge(profile, payload)
         elif name == "PREDEFINED_CLUB_SELECTION":
@@ -337,7 +366,7 @@ class Service(Social):
         elif name == "CANCEL_CUSTOMISATION_SESSION":
             return
         elif name in ("LADDER_BY_LEAGUE_REQUEST", "LADDER_BY_NICK_REQUEST"):
-            self.ladder(profile)
+            self.ladder(profile, name, payload)
         elif name == "OUTSTANDING_TOURNAMENTS_REQUEST":
             self.tournaments(profile)
         elif name == "TOURNAMENT_LEADERBOARD_REQUEST":
@@ -355,22 +384,19 @@ class Service(Social):
                 response.update(clubname=self.club(row["id"])["clubName"], administrator=False, moderator=False)
             self.emit(profile, "WHOIS_RESULT", response)
         elif name == "STATS_REQUEST":
-            profiles = self.store.db.execute("SELECT COUNT(*) FROM profiles").fetchone()[0]
+            profiles = self.store.db.execute("SELECT COUNT(*) FROM presence WHERE seen>?", (time.time()-30,)).fetchone()[0]
             matches = sum(json.loads(row[0]).get("phase") != "ended" for row in self.store.db.execute("SELECT state_json FROM matches"))
             self.emit(profile, "STATS_RESULT", {"connectedClients": profiles, "currentMatchs": matches})
         elif name == "MATCH_SPECTATE_REQUEST":
             self.spectate(profile, payload)
         elif name == "STOP_SPECTATING":
-            row = self.store.db.execute("SELECT match_id FROM spectators WHERE profile_id=?", (profile,)).fetchone()
-            if row:
-                self.broadcast(self.store.match(row[0]), "MATCH_SPECTATOR_PART_NOTIFICATION", {"nickname": self.store.profile(profile)["nickname"]})
-            self.store.db.execute("DELETE FROM spectators WHERE profile_id=?", (profile,))
+            self.stop_spectating(profile)
         elif name == "PLACEMENT":
             self.place(profile, payload)
         elif name == "ORDERS":
             self.orders(profile, payload)
         elif name == "RESOLUTION_DONE":
-            if not self.store.active_match(profile) and self.store.db.execute("SELECT 1 FROM spectators WHERE profile_id=?", (profile,)).fetchone():
+            if not self.store.active_match(profile):
                 return
             self.acknowledge(profile, payload)
         elif name == "INTRODUCTION_DONE":
@@ -380,6 +406,7 @@ class Service(Social):
             match["score"][2 - side] = max(match["score"][2 - side], match["score"][side - 1] + 1)
             self.end_match(match, side)
         elif name == "CANCEL_MATCH_REQUEST":
+            self.leave_queue(profile)
             self.cancel_challenges(profile)
         else:
             raise ServiceError("FEATURE_UNSUPPORTED", f"Unsupported client request: {name}")
@@ -396,7 +423,15 @@ class Service(Social):
             if payload["turn"] <= match["turn"] and match["phase"] in ("orders", "resolution"):
                 return
             raise ServiceError("PHASE_CHANGED", "Placement belongs to another match phase")
+        if str(side) in match["placements"]:
+            return  # Confirmed placement cannot be edited while waiting.
         positions = payload["boufbowlerPositions"]
+        if not positions:
+            # The client submits an empty list on placement timeout when no
+            # player was dragged. Use the same defaults as deadline maintenance.
+            zones = self.match_information(match, side)["placementZone"]
+            positions = [{"id": p["id"], "position": z["defaultCell"]}
+                         for p, z in zip(match["rosters"][side-1]["characters"][:5], zones)]
         owned = {p["id"]: p for p in match["rosters"][side - 1]["characters"]}
         if len(positions) != 5 or len({p["id"] for p in positions}) != 5 or any(p["id"] not in owned for p in positions):
             raise ServiceError("INVALID_PLACEMENT", "Place five different members of your own roster")
@@ -445,7 +480,7 @@ class Service(Social):
                 return  # A deadline can resolve before the client's automatic submission arrives.
             raise ServiceError("PHASE_CHANGED", "Orders belong to another match phase")
         if str(side) in match["orders"]:
-            raise ServiceError("ORDER_ALREADY_SUBMITTED", "Your orders are already submitted")
+            return  # First submission is immutable, including reconnect retries.
         if payload.get("concedeTouchdown"):
             match["score"][2 - side] += 1
             match["turn"] += 1
@@ -516,6 +551,7 @@ class Service(Social):
                   "rules": match["rules"], "rules_version": match["rules_version"], "warnings": result["warnings"]}
         from backend.turn_adapter import adapt_turn
         scenario = adapt_turn(record)
+        record["scenario"] = deepcopy(scenario)
         self.store.db.execute("INSERT INTO turns VALUES(?,?,?)", (match["id"], match["turn"], json.dumps(record)))
         match["pending"] = result["result"]
         match["scenario"] = scenario
@@ -574,6 +610,8 @@ class Service(Social):
         if match["phase"] == "ended":
             return
         match["phase"] = "ended"
+        match["ended"] = time.time()
+        match["given_up"] = given_up
         payload = {"id": str(match["id"]), "leftScore": match["score"][0], "rightScore": match["score"][1]}
         if match["score"][0] != match["score"][1]:
             payload["winner"] = 1 if match["score"][0] > match["score"][1] else 2
@@ -584,10 +622,14 @@ class Service(Social):
             stats = self.store.profile(participant)["statistics"] if participant else {"wins": 0, "draws": 0, "defeats": 0}
             payload["leftRanking" if side == 1 else "rightRanking"] = {key: stats[key] for key in ("wins", "draws", "defeats")}
         self.broadcast(match, "MATCH_END", payload)
-        for profile in match["profiles"]:
+        watchers = [r[0] for r in self.store.db.execute("SELECT profile_id FROM spectators WHERE match_id=?", (match["id"],))]
+        for profile in [*match["profiles"], *watchers]:
             if profile:
+                self.emit_chat(profile, "CHANNEL_UNAVAILABLE_NOTIFICATION", {"channels": [{"channelType": 3}]})
                 self.emit_ranking(profile)
+        match["end_payload"] = payload
         self.store.save_match(match)
+        self.store.db.execute("DELETE FROM spectators WHERE match_id=?", (match["id"],))
 
     def tick(self, profile):
         match = self.store.active_match(profile)
@@ -607,9 +649,15 @@ class Service(Social):
     def poll(self, body):
         with self.store.transaction():
             profile = self.store.authenticate(body.get("session"))
+            self.touch(profile)
+            self.match_queued_players()
+            self.store.db.execute('UPDATE matchmaking_queue SET heartbeat=? WHERE profile_id=?',(time.time(),profile))
+            self.match_queued_players()
             self.tick(profile)
             match = self.store.active_match(profile)
-            return {"ok": True, "events": self.store.poll(profile, body.get("cursor", 0)), "profile": self.public_profile(profile),
+            return {"ok": True, **self.channel_state(profile), "events": self.store.poll(profile, body.get("cursor", 0)), "profile": self.public_profile(profile),
+                    "matchmaking": self.matchmaking_status(profile),
+                    "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None,
                     "current_match": str(match["id"]) if match else None}
 
     def customize(self, profile, name, payload):
@@ -634,26 +682,43 @@ class Service(Social):
         self.save_club(profile, club)
         self.emit(profile, "CUSTOMISATION_ACCEPTED", {})
 
-    def ladder(self, profile):
-        profiles = [self.store.profile(row["id"]) for row in self.store.db.execute("SELECT id FROM profiles")]
-        profiles.sort(key=lambda p: (-p["statistics"]["rating"], p["nickname"].casefold()))
-        rows = []
-        for index, player in enumerate(profiles, 1):
-            stats = player["statistics"]
-            rows.append({"index": index - 1, "rank": index, "player": self.player_summary(player["id"]),
-                         "wins": stats["wins"], "draws": stats["draws"], "losses": stats["defeats"], "rating": stats["rating"]})
-        own = next(row for row in rows if row["player"]["nickname"] == self.store.profile(profile)["nickname"])
-        self.emit(profile, "LADDER_DATA", {"firstIndexToDisplay": 0, "rows": rows[:100], "ownData": own, "league": 1, "subLeague": 1})
+    def ladder(self, profile, name="LADDER_BY_NICK_REQUEST", payload=None):
+        payload = payload or {"self": True}
+        rows = self.rankings()
+        own = next(r for r in rows if r["player"]["nickname"] == self.store.profile(profile)["nickname"])
+        index = own["index"]
+        if name == "LADDER_BY_NICK_REQUEST" and not payload.get("self"):
+            nickname = payload.get("nickName", "")
+            target = next((r for r in rows if r["player"]["nickname"].casefold()==nickname.casefold()), None)
+            if not target:
+                self.emit(profile, "LADDER_REQUEST_ERROR", {"error": 1})
+                return
+            index = target["index"]
+        subleagues = list(range(1, (len(rows)+99)//100+1))
+        subleague = index//100+1
+        if name == "LADDER_BY_LEAGUE_REQUEST":
+            subleague = payload["subLeague"]
+            if payload["league"] != 1 or subleague not in subleagues:
+                self.emit(profile, "LADDER_REQUEST_ERROR", {"error": 1})
+                return
+            index = (subleague-1)*100
+        start = (subleague-1)*100
+        self.emit(profile, "LADDER_DATA", {"firstIndexToDisplay": index-start,
+                  "rows": rows[start:start+100], "ownData": own, "league": 1, "subLeague": subleague,
+                  "leagueInformations": [{"league":1, "nonEmptySubleagues":subleagues}]})
 
     def challenge(self, profile, challenge):
         guest = self.store.db.execute("SELECT id FROM profiles WHERE nickname=?", (challenge["guestNickname"],)).fetchone()
         if not guest or guest["id"] == profile:
             raise ServiceError("PLAYER_UNKNOWN", "Choose another saved player name, or CPU")
+        if self.blocked(profile, guest["id"]):
+            raise ServiceError("PLAYER_UNAVAILABLE", "This player is unavailable")
         if self.store.active_match(profile) or self.store.active_match(guest["id"]):
             raise ServiceError("PLAYER_BUSY", "A player already has an active match")
         stadium = challenge["matchStadium"]
         if not 1 <= stadium <= 9 or not self.config["stadiums"][STADIUMS[stadium - 1]]["enabled"]:
             raise ServiceError("INVALID_STADIUM", "Choose an enabled stadium")
+        self.leave_queue(profile)
         cursor = self.store.db.execute("INSERT INTO challenges(host,guest,stadium,status,expires) VALUES(?,?,?,?,?)",
                                        (profile, guest["id"], stadium, "pending", time.time() + 60))
         offer = cursor.lastrowid
@@ -669,8 +734,8 @@ class Service(Social):
         if payload["answer"] == 2:
             if profile != row["guest"]:
                 raise ServiceError("CHALLENGE_OWNERSHIP", "Only the challenged player can accept")
-            self.create_match(row["host"], row["guest"], row["stadium"])
             self.store.db.execute("UPDATE challenges SET status='accepted' WHERE id=?", (row["id"],))
+            self.create_match(row["host"], row["guest"], row["stadium"])
         elif payload["answer"] == 1:
             self.cancel_offer(row)
         else:

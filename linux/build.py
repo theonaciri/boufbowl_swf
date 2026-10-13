@@ -24,7 +24,7 @@ def main():
     bundle.mkdir(parents=True)
     bun = shutil.which("bun") or str(Path.home() / ".bun/bin/bun")
     if args.rebuild_worker:
-        subprocess.run([bun, "build", str(root / "backend/engine.ts"), "--target=bun", "--outfile=" + str(root / "backend/build/engine.js")], check=True)
+        subprocess.run([bun, str(root / "backend/build-worker.ts")], check=True)
         shutil.copy2(root / "backend/engine_base.json", root / "backend/build/engine_base.json")
     if not (root / "backend/build/engine.js").is_file() or not (root / "backend/build/engine_base.json").is_file():
         parser.error("Compiled worker missing: update the checkout, or use --rebuild-worker with sibling server source available")
@@ -41,7 +41,8 @@ def main():
         "Requires Python 3, Wine (including 32-bit support), and X11/XWayland.\n"
         "Run ./play.sh from a graphical desktop.\n"
         "Use ./play.sh --mode tutorial to enter the tutorial directly.\n"
-        "Run ./play.sh --mode server for persistent clubs and CPU matches.\n"
+        "Run ./play.sh --mode server for accounts, persistent clubs and human/CPU matches.\n"
+        "Server > Community opens friends, rankings, history, replays, spectating and chat.\n"
         "The local backend and Bun simulation runtime are bundled.\n"
         "For LAN/Android: python3 -m backend.server --host 0.0.0.0 --port 9900\n")
     archive = build / "BoufbowlOffline-linux.tar.gz"

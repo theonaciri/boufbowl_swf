@@ -36,7 +36,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.c
       {
          if(this.isValid())
          {
-            dispatchToModules(MessageBoxEvent.infos("Apply these changes to the offline session? They will reset when you close the player.",this._translator.getText(LangConstants.PREMIUMSERVICE_CUSTOMISATION_APPLY_CONFIRMATION_YES),new Event(APPLY_BOUFBOWLER_CUSTOMISATION),this._translator.getText(LangConstants.PREMIUMSERVICE_CUSTOMISATION_APPLY_CONFIRMATION_NO)));
+            dispatchToModules(MessageBoxEvent.infos(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode() ? "Save these changes to your server profile?" : "Apply these changes to the offline session? They will reset when you close the player.",this._translator.getText(LangConstants.PREMIUMSERVICE_CUSTOMISATION_APPLY_CONFIRMATION_YES),new Event(APPLY_BOUFBOWLER_CUSTOMISATION),this._translator.getText(LangConstants.PREMIUMSERVICE_CUSTOMISATION_APPLY_CONFIRMATION_NO)));
          }
       }
       

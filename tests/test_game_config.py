@@ -37,6 +37,10 @@ class GameConfigTests(unittest.TestCase):
         self.assert_invalid(lambda c: c["rules"]["simulation"]["simulation"].update(
             {"probability_min": 0.9, "probability_max": 0.1}))
 
+    def test_ball_exclusion_cannot_remove_entire_placement_zone(self):
+        self.assert_invalid(lambda c: c["rules"]["simulation"]["placement"].update(
+            {"ball_exclusion_radius_cells": 10}))
+
     def test_boolean_cannot_be_used_as_a_turn_count(self):
         self.assert_invalid(lambda c: c["rules"]["match"].update({"turns_per_match": True}))
 

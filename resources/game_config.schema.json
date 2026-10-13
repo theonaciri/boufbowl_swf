@@ -131,6 +131,33 @@
               "minimum": 0
             }
           }
+        },
+        "matchmaking": {
+          "type": "object",
+          "properties": {
+            "rating_window": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "widen_per_second": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "heartbeat_timeout": {
+              "type": "integer",
+              "minimum": 5
+            },
+            "search_timeout": {
+              "type": "integer",
+              "minimum": 5
+            }
+          },
+          "required": [
+            "rating_window",
+            "widen_per_second",
+            "heartbeat_timeout",
+            "search_timeout"
+          ]
         }
       },
       "additionalProperties": false,
@@ -922,6 +949,14 @@
                 "intercept_height_threshold": {
                   "type": "number",
                   "exclusiveMinimum": 0
+                },
+                "reception_requires_air": {
+                  "type": "boolean"
+                },
+                "goal_line_half_width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 17
                 }
               },
               "additionalProperties": false,
@@ -1738,6 +1773,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -2471,6 +2514,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -3204,6 +3255,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -3937,6 +3996,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -4670,6 +4737,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -5403,6 +5478,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -6136,6 +6219,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -6869,6 +6960,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false
@@ -7602,6 +7701,14 @@
                         "intercept_height_threshold": {
                           "type": "number",
                           "exclusiveMinimum": 0
+                        },
+                        "reception_requires_air": {
+                          "type": "boolean"
+                        },
+                        "goal_line_half_width": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "maximum": 17
                         }
                       },
                       "additionalProperties": false

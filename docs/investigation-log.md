@@ -273,3 +273,104 @@ The launcher prints startup errors directly instead of a repeated maintenance lo
 checkout test with no engine.ts or sibling source. Linux packaging uses the included
 worker by default; --rebuild-worker explicitly requests a source rebuild. No SWF
 rebuild is required to play from a checkout. Saved databases are unchanged.
+
+## Gameplay, placement and French chat investigation — 2026-10-13
+
+The original `resources/lang.json` tutorial step 5 explicitly requires at least
+one AIR on the receiver. The sibling simulator's `resolveReceptions` instead
+filtered on FEU, so an AIR-only receiver never reached the catch probability
+roll. The local ball-module overlay now checks AIR for receptions/interceptions;
+CPU receiver allocation and warning codes agree with that rule. Existing catch
+range, height, one-attempt-per-flight, actor-state and probability checks remain.
+A deterministic AIR-only reception probe succeeds; the forced-zero-probability
+probe still produces a failed catch and landing.
+
+`resolveGoals` previously compared the carrier's position against outer pitch
+columns (-18/+17), beyond the painted goal lines. The client `GridModel` maps
+horizontal position to `q+r/2`. Scoring now compares that continuous coordinate
+with configurable +/-12.5, reflecting attack direction after halftime and
+requiring an active carrier. Tests cover both teams, negative/positive odd/even
+rows, period swapping, own-line/no-ball rejection and a custom line position.
+The new goal probe crosses from column 12 to 13 rather than 16 to 17.
+
+Placement was five hardcoded five-cell crosses. The supplied reference silhouette
+has been reconstructed into row spans for orange center, green upper front,
+yellow wedge, cyan lower rear and blue lower front. Horizontal reflection is
+`q'=-q-r`, preserving vertical roles; negating both coordinates was a rotation.
+The client `MatchModel` now reflects stored zone cells when period parity changes,
+without reinitializing the match; setup resets period state for resumed matches.
+The native halftime screenshot confirms the large zones on the opposite side.
+An empty automatic placement packet now selects default positions, matching
+server deadline maintenance and avoiding a spurious request-failed notification.
+
+The `2_fr` chat exception came from advertising general chat as `2_null` while
+client shortcuts use the account language. The service now advertises all four
+supported language keys. `ReceiveChannelsConfigurationCommand` preserves the
+language during registration; the original command discarded it. Chat rateLimit
+is expressed in seconds, so it is now 1 instead of 1000. A native French client
+sent `/g Bonjour test`, persisted it and displayed the returned message.
+
+Status text wraps inside a maximum width of 512 logical pixels (and at most half
+stage width), with its height bounded to three lines and its bottom anchored.
+Readable client patches and local simulator overlays preserve original files.
+Rules version is `boufbowl-custom-2`; engine version adds `+client-ball-2` so older
+recordings are not mislabeled as equivalent simulations.
+
+Validation: 49 automated tests, including an isolated source checkout worker;
+native AIR reception and interior-line goal replay probes complete through
+ResolutionDone, next field state and match end. Desktop SWF and ARM64 Android APK
+compile; APK signature/alignment checks pass. Android runtime behavior remains
+untested because no device/emulator is attached. The reproducible native French
+chat/halftime smoke is `python3 -m tools.smoke_gameplay_fixes` under Xvfb, and its
+screenshots/traces are in `evidence/`.
+
+## Stadium textures and palettes — 2026-10-13
+
+Farmstead already used the original archived textures. Eight additional court
+atlases were found under sibling `boufbowl/assets/courts`; copies and provenance
+are now bundled here. Stadium-specific COLLADA variants reuse the available
+geometry, with atlas-adjusted ground UVs. These are visual substitutes for missing
+3D models, with configurable theme mappings in `resources/stadium_art.json`.
+
+Native testing caught two Away3D limitations: mixed parent-directory texture paths
+left some fetched textures unbound, and separate UV sources appended coordinates
+without correcting face indices. Generated models now use local image paths and
+modify only UV indices exclusively used by the ground. Brakmar renders its atlas
+and completes original-player replay. No original model or source atlas is edited.
+
+`resources/palettes.json` supplies 11 club palettes and expanded hair/eye/skin
+choices, plus universal Pastel/Vivid/Natural character palettes. Both platform
+startup generators share it. Original color-grid lists have a 16-color maximum;
+validation enforces that limit. Translation generation is repeatable and adds
+names for the new IDs in every supported language. The native character editor
+shows the expanded swatches. Details and theme mappings: `docs/visual-assets.md`.
+
+## Accounts and human matchmaking — 2026-10-13
+
+Database migration to version 2 adds accounts, login-attempt buckets and a
+persistent queue, retaining old anonymous tokens and profile/club/match IDs.
+Optional accounts use salted PBKDF2-SHA256 passwords, cross-device sessions,
+one-time recovery codes, password changes and logout/revocation. Account linking
+preserves the existing profile. Remote password requests require HTTPS; the
+standalone server accepts certificate/key flags. TLS endpoint behavior is tested.
+
+Normal match requests now search for humans instead of choosing CPU. Queue joins
+are transactional, maintain arrival priority, enforce distinct profiles, require
+intersecting enabled stadium choices, prefer nearby ratings and widen over time.
+Heartbeat and total-search deadlines remove stale entries. Explicit CPU matches
+and nickname challenges remain available. Pairing removes queue entries and
+cancels unrelated invitations; login restores pending invitations. Committed
+placements/orders are immutable on repeated submissions or reconnects.
+
+The shared client exposes account controls in Server → Account and search/CPU/
+challenge controls in Play. Password fields are masked and credentials are not
+saved in SharedObjects. Account switching clears private chat display history and
+is performed from the lobby. Customization confirmation now correctly states that
+server-mode edits are saved, while standalone preview remains temporary.
+
+72 automated tests pass. A two-client native regression logged into separate
+accounts, queued and paired them, rendered two original 3D turns per client,
+received four ResolutionDone messages and persisted exactly two human results.
+The explicit CPU regression also completes two native turns and one result.
+Both platform client builds compile. Android is package-verified without device
+runtime testing. Reproduction and API/setup details: docs/accounts-and-matchmaking.md.

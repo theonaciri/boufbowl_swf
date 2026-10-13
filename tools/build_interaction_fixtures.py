@@ -25,8 +25,8 @@ def records():
                 selected=[{'entity_id':11,'action_type':'move','params':{'target_position':{'q':1,'r':0},'elements':{'TERRE':1,'FEU':0,'AIR':0,'EAU':2}}}]
             elif name=='ability': selected=[{'entity_id':11,'action_type':'ability','params':{}}]
             elif name=='goal':
-                actor['position']={'q':16,'r':0}
-                selected=[{'entity_id':11,'action_type':'move','params':{'target_position':{'q':17,'r':0},'elements':{'TERRE':0,'FEU':0,'AIR':0,'EAU':3}}}]
+                actor['position']={'q':12,'r':0}
+                selected=[{'entity_id':11,'action_type':'move','params':{'target_position':{'q':13,'r':0},'elements':{'TERRE':0,'FEU':0,'AIR':0,'EAU':3}}}]
             else:
                 actor['stats']['precision']=100; receiver['stats']['precision']=100; receiver['stats']['agility']=100
                 if name=='interception':
@@ -40,9 +40,9 @@ def records():
                 world['ball'].update(holder_entity_id=11,position=deepcopy(actor['position']))
                 actor['status']['carrying_ball']=True
             if name in ('reception','rebound'):
-                selected.append({'entity_id':12,'action_type':'wait','params':{'elements':{'TERRE':0,'FEU':3,'AIR':0,'EAU':0}}})
+                selected.append({'entity_id':12,'action_type':'wait','params':{'elements':{'TERRE':0,'FEU':0,'AIR':3,'EAU':0}}})
             orders=[{'player_id':str(team),'turn_number':1,'team_index':team,'nonce':name+str(team),'actions':selected if team==0 else []} for team in (0,1)]
-            if name=='interception': orders[1]['actions']=[{'entity_id':21,'action_type':'wait','params':{'elements':{'TERRE':0,'FEU':3,'AIR':0,'EAU':0}}}]
+            if name=='interception': orders[1]['actions']=[{'entity_id':21,'action_type':'wait','params':{'elements':{'TERRE':0,'FEU':0,'AIR':3,'EAU':0}}}]
             rules=deepcopy(config['rules'])
             if name=='rebound': rules['simulation']['simulation'].update(catch_base=0,catch_stat=0,catch_feu=0,catch_air=0,probability_min=0)
             simulated=engine.simulate(world,orders,1,12345,rules,(False,False))
