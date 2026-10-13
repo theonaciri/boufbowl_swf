@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlsplit
 from tools.game_config import load_config
 from backend.server import Handler as BackendHandler, default_database
 from backend.service import Service
+from backend.storage import ServiceError
 
 
 def main():
@@ -121,3 +122,7 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except KeyboardInterrupt:
         raise SystemExit(130)
+    except ServiceError as error:
+        import sys
+        print(f"Cannot start Boufbowl: {error}", file=sys.stderr)
+        raise SystemExit(1)

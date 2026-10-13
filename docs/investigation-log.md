@@ -257,3 +257,19 @@ file matches the source configuration exactly. APK ZIP integrity and v1/v2
 signature verification pass; its native library is ARM64. Linux archive integrity
 passes. The simulation worker restarts after an unexpected exit, and transient
 worker failures retain command IDs for retry. Final checks include 35 tests.
+
+## Checkout startup fix
+
+A user checkout exposed an omitted distribution file: backend/build was ignored,
+so Engine fell back to engine.ts and its sibling source imports. The worker exited
+without a useful diagnostic because stderr was discarded. The small bundled
+engine.js and engine_base.json are now included in source checkouts. Engine no
+longer silently falls back to sibling imports. It checks readiness before starting
+match maintenance, captures startup/runtime errors, and clearly identifies a
+missing Bun runtime or worker. Its handshake remains compatible with older bridges.
+The launcher prints startup errors directly instead of a repeated maintenance loop.
+
+39 tests pass, including missing worker/runtime, stderr diagnostics and an isolated
+checkout test with no engine.ts or sibling source. Linux packaging uses the included
+worker by default; --rebuild-worker explicitly requests a source rebuild. No SWF
+rebuild is required to play from a checkout. Saved databases are unchanged.

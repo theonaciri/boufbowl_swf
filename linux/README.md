@@ -38,6 +38,11 @@ python3 patches/rebuild.py --ffdec /path/ffdec.jar --original /path/original.swf
 python3 linux/build.py
 ```
 
-Building needs Java, JPEXS FFDec, Python, dpkg-deb and Bun. The worker build uses
-the sibling `boufbowl_server` source; the distributed runtime does not require
-that sibling or a separate Bun installation. Readable changes remain in `patches/`.
+A source checkout needs Bun installed in addition to Python/Wine. Run `./play.sh`
+directly; its compiled client and worker are included. No sibling project or SDK
+is needed for playback. Packaging uses the included worker by default.
+
+Rebuilding the Flash client needs Java and FFDec. Rebuilding the simulation worker
+uses `python3 linux/build.py --rebuild-worker` and the sibling `boufbowl_server`
+source. Packaging needs Python, dpkg-deb and Bun; the resulting package bundles
+Bun. Readable changes remain in `patches/`.

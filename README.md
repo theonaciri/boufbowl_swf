@@ -6,6 +6,11 @@ CPU match or resume; the original Play menu supports nickname challenges.
 Use `--profile Alice` to select another device profile. Menus and tutorial remain
 available with `--mode menus` and `--mode tutorial`.
 
+A source checkout includes the compiled Flash client and simulation worker. You
+do not need to build anything to play. Install Python 3, Wine with 32-bit support,
+and Bun once, then run `./play.sh`. Java, AIR, FFDec and Android SDK are only
+needed for rebuilding. The Linux package bundles Bun.
+
 Linux requires Python 3, Wine with 32-bit support, and X11/XWayland. The package
 includes Flash Player and Bun for the simulation worker. Dependencies and build
 instructions are in [linux/README.md](linux/README.md) and

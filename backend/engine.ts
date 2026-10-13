@@ -11,6 +11,7 @@ function merge(a: any, b: any): any {
     ? merge(out[key] ?? {}, value) : structuredClone(value);
   return out;
 }
+if (process.env.BOUFBOWL_WORKER_HANDSHAKE === "1") process.stdout.write(JSON.stringify({ ready: true }) + "\n");
 for await (const line of createInterface({ input: process.stdin })) {
   try {
     const request = JSON.parse(line);

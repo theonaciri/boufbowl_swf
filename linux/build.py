@@ -5,12 +5,16 @@ import shutil
 import subprocess
 import tarfile
 import sys
+import argparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import apply_resources, load_config
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--rebuild-worker", action="store_true", help="Recompile the worker from sibling server source")
+    args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     config = load_config()
     build = root / "linux/build"
@@ -19,8 +23,11 @@ def main():
         shutil.rmtree(bundle)
     bundle.mkdir(parents=True)
     bun = shutil.which("bun") or str(Path.home() / ".bun/bin/bun")
-    subprocess.run([bun, "build", str(root / "backend/engine.ts"), "--target=bun", "--outfile=" + str(root / "backend/build/engine.js")], check=True)
-    shutil.copy2(root / "backend/engine_base.json", root / "backend/build/engine_base.json")
+    if args.rebuild_worker:
+        subprocess.run([bun, "build", str(root / "backend/engine.ts"), "--target=bun", "--outfile=" + str(root / "backend/build/engine.js")], check=True)
+        shutil.copy2(root / "backend/engine_base.json", root / "backend/build/engine_base.json")
+    if not (root / "backend/build/engine.js").is_file() or not (root / "backend/build/engine_base.json").is_file():
+        parser.error("Compiled worker missing: update the checkout, or use --rebuild-worker with sibling server source available")
     for name in ("bin", "assets", "resources", "tools", "protocol", "backend", "docs"):
         shutil.copytree(root / name, bundle / name,
                         ignore=shutil.ignore_patterns(".tutorial-build-*", "__pycache__"))

@@ -26,7 +26,11 @@ class Service(Social):
         self.store = Store(path)
         self.codec = Codec()
         self.chat_codec = Codec(ROOT / "protocol/chat_contract.json", "ChatMessage")
-        self.engine = engine or Engine()
+        try:
+            self.engine = engine or Engine()
+        except BaseException:
+            self.store.close()
+            raise
         self.stopping = threading.Event()
         self.maintenance = threading.Thread(target=self.maintain, daemon=True)
         self.maintenance.start()
