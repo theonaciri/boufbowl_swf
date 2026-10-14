@@ -61,11 +61,11 @@ connects to this same Linux backend; it does not host the server itself.
 
 ## Playing humans
 
-**Play** in the top toolbar opens **Find opponent**, **CPU matchmaking**, search
+The original home-screen **Play / Jouer** button opens **Find opponent**, **CPU matchmaking**, search
 cancellation and nickname challenges. Choose any enabled stadium or cycle to a
 specific stadium before searching. The original matchmaking Play request also
 joins the human queue. CPU opponents are explicit; a search never silently falls
-back to CPU. An existing active match makes the toolbar Play button resume it.
+back to CPU. An existing active match makes the home-screen Play button resume it.
 
 The persistent queue pairs distinct profiles with overlapping stadium choices.
 Among compatible candidates, it prefers nearby ratings and earlier arrivals.
@@ -119,7 +119,8 @@ passes. Android remains package-verified; no device is attached.
 
 ### Tournament matchmaking and team selection
 
-The original Home Play button and toolbar Play button open shared controls.
+The original Home Play button opens the shared controls; the redundant toolbar
+Play, Teams and Tutorial buttons have been removed.
 The original Tournament button opens its native schedule/countdown/podium screen. **Find opponent** joins the human queue; **CPU matchmaking**
 starts a CPU match only when explicitly selected. **Find tournament** joins the
 currently running tournament's separate human queue at its scheduled stadium. There is no
@@ -138,3 +139,12 @@ The Play dialog displays **Team** and offers **Change team**. The chosen owned
 selects that club before creating/pairing the match. This uses the stored customized
 roster, not the offline seed team. `select_club` also selects an owned club explicitly;
 unowned IDs fail and an active match prevents changing selection.
+
+
+If an anonymous device session becomes unknown after a development database reset
+or expires, the client clears that credential and establishes fresh anonymous
+access. Club stays closed at startup. Wallet/league requests wait for connection
+and retry after session renewal, including when polling detects expiry first.
+Expired account sessions require password login through Club → Account; they do
+not silently create an anonymous profile. Invalid credentials are not accepted by
+the server, and ban/kick responses do not trigger anonymous renewal.

@@ -1,4 +1,8 @@
       private static var serverActive:Boolean = false;
+      private static var serverConnecting:Boolean=false;
+      private static var serverReconnecting:Boolean=false;
+      private static var serverReconnectWaiters:Array=[];
+      private static var serverRecoveryGeneration:uint=0;
       private static var serverGeneration:uint = 0;
       private static var serverBase:String;
       private static var serverSession:String;
@@ -63,7 +67,7 @@
          }
       }
 
-      private static function startServer(url:String = null, profileName:String = null, resume:Boolean = false) : void
+      private static function startServer(url:String = null, profileName:String = null, resume:Boolean = false, complete:Function = null) : void
       {
          var oldSession:String = serverSession;
          var oldStorage:SharedObject = serverStorage;
@@ -78,7 +82,7 @@
          }
          serverGeneration++;
          serverAccountBusy = false;
-         serverActive = true;
+         serverActive = true;serverConnecting=true;serverRole="player";
          clearTimeout(serverPollTimer);
          serverSending = false; serverPolling = false; serverQueue = [];
          serverInMatch = false;
@@ -100,13 +104,24 @@
          serverStorage = SharedObject.getLocal("BoufbowlBackend_" + profileName.replace(/[^a-z0-9_-]/gi,"_") + "_" + (embedded ? "local" : serverBase.replace(/[^a-z0-9_-]/gi,"_")),"/");
          serverSession = serverStorage.data.session != null ? String(serverStorage.data.session) : null;
          if(resume) { serverStorage = oldStorage; serverSession = oldSession; }
+         serverAuthMode=serverSession != null && (serverStorage.data.authMode == "account" || serverStorage.data.accountSession == serverSession) ? "account" : "device";
          serverStatus("Connecting to " + url);
          var clubs:Array = [];
          for(var index:int=0;index<teams.numItems;index++) clubs.push(serverSnapshot(teams.getItemAt(index)));
-         serverRequest("hello",{session:serverSession,nickname:profileName,clubs:clubs,language:AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang},function(response:Object):void {
-            if(!response.ok) { serverStatus("Connection failed: " + response.error); serverConnectionPanel(); return; }
-            serverSession = String(response.session);
-            serverStorage.data.session = serverSession;
+         var helloBody:Object={session:serverSession,nickname:profileName,clubs:clubs,language:AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang};
+         var connected:Function=function(response:Object):void {
+            if(!response.ok) {
+               if(response.code == "SESSION_INVALID" && serverAuthMode == "device" && helloBody.session != null) {
+                  serverTrace("Renewing unknown device session");
+                  delete serverStorage.data.session;delete serverStorage.data.deviceSession;serverStorage.flush();
+                  serverSession=null;helloBody.session=null;serverRequest("hello",helloBody,connected);return;
+               }
+               serverActive=false;serverConnecting=false;serverSession=null;serverQueue=[];
+               serverStatus(serverCaption(response.code == "SESSION_INVALID" && serverAuthMode == "account" ? "Account session expired. Sign in from Club / Account." : "Connection failed")+": "+response.error);
+               if(complete != null)complete(false);return;
+            }
+            serverSession = String(response.session);serverConnecting=false;
+            serverStorage.data.session = serverSession;serverStorage.data.authMode=response.auth_mode;
             if(response.auth_mode == "device") serverStorage.data.deviceSession = serverSession;
             serverCursor = Number(response.cursor);
             serverStorage.flush();
@@ -118,7 +133,31 @@
             serverStatus("Connected as " + response.profile.nickname);
             serverPump();
             serverPoll();
+            if(complete != null)complete(true);
+         };
+         serverRequest("hello",helloBody,connected);
+      }
+
+      private static function serverRefreshSession(complete:Function):void {
+         if(serverAuthMode != "device") {
+            serverTrace("Account session requires login");
+            serverActive=false;serverSession=null;serverQueue=[];serverConnecting=false;
+            serverStatus(serverCaption("Account session expired. Sign in from Club / Account."));
+            if(complete != null)complete(false);return;
+         }
+         if(complete != null)serverReconnectWaiters.push(complete);
+         if(serverReconnecting)return;
+         serverReconnecting=true;
+         if(serverStorage != null) {
+            delete serverStorage.data.session;delete serverStorage.data.deviceSession;serverStorage.flush();
+         }
+         serverSession=null;
+         startServer(null,null,true,function(ok:Boolean):void {
+            serverReconnecting=false;
+            var callbacks:Array=serverReconnectWaiters;serverReconnectWaiters=[];
+            for each(var callback:Function in callbacks)callback(ok);
          });
+         serverRecoveryGeneration=serverGeneration;
       }
 
       private static function serverMetadata(response:Object) : void
@@ -158,12 +197,27 @@
       private static function serverRequest(route:String, body:Object, complete:Function) : void
       {
          var generation:uint=serverGeneration;
+         var requestBase:String=serverBase;
          var loader:URLLoader=new URLLoader();
          var done:Boolean=false;
          var timeout:uint;
          var finish:Function=function(response:Object):void {
             if(done) return; done=true; clearTimeout(timeout);
-            if(generation != serverGeneration) return;
+            if(generation != serverGeneration) {
+               if(response.code == "SESSION_INVALID" && (route == "community" || route == "replay") && requestBase == serverBase && serverRecoveryGeneration == serverGeneration) {
+                  var retry:Function=function(ok:Boolean):void { if(ok) { body.session=serverSession;serverRequest(route,body,complete); } };
+                  if(serverReconnecting)serverReconnectWaiters.push(retry);
+                  else if(serverSession != null)retry(true);
+               }
+               return;
+            }
+            if(response.code == "SESSION_INVALID" && route == "poll") { serverRefreshSession(null);return; }
+            if(response.code == "SESSION_INVALID" && (route == "community" || route == "replay")) {
+               serverRefreshSession(function(ok:Boolean):void {
+                  if(ok) { body.session=serverSession;serverRequest(route,body,complete); }
+                  else complete(response);
+               });return;
+            }
             complete(response);
          };
          timeout=setTimeout(function():void {
@@ -430,7 +484,7 @@
 
       private static function serverAccountPanel() : void
       {
-         if(serverSession == null) { serverStatus("Connect to a server first"); return; }
+         if(serverBase == null) { serverStatus("Connect to a server first"); return; }
          if(serverCurrentMatch != null) { serverStatus("Finish or surrender your match before changing accounts"); return; }
          serverDialog("Account: " + (serverAuthMode == "account" ? serverAccountUsername : "anonymous device"),330);
          serverText(serverPanel,"Username",20,55,130);
@@ -454,7 +508,7 @@
       {
          if(serverAccountBusy) return;
          serverStorage.data.session = serverStorage.data.deviceSession != null ? serverStorage.data.deviceSession : null;
-         serverStorage.flush(); serverClosePanel();
+         serverStorage.data.authMode="device";serverStorage.flush(); serverClosePanel();
          startServer(serverEmbedded ? "" : serverBase.replace(/\/api\/$/,""),serverProfileName);
       }
 
@@ -471,7 +525,7 @@
             password.text=""; replacement.text="";
                if(action == "logout") { delete serverStorage.data.accountSession; serverUseDevice(); return; }
             serverSession = String(response.session);
-            serverStorage.data.session = serverSession; serverStorage.data.accountSession = serverSession;
+            serverStorage.data.session = serverSession; serverStorage.data.accountSession = serverSession;serverStorage.data.authMode="account";
             if(action == "password" || action == "recover") delete serverStorage.data.deviceSession;
             serverStorage.flush(); serverClosePanel();
             startServer(serverEmbedded ? "" : serverBase.replace(/\/api\/$/,""),serverProfileName);
@@ -486,6 +540,7 @@
 
       private static function serverConnectionPanel() : void
       {
+         serverTrace("Club opened");
          serverDialog("Clubhouse",300);serverPanel.y=150;
          serverText(serverPanel,"Server address",20,50,160);
          var input:TextField=serverInput(serverPanel,serverEmbedded ? "" : serverBase != null ? serverBase.replace(/\/api\/$/,"") : @DEFAULT_URL@,170,50,460);
@@ -502,6 +557,8 @@
 
       private static function serverCommunityRequest(body:Object, complete:Function) : void
       {
+         if(serverConnecting || serverReconnecting) { setTimeout(function():void { serverCommunityRequest(body,complete); },100);return; }
+         if(!serverActive || serverSession == null) { serverStatus(serverCaption("Connect to a server first"));return; }
          body.session = serverSession;
          body.request_id=String(getTimer()) + "-" + String(Math.random());
          serverRequest("community",body,function(response:Object):void {

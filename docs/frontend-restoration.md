@@ -121,3 +121,14 @@ eliminated state and final podium. Evidence is under
 Shared patches are included in the Linux and Android packages. Android has build,
 archive and signature checks; the current flows have not been tested on a device.
 Advanced training remains hidden and was not implemented.
+
+
+## Toolbar and connection recovery
+
+The toolbar contains Home, Quit and Club (Server in English). Redundant Play,
+Teams and Tutorial toolbar buttons are removed; use the original home Play button
+and original game screens. Club opens only when clicked, including after startup
+connection failures. Unknown/expired anonymous credentials renew before wallet
+and league queries; expired account credentials require account login instead.
+`tools.smoke_session_recovery` checks startup, expiry during wallet/league requests
+and account re-login in the native client.

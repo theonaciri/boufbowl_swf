@@ -36,10 +36,22 @@ def inject_server(source, config, android=False):
     enabled = str(config["general"]["startup_mode"] == "server").lower()
     hook = 'if(vars.getValue("server") == "1" || (vars.getValue("server") == null && ' + enabled + ')) setTimeout(startServer,100);'
     source = source.replace("createToolbar();", "createToolbar();\n         " + hook, 1)
-    source = source.replace('addButton("Offline",8,60,null);', 'addButton("Play",8,60,function():void { if(serverActive) serverPlay(); });')
-    source = source.replace('toolbar.graphics.drawRect(0,0,348,26);', 'toolbar.graphics.drawRect(0,0,404,26);')
-    source = source.replace('Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);',
-                            'addButton("Server",343,55,function():void { serverConnectionPanel(); });\n         Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);\n         serverLayoutToolbar();\n         Stage(app.contextInjector.getInstance(Stage)).addEventListener(Event.RESIZE,function(event:Event):void { serverLayoutToolbar(); });')
+    start=source.index('      private static function createToolbar()')
+    end=source.index('      private static function addButton(',start)
+    quit_action='Object(getDefinitionByName("flash.desktop.NativeApplication")).nativeApplication.exit();' if android else 'fscommand("quit");'
+    source=source[:start]+"""      private static function createToolbar() : void
+      {
+         toolbar=new Sprite();toolbar.graphics.beginFill(0xfffce8,.95);
+         toolbar.graphics.drawRect(0,0,182,28);toolbar.graphics.endFill();
+         addButton("Home",4,55,function():void { serverClosePanel();showHome(); });
+         addButton("Quit",66,50,function():void { """+quit_action+""" });
+         addButton("Server",123,55,function():void { serverConnectionPanel(); });
+         Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);
+         serverLayoutToolbar();
+         Stage(app.contextInjector.getInstance(Stage)).addEventListener(Event.RESIZE,function(event:Event):void { serverLayoutToolbar(); });
+      }
+
+"""+source[end:]
     start=source.index('      private static function addButton(')
     match=re.search(r'\n      (?:public|private|override)',source[start+10:])
     if match:

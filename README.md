@@ -27,11 +27,11 @@ From this repository directory:
 ./play.sh --mode server
 ```
 
-Use **Play** in the top toolbar for human matchmaking, CPU games, challenges or
-resume. **Find tournament** searches the separate human tournament queue; **CPU matchmaking**
+Use the original home-screen **Play / Jouer** button for human matchmaking, CPU
+games, challenges or resume. **Find tournament** searches the separate human tournament queue; **CPU matchmaking**
 starts a CPU game only when explicitly selected. The Play dialog shows the selected
-team and offers **Change team**. The original Home Play button opens these same
-controls. **Server → Account** creates/links an account or logs in; anonymous device
+team and offers **Change team**. The toolbar contains only Home, Quit and
+Club (Server in English); Club opens only when clicked. **Server → Account** creates/links an account or logs in; anonymous device
 profiles remain available. `--profile Alice` selects another device profile.
 `--mode menus`, `--mode tutorial` and `--mode mock` select standalone modes.
 

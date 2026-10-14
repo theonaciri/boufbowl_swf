@@ -704,3 +704,15 @@ hexagonal palette previews and original league badges. Moderation now separates
 reports, sanctions and audit history; status notices use cream/olive styling and
 dismiss after eight seconds while retaining the half-screen width limit.
 The original reference SWFs and assets remain untouched.
+
+
+## 2026-10-14 — toolbar and stale-session fixes
+
+A rejected stored session left the client holding an unknown token and opened
+Club during startup. Wallet and league requests reused that rejected credential.
+The client now renews unknown anonymous credentials once at startup and coordinates
+request recovery with concurrent polling. Old-generation expiry responses join
+the renewal instead of leaving panels stalled. Account credentials require login,
+including access to Account while disconnected; ban/kick errors never trigger
+anonymous renewal. Club has no automatic opening path. Removed the redundant
+Play, Teams and Tutorial toolbar buttons; original home controls remain available.

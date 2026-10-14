@@ -538,5 +538,17 @@
     "fr": "Chargement…",
     "de": "Laden…",
     "es": "Cargando…"
+  },
+  "Account session expired. Sign in from Club / Account.": {
+    "en": "Account session expired. Sign in from Club / Account.",
+    "fr": "Session expirée. Connectez-vous dans Club / Compte.",
+    "de": "Sitzung abgelaufen. Melde dich unter Club / Konto an.",
+    "es": "Sesión caducada. Inicia sesión en Club / Cuenta."
+  },
+  "Connect to a server first": {
+    "en": "Connect to a server first",
+    "fr": "Connectez-vous au serveur dans Club.",
+    "de": "Verbinde dich zuerst im Club mit einem Server.",
+    "es": "Conecta con el servidor desde Club."
   }
 }
