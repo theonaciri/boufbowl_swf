@@ -9,7 +9,9 @@
       private static var serverPolling:Boolean = false;
       private static var serverPollTimer:uint;
       private static var serverNames:Object = {};
+      private static var serverTournamentId:String;
       private static var serverAbilities:Object = {};
+      public static var serverZobalMasks:Object = {};
       private static var serverLabel:TextField;
       private static var serverInMatch:Boolean = false;
       private static var serverCurrentMatch:String;
@@ -121,10 +123,12 @@
          if(response.subscriptions != null) serverSubscriptions=response.subscriptions;
          if(response.language != null) AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang=String(response.language);
          if(response.abilities != null) serverAbilities = response.abilities;
+         if(response.zobal_masks != null) serverZobalMasks = response.zobal_masks;
+         if(response.hasOwnProperty("tournament_id")) serverTournamentId=response.tournament_id;
          if(response.club_names != null) serverNames = response.club_names;
          if(response.auth_mode != null) serverAuthMode = String(response.auth_mode);
          if(response.profile != null && response.profile.club_id != null) serverClubId=String(response.profile.club_id);
-         if(response.profile != null) serverAccountUsername = response.profile.account_username;
+         if(response.profile != null) { serverAccountUsername = response.profile.account_username; if(response.profile.role != null) serverRole=String(response.profile.role); }
          if(response.matchmaking != null)
          {
             var waiting:Boolean = response.matchmaking.status == "waiting";
@@ -142,9 +146,9 @@
          var names:Array = ["Cra","Ecaflip","Eniripsa","Enutrof","Feca","Iop","Osamodas","Pandawa","Rogue","Sacrier","Sadida","Sram","Xelor","Zobal"];
          var ability:Object = serverAbilities[names[classId-1]];
          if(ability == null) return "";
-         var text:String = "All active teammates: heal up to " + ability.heal + " HP";
-         if(ability.element != null && ability.bonus != 0) text += ", +" + ability.bonus + " " + ability.element + " for this turn";
-         return text + ".";
+         var language:String = AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang;
+         if(ability.descriptions != null) return String(ability.descriptions[language] || ability.descriptions.en);
+         return String(ITranslator(app.contextInjector.getInstance(ITranslator)).getEnumTranslation("classes_order_tooltip_desc_enum",classId));
       }
 
       private static function serverRequest(route:String, body:Object, complete:Function) : void
@@ -197,7 +201,7 @@
             if(response.retryable) { serverStatus("Connection interrupted; retrying command"); setTimeout(serverPump,1500); return; }
             serverQueue.shift();
             if(response.ok) serverMetadata(response);
-            else { serverStatus("Request failed: " + response.error); serverTrace("ERROR " + response.error); }
+            else { if(body.request_class == "MatchRequestMessage") { MatchCreationModel(app.contextInjector.getInstance(MatchCreationModel)).matchRequestRunning=false;app.hideMessageBox(); } serverStatus("Request failed: " + response.error); serverTrace("ERROR " + response.error); }
             serverPump();
          });
       }
@@ -217,14 +221,21 @@
                   serverCursor = Number(packet.seq);
                }
             }
-            else serverStatus("Connection interrupted: " + response.error);
+            else {
+               serverStatus("Connection interrupted: " + response.error);
+               if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID") {
+                  serverGeneration++;serverQueue=[];serverSending=false;stopMock();showHome();serverCurrentMatch=null;
+                  serverStatus(response.error);return;
+               }
+            }
             serverPollTimer = setTimeout(serverPoll,response.ok ? 0 : 250);
          });
       }
 
       private static function serverPacket(packet:Object) : void
       {
-         if(packet.channel == "COMMUNITY") { if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
+         if(packet.round_states != null) serverTournamentRounds=packet.round_states;
+         if(packet.channel == "COMMUNITY") { if(packet.type == "MODERATED") { serverStatus(packet.verb + ": " + packet.reason); if(packet.verb == "kick" || packet.verb == "ban") { stopMock();showHome(); } } if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
          if(mockActive && packet.channel == "MATCH") return;
          if(packet.type == "RESOLUTION_SCENARIO") { app.hideMessageBox(); serverStatus("Loading turn animation"); }
          if(packet.type == "MATCH_INFORMATION") { serverClosePanel(); serverInMatch = true; }
@@ -261,8 +272,9 @@
             var value:String = data.readUnsignedByte().toString(16);
             hex += value.length == 1 ? "0" + value : value;
          }
-         serverTrace("Outgoing " + getQualifiedClassName(request).split("::").pop());
-         serverSend({operation:chat ? "chat" : "protocol",hex:hex});
+         var requestClass:String=getQualifiedClassName(request).split("::").pop();
+         serverTrace("Outgoing " + requestClass);
+         serverSend({operation:chat ? "chat" : "protocol",hex:hex,request_class:requestClass});
       }
 
       private static function serverColor(color:Color3) : Object { return {r:color.r,g:color.g,b:color.b}; }
@@ -347,7 +359,7 @@
          });
          serverAction(serverPanel,"Cancel search",360,85,170,function():void { serverSend({operation:"queue_leave"}); });
          if(@TOURNAMENT_ENABLED@) serverAction(serverPanel,"Find tournament",20,200,220,function():void {
-            serverClosePanel(); serverSend({operation:"tournament_match",tournament_id:@TOURNAMENT_ID@,club_id:selectedClub});
+            serverClosePanel(); serverSend({operation:"tournament_match",club_id:selectedClub});
          });
          serverAction(serverPanel,"Community",550,200,180,function():void { serverCommunityPanel("Friends"); });
          serverText(serverPanel,"Challenge a player by nickname",20,130,500);
@@ -365,8 +377,8 @@
       private static function serverDialog(title:String, height:int) : void
       {
          serverClosePanel(); serverPanel = new Sprite();
-         serverPanel.graphics.beginFill(0x20252b); serverPanel.graphics.drawRect(0,0,800,height); serverPanel.graphics.endFill();
-         serverPanel.x = 110; serverPanel.y = 150;
+         serverPanel.graphics.lineStyle(2,0xb3a66a); serverPanel.graphics.beginFill(0xf7f3d2); serverPanel.graphics.drawRoundRect(0,0,800,height,14); serverPanel.graphics.endFill();
+         serverPanel.x = 110; serverPanel.y = Math.max(80,(600-height)/2);
          serverText(serverPanel,title,20,10,680);
          serverAction(serverPanel,"Close",690,10,90,function():void { serverClosePanel(); });
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
@@ -374,7 +386,7 @@
 
       private static function serverText(parent:Sprite, text:String, x:int, y:int, width:int) : TextField
       {
-         var field:TextField = new TextField(); field.defaultTextFormat = new TextFormat("_sans",15,0xffffff);
+         var field:TextField = new TextField(); field.defaultTextFormat = new TextFormat("_sans",15,0x463d2b);
          field.text = text; field.x = x; field.y = y; field.width = width; field.height = 28; parent.addChild(field); return field;
       }
 
@@ -388,7 +400,7 @@
       private static function serverAction(parent:Sprite, title:String, x:int, y:int, width:int, callback:Function) : Sprite
       {
          var button:Sprite = new Sprite(); button.x=x; button.y=y; button.buttonMode=true;
-         button.graphics.beginFill(0x3578cf); button.graphics.drawRect(0,0,width,28); button.graphics.endFill();
+         button.graphics.lineStyle(1,0xb3a66a);button.graphics.beginFill(0xdce6a8); button.graphics.drawRoundRect(0,0,width,28,8); button.graphics.endFill();
          var label:TextField = serverText(button,title,4,2,width-8); label.mouseEnabled=false;
          button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); }); parent.addChild(button); return button;
       }
@@ -453,16 +465,16 @@
       {
          if(serverPanel != null && serverPanel.parent != null) serverPanel.parent.removeChild(serverPanel);
          serverPanel = new Sprite();
-         serverPanel.graphics.beginFill(0x20252b); serverPanel.graphics.drawRect(0,0,800,195); serverPanel.graphics.endFill();
-         serverPanel.x = 110; serverPanel.y = 180;
-         var title:TextField = new TextField(); title.defaultTextFormat = new TextFormat("_sans",16,0xffffff);
+         serverPanel.graphics.lineStyle(2,0xb3a66a);serverPanel.graphics.beginFill(0xf7f3d2); serverPanel.graphics.drawRoundRect(0,0,800,300,14); serverPanel.graphics.endFill();
+         serverPanel.x = 110; serverPanel.y = 150;
+         var title:TextField = new TextField(); title.defaultTextFormat = new TextFormat("_sans",16,0x463d2b);
          title.text = "Connect to your Boufbowl server"; title.width = 760; title.height = 30; title.x = 20; title.y = 10;
          serverPanel.addChild(title);
          var input:TextField = new TextField(); input.type = "input"; input.background = true; input.backgroundColor = 0xffffff;
          input.defaultTextFormat = new TextFormat("_sans",16,0x000000); input.width = 620; input.height = 30; input.x = 20; input.y = 50;
          input.text = serverEmbedded ? "" : serverBase != null ? serverBase.replace(/\/api\/$/,"") : @DEFAULT_URL@;
          serverPanel.addChild(input);
-         var profileLabel:TextField = new TextField(); profileLabel.text = "Device:"; profileLabel.textColor = 0xffffff;
+         var profileLabel:TextField = new TextField(); profileLabel.text = "Device:"; profileLabel.textColor = 0x463d2b;
          profileLabel.x = 20; profileLabel.y = 100; profileLabel.width = 80; profileLabel.height = 25;
          serverPanel.addChild(profileLabel);
          var profile:TextField = new TextField(); profile.type = "input"; profile.background = true; profile.backgroundColor = 0xffffff;
@@ -479,6 +491,10 @@
          serverPanel.addChild(button);
          serverAction(serverPanel,"Account",660,95,100,function():void { serverAccountPanel(); });
          serverAction(serverPanel,"Community",20,140,180,function():void { serverCommunityPanel("Friends"); });
+         serverAction(serverPanel,"Wallet / cosmetics",220,140,220,function():void { serverWalletPanel(); });
+         serverAction(serverPanel,"Leagues / seasons",460,140,250,function():void { serverProgressionPanel(); });
+         serverAction(serverPanel,"News",20,185,180,function():void { serverNewsPanel(); });
+         if(serverRole == "moderator" || serverRole == "admin") serverAction(serverPanel,"Moderation",220,185,220,function():void { serverModerationPanel(); });
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
       }
 
@@ -568,7 +584,7 @@
             else if(tab == "Rankings")
                for each(var row:Object in data.rows) lines.push(row.rank + ". " + row.player.nickname + "   " + row.rating + " rating   W " + row.wins + " / D " + row.draws + " / L " + row.losses);
             else
-               for each(var match:Object in data.matches) lines.push("#" + match.id + "  " + match.players.join(" vs ") + "  " + match.score.join(":") + (tab == "History" ? "  " + match.phase + " / " + match.turns + " turns" + (match.side == null ? " (watched)" : "") : "  turn " + match.turn));
+               for each(var match:Object in data.matches) lines.push("#" + match.id + "  " + match.players.join(" vs ") + "  " + match.score.join(":") + (tab == "History" ? "  " + match.phase + " / " + match.turns + " turns" + (match.result_kind != null ? " / " + match.result_kind : "") + (match.side == null ? " (watched)" : "") : "  turn " + match.turn));
             listing.text=lines.length>0 ? lines.join("\n") : "No entries yet.";
             if(data.hasOwnProperty("more"))
             {
@@ -666,7 +682,8 @@
       {
          if(replay.format_version != 1 || !(replay.steps is Array) || replay.steps.length == 0) throw new Error("Unsupported replay file");
          serverClosePanel(); stopMock(); serverInMatch=false;
-         mockFixture=replay; mockIndex=0; mockActive=true;
+         replayRoot=replay;serverZobalMasks=replay.chapters != null && replay.chapters.length>0 && replay.chapters[0].zobal_masks != null ? replay.chapters[0].zobal_masks : {};replayCurrentTurn=1;replaySpeed=1;replayPaused=false;
+         mockFixture=replay; mockIndex=0; mockActive=true;replayBuildControls();
          mockStatus("Playing saved match; Home exits playback"); scheduleMockStep();
       }
 
@@ -702,7 +719,7 @@
             serverTrace("Player information opened: " + data.nickname);
             serverDialog("Player: " + data.nickname,240);
             serverText(serverPanel,"Club: " + data.player.club.clubName,20,50,750);
-            serverText(serverPanel,"Rating: " + data.statistics.rating + "   Wins: " + data.statistics.wins + "   Draws: " + data.statistics.draws + "   Losses: " + data.statistics.defeats,20,90,750);
+            serverText(serverPanel,"Role: " + (data.role != null ? data.role : "player") + "   Rating: " + data.statistics.rating + "   Wins: " + data.statistics.wins + "   Draws: " + data.statistics.draws + "   Losses: " + data.statistics.defeats,20,90,750);
             serverText(serverPanel,data.online ? "Online" + (data.match != null ? " - match " + data.match : "") : "Offline",20,130,750);
             serverAction(serverPanel,"Private message",20,180,200,function():void { serverCommunityPanel("Messages",0,nickname); });
             if(data.can_spectate) serverAction(serverPanel,"Spectate match",250,180,200,function():void {

@@ -130,7 +130,9 @@ class CommunityTests(unittest.TestCase):
         club=self.service.collection(self.identity(self.alice))
         with self.service.store.transaction():
             for i in range(105): self.service.store.create_profile('Player%03d'%i,club)
-            stats={'wins':1,'draws':0,'defeats':0,'rating':0}
+            eligible={'wins':3,'draws':0,'defeats':0,'rating':1450}
+            self.service.store.db.execute('UPDATE profiles SET statistics_json=?',(json.dumps(eligible),))
+            stats={'wins':3,'draws':0,'defeats':0,'rating':1400}
             self.service.store.db.execute('UPDATE profiles SET statistics_json=? WHERE id=?',(json.dumps(stats),self.identity(self.bob)))
         self.protocol(self.alice,'LADDER_BY_NICK_REQUEST',{'self':False,'nickName':'bOB'})
         events=self.service.store.poll(self.identity(self.alice),0)
@@ -163,7 +165,7 @@ class CommunityTests(unittest.TestCase):
         self.service.emit_ranking(self.identity(self.alice))
         event=next(e for e in reversed(self.service.store.poll(self.identity(self.alice),0)) if e['type']=='RANKING_DATA')
         ranking=self.service.codec.open_envelope(bytes.fromhex(event['hex']))['payload']['ranking']
-        self.assertEqual((ranking['rank'],ranking['league'],ranking['subLeague']),(1,1,1))
+        self.assertEqual((ranking['rank'],ranking['league'],ranking['subLeague']),(0,0,0))
 
     def test_language_preferences_survive_reconnect_without_auto_resubscribe(self):
         self.api(self.alice,'channels',languages=['fr','de'],language='fr')
@@ -181,7 +183,8 @@ class CommunityTests(unittest.TestCase):
         self.protocol(self.bob,'ORDERS',{'turn':1,'orders':[]})
         self.api(self.bob,'friend',verb='block',nickname='Alice')
         replay=export_replay(self.service,match['id'],False,self.identity(self.alice))
-        self.assertEqual(len(replay['records']),1)
+        self.assertEqual(replay['records'],[])
+        self.assertTrue(replay['steps'])
 
     def test_long_poll_wakes_on_committed_events_without_blocking_commands(self):
         from concurrent.futures import ThreadPoolExecutor

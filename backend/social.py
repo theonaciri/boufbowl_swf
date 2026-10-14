@@ -45,6 +45,7 @@ class Social:
             return
         if name not in ("SEND_MESSAGE_TO_CLIENT_REQUEST", "SEND_MESSAGE_TO_CHANNEL_REQUEST"):
             raise ServiceError("CHAT_POLICY", "Use Community to report or block a player")
+        self.require_can_chat(profile)
         text = self.name(payload["message"], 500)
         last = self.store.db.execute("SELECT MAX(created) FROM chat_messages WHERE sender=?", (profile,)).fetchone()[0]
         if last is not None and time.time() - last < 1:
@@ -78,72 +79,9 @@ class Social:
         self.store.db.execute("INSERT INTO chat_messages(sender,recipient,match_id,message,created,language) VALUES(?,?,?,?,?,?)",
                               (profile, recipient, match_id, text, time.time(), language))
 
-    def tournament_config(self, identity=None):
-        settings = self.config["general"].get("tournament", {"enabled": False})
-        if not settings["enabled"] or identity is not None and str(identity) != str(settings["id"]):
-            raise ServiceError("TOURNAMENT_UNKNOWN", "This tournament is not available")
-        return settings
-
-    def tournament_entries(self, settings):
-        scores = {}
-        for row in self.store.db.execute("SELECT state_json,updated FROM matches"):
-            match = json.loads(row["state_json"])
-            if match.get("tournament") != settings["id"] or match.get("phase") != "ended":
-                continue
-            if not settings["start_time"] <= row["updated"] < settings["end_time"]:
-                continue
-            for side, profile in enumerate(match["profiles"]):
-                if profile is None:
-                    continue
-                outcome = "draw" if match["score"][0] == match["score"][1] else "win" if match["score"][side] > match["score"][1-side] else "loss"
-                scores[profile] = scores.get(profile, 0) + settings[outcome + "_points"]
-        ranked = sorted(scores, key=lambda p: (-scores[p], self.store.profile(p)["nickname"].casefold()))
-        return [(profile, {"player": self.player_summary(profile), "tournamentPoints": scores[profile],
-                           "eliminated": False, "currentRank": rank}) for rank, profile in enumerate(ranked, 1)]
-
-    def tournaments(self, profile):
-        settings = self.config["general"].get("tournament", {"enabled": False})
-        tournaments = []
-        if settings["enabled"]:
-            entries = self.tournament_entries(settings)
-            data = {"tournamentId": str(settings["id"]), "tournamentType": 2,
-                    "startTime": settings["start_time"] * 1000, "endTime": settings["end_time"] * 1000,
-                    "stadium": settings["stadium"], "closed": time.time() >= settings["end_time"], "price": 0,
-                    "podium": [entry for _, entry in entries[:3]], "participantCount": len(entries),
-                    "participantInTheRunningCount": len(entries)}
-            own = next((entry for identity, entry in entries if identity == profile), None)
-            if own:
-                data["ownRanking"] = own
-            tournaments.append(data)
-        self.emit(profile, "OUTSTANDING_TOURNAMENTS", {"tournaments": tournaments, "currentTime": time.time() * 1000})
-        self.emit(profile, "PAST_TOURNAMENTS", {"tournaments": [t for t in tournaments if t["closed"]]})
-
-    def tournament_match(self, profile, identity):
-        settings = self.tournament_config(identity)
-        if not settings["start_time"] <= time.time() < settings["end_time"]:
-            raise ServiceError("TOURNAMENT_CLOSED", "This tournament is outside its configured time window")
-        self.join_queue(profile, [settings["stadium"]], tournament=settings["id"])
-
-    def tournament_leaderboard(self, profile, identity):
-        entries = self.tournament_entries(self.tournament_config(identity))
-        payload = {"tournamentId": str(identity), "entries": [entry for _, entry in entries]}
-        own = next((entry for target, entry in entries if target == profile), None)
-        if own:
-            payload["playerEntry"] = own
-        self.emit(profile, "TOURNAMENT_LEADERBOARD", payload)
-
-    def running_tournament_matches(self, profile):
-        matches = []
-        for row in self.store.db.execute("SELECT state_json FROM matches"):
-            match = json.loads(row[0])
-            if match.get("tournament") and match["phase"] != "ended":
-                matches.append({"matchId": str(match["id"]), "firstPlayerNickname": match["rosters"][0]["nickname"],
-                                "secondPlayerNickname": match["rosters"][1]["nickname"]})
-        self.emit(profile, "RUNNING_TOURNAMENT_MATCHES", {"runningMatch": matches})
-
     def restore_spectating(self, profile, match):
         information=self.match_information(match,1)
-        information.pop('side'); information.pop('placementZone')
+        information.pop('side'); information.pop('placementZone'); information['skipIntro']=True
         self.emit(profile,'MATCH_INFORMATION',information,'MATCH')
         self.emit(profile,'FIELD_STATE',self.field_state(match,2 if match['phase']=='resolution' else None),'MATCH')
         if match['phase']=='resolution': self.emit(profile,'RESOLUTION_SCENARIO',match['scenario'],'MATCH')
@@ -180,8 +118,4 @@ class Social:
             self.broadcast(match,'MATCH_SPECTATOR_JOIN_NOTIFICATION',{'nickname':self.store.profile(profile)['nickname']})
 
     def emit_ranking(self, profile):
-        stats=self.store.profile(profile)['statistics']
-        ordered=[(json.loads(r['statistics_json'])['rating'],r['nickname'].casefold(),r['id']) for r in self.store.db.execute('SELECT id,nickname,statistics_json FROM profiles')]
-        ordered.sort(key=lambda r:(-r[0],r[1],r[2]))
-        rank=next(i for i,r in enumerate(ordered,1) if r[2]==profile)
-        self.emit(profile,'RANKING_DATA',{'ranking':{**{key:stats[key] for key in ('wins','draws','defeats')},'rank':rank,'league':1,'subLeague':(rank-1)//100+1}})
+        self.emit(profile,'RANKING_DATA',{'ranking':self.ranking_info(profile)})

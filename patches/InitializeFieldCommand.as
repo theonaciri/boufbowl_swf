@@ -121,11 +121,15 @@ package com.ankamagames.boufbowl.client.match.controller
          var _loc3_:BoufbowlerData = null;
          for each(_loc3_ in param1.leftRoster.characters)
          {
-            _loc2_.addItem(this._fieldFactory.createBoufbowlerFromData(_loc3_,Side.LEFT));
+            var leftPlayer:com.ankamagames.boufbowl.client.match.strategic.model.IBoufbowlerInMatchModel = this._fieldFactory.createBoufbowlerFromData(_loc3_,Side.LEFT);
+            if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverZobalMasks[String(_loc3_.id)] != null) leftPlayer.currentZobalMask = int(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverZobalMasks[String(_loc3_.id)]);
+            _loc2_.addItem(leftPlayer);
          }
          for each(_loc3_ in param1.rightRoster.characters)
          {
-            _loc2_.addItem(this._fieldFactory.createBoufbowlerFromData(_loc3_,Side.RIGHT));
+            var rightPlayer:com.ankamagames.boufbowl.client.match.strategic.model.IBoufbowlerInMatchModel = this._fieldFactory.createBoufbowlerFromData(_loc3_,Side.RIGHT);
+            if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverZobalMasks[String(_loc3_.id)] != null) rightPlayer.currentZobalMask = int(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverZobalMasks[String(_loc3_.id)]);
+            _loc2_.addItem(rightPlayer);
          }
          return _loc2_;
       }

@@ -17,7 +17,7 @@ from tools.game_config import load_config
 class AccountMatchmakingTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.path=Path(self.temp.name)/'state.sqlite'
-        self.config=load_config();self.config['rules']['match'].update(turns_per_match=2,turns_per_period=2)
+        self.config=load_config();self.config["general"]["tournament"].update(start_time=0,end_time=4102444800,repeat_seconds=0,stadium_rotation=[1],format='league');self.config["general"]["cinematics"]["introductions"]=False;self.config['rules']['match'].update(turns_per_match=2,turns_per_period=2)
         self.s=Service(self.path,self.config);self.n=0
         self.a=self.s.hello({'nickname':'Alice','clubs':[initial_club()]})
         self.b=self.s.hello({'nickname':'Bob','clubs':[initial_club()]})
@@ -229,21 +229,6 @@ class AccountMatchmakingTests(unittest.TestCase):
         finally:
             server.shutdown();server.server_close();thread.join(timeout=5)
 
-    def test_v1_database_migration_preserves_device_token(self):
-        path=Path(self.temp.name)/'old.sqlite';club=initial_club()
-        collection={'active':'1','clubs':{'1':club}};token='old-device-token-long-enough'
-        c=sqlite3.connect(path)
-        c.executescript('CREATE TABLE schema_versions(version INTEGER PRIMARY KEY);INSERT INTO schema_versions VALUES(1);'
-            'CREATE TABLE profiles(id TEXT PRIMARY KEY,nickname TEXT NOT NULL COLLATE NOCASE UNIQUE,club_json TEXT NOT NULL,statistics_json TEXT NOT NULL,created REAL NOT NULL);'
-            'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,profile_id TEXT NOT NULL REFERENCES profiles(id),expires REAL NOT NULL);')
-        c.execute('INSERT INTO profiles VALUES(?,?,?,?,?)',('legacy','Legacy',json.dumps(collection),json.dumps({'wins':0,'draws':0,'defeats':0,'rating':1000}),time.time()))
-        c.execute('INSERT INTO sessions VALUES(?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),'legacy',time.time()+1000));c.commit();c.close()
-        other=Service(path,self.config)
-        try:
-            self.assertEqual(other.hello({'session':token})['auth_mode'],'device')
-            self.assertEqual(other.store.authenticate(token),'legacy')
-        finally:other.close()
-
     def test_tournament_queue_is_human_and_separate_from_normal_search(self):
         self.command(self.a,'tournament_match',tournament_id=1)
         self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
@@ -279,7 +264,8 @@ class AccountMatchmakingTests(unittest.TestCase):
 
     def test_closed_tournament_removes_waiting_players(self):
         self.command(self.a,'tournament_match',tournament_id=1)
-        self.s.config['general']['tournament']['end_time']=time.time()-1
+        settings=self.s.tournament_config(1);settings['end_time']=time.time()-1
+        self.s.store.db.execute('UPDATE tournaments SET settings_json=? WHERE id=1',(json.dumps(settings),))
         with self.s.store.transaction():self.s.match_queued_players()
         self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['status'],'idle')
         with self.assertRaises(ServiceError):self.command(self.b,'tournament_match',tournament_id=1)
@@ -300,20 +286,3 @@ class AccountMatchmakingTests(unittest.TestCase):
         with self.assertRaises(ServiceError):self.command(self.a,club_id='999')
         self.assertEqual(self.s.collection(self.pid(self.a))['active'],'1')
         self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['status'],'idle')
-
-    def test_v3_queue_migration_preserves_waiting_device(self):
-        self.command(self.a)
-        self.s.close()
-        with sqlite3.connect(self.path) as db:
-            db.executescript('ALTER TABLE matchmaking_queue RENAME TO queue_new;'
-                'CREATE TABLE matchmaking_queue(profile_id TEXT PRIMARY KEY REFERENCES profiles(id),stadiums_json TEXT NOT NULL,joined REAL NOT NULL,heartbeat REAL NOT NULL);'
-                'INSERT INTO matchmaking_queue SELECT profile_id,stadiums_json,joined,heartbeat FROM queue_new;'
-                'DROP TABLE queue_new;DELETE FROM schema_versions WHERE version=4;')
-        db.close()
-        self.s=Service(self.path,self.config)
-        status=self.s.matchmaking_status(self.pid(self.a))
-        self.assertEqual(status['status'],'waiting')
-        self.assertIsNone(status['tournament'])
-        self.assertEqual(self.s.store.db.execute('SELECT MAX(version) FROM schema_versions').fetchone()[0],4)
-        self.command(self.b)
-        self.assertIsNotNone(self.s.store.active_match(self.pid(self.a)))

@@ -61,17 +61,21 @@ Authenticated `POST /api/replay` accepts session, match and optional verify
 fields; participants and registered spectators can export their match. Replay does not change results
 or statistics. Verification compares engine version, final state hash and events.
 An engine upgrade that changes those must preserve the prior worker for old
-record verification. Records include their complete rule snapshot.
+record verification. Completed records include their complete rule snapshot. Active exports are
+playback-only with no audit records or seeds; active verification returns
+`REPLAY_ACTIVE`. Each newly resolved turn uses an independent private seed,
+independently of earlier turns.
 
 General/private/match chat uses the recovered original chat protocol. Global
 rooms are isolated by language; private conversations are persisted and scoped
 to the two players. Match chat includes participants and spectators. Persistent
 blocks filter delivery and invitations. One-second
 message spacing is enforced. The original leaderboard reflects saved results.
-`general.tournament` configures a free local points league, its stadium, active
-time window (Unix seconds), and win/draw/loss points. Tournament match requests
-join a separate human queue and count completed results; this is the replacement league
-policy, rather than the historical paid bracket system.
+`general.tournament` configures recurring free qualification/knockout tournaments (or
+an optional points league), finite
+entry windows (UTC Unix seconds), stadium rotation, local rewards and win/draw/loss points.
+See [tournament lifecycle](tournament-lifecycle.md) for transitions and settings. Tournament match requests
+join a separate human queue and count only eligible completed queue results; this is a configurable replacement schedule. External paid services are not used.
 
 The replacement engine has its own deterministic combat/probability semantics.
 Client field geometry, element controls, original interaction playback and
@@ -100,3 +104,14 @@ Omit it for the original immediate response. Shutdown wakes pending polls safely
 The patched client uses long polling and a six-second application request deadline;
 that deadline is separate from matchmaking and match planning deadlines. See
 [community and replays](community-and-replays.md) for timeout transport limitations.
+
+
+Schema 8 separates result ledgers. Human normal/tournament queue games are ranked;
+CPU games are practice and arranged challenges are casual. Only ranked games
+update ladder rating and top-level W/D/L. Tournament scoring requires trusted
+queue provenance. Incompatible development databases are cleared completely at
+startup; no legacy-data archive or migration remains. Current schema-8 databases
+retain new progress across restarts. Use matching client and server versions.
+
+See [frontend restoration](frontend-restoration.md) for leagues/seasons, cosmetic
+ownership, replay controls and operator provisioning of moderator/admin roles.

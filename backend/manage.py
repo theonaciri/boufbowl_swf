@@ -14,7 +14,20 @@ def main():
     backup=sub.add_parser('backup'); backup.add_argument('output',type=Path)
     replay=sub.add_parser('replay'); replay.add_argument('match',type=int); replay.add_argument('output',type=Path); replay.add_argument('--verify',action='store_true')
     reports=sub.add_parser('reports'); reports.add_argument('--limit',type=int,default=50)
+    role=sub.add_parser('role');role.add_argument('nickname');role.add_argument('role',choices=('player','moderator','admin'))
     args=parser.parse_args()
+    if args.operation=='role':
+        store=Store(args.database)
+        try:
+            with store.transaction():
+                row=store.db.execute('SELECT id FROM profiles WHERE nickname=?',(args.nickname,)).fetchone()
+                if not row:parser.error('Unknown player nickname')
+                store.db.execute('INSERT INTO profile_roles VALUES(?,?) ON CONFLICT(profile_id) DO UPDATE SET role=excluded.role',(row[0],args.role))
+                import time
+                store.db.execute('INSERT INTO moderation_audit(actor,target,action,reason,created) VALUES(NULL,?,?,?,?)',(row[0],'role','Local operator assigned '+args.role,time.time()))
+            print(args.nickname+': '+args.role)
+        finally:store.close()
+        return
     if args.operation=='reports':
         store=Store(args.database)
         try:

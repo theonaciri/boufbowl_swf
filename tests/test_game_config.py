@@ -7,6 +7,22 @@ from tools.game_config import ConfigError, ROOT, load_config, resolve_stadium, s
 
 
 class GameConfigTests(unittest.TestCase):
+    def test_tournament_entry_windows_cannot_overlap_or_run_backwards(self):
+        self.assert_invalid(lambda c: c['general']['tournament'].update(repeat_seconds=1))
+        self.assert_invalid(lambda c: c['general']['tournament'].update(end_time=0))
+
+    def test_tournament_rotation_and_rewards_must_have_valid_assets(self):
+        self.assert_invalid(lambda c: c['general']['tournament'].update(stadium_rotation=[10]))
+        self.assert_invalid(lambda c: c['general']['tournament'].update(rewards=[1,2,3,99]))
+
+    def test_knockout_rounds_fit_duration_and_capacity(self):
+        self.assert_invalid(lambda c: c['general']['tournament'].update(qualification_seconds=2600))
+        self.assert_invalid(lambda c: c['general']['tournament'].update(qualifying_top=8,round_count=2))
+
+    def test_leagues_have_unique_ids_and_monotonic_thresholds(self):
+        self.assert_invalid(lambda c: c['general']['progression']['leagues'][0].update(id=1))
+        self.assert_invalid(lambda c: c['general']['progression']['leagues'][0].update(min_rating=1500))
+
     def test_stadium_overrides_preserve_other_rules_and_are_independent(self):
         config = load_config()
         kara = resolve_stadium(config, "KARA")
@@ -50,7 +66,7 @@ class GameConfigTests(unittest.TestCase):
         config["stadiums"]["BEACH"]["enabled"] = False
         for path in ("patches/StartUpApplicationCommand.as", "android/patches/StartUpApplicationCommand.as"):
             generated = startup_source((ROOT / path).read_text(), config)
-            self.assertIn("if(classId == 6) return new BoufbowlerAttributesModel(19,10,10,10,16,3);", generated)
+            self.assertIn("if(classId == 6) return new BoufbowlerAttributesModel(19,8,9,8,16,3);", generated)
             self.assertIn("rules.setMaxTurnDuration(6,14);", generated)
             self.assertIn("rules.setClassOrderUseByMatch(6,2);", generated)
             enabled = next(line for line in generated.splitlines() if ") stadiums.addItem" in line)

@@ -48,7 +48,7 @@ def adapt_turn(record):
     initial, result = record["initial"], record["result"]
     events = result["events"]
     allowed = {"ability", "move", "stand_up", "pickup", "dodge", "duel", "damage", "ko", "ball_drop",
-               "throw", "ball_move", "catch", "catch_fail", "ball_land", "goal", "final_state"}
+               "throw", "ball_move", "catch", "catch_fail", "ball_land", "goal", "final_state", "fall", "movement_test"}
     unknown = {e["type"] for e in events} - allowed
     if unknown:
         raise ProtocolError(f"Unmapped simulation events: {sorted(unknown)}")
@@ -66,6 +66,8 @@ def adapt_turn(record):
         order = {"boufbowlerId": str(identity)}
         if activated:
             order["classOrder"] = True
+            mask = next((a["params"].get("zobal_mask") for a in actor_actions if a["action_type"] == "ability"), None)
+            if mask is not None: order["zobalMask"] = mask
         else:
             allocation = next((a["params"].get("elements") for a in actor_actions if a["params"].get("elements")), {})
             selected = [value for name, value in (("TERRE", 1), ("AIR", 2), ("FEU", 3), ("EAU", 4))
@@ -118,7 +120,7 @@ def adapt_turn(record):
         for actor in tracks:
             move(actor, end)
         entry = {"interactionId": identity, "interactionDetails": {"type": kind, "startTick": start, "endTick": end,
-                 "isCutscene": False, "participants": participants, **details}}
+                 "isCutscene": bool(record.get("presentation",{}).get("interactions",False) and kind in (12,13,14,15,20,21)), "participants": participants, **details}}
         interactions.append(entry)
         offset += duration
         return entry
@@ -136,10 +138,31 @@ def adapt_turn(record):
                 if target not in tracks:
                     continue
                 entity = entities[target]
-                healed = min(entity["max_hp"], entity["hp"] + int(params.get("heal", 0)))
+                delta = params.get("hp_deltas", {}).get(str(target), params.get("hp_deltas", {}).get(target))
+                healed = max(0, min(entity["max_hp"], entity["hp"] + (int(delta) if delta is not None else int(params.get("heal", 0)))))
                 targets.append({"boufbowlerId": str(target), "preResolutionHitPointsDelta": healed - entity["hp"]})
                 entity["hp"] = healed
-            abilities.append({"boufbowlerId": str(actor), "target": targets})
+                for element, amount in params.get("elements", {}).items():
+                    stat = {"TERRE": "strength", "FEU": "agility", "AIR": "precision", "EAU": "endurance"}[element]
+                    entity["stats"][stat] = max(0, entity["stats"][stat] + amount)
+                entity["attack_bonus"] = entity.get("attack_bonus", 0) + params.get("attack", 0)
+            ability = {"boufbowlerId": str(actor), "target": targets}
+            if "zobal_mask" in params: ability["zobalMask"] = params["zobal_mask"]
+            abilities.append(ability)
+        elif kind == "movement_test":
+            if actor in tracks:
+                test = maneuver(params['success'], params.get('inherent_score', 0))
+                test['difficulty'] = round(params['probability'] * 100)
+                test['score']['finalScore'] = round(params['random_draw'] * 100) if params['random_draw'] is not None else 100
+                tracks[actor]['movementTest'] = test
+        elif kind == "fall":
+            move(actor,max(start,clocks[actor]+1),cell(params['position']))
+            details = {'ballDispersion':cell(params['position'])} if params.get('has_ball') else {}
+            interaction(10,start,24,[participant(actor,has_ball=params.get('has_ball',False),status=3)],fallDetails=details)
+            entities[actor]['status']['knocked_down'] = True
+            if params.get('has_ball'):
+                holder = None
+                ball_position = cell(params['position'])
         elif kind == "stand_up":
             entities[actor]["status"]["knocked_down"] = False
         elif kind == "pickup":
@@ -165,8 +188,12 @@ def adapt_turn(record):
             for victim in (actor, defender):
                 future_hp = entities[victim]["hp"] - damage.get(victim, 0)
                 statuses[victim] = 4 if future_hp <= 0 else 3 if victim in knocked else 1
-            scores = [{"inherentScore": entities[victim]["stats"]["strength"],
-                       "finalScore": entities[victim]["stats"]["strength"]} for victim in (actor, defender)]
+            scores = []
+            for victim in (actor, defender):
+                inherent = entities[victim]["stats"]["strength"]
+                allocation = next((a["params"].get("elements", {}) for a in actions.get(victim, []) if "elements" in a["params"]), {})
+                attack = inherent + allocation.get("TERRE", 0) * record.get("rules", {}).get("simulation", {}).get("actions", {}).get("element_effects", {}).get("terre", {}).get("attack_bonus_per", 1) + entities[victim].get("attack_bonus", 0)
+                scores.append({"inherentScore": inherent, "finalScore": max(0, attack)})
             fight_details = {"ballDispersion": dispersion} if dispersion else {}
             interaction(20, start, 30, [participant(actor, 4, damage=damage.get(actor, 0), status=statuses[actor]),
                                        participant(defender, 5, damage=damage.get(defender, 0), status=statuses[defender])],
@@ -235,5 +262,12 @@ def adapt_turn(record):
             move(identity, end)
         if not tracks[identity]["item"]:
             move(identity, end + 1)
-    return {"boufbowlerTracks": list(tracks.values()), "interaction": interactions, "classOrder": abilities,
-            "turn": result["turn_number"], "turnEndTick": max(clocks.values(), default=1)}
+    scenario = {"boufbowlerTracks": list(tracks.values()), "interaction": interactions, "classOrder": abilities,
+                "turn": result["turn_number"], "turnEndTick": max(clocks.values(), default=1)}
+    limits = record.get('rules',{}).get('match',{})
+    turn, total, period = result['turn_number'], limits.get('turns_per_match',0), limits.get('turns_per_period',0)
+    if record.get('presentation',{}).get('interactions') and period > 0 and turn < total:
+        if turn % period == 0: scenario['periodInformations'] = {'status':2,'remainingPeriodTurns':0}
+        elif turn == total-2: scenario['periodInformations'] = {'status':3,'remainingPeriodTurns':2}
+        elif period-turn%period == 2: scenario['periodInformations'] = {'status':1,'remainingPeriodTurns':2}
+    return scenario

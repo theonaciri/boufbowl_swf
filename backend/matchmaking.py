@@ -21,6 +21,7 @@ class Matchmaking:
             settings=self.tournament_config(tournament)
             if not settings['start_time'] <= time.time() < settings['end_time']:
                 raise ServiceError('TOURNAMENT_CLOSED','This tournament is outside its configured time window')
+            self.knockout_eligible(profile,settings)
             stadiums=[settings['stadium']]
             tournament=str(settings['id'])
         enabled={i for i,name in enumerate(STADIUMS,1) if self.config['stadiums'][name]['enabled']}
@@ -33,10 +34,14 @@ class Matchmaking:
         now=time.time()
         self.store.db.execute('INSERT INTO matchmaking_queue(profile_id,stadiums_json,joined,heartbeat,tournament_id) VALUES(?,?,?,?,?) ON CONFLICT(profile_id) DO UPDATE SET stadiums_json=excluded.stadiums_json,joined=CASE WHEN matchmaking_queue.tournament_id IS excluded.tournament_id THEN matchmaking_queue.joined ELSE excluded.joined END,heartbeat=excluded.heartbeat,tournament_id=excluded.tournament_id',
                               (profile,json.dumps(sorted(set(stadiums))),now,now,tournament))
+        if tournament is not None: self.register_tournament(profile,settings)
         self.match_queued_players()
 
     def match_queued_players(self):
         now=time.time(); settings=self.matchmaking_settings()
+        expired=self.store.db.execute('SELECT profile_id,tournament_id FROM matchmaking_queue WHERE heartbeat<? OR joined<?',(now-settings['heartbeat_timeout'],now-settings['search_timeout'])).fetchall()
+        for entry in expired:
+            if entry['tournament_id'] is not None:self.emit(entry['profile_id'],'TOURNAMENT_OFFER_CANCELED',{})
         self.store.db.execute('DELETE FROM matchmaking_queue WHERE heartbeat<? OR joined<?',
                               (now-settings['heartbeat_timeout'],now-settings['search_timeout']))
         rows=self.store.db.execute('SELECT * FROM matchmaking_queue ORDER BY joined,profile_id').fetchall()
@@ -58,6 +63,7 @@ class Matchmaking:
             for second in available[i+1:]:
                 if second['profile_id'] in matched or self.blocked(first['profile_id'], second['profile_id']): continue
                 if first['tournament_id'] != second['tournament_id']: continue
+                if first['tournament_id'] is not None and not self.knockout_pair_allowed(first['tournament_id'],first['profile_id'],second['profile_id']):continue
                 common=set(json.loads(first['stadiums_json'])) & set(json.loads(second['stadiums_json']))
                 common={n for n in common if self.config['stadiums'][STADIUMS[n-1]]['enabled']}
                 if not common: continue
@@ -66,7 +72,7 @@ class Matchmaking:
                 if distance<=window: choices.append((distance,second['joined'],second['profile_id'],second,min(common)))
             if choices:
                 _,_,_,second,stadium=min(choices,key=lambda c:c[:3])
-                self.create_match(first['profile_id'],second['profile_id'],stadium, tournament=int(first['tournament_id']) if first['tournament_id'] is not None else None)
+                self.create_match(first['profile_id'],second['profile_id'],stadium, tournament=int(first['tournament_id']) if first['tournament_id'] is not None else None, source="tournament" if first['tournament_id'] is not None else "matchmaking")
                 matched.update((first['profile_id'],second['profile_id']))
 
     def matchmaking_status(self, profile):

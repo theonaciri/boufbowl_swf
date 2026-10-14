@@ -40,6 +40,7 @@
       private static function stopMock() : void
       {
          mockGeneration++;
+         replayResetControls();
          mockActive = false;
          mockWaiting = null;
          clearTimeout(mockTimer);
@@ -104,7 +105,7 @@
             mockStatus("Waiting for " + mockWaiting);
             mockTimeout = setTimeout(function():void {
                if(mockActive && mockWaiting != null) mockFailure("Timed out waiting for " + mockWaiting);
-            },90000);
+            },int(90000/Math.min(1,replaySpeed)));
          }
          else mockTimer = setTimeout(deliverMockStep,int(step.after_ms));
       }
@@ -112,6 +113,7 @@
       private static function deliverMockStep() : void
       {
          if(!mockActive) return;
+         if(replayPaused) { mockTimer=setTimeout(deliverMockStep,100); return; }
          try
          {
             var step:Object = mockFixture.steps[mockIndex];
@@ -125,6 +127,8 @@
             var message:BoufbowlMessage = new BoufbowlMessage();
             message.readExternal(data);
             mockIndex++;
+            if(step.type == "FIELD_STATE" && step.decoded != null && step.decoded.teamState != null) replayCurrentTurn=int(step.decoded.teamState.turn);
+            replayUpdateLabel();
             // Arm the next acknowledgement before dispatch: 2D playback may
             // finish synchronously, while 3D waits for animations to complete.
             scheduleMockStep();
@@ -132,6 +136,9 @@
             var pipeline:ChannelPipeline = app.contextInjector.getInstance(ChannelPipeline,"MATCH");
             var handler:MatchMessageHandler = app.contextInjector.getInstance(MatchMessageHandler);
             pipeline.sendDataUpstream(message,handler);
+            if(step.type == "FIELD_STATE" && replayPauseAfterSeek) {
+               replayPauseAfterSeek=false;replayPaused=true;replayApplyTiming();replayUpdateLabel();
+            }
          }
          catch(error:Error) { mockFailure(error.toString()); }
       }

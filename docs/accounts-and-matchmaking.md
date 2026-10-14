@@ -119,10 +119,10 @@ passes. Android remains package-verified; no device is attached.
 
 ### Tournament matchmaking and team selection
 
-Both the original Home Play/Tournament buttons and the toolbar Play button open
-the shared controls. **Find opponent** joins the human queue; **CPU matchmaking**
+The original Home Play button and toolbar Play button open shared controls.
+The original Tournament button opens its native schedule/countdown/podium screen. **Find opponent** joins the human queue; **CPU matchmaking**
 starts a CPU match only when explicitly selected. **Find tournament** joins the
-configured tournament's separate human queue at its fixed stadium. There is no
+currently running tournament's separate human queue at its scheduled stadium. There is no
 automatic CPU fallback for normal or tournament searches. Cancel search leaves
 either queue. A profile has one queue entry, so switching queue type replaces it.
 
@@ -130,8 +130,8 @@ Pairing occurs under one database transaction. Entries belonging to players in
 an active match are removed, and a player paired earlier in that transaction is
 excluded from subsequent pairings. Blocked players cannot pair. Tournament
 searches expire on heartbeat/search limits or when the tournament closes;
-reconnecting restores a still-valid search. Schema 4 adds a nullable tournament
-ID to queue entries while retaining old normal searches and device tokens.
+reconnecting restores a still-valid search. Schema 8 stores the tournament ID on queue entries and persists scheduled
+instances, registrations and finalized local rewards. Older development data is reset.
 
 The Play dialog displays **Team** and offers **Change team**. The chosen owned
 `club_id` accompanies queue, CPU, challenge and tournament requests, so the server

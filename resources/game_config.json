@@ -1,7 +1,7 @@
 {
   "$schema": "./game_config.schema.json",
   "schema_version": 1,
-  "rules_version": "boufbowl-custom-2",
+  "rules_version": "movement-risk-1",
   "general": {
     "language": "en",
     "server": {
@@ -22,16 +22,95 @@
       "id": 1,
       "stadium": 1,
       "start_time": 1791849600,
-      "end_time": 4102444800,
+      "end_time": 1791852300,
       "win_points": 3,
       "draw_points": 1,
-      "loss_points": 0
+      "loss_points": 0,
+      "repeat_seconds": 3600,
+      "upcoming_count": 2,
+      "past_count": 10,
+      "type": 2,
+      "stadium_rotation": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "rewards": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "format": "elimination",
+      "qualification_seconds": 900,
+      "qualifying_top": 4,
+      "round_count": 2,
+      "round_seconds": 900
     },
     "matchmaking": {
       "rating_window": 200,
       "widen_per_second": 5,
       "heartbeat_timeout": 30,
       "search_timeout": 300
+    },
+    "cinematics": {
+      "introductions": true,
+      "interactions": true,
+      "introduction_timeout_seconds": 90
+    },
+    "progression": {
+      "qualifying_games": 3,
+      "leagues": [
+        {
+          "id": 5,
+          "min_rating": 0
+        },
+        {
+          "id": 4,
+          "min_rating": 1000
+        },
+        {
+          "id": 3,
+          "min_rating": 1100
+        },
+        {
+          "id": 2,
+          "min_rating": 1200
+        },
+        {
+          "id": 1,
+          "min_rating": 1400
+        }
+      ],
+      "seasons": {
+        "enabled": false,
+        "start_time": 1791936000,
+        "duration_seconds": 2419200,
+        "initial_rating": 1000
+      }
+    },
+    "economy": {
+      "free_customization": true
+    },
+    "news": {
+      "title": {
+        "fr": "Bienvenue \u00e0 Boufbowl",
+        "en": "Welcome to Boufbowl",
+        "de": "Willkommen bei Boufbowl",
+        "es": "Bienvenido a Boufbowl"
+      },
+      "body": {
+        "fr": "Matchs humains, tournois, ligues et replays sont disponibles. Consultez le tournoi \u00e0 venir et vos r\u00e9compenses dans le menu.",
+        "en": "Human matches, tournaments, leagues and replays are available. Check upcoming tournaments and your rewards in the menu.",
+        "de": "Menschliche Spiele, Turniere, Ligen und Replays sind verf\u00fcgbar. N\u00e4chste Turniere und Belohnungen stehen im Men\u00fc.",
+        "es": "Partidos humanos, torneos, ligas y repeticiones disponibles. Consulta pr\u00f3ximos torneos y recompensas en el men\u00fa."
+      }
     }
   },
   "rules": {
@@ -62,46 +141,110 @@
       },
       "overrides": {
         "CRA": {
-          "role": 2
+          "role": 2,
+          "earth": 8,
+          "air": 16,
+          "fire": 8,
+          "water": 10
         },
         "ECAFLIP": {
-          "role": 3
+          "role": 3,
+          "earth": 11,
+          "air": 11,
+          "fire": 11,
+          "water": 9
         },
         "ENIRIPSA": {
-          "role": 4
+          "role": 4,
+          "earth": 7,
+          "air": 12,
+          "fire": 10,
+          "water": 13
         },
         "ENUTROF": {
-          "role": 1
+          "role": 1,
+          "earth": 11,
+          "air": 9,
+          "fire": 8,
+          "water": 14
         },
         "FECA": {
-          "role": 2
+          "role": 2,
+          "earth": 14,
+          "air": 8,
+          "fire": 12,
+          "water": 8
         },
         "IOP": {
-          "role": 3
+          "role": 3,
+          "earth": 17,
+          "air": 8,
+          "fire": 9,
+          "water": 8
         },
         "OSAMODAS": {
-          "role": 4
+          "role": 4,
+          "earth": 10,
+          "air": 10,
+          "fire": 10,
+          "water": 12
         },
         "PANDAWA": {
-          "role": 1
+          "role": 1,
+          "earth": 14,
+          "air": 10,
+          "fire": 8,
+          "water": 10
         },
         "ROUBLARD": {
-          "role": 2
+          "role": 2,
+          "earth": 10,
+          "air": 12,
+          "fire": 14,
+          "water": 6,
+          "health": 10,
+          "regeneration": 3
         },
         "SACRIEUR": {
-          "role": 3
+          "role": 3,
+          "earth": 16,
+          "air": 6,
+          "fire": 12,
+          "water": 8,
+          "health": 16,
+          "regeneration": 4
         },
         "SADIDA": {
-          "role": 4
+          "role": 4,
+          "earth": 10,
+          "air": 8,
+          "fire": 9,
+          "water": 15,
+          "health": 13,
+          "regeneration": 2
         },
         "SRAM": {
-          "role": 1
+          "role": 1,
+          "earth": 9,
+          "air": 10,
+          "fire": 17,
+          "water": 6,
+          "health": 11,
+          "regeneration": 3
         },
         "XELOR": {
-          "role": 2
+          "role": 2,
+          "earth": 7,
+          "air": 15,
+          "fire": 12,
+          "water": 8
         },
         "ZOBAL": {
-          "role": 3
+          "role": 3,
+          "earth": 12,
+          "air": 10,
+          "fire": 11,
+          "water": 9
         }
       }
     },
@@ -154,7 +297,12 @@
         "base_movement_range": 7,
         "eau_range_bonus_per_action": 2,
         "air_range_bonus_per_action": 3,
-        "terre_range_penalty_per_action": 1
+        "terre_range_penalty_per_action": 1,
+        "overextension": {
+          "enabled": true,
+          "fall_probability_at_max": 0.6,
+          "exponent": 1.0
+        }
       },
       "simulation": {
         "stand_up_ticks": 5,
@@ -182,98 +330,120 @@
       }
     },
     "abilities": {
-      "Iop": {
-        "name": "Cri de force (provisoire)",
+      "Sadida": {
+        "name": "Sadida",
         "verified": false,
-        "heal": 0,
-        "element": "TERRE",
-        "bonus": 1
-      },
-      "Sram": {
-        "name": "Ruse collective (provisoire)",
-        "verified": false,
-        "heal": 0,
-        "element": "FEU",
-        "bonus": 1
-      },
-      "Feca": {
-        "name": "Soutien collectif (provisoire)",
-        "verified": false,
-        "heal": 3,
-        "bonus": 0
-      },
-      "Xelor": {
-        "name": "Acceleration (provisoire)",
-        "verified": false,
-        "heal": 0,
-        "element": "EAU",
-        "bonus": 1
-      },
-      "Default": {
-        "name": "Second souffle (provisoire)",
-        "verified": false,
-        "heal": 2,
-        "bonus": 0
-      },
-      "Cra": {
-        "name": "Cra configurable ability",
-        "verified": false,
-        "heal": 2,
-        "bonus": 0
-      },
-      "Ecaflip": {
-        "name": "Ecaflip configurable ability",
-        "verified": false,
-        "heal": 2,
-        "bonus": 0
-      },
-      "Eniripsa": {
-        "name": "Eniripsa configurable ability",
-        "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "enemies",
+        "range": -1
       },
       "Enutrof": {
-        "name": "Enutrof configurable ability",
+        "name": "Enutrof",
         "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "allies",
+        "elements": {
+          "EAU": 3
+        }
+      },
+      "Iop": {
+        "name": "Iop",
+        "verified": false,
+        "target": "allies",
+        "elements": {
+          "TERRE": 3
+        }
       },
       "Osamodas": {
-        "name": "Osamodas configurable ability",
+        "name": "Osamodas",
         "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "allies",
+        "elements": {
+          "TERRE": 1,
+          "FEU": 1,
+          "AIR": 1,
+          "EAU": 1
+        }
       },
-      "Pandawa": {
-        "name": "Pandawa configurable ability",
+      "Cra": {
+        "name": "Cra",
         "verified": false,
-        "heal": 2,
-        "bonus": 0
-      },
-      "Rogue": {
-        "name": "Rogue configurable ability",
-        "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "allies",
+        "range": 1
       },
       "Sacrier": {
-        "name": "Sacrier configurable ability",
+        "name": "Sacrier",
         "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "allies",
+        "hp": -1,
+        "elements": {
+          "TERRE": 2,
+          "FEU": 2,
+          "AIR": 2,
+          "EAU": 2
+        }
       },
-      "Sadida": {
-        "name": "Sadida configurable ability",
+      "Rogue": {
+        "name": "Rogue",
         "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "enemies",
+        "hp": -2
+      },
+      "Eniripsa": {
+        "name": "Eniripsa",
+        "verified": false,
+        "target": "allies",
+        "hp": 2
+      },
+      "Xelor": {
+        "name": "Xelor",
+        "verified": false,
+        "target": "allies",
+        "elements": {
+          "AIR": 3
+        }
+      },
+      "Ecaflip": {
+        "name": "Ecaflip",
+        "verified": false,
+        "target": "allies",
+        "elements": {
+          "TERRE": 2,
+          "FEU": 2,
+          "AIR": 2,
+          "EAU": 2
+        },
+        "enemy_chance": 0.5,
+        "enemy_elements": {
+          "TERRE": 1,
+          "FEU": 1,
+          "AIR": 1,
+          "EAU": 1
+        }
       },
       "Zobal": {
-        "name": "Zobal configurable ability",
+        "name": "Zobal",
         "verified": false,
-        "heal": 2,
-        "bonus": 0
+        "target": "allies",
+        "change_mask": true
+      },
+      "Sram": {
+        "name": "Sram",
+        "verified": false,
+        "target": "allies",
+        "elements": {
+          "FEU": 3
+        }
+      },
+      "Feca": {
+        "name": "Feca",
+        "verified": false,
+        "target": "enemies",
+        "attack": -1
+      },
+      "Pandawa": {
+        "name": "Pandawa",
+        "verified": false,
+        "target": "allies",
+        "attack": 1
       }
     }
   },

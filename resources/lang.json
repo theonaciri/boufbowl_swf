@@ -2011,10 +2011,10 @@
         "es" : "Partido de $1 contra $2"
     },
     "tournament_help_content" : {
-        "en": "Free local league. Play CPU matches during the event. Wins and draws add points; defeats do not eliminate you. Results and rankings are saved.",
-        "fr": "Ligue locale gratuite. Jouez contre l'ordinateur pendant l'événement. Les victoires et les matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les résultats sont sauvegardés.",
-        "de": "Kostenlose lokale Liga. Spiele während des Events gegen den Computer. Siege und Unentschieden bringen Punkte; Niederlagen führen nicht zum Ausscheiden. Ergebnisse werden gespeichert.",
-        "es": "Liga local gratuita. Juega contra el ordenador durante el evento. Las victorias y los empates suman puntos; las derrotas no te eliminan. Los resultados se guardan."
+        "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
+        "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
+        "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
+        "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
     },
     "tournament_past_tournament_button" : {
         "fr" : "Historique",
@@ -2035,56 +2035,64 @@
         "es" : "Próximos"
     },
    "tournament_tournament_type_enum" : {
-        "fr" : {
-            "1" : "Tournoi du mardi",
-            "2" : "1er tournoi du mercredi",
-            "3" : "2ème tournoi du mercredi",
-            "4" : "Tournoi du jeudi",
-            "5" : "Tournoi du weekend",
-            "6" : "Tournoi de Nowel",
-            "7" : "Finale du tournoi de Nowel",
-            "8" : "Tournoi Sain Ballotin",
-            "9" : "Tournoi des 4 Nations"
-        },
-        "en" : {
-            "1" : "Tuesday Tournament",
-            "2" : "1st Wednesday Tournament",
-            "3" : "2nd Wednesday Tournament",
-            "4" : "Thursday Tournament",
-            "5" : "Weekend Tournament",
-            "6" : "Kwismas Tournament",
-            "7" : "Kwismas Tournament Final",
-            "8" : "Ballotwine's Tournament",
-            "9" : "4 Nations Tournament"
-        },
-        "de" : {
-            "1" : "Dienstagsturnier",
-            "2" : "1. Mittwochsturnier",
-            "3" : "2. Mittwochsturnier",
-            "4" : "Donnerstagsturnier",
-            "5" : "Wochenendturnier",
-            "6" : "Weißnachtsturnier",
-            "7" : "Finale des Weißnachtsturniers",
-            "8" : "Valenteeni-Turnier",
-            "9" : "4 Nations Tournament"
-        },
-        "es" : {
-            "1" : "torneo del martes",
-            "2" : "1er torneo del miércoles",
-            "3" : "2º torneo del miércoles",
-            "4" : "torneo del jueves",
-            "5" : "torneo de fin de semana",
-            "6" : "torneo de Nawidad",
-            "7" : "final del torneo de Nawidad",
-            "8" : "Torneo de San Valentón",
-            "9" : "Torneo de las 4 naciones"
-        }
+    "en": {
+        "1": "Local tournament",
+        "2": "Local tournament",
+        "3": "Local tournament",
+        "4": "Local tournament",
+        "5": "Local tournament",
+        "6": "Local tournament",
+        "7": "Local tournament",
+        "8": "Local tournament",
+        "9": "Local tournament",
+        "10": "Local tournament",
+        "11": "Local tournament"
     },
+    "fr": {
+        "1": "Tournoi local",
+        "2": "Tournoi local",
+        "3": "Tournoi local",
+        "4": "Tournoi local",
+        "5": "Tournoi local",
+        "6": "Tournoi local",
+        "7": "Tournoi local",
+        "8": "Tournoi local",
+        "9": "Tournoi local",
+        "10": "Tournoi local",
+        "11": "Tournoi local"
+    },
+    "de": {
+        "1": "Lokales Turnier",
+        "2": "Lokales Turnier",
+        "3": "Lokales Turnier",
+        "4": "Lokales Turnier",
+        "5": "Lokales Turnier",
+        "6": "Lokales Turnier",
+        "7": "Lokales Turnier",
+        "8": "Lokales Turnier",
+        "9": "Lokales Turnier",
+        "10": "Lokales Turnier",
+        "11": "Lokales Turnier"
+    },
+    "es": {
+        "1": "Torneo local",
+        "2": "Torneo local",
+        "3": "Torneo local",
+        "4": "Torneo local",
+        "5": "Torneo local",
+        "6": "Torneo local",
+        "7": "Torneo local",
+        "8": "Torneo local",
+        "9": "Torneo local",
+        "10": "Torneo local",
+        "11": "Torneo local"
+    }
+},
     "tournament_elimination_rule" : {
-        "en": "Free local league. Play CPU matches during the event. Wins and draws add points; defeats do not eliminate you. Results and rankings are saved.",
-        "fr": "Ligue locale gratuite. Jouez contre l'ordinateur pendant l'événement. Les victoires et les matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les résultats sont sauvegardés.",
-        "de": "Kostenlose lokale Liga. Spiele während des Events gegen den Computer. Siege und Unentschieden bringen Punkte; Niederlagen führen nicht zum Ausscheiden. Ergebnisse werden gespeichert.",
-        "es": "Liga local gratuita. Juega contra el ordenador durante el evento. Las victorias y los empates suman puntos; las derrotas no te eliminan. Los resultados se guardan."
+        "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
+        "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
+        "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
+        "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
     },  
     "tournament_multiple_registration_rule" :   {
         /* TODO : Pas utilisé */
@@ -2114,99 +2122,31 @@
         "es" : "Has sido eliminado de este torneo."
     },
     "tournament_rewards_desc" : {
-        "fr" : {
-            "1" : "<img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "2" : "<img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "3" : "<img source='[1]' />x5 <img source='[2]' />x10",
-            "4" : "<img source='[2]' />x10",
-            "5" : "<img source='[0]' />x30 <img source='[1]' />x20 <img source='[2]' />x20",
-            "6" : "<img source='[0]' />x20 <img source='[1]' />x20 <img source='[2]' />x20",
-            "7" : "<img source='[1]' />x15 <img source='[2]' />x10",
-            "8" : "<img source='[1]' />x10",
-            "9" : "Abonnement Dofus à vie",
-            "10" : "Stade, Blasons, Palette Sain Ballotin + Perso Skeunk<br /><img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "11" : "Stade Sain Ballotin + Perso Skeunk<br /><img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "12" : "Blasons, Palette Sain Ballotin<br /><img source='[1]' />x5 <img source='[2]' />x10",
-            "13" : "Palette Sain Ballotin<br /><img source='[2]' />x10",
-            "14" : "Forêt Sadida, Prince Armand, <img source='[0]' />x30 <img source='[1]' />x20 <img source='[2]' />x20",
-            "15" : "Armand, <img source='[0]' />x20 <img source='[1]' />x20 <img source='[2]' />x20",
-            "16" : "Forêt Sadida, Prince Armand, <img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "17" : "Forêt Sadida, <img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "18" : "<img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10, 4 pièces de panoplie dans Wakfu, Forêt Sadida, Prince Armand",
-            "19" : "<img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10, 3 pièces de panoplie dans Wakfu, Forêt Sadida",
-            "20" : "<img source='[1]' />x5 <img source='[2]' />x10, 2 pièces de panoplie dans Wakfu",
-            "21" : "<img source='[2]' />x10, 1 pièce de panoplie dans Wakfu<br/><br/>tous les participants : 1 pièce de panoplie dans Wakfu"			
-        },
-        "en" : {
-            "1" : "",
-            "2" : "",
-            "3" : "",
-            "4" : "",
-            "5" : "",
-            "6" : "",
-            "7" : "",
-            "8" : "",
-            "9" : "Lifetime DOFUS subscription",
-            "10" : "Stadium, Emblems, Ballotwine's Colours + Skeunk Character<br /><img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "11" : "Ballotwine's Stadium + Skeunk Character<br /><img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "12" : "Emblems, Ballotwine's Colours<br /><img source='[1]' />x5 <img source='[2]' />x10",
-            "13" : "Ballotwine's Colours<br /><img source='[2]' />x10",
-            "14" : "Sadida Forest, Armand, <img source='[0]' />x30 <img source='[1]' />x20 <img source='[2]' />x20",
-            "15" : "Armand, <img source='[0]' />x20 <img source='[1]' />x20 <img source='[2]' />x20",
-            "16" : "Sadida Forest, Armand, <img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "17" : "Sadida Forest, <img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "18" : "<img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10, 4 Setteile in WAKFU, Sadida Forest, Armand",
-            "19" : "<img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10, 3 Setteile in WAKFU, Sadida Forest",
-            "20" : "<img source='[1]' />x5 <img source='[2]' />x10, 2 Setteile in WAKFU",
-            "21" : "<img source='[2]' />x10, 1 Setteile in WAKFU<br/><br/>All participants: 1 Setteile in WAKFU"
-        },
-        "de" : {
-            "1" : "",
-            "2" : "",
-            "3" : "",
-            "4" : "",
-            "5" : "",
-            "6" : "",
-            "7" : "",
-            "8" : "",
-            "9" : "Lebenslanges DOFUS-Abonnement",
-            "10" : "Stadion, Wappen, Valenteeni-Palette + Skeunk-Charakter<br /><img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "11" : "Valenteeni-Stadion + Skeunk-Charakter<br /><img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "12" : "Wappen, Valenteeni-Palette<br /><img source='[1]' />x5 <img source='[2]' />x10",
-            "13" : "Valenteeni-Palette<br /><img source='[2]' />x10",
-            "14" : "Sadidawald, Armand, <img source='[0]' />x30 <img source='[1]' />x20 <img source='[2]' />x20",
-            "15" : "Armand, <img source='[0]' />x20 <img source='[1]' />x20 <img source='[2]' />x20",
-            "16" : "Sadidawald, Armand, <img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "17" : "Sadidawald, <img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "18" : "<img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10, 4 Setteile in WAKFU, Sadidawald, Armand",
-            "19" : "<img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10, 3 Setteile in WAKFU, Sadidawald",
-            "20" : "<img source='[1]' />x5 <img source='[2]' />x10, 2 Setteile in WAKFU",
-            "21" : "<img source='[2]' />x10, 1 Setteil in WAKFU<br/><br/>Alle Teilnehmer: 1 Setteil in WAKFU"
-        },
-        "es" : {
-            "1" : "",
-            "2" : "",
-            "3" : "",
-            "4" : "",
-            "5" : "",
-            "6" : "",
-            "7" : "",
-            "8" : "",
-            "9" : "Abono a DOFUS para toda la vida",
-            "10" : "Estadio, escudo, colores de San Valentón + personaje Skonk<br /><img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "11" : "Estadio San Valentón + personaje Skonk<br /><img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "12" : "Escudos, colores de San Valentón<br /><img source='[1]' />x5 <img source='[2]' />x10",
-            "13" : "Colores de San Valentón<br /><img source='[2]' />x10",
-            "14" : "Bosque Sadida, Armand, <img source='[0]' />x30 <img source='[1]' />x20 <img source='[2]' />x20",
-            "15" : "Armand, <img source='[0]' />x20 <img source='[1]' />x20 <img source='[2]' />x20",
-            "16" : "Bosque Sadida, Armand, <img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10",
-            "17" : "Bosque Sadida, <img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10",
-            "18" : "<img source='[0]' />x20 <img source='[1]' />x10 <img source='[2]' />x10, 4 piezas de set en WAKFU, Bosque Sadida, Armand",
-            "19" : "<img source='[0]' />x10 <img source='[1]' />x10 <img source='[2]' />x10, 3 piezas de set en WAKFU, Bosque Sadida",
-            "20" : "<img source='[1]' />x5 <img source='[2]' />x10, 2 piezas de set en WAKFU",
-            "21" : "<img source='[2]' />x10, 1 pieza de set en WAKFU<br/><br/>Todos los participantes : 1 pieza de set en WAKFU"
-        }
+    "en": {
+        "1": "20 G / 10 I / 10 C — local currency",
+        "2": "10 G / 10 I / 10 C — local currency",
+        "3": "0 G / 5 I / 10 C — local currency",
+        "4": "0 G / 0 I / 10 C — local currency"
     },
+    "fr": {
+        "1": "20 G / 10 I / 10 C — monnaie locale",
+        "2": "10 G / 10 I / 10 C — monnaie locale",
+        "3": "0 G / 5 I / 10 C — monnaie locale",
+        "4": "0 G / 0 I / 10 C — monnaie locale"
+    },
+    "de": {
+        "1": "20 G / 10 I / 10 C — lokale Währung",
+        "2": "10 G / 10 I / 10 C — lokale Währung",
+        "3": "0 G / 5 I / 10 C — lokale Währung",
+        "4": "0 G / 0 I / 10 C — lokale Währung"
+    },
+    "es": {
+        "1": "20 G / 10 I / 10 C — moneda local",
+        "2": "10 G / 10 I / 10 C — moneda local",
+        "3": "0 G / 5 I / 10 C — moneda local",
+        "4": "0 G / 0 I / 10 C — moneda local"
+    }
+},
     "tournament_rewards_tooltip_title" : {
         "fr" : "Récompenses selon le classement :",
         "en" : "Leaderboard rewards :<br /><br /> <br /> <br /> <br /> ",
@@ -2362,11 +2302,11 @@
         "es" : "Eliminado"
     },
     "tournament_play_button_past" : {
-        "fr" : "\nTournoi terminé",
-        "en" : "\nTournament finished",
-        "de" : "\nTurnier beendet",
-        "es" : "\nTorneo terminado"
-    },
+    "en": "Finished",
+    "fr": "Terminé",
+    "de": "Beendet",
+    "es": "Finalizado"
+},
     "tournament_play_button_future" : {
         "fr" : "\nÀ venir",
         "en" : "\nUpcoming",
@@ -3228,133 +3168,137 @@
         }
     },
     "classes_order_tooltip_desc_enum" : {
-        "fr" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> aux Boufbowlers alliés (1 tour)",
-            "2" : "Les cibles des capacités de classe adverses sont inversées (1 tour)",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> aux Boufbowlers alliés",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> aux Boufbowlers adverses (1 tour)",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> en bouclier aux Boufbowlers alliés (1 tour)",
-            "6" : "Les combats occasionnent 1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> supplémentaire (1 tour)",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> aux Boufbowlers adverses (1 tour)",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> aux Boufbowlers adverses (1 tour)",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> aux Boufbowlers adverses (1 tour)",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> aux Boufbowlers alliés (1 tour)<br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> aux Boufbowlers alliés (1 tour)",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> aux Boufbowlers alliés (1 tour)<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> aux Boufbowlers alliés (1 tour)",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> aux Boufbowlers alliés (1 tour)",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> aux Boufbowlers alliés (1 tour)",
-            "14" : "Le Zobal revêt l'un de ses 3 masques :<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Masque de la classe<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Masque du psychopathe<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> Masque du pleutre"
-        },
-         "en" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> to allied Gobbowlers (1 turn)",
-            "2" : "The targets of opponents' class abilities are reversed (1 tour)",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> to allied Gobbowlers",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> to rival Gobbowlers (1 turn)",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> shield to allied Gobbowlers (1 turn)",
-            "6" : "Fights result in 1 extra <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> (1 turn)",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> to rival Gobbowlers (1 turn)",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> to rival Gobbowlers (1 turn)",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> to rival Gobbowlers (1 turn)",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> to allied Gobbowlers (1 turn)<br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> to allied Gobbowlers (1 turn)",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> to allied Gobbowlers (1 turn)<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> to allied Gobbowlers (1 turn)",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> to allied Gobbowlers (1 turn)",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> to allied Gobbowlers (1 turn)",
-            "14" : "The Masqueraider puts on one of his 3 masks:<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Classic Mask<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Psychopath Mask<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> Cowardly Mask"
-        },
-         "de" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> für verbündete Fressballer (1 Runde)",
-            "2" : "Ziele gegnerischer Klassenspezialfähigkeiten werden vertauscht (1 Runde)",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> für verbündete Fressballer",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> für gegnerische Fressballer (1 Runde)",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> Schildpunkte für verbündete Fressballer (1 Runde)",
-            "6" : "Kämpfe bringen 1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> zusätzlich (1 Runde)",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> für gegnerische Fressballer (1 Runde)",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> für gegnerische Fressballer (1 tour)",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> für gegnerische Fressballer (1 Runde)",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> für verbündete Fressballer (1 Runde)<br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> für verbündete Fressballer (1 Runde)",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> für verbündete Fressballer (1 Runde)<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> für verbündete Fressballer (1 Runde)",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> für verbündete Fressballer (1 Runde)",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> für verbündete Fressballer (1 Runde)",
-            "14" : "Der Maskerador setzt eine seiner 3 Masken auf:<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Die Klassenmaske<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Die Berserkermaske<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> Die Hänselmaske"
-        },
-         "es" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> a los jalabolistas aliados (1 turno)",
-            "2" : "Los objetivos de las órdenes de clase adversarias se han invertido (1 turno)",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> a los jalabolistas aliados",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> a los jalabolistas adversarios (1 turno)",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> en escudo a los jalabolistas aliados (1 turno)",
-            "6" : "Los combates ocasionan 1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> suplementario (1 turno)",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> a los jalabolistas adversarios (1 turno)",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> a los jalabolistas adversarios (1 turno)",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> a los jalabolistas adversarios (1 turno)",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> a los jalabolistas aliados (1 turno)<br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> a los jalabolistas aliados (1 turno)",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> a los jalabolistas aliados (1 turno)<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> a los jalabolistas aliados (1 turno)",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> a los jalabolistas aliados (1 turno)",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> a los jalabolistas aliados (1 turno)",
-            "14" : "El zobal se pone una de sus 3 máscaras:<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Máscara Zobal<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Máscara Sáikopat<br />- <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> Máscara Eskérdikat"
-        }
+    "fr": {
+        "1": "+1 portée (déplacement et passe) → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "2": "50%: +2 chaque élément → tous les alliés (pour ce tour); 50%: +1 chaque élément → tous les ennemis (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "3": "+2 PdV → tous les alliés. Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "4": "+3 EAU → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "5": "-1 attaque → tous les ennemis (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "6": "+3 TERRE → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "7": "+1 chaque élément → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "8": "+1 attaque → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "9": "-2 PdV → tous les ennemis. Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "10": "-1 PdV → tous les alliés; +2 chaque élément → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "11": "-1 portée (déplacement et passe) → tous les ennemis (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "12": "+3 FEU → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "13": "+3 AIR → tous les alliés (pour ce tour). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade.",
+        "14": "Changer de masque (classe, psychopathe ou pleutre). Un seul pouvoir par équipe et par tour. Le lanceur ne peut effectuer aucune autre action. Utilisations limitées par le stade."
     },
-    "classes_order_combatlog_desc_enum" : { /* note pour les traducteurs : cette phrase remplace le paramètre $2 dans l'expression "combatlog_class_order_target" */
-        "fr" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> pour ce tour",
-            "2" : "les cibles des capacités de classe adverses sont inversées pour ce tour",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' />",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> pour ce tour",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> en bouclier pour ce tour",
-            "6" : "les combats occasionnent 1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> supplémentaire pour ce tour",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> pour ce tour",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> pour ce tour",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> pour ce tour",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /><br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> pour ce tour",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> pour ce tour<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> pour ce tour",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> pour ce tour",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> pour ce tour"
-        },
-         "en" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> for this turn",
-            "2" : "The targets of opponents' class abilities are reversed for this turn",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' />",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> for this turn",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> shield for this turn",
-            "6" : "fights result in 1 extra <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> for this turn",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> for this turn",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> for this turn",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> for this turn",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /><br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> for this turn",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> for this turn<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> for this turn",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> for this turn",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> for this turn"
-        },
-         "de" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> in dieser Runde",
-            "2" : "Ziele gegnerischer Klassenspezialfähigkeiten werden vertauscht",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' />",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> in dieser Runde",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> en bouclier in dieser Runde",
-            "6" : "Kämpfe bringen 1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> zusätzlich in dieser Runde",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> in dieser Runde",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> in dieser Runde",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> in dieser Runde",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /><br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> in dieser Runde",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> in dieser Runde<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> in dieser Runde",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> in dieser Runde",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> in dieser Runde"
-        },
-         "es" : {
-            "1" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> en este turno",
-            "2" : "Los objetivos de las capacidades de clase adversarias se han invertido en este turno",
-            "3" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' />",
-            "4" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> en este turno",
-            "5" : "+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> en escudo para este turno",
-            "6" : "los combates ocasionan 1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> suplementario en este turno",
-            "7" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> en este turno",
-            "8" : "-2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> en este turno",
-            "9" : "-5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> en este turno",
-            "10" : "-1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /><br />+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> en este turno",
-            "11" : "+1 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconHeart}' /> en este turno<br />+2 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconEarth}' /> en este turno",
-            "12" : "+5 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconFire}' /> en este turno",
-            "13" : "+10 <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /> en este turno"
-        }
+    "en": {
+        "1": "+1 range (movement and passing) → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "2": "50%: +2 each element → all allies (for this turn); 50%: +1 each element → all enemies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "3": "+2 HP → all allies. One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "4": "+3 WATER → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "5": "-1 attack → all enemies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "6": "+3 EARTH → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "7": "+1 each element → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "8": "+1 attack → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "9": "-2 HP → all enemies. One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "10": "-1 HP → all allies; +2 each element → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "11": "-1 range (movement and passing) → all enemies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "12": "+3 FIRE → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "13": "+3 AIR → all allies (for this turn). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium.",
+        "14": "Change mask (Classic, Psychopath or Cowardly). One power per team per turn. The caster cannot perform any other action. Uses are limited by the stadium."
     },
+    "de": {
+        "1": "+1 Reichweite (Bewegung und Pass) → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "2": "50%: +2 jedes Element → alle Verbündeten (für diese Runde); 50%: +1 jedes Element → alle Gegner (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "3": "+2 LP → alle Verbündeten. Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "4": "+3 WASSER → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "5": "-1 Angriff → alle Gegner (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "6": "+3 ERDE → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "7": "+1 jedes Element → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "8": "+1 Angriff → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "9": "-2 LP → alle Gegner. Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "10": "-1 LP → alle Verbündeten; +2 jedes Element → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "11": "-1 Reichweite (Bewegung und Pass) → alle Gegner (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "12": "+3 FEUER → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "13": "+3 LUFT → alle Verbündeten (für diese Runde). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen.",
+        "14": "Maske wechseln (Klasse, Berserker oder Hänsel). Eine Kraft pro Team und Runde. Der Anwender kann keine weitere Aktion ausführen. Das Stadion begrenzt die Anwendungen."
+    },
+    "es": {
+        "1": "+1 alcance (movimiento y pase) → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "2": "50%: +2 cada elemento → todos los aliados (durante este turno); 50%: +1 cada elemento → todos los enemigos (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "3": "+2 PdV → todos los aliados. Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "4": "+3 AGUA → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "5": "-1 ataque → todos los enemigos (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "6": "+3 TIERRA → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "7": "+1 cada elemento → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "8": "+1 ataque → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "9": "-2 PdV → todos los enemigos. Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "10": "-1 PdV → todos los aliados; +2 cada elemento → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "11": "-1 alcance (movimiento y pase) → todos los enemigos (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "12": "+3 FUEGO → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "13": "+3 AIRE → todos los aliados (durante este turno). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos.",
+        "14": "Cambiar de máscara (Zobal, Sáikopat o Eskérdikat). Un poder por equipo y por turno. El lanzador no puede realizar ninguna otra acción. El estadio limita los usos."
+    }
+},
+    "classes_order_combatlog_desc_enum" : {
+    "fr": {
+        "1": "+1 portée (déplacement et passe) → tous les alliés (pour ce tour).",
+        "2": "50%: +2 chaque élément → tous les alliés (pour ce tour); 50%: +1 chaque élément → tous les ennemis (pour ce tour).",
+        "3": "+2 PdV → tous les alliés.",
+        "4": "+3 EAU → tous les alliés (pour ce tour).",
+        "5": "-1 attaque → tous les ennemis (pour ce tour).",
+        "6": "+3 TERRE → tous les alliés (pour ce tour).",
+        "7": "+1 chaque élément → tous les alliés (pour ce tour).",
+        "8": "+1 attaque → tous les alliés (pour ce tour).",
+        "9": "-2 PdV → tous les ennemis.",
+        "10": "-1 PdV → tous les alliés; +2 chaque élément → tous les alliés (pour ce tour).",
+        "11": "-1 portée (déplacement et passe) → tous les ennemis (pour ce tour).",
+        "12": "+3 FEU → tous les alliés (pour ce tour).",
+        "13": "+3 AIR → tous les alliés (pour ce tour).",
+        "14": "Changer de masque (classe, psychopathe ou pleutre)."
+    },
+    "en": {
+        "1": "+1 range (movement and passing) → all allies (for this turn).",
+        "2": "50%: +2 each element → all allies (for this turn); 50%: +1 each element → all enemies (for this turn).",
+        "3": "+2 HP → all allies.",
+        "4": "+3 WATER → all allies (for this turn).",
+        "5": "-1 attack → all enemies (for this turn).",
+        "6": "+3 EARTH → all allies (for this turn).",
+        "7": "+1 each element → all allies (for this turn).",
+        "8": "+1 attack → all allies (for this turn).",
+        "9": "-2 HP → all enemies.",
+        "10": "-1 HP → all allies; +2 each element → all allies (for this turn).",
+        "11": "-1 range (movement and passing) → all enemies (for this turn).",
+        "12": "+3 FIRE → all allies (for this turn).",
+        "13": "+3 AIR → all allies (for this turn).",
+        "14": "Change mask (Classic, Psychopath or Cowardly)."
+    },
+    "de": {
+        "1": "+1 Reichweite (Bewegung und Pass) → alle Verbündeten (für diese Runde).",
+        "2": "50%: +2 jedes Element → alle Verbündeten (für diese Runde); 50%: +1 jedes Element → alle Gegner (für diese Runde).",
+        "3": "+2 LP → alle Verbündeten.",
+        "4": "+3 WASSER → alle Verbündeten (für diese Runde).",
+        "5": "-1 Angriff → alle Gegner (für diese Runde).",
+        "6": "+3 ERDE → alle Verbündeten (für diese Runde).",
+        "7": "+1 jedes Element → alle Verbündeten (für diese Runde).",
+        "8": "+1 Angriff → alle Verbündeten (für diese Runde).",
+        "9": "-2 LP → alle Gegner.",
+        "10": "-1 LP → alle Verbündeten; +2 jedes Element → alle Verbündeten (für diese Runde).",
+        "11": "-1 Reichweite (Bewegung und Pass) → alle Gegner (für diese Runde).",
+        "12": "+3 FEUER → alle Verbündeten (für diese Runde).",
+        "13": "+3 LUFT → alle Verbündeten (für diese Runde).",
+        "14": "Maske wechseln (Klasse, Berserker oder Hänsel)."
+    },
+    "es": {
+        "1": "+1 alcance (movimiento y pase) → todos los aliados (durante este turno).",
+        "2": "50%: +2 cada elemento → todos los aliados (durante este turno); 50%: +1 cada elemento → todos los enemigos (durante este turno).",
+        "3": "+2 PdV → todos los aliados.",
+        "4": "+3 AGUA → todos los aliados (durante este turno).",
+        "5": "-1 ataque → todos los enemigos (durante este turno).",
+        "6": "+3 TIERRA → todos los aliados (durante este turno).",
+        "7": "+1 cada elemento → todos los aliados (durante este turno).",
+        "8": "+1 ataque → todos los aliados (durante este turno).",
+        "9": "-2 PdV → todos los enemigos.",
+        "10": "-1 PdV → todos los aliados; +2 cada elemento → todos los aliados (durante este turno).",
+        "11": "-1 alcance (movimiento y pase) → todos los enemigos (durante este turno).",
+        "12": "+3 FUEGO → todos los aliados (durante este turno).",
+        "13": "+3 AIRE → todos los aliados (durante este turno).",
+        "14": "Cambiar de máscara (Zobal, Sáikopat o Eskérdikat)."
+    }
+},
     "classes_order_combatlog_zobal_desc_enum" : { /* note pour les traducteurs : cette phrase remplace le paramètre $2 dans l'expression "combatlog_class_order_target" */
         "fr" : {
             "1" : "revêt le <img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconWater}' /><img source='{com.ankamagames.boufbowl.tooltips.icons.elements.IconAir}' /> Masque de la classe",
@@ -5176,5 +5120,23 @@
         "en" : "Warning: if you quit customisation, the changes will be lost. \nQuit?",
         "de" : "HINWEIS: Beim Verlassen der benutzerdefinierten Einstellungen gehen alle Veränderungen verloren.\nDennoch verlassen?",
         "es" : "IMPORTANTE: si sales del proceso de persoanlización, se borraran todas las modificaciones. ¿Deseas salir de todos modos?"
-    }
+    },
+    "tournament_time_remaining": {
+    "en": "Ends in $1",
+    "fr": "Fin dans $1",
+    "de": "Endet in $1",
+    "es": "Termina en $1"
+},
+    "tournament_qualification_remaining": {
+    "en": "Qualification ends in $1",
+    "fr": "Qualification : encore $1",
+    "de": "Qualifikation endet in $1",
+    "es": "Clasificación termina en $1"
+},
+    "tournament_wait_round": {
+    "en": "Wait for next round",
+    "fr": "Attendre le prochain tour",
+    "de": "Nächste Runde abwarten",
+    "es": "Espera próxima ronda"
+}
 }

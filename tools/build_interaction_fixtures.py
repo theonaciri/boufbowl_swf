@@ -1,4 +1,5 @@
 """Build deterministic engine probes and original-player interaction fixtures."""
+import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -65,8 +66,13 @@ def fixture(name,record):
 
 
 if __name__=='__main__':
-    directory=ROOT/'tests/fixtures/interactions'; directory.mkdir(exist_ok=True)
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--cinematics',action='store_true',help='Enable full-screen interaction cinematics in generated scenarios')
+    parser.add_argument('--output',type=Path,default=ROOT/'tests/fixtures/interactions')
+    args=parser.parse_args()
+    directory=args.output; directory.mkdir(parents=True,exist_ok=True)
     for name,record in records():
+        if args.cinematics: record['presentation']={'interactions':True}
         (directory/(name+'-record.json')).write_text(json.dumps(record,indent=2)+'\n')
         (directory/(name+'.json')).write_text(json.dumps(fixture(name,record),indent=2)+'\n')
         print(name,sorted({e['type'] for e in record['result']['events']}))

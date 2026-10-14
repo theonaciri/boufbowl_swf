@@ -23,6 +23,8 @@ class BackendTests(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.path = Path(self.directory.name) / "state.sqlite"
         self.config = load_config()
+        self.config["general"]["tournament"].update(start_time=0,end_time=4102444800,repeat_seconds=0,stadium_rotation=[1],format='league')
+        self.config["general"]["cinematics"]["introductions"]=False
         self.config["rules"]["match"].update(turns_per_match=2, turns_per_period=2)
         self.service = Service(self.path, self.config)
         self.alice = self.service.hello({"nickname": "Alice", "clubs": [initial_club()]})
@@ -62,7 +64,7 @@ class BackendTests(unittest.TestCase):
         response = self.service.hello({"session": self.alice["session"]})
         stored = self.service.club(self.identity(self.alice))
         self.assertEqual(stored["clubName"], "Persistent club")
-        self.assertEqual(stored["boufbowler"][0]["attributes"]["earth"], self.config["rules"]["classes"]["defaults"]["earth"])
+        self.assertEqual(stored["boufbowler"][0]["attributes"]["earth"], self.config["rules"]["classes"]["overrides"]["CRA"]["earth"])
         self.assertEqual(response["profile"]["nickname"], "Alice")
         self.assertEqual(self.service.club(self.identity(self.bob))["clubName"], "Test Club")
 
@@ -93,7 +95,9 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(self.service.store.db.execute("SELECT COUNT(*) FROM match_results").fetchone()[0], 1)
         self.assertEqual(self.service.store.db.execute("SELECT COUNT(*) FROM turns").fetchone()[0], 2)
         stats = self.service.store.profile(self.identity(self.alice))["statistics"]
-        self.assertEqual(stats["wins"] + stats["draws"] + stats["defeats"], 1)
+        self.assertEqual(sum(stats["practice"].values()), 1)
+        self.assertEqual(stats["rating"], 1000)
+        self.assertEqual(stats["wins"] + stats["draws"] + stats["defeats"], 0)
 
     def test_resolution_checkpoint_restores_initial_state_and_scenario(self):
         self.start()
@@ -205,9 +209,13 @@ class BackendTests(unittest.TestCase):
         from backend.replay import export_replay
         self.start(); self.protocol(self.alice,'ORDERS',{'turn':1,'orders':[]})
         match=self.service.store.active_match(self.identity(self.alice))
+        replay=export_replay(self.service,match['id'],False,self.identity(self.alice))
+        self.assertEqual(replay['records'],[])
+        with self.service.store.transaction():
+            self.service.end_match(match)
         replay=export_replay(self.service,match['id'],True,self.identity(self.alice))
         self.assertTrue(replay['verified'])
-        self.assertFalse(replay['completed'])
+        self.assertTrue(replay['completed'])
         self.assertEqual(replay['records'][0]['result']['turn_number'],1)
         with self.assertRaisesRegex(ServiceError,'participant'):
             export_replay(self.service,match['id'],False,self.identity(self.bob))
@@ -223,9 +231,17 @@ class BackendTests(unittest.TestCase):
         self.protocol(self.alice,'ORDERS',{'turn':1,'orders':[]})
         self.protocol(self.alice,'RESOLUTION_DONE',{'turn':1})
         restored=self.service.store.match(match['id'])
-        self.assertEqual(restored['world']['entities'][0]['hp'],8)
+        self.assertEqual(restored['world']['entities'][0]['hp'],5)
         record=json.loads(self.service.store.db.execute('SELECT record_json FROM turns WHERE match_id=?',(match['id'],)).fetchone()[0])
         self.assertEqual(record['result']['final_world_state']['entities'][0]['hp'],5)
+        # Advancing the second and third turns heals once, not three HP each turn.
+        with self.service.store.transaction():
+            restored['rules']['match'].update(turns_per_match=6,turns_per_period=6)
+            for turn,expected in ((2,5),(3,6)):
+                restored['turn']=turn
+                restored['pending']={'final_world_state':deepcopy(restored['world']),'score':[0,0]}
+                self.service.advance(restored)
+                self.assertEqual(restored['world']['entities'][0]['hp'],expected)
 
     def test_spectators_receive_scenarios_but_cannot_advance_matches(self):
         self.start()
@@ -247,6 +263,34 @@ class BackendTests(unittest.TestCase):
         match=self.service.store.active_match(self.identity(self.alice))
         self.assertEqual(match['phase'],'resolution')
         self.assertIsNone(self.service.engine.process.poll())
+
+    def test_power_orders_enforce_team_limit_uses_and_exclusive_actions(self):
+        match = self.start()
+        world = self.service.store.active_match(self.identity(self.alice))["world"]
+        ids = [str(e["id"]) for e in world["entities"] if e["team_id"] == 0]
+        for submitted in ([{"boufbowlerId": identity, "classOrder": True} for identity in ids[:2]],
+                          [{"boufbowlerId": ids[0], "classOrder": True, "regularOrder": {"elements": [4,4,4]}}]):
+            with self.assertRaises(ServiceError): self.service.convert_orders(match,1,self.identity(self.alice),submitted)
+        caster = next(e for e in match["world"]["entities"] if str(e["id"]) == ids[0])
+        caster["ability_uses_remaining"] = 0
+        with self.assertRaises(ServiceError): self.service.convert_orders(match,1,self.identity(self.alice),[{"boufbowlerId":ids[0],"classOrder":True}])
+
+    def test_stadium_power_budget_and_masks_survive_replacement_placement(self):
+        self.command(self.alice,"cpu_match",stadium=6)
+        match=self.service.store.active_match(self.identity(self.alice))
+        self.assertEqual(match["rules"]["match"]["class_ability_uses"],2)
+        self.assertTrue(all(e["ability_uses_remaining"]==2 for e in match["world"]["entities"]))
+        caster=match["world"]["entities"][0]
+        caster.update(class_name="Zobal",zobal_mask=2,ability_uses_remaining=1)
+        # Preserve the chosen class in the roster, as a real Zobal has it.
+        player=next(p for p in match["rosters"][0]["characters"] if int(p["id"])==caster["id"])
+        player["boufbowlerClass"]=14
+        self.service.finish_placement(match)
+        restored=next(e for e in match["world"]["entities"] if e["id"]==caster["id"])
+        self.assertEqual(restored["zobal_mask"],2)
+        self.assertEqual(restored["ability_uses_remaining"],1)
+        order=self.service.convert_orders(match,1,self.identity(self.alice),[{"boufbowlerId":str(caster["id"]),"classOrder":True,"zobalMask":3}])
+        self.assertEqual(order["actions"][0]["params"],{"zobal_mask":3})
 
 
 if __name__ == "__main__":

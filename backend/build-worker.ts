@@ -1,12 +1,16 @@
-/** Build the original simulator with our isolated ball-rule replacement. */
+/** Build the archived simulator with isolated local gameplay overrides. */
 import { readFileSync, copyFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, resolve, basename } from "node:path";
+import { overlay } from "./simulator/overlays";
 const root = dirname(import.meta.path);
 const result = await Bun.build({
   entrypoints: [resolve(root, "engine.ts")], target: "bun", outdir: resolve(root, "build"),
   plugins: [{ name: "client-ball-rules", setup(build) {
-    build.onLoad({ filter: /[/\\]simulator[/\\]ball\.ts$/ }, args => ({
-      contents: readFileSync(resolve(root, "simulator/ball.ts"), "utf8"),
+    build.onResolve({filter:/^boufbowl-movement-risk$/}, () => ({path:resolve(root,"movement-risk.ts")}));
+    build.onLoad({ filter: /[/\\]simulator[/\\](ball|abilities|engine|movement|combat|turnTick)\.ts$|[/\\](validator|rules)\.ts$/ }, args => ({
+      contents: ["ball", "abilities"].includes(basename(args.path, ".ts"))
+        ? readFileSync(resolve(root, "simulator", basename(args.path)), "utf8")
+        : overlay(basename(args.path, ".ts"), readFileSync(args.path, "utf8")),
       loader: "ts", resolveDir: dirname(args.path),
     }));
   }}],

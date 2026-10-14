@@ -1,0 +1,38 @@
+{
+  "FARMSTEAD": {
+    "animation": "Illustration_bouftous_contents",
+    "sound": "interactions/reac_bouftous.mp3"
+  },
+  "BRAKMAR": {
+    "animation": "Illustration_foule_contente",
+    "sound": "interactions/reac_public_03.mp3"
+  },
+  "BONTA": {
+    "animation": "Illustration_foule_contente",
+    "sound": "interactions/reac_public_03.mp3"
+  },
+  "BEACH": {
+    "animation": "Illustration_crabes_contents",
+    "sound": "interactions/reac_crabes.mp3"
+  },
+  "FRIGOST": {
+    "animation": "Illustration_frigost_content",
+    "sound": "interactions/reac_yetis.mp3"
+  },
+  "KARA": {
+    "animation": "Illustration_canyon_contents",
+    "sound": "interactions/reac_public_03.mp3"
+  },
+  "FOREST": {
+    "animation": "Illustration_forest_contents",
+    "sound": "interactions/reac_public_03.mp3"
+  },
+  "BALLOTIN": {
+    "animation": "Illustration_ballotin_contents",
+    "sound": "interactions/reac_public_03.mp3"
+  },
+  "PIXEL": {
+    "animation": "Illustration_pixel_contents",
+    "sound": "interactions/reac_public_03.mp3"
+  }
+}

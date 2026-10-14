@@ -49,30 +49,41 @@ searches select the correct group and scroll to the target; nonexistent names or
 unsupported groups return the original ladder error message. The Community
 panel pages 20 entries at a time. Sorting is rating descending, then nickname.
 Wins award +20 rating, losses subtract 20 (minimum zero), and draws leave rating
-unchanged. CPU and human matches both count under the existing local policy.
+unchanged. Only distinct human opponents paired by the normal or tournament
+queue count toward ranked rating and the top-level W/D/L counters. CPU results
+use `statistics.practice`; arranged challenges use `statistics.casual`. Both
+remain in history and receive exactly one result entry. Match source/mode is set
+by the server; client-provided ranked flags cannot opt in. Tournament points also
+require a ranked match created by the tournament queue.
 There are no fabricated historical promotion thresholds or seasons. Rewards
 are inserted once per participant; playback and exporting award nothing.
 
 ## Storage and replay behavior
 
-SQLite schema 4 migrates schema 1/2/3 databases additively. Existing tokens, accounts,
-clubs, games and immutable turn records are preserved. New tables hold presence,
-friendships, blocks, channel subscriptions, spectator replay access and reports.
-New matches record creation/end timestamps, surrender side and the exact match-end
-packet. Old matches retain their recorded turns; unavailable historical creation
-and surrender information is not invented.
+SQLite schema 8 creates a fresh development database. Opening an older version
+clears all application tables, including accounts, matches, turns and statistics.
+There is no archive or historical migration. Reopening a current schema-8 database
+keeps newly created data. The previous development database and saved replay
+export were deleted for this reset.
+New matches record creation/end timestamps, surrender side and their match-end
+packet.
 
 Turns are automatically saved with initial state, orders, deterministic seed,
 rule snapshot, simulation result and original-client resolution messages. No
-manual save is needed for server-side recording. Exported replays include those
+manual save is needed for server-side recording. Completed exports include full
 records and animation envelopes and can be played without the simulation worker.
+New turns draw independent private random seeds; a seed disclosed for an earlier turn cannot derive a later turn's seed.
+Completed turn seeds remain in their recorded data for verification.
 Participants retain replay ownership when an opponent is blocked. Previously
 registered spectators can export watched matches while permitted by block policy;
 unrelated profiles cannot. Active matches can export a snapshot of recorded
-turns (`completed: false`); these are not final match results. The History panel
+turns (`completed: false`), but these exports contain playback envelopes only:
+`records: []`, `audit_available: false`, and no raw seeds, state hashes or pending
+orders. Full audits unlock when the match ends; these snapshots are not final results. The History panel
 advertises replay availability for ended matches with at least one recorded turn.
 
 `POST /api/replay` accepts `session`, `match` and optional `verify`. Verification
+is available only after match completion (`REPLAY_ACTIVE` otherwise),
 re-simulates against the installed engine and can reject old versions; playback
 of the saved envelopes does not require that verification. Replay uses spectator
 mode. The patched client maps animation completion in spectator mode; replay

@@ -1,0 +1,60 @@
+[
+  {
+    "id": "club_ocean",
+    "name": "Ocean club palette",
+    "kind": "club_palette",
+    "asset_id": 2,
+    "price": {
+      "coins": 20
+    }
+  },
+  {
+    "id": "club_forest",
+    "name": "Forest club palette",
+    "kind": "club_palette",
+    "asset_id": 3,
+    "price": {
+      "coins": 10,
+      "influence": 5
+    }
+  },
+  {
+    "id": "club_sunset",
+    "name": "Sunset club palette",
+    "kind": "club_palette",
+    "asset_id": 4,
+    "price": {
+      "coins": 15,
+      "glory": 10
+    }
+  },
+  {
+    "id": "pastel",
+    "name": "Pastel character palette",
+    "kind": "character_palette",
+    "asset_id": 101,
+    "price": {
+      "coins": 20
+    }
+  },
+  {
+    "id": "vivid",
+    "name": "Vivid character palette",
+    "kind": "character_palette",
+    "asset_id": 102,
+    "price": {
+      "coins": 15,
+      "influence": 5
+    }
+  },
+  {
+    "id": "natural",
+    "name": "Natural character palette",
+    "kind": "character_palette",
+    "asset_id": 103,
+    "price": {
+      "coins": 15,
+      "glory": 10
+    }
+  }
+]

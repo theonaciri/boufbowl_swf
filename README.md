@@ -251,8 +251,16 @@ cannot update the installed app. The APK build leaves the desktop SWF unchanged.
 See [Android instructions](android/README.md) for signing and emulator builds.
 
 Run `python3 -m unittest discover -s tests -v` to check server/configuration changes.
-The latest validation passed 97 automated tests and native desktop regressions;
+The current validation passed 160 automated tests and native desktop playback
+of a complete 14-turn Kara comparison match;
 the latest live-server APK has package checks but no current device validation.
+
+Full-screen cinematics are enabled for new matches: stadium camera introduction,
+versus, goals/celebrations, combat, passes, receptions/interceptions and rebounds.
+Placement waits for introduction completion, with a timeout fallback. Configure
+`general.cinematics` in [game_config.json](resources/game_config.json); see
+[cinematic settings](docs/game-configuration.md#cinematic-presentation).
+Previously saved replays retain their recorded animation flags.
 
 General settings, balance, class abilities and stadium overrides are in
 [resources/game_config.json](resources/game_config.json). Configuration is
@@ -263,7 +271,7 @@ Profiles, owned clubs, customization, matches, chat, ranking results and turn
 records persist. The backend validates orders and runs the simulation; the
 original client animates its protobuf resolution scenarios and acknowledges
 completion. It supports automatic human matchmaking, CPU matches, two-player challenges, spectating, chat,
-rankings and a configurable free local tournament league.
+rankings and configurable free local tournaments.
 
 Missing regular and special animated skins reuse Cra of the same gender in
 team views, editors and match playback. Their original identity, class, stats,
@@ -298,3 +306,39 @@ Stadium surface themes and expanded customization colors: [visual assets](docs/v
 **Server → Community** opens rankings, friends/blocks, match history, replay
 playback and JSON saving, live spectating, private messages and language chat
 subscriptions. See [community and replays](docs/community-and-replays.md).
+
+
+Class powers and class statistics are experimental and editable in
+[resources/game_config.json](resources/game_config.json). All 14 classes have
+distinct base element profiles. Powers enforce one caster per team per turn,
+exclude other caster actions, and use the stadium's per-character match allowance.
+See [the balance tables and effect semantics](docs/game-configuration.md).
+Restart the client and server and start a new match to use changed balance rules;
+existing matches and saved replays retain their recorded rules.
+
+
+Normal and expert CPU matches now use class powers; beginner keeps regular
+orders. See [the cheating and abuse review](docs/cheating-and-abuse.md) for current
+protections, identified gaps, and a prioritized server-hardening plan.
+
+
+Ranked results now come only from human normal/tournament matchmaking. CPU games
+are practice; nickname challenges are casual. Both remain in history, with
+separate counters. Schema 8 discards incompatible development databases and starts fresh
+statistics at 1000. No legacy statistics, matches or replays are migrated. Active replay exports contain playback data only; full audits and
+verification unlock after completion. New turn seeds are independently generated.
+See [result and replay policies](docs/community-and-replays.md).
+
+Orange movement cells now carry increasing fall risk. See the
+[reference-match investigation](docs/reference-match-comparison.md) for source
+evidence, configurable odds, corrected regeneration and replay validation.
+
+Scheduled tournaments now rotate stadiums, qualify four players and run knockout
+rounds over 45 minutes each hour. They show upcoming countdowns and finalized standings in the original interface.
+Started matches may finish after entry closes. See [tournament lifecycle](docs/tournament-lifecycle.md)
+for schedules, local rewards, source findings and verification.
+
+The [frontend restoration guide](docs/frontend-restoration.md) covers five ranked
+leagues, optional seasons, wallet/cosmetics, replay pause/speed/turn selection,
+news and moderator roles. Advanced training is excluded. Grant moderator roles
+with the local `backend.manage role` command; clients cannot self-promote.

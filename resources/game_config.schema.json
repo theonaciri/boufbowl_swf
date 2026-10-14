@@ -129,6 +129,70 @@
             "loss_points": {
               "type": "integer",
               "minimum": 0
+            },
+            "repeat_seconds": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "upcoming_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "past_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "type": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 11
+            },
+            "stadium_rotation": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 9,
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9
+              }
+            },
+            "rewards": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4
+              }
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "league",
+                "elimination"
+              ]
+            },
+            "qualification_seconds": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "qualifying_top": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 16
+            },
+            "round_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4
+            },
+            "round_seconds": {
+              "type": "integer",
+              "minimum": 1
             }
           }
         },
@@ -158,6 +222,166 @@
             "heartbeat_timeout",
             "search_timeout"
           ]
+        },
+        "cinematics": {
+          "type": "object",
+          "properties": {
+            "introductions": {
+              "type": "boolean"
+            },
+            "interactions": {
+              "type": "boolean"
+            },
+            "introduction_timeout_seconds": {
+              "type": "integer",
+              "minimum": 30,
+              "maximum": 300
+            }
+          },
+          "required": [
+            "introductions",
+            "interactions",
+            "introduction_timeout_seconds"
+          ],
+          "additionalProperties": false
+        },
+        "progression": {
+          "type": "object",
+          "required": [
+            "qualifying_games",
+            "leagues",
+            "seasons"
+          ],
+          "properties": {
+            "qualifying_games": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "leagues": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "min_rating"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "min_rating": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "seasons": {
+              "type": "object",
+              "required": [
+                "enabled",
+                "start_time",
+                "duration_seconds",
+                "initial_rating"
+              ],
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "duration_seconds": {
+                  "type": "integer",
+                  "minimum": 60
+                },
+                "initial_rating": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "economy": {
+          "type": "object",
+          "required": [
+            "free_customization"
+          ],
+          "properties": {
+            "free_customization": {
+              "type": "boolean"
+            }
+          }
+        },
+        "news": {
+          "type": "object",
+          "required": [
+            "title",
+            "body"
+          ],
+          "properties": {
+            "title": {
+              "type": "object",
+              "required": [
+                "en",
+                "fr",
+                "de",
+                "es"
+              ],
+              "properties": {
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "fr": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "de": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "es": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "body": {
+              "type": "object",
+              "required": [
+                "en",
+                "fr",
+                "de",
+                "es"
+              ],
+              "properties": {
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "fr": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "de": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "es": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
         }
       },
       "additionalProperties": false,
@@ -1072,6 +1296,30 @@
                 "terre_range_penalty_per_action": {
                   "type": "integer",
                   "minimum": 0
+                },
+                "overextension": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "fall_probability_at_max": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "exponent": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 10
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "enabled",
+                    "fall_probability_at_max",
+                    "exponent"
+                  ]
                 }
               },
               "additionalProperties": false,
@@ -1230,409 +1478,46 @@
           "type": "object",
           "properties": {
             "Iop": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "element": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "element",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Sram": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "element": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "element",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Feca": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Xelor": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "element": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "element",
-                "bonus"
-              ]
-            },
-            "Default": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Cra": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Ecaflip": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Eniripsa": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Enutrof": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Osamodas": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Pandawa": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Rogue": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Sacrier": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Sadida": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             },
             "Zobal": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "verified": {
-                  "type": "boolean"
-                },
-                "heal": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "bonus": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "required": [
-                "name",
-                "verified",
-                "heal",
-                "bonus"
-              ]
+              "$ref": "#/$defs/ability"
             }
           },
           "required": [
@@ -1640,7 +1525,6 @@
             "Sram",
             "Feca",
             "Xelor",
-            "Default",
             "Cra",
             "Ecaflip",
             "Eniripsa",
@@ -1871,6 +1755,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -1984,417 +1887,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -2612,6 +2151,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -2725,417 +2283,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -3353,6 +2547,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -3466,417 +2679,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -4094,6 +2943,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -4207,417 +3075,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -4835,6 +3339,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -4948,417 +3471,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -5576,6 +3735,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -5689,417 +3867,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -6317,6 +4131,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -6430,417 +4263,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -7058,6 +4527,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -7171,417 +4659,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -7799,6 +4923,25 @@
                         "terre_range_penalty_per_action": {
                           "type": "integer",
                           "minimum": 0
+                        },
+                        "overextension": {
+                          "type": "object",
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "fall_probability_at_max": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "exponent": {
+                              "type": "number",
+                              "exclusiveMinimum": 0,
+                              "maximum": 10
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
                       "additionalProperties": false
@@ -7912,417 +5055,53 @@
                   "type": "object",
                   "properties": {
                     "Iop": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sram": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Feca": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Xelor": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "element": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "element",
-                        "bonus"
-                      ]
-                    },
-                    "Default": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Cra": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Ecaflip": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Eniripsa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Enutrof": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Osamodas": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Pandawa": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Rogue": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sacrier": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Sadida": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     },
                     "Zobal": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "verified": {
-                          "type": "boolean"
-                        },
-                        "heal": {
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "bonus": {
-                          "type": "integer",
-                          "minimum": 0
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "verified",
-                        "heal",
-                        "bonus"
-                      ]
+                      "$ref": "#/$defs/abilityOverride"
                     }
                   },
                   "required": [
                     "Iop",
                     "Sram",
                     "Feca",
-                    "Xelor",
-                    "Default"
+                    "Xelor"
                   ]
                 }
               },
@@ -8358,5 +5137,202 @@
     "general",
     "rules",
     "stadiums"
-  ]
+  ],
+  "$defs": {
+    "ability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "verified",
+        "target"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "allies",
+            "enemies"
+          ]
+        },
+        "hp": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        },
+        "range": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        },
+        "attack": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        },
+        "elements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "TERRE": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "FEU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "AIR": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "EAU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          }
+        },
+        "change_mask": {
+          "type": "boolean"
+        },
+        "enemy_chance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "enemy_elements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "TERRE": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "FEU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "AIR": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "EAU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          }
+        }
+      }
+    },
+    "abilityOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "allies",
+            "enemies"
+          ]
+        },
+        "hp": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        },
+        "range": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        },
+        "attack": {
+          "type": "integer",
+          "minimum": -20,
+          "maximum": 20
+        },
+        "elements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "TERRE": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "FEU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "AIR": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "EAU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          }
+        },
+        "change_mask": {
+          "type": "boolean"
+        },
+        "enemy_chance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "enemy_elements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "TERRE": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "FEU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "AIR": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            },
+            "EAU": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          }
+        }
+      }
+    }
+  }
 }

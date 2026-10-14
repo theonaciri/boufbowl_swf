@@ -25,7 +25,7 @@ package com.ankamagames.boufbowl.client.matchmaking.controller
       
       override public function execute() : void
       {
-         if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode() && this._event.matchCreationType != MatchCreationType.CHALLENGE)
+         if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode() && this._event.matchCreationType == MatchCreationType.RANDOM)
          {
             com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverPlay();
             return;
@@ -33,7 +33,8 @@ package com.ankamagames.boufbowl.client.matchmaking.controller
          if(this._event.matchCreationType == MatchCreationType.TOURNAMENT)
          {
             dispatch(new DisplayViewEvent(Views.TOURNAMENT));
-            dispatchToModules(new HelpWindowEvent(LangConstants.TOURNAMENT_HELP_TITLE,LangConstants.TOURNAMENT_HELP_CONTENT));
+            if(!com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode())
+               dispatchToModules(new HelpWindowEvent(LangConstants.TOURNAMENT_HELP_TITLE,LangConstants.TOURNAMENT_HELP_CONTENT));
          }
          else
          {

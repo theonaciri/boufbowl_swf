@@ -17,11 +17,15 @@ class ConfigError(ValueError):
     pass
 
 
-def validate(value, schema, path="config"):
+def validate(value, schema, path="config", definitions=None):
     """Dependency-free validator for the constraints used in our bundled schema."""
+    definitions = schema.get("$defs", definitions)
+    if "$ref" in schema:
+        schema = definitions[schema["$ref"].removeprefix("#/$defs/")]
     kind = schema["type"]
     valid = {
         "object": isinstance(value, dict), "string": isinstance(value, str),
+        "array": isinstance(value, list),
         "boolean": isinstance(value, bool),
         "integer": isinstance(value, int) and not isinstance(value, bool),
         "number": isinstance(value, (int, float)) and not isinstance(value, bool),
@@ -35,7 +39,12 @@ def validate(value, schema, path="config"):
         if unknown or missing:
             raise ConfigError(f"{path}: unknown keys {sorted(unknown)}, missing keys {sorted(missing)}")
         for key, child in value.items():
-            validate(child, properties[key], f"{path}.{key}")
+            validate(child, properties[key], f"{path}.{key}", definitions)
+    if kind == "array":
+        if not schema.get('minItems', 0) <= len(value) <= schema.get('maxItems', len(value)):
+            raise ConfigError(f"{path}: invalid number of items")
+        for index, child in enumerate(value):
+            validate(child, schema['items'], f"{path}[{index}]", definitions)
     if kind in ("number", "integer"):
         if not math.isfinite(value):
             raise ConfigError(f"{path}: must be finite")
@@ -84,6 +93,18 @@ def load_config(path=DEFAULT_CONFIG):
         raise ConfigError(f"Cannot load {path}: {error}") from error
     schema = json.loads((ROOT / "resources/game_config.schema.json").read_text())
     validate(config, schema)
+    progression=config['general'].get('progression')
+    if progression:
+        leagues=progression['leagues']
+        if {l['id'] for l in leagues}!={1,2,3,4,5} or len({l['min_rating'] for l in leagues})!=5 or min(l['min_rating'] for l in leagues)!=0:
+            raise ConfigError('League IDs/thresholds must be unique and start at rating zero')
+    tournament = config['general']['tournament']
+    duration = tournament['end_time'] - tournament['start_time']
+    if tournament.get('format')=='elimination' and (tournament['qualification_seconds']+tournament['round_count']*tournament['round_seconds']>duration or tournament['qualifying_top']>2**tournament['round_count']):
+        raise ConfigError('Tournament qualification/rounds must fit its duration and bracket capacity')
+    if duration <= 0: raise ConfigError('Tournament end_time must follow start_time')
+    if tournament.get('repeat_seconds',0) and tournament['repeat_seconds'] < duration:
+        raise ConfigError('Repeating tournament entry windows cannot overlap')
     check_rules(config["rules"], "rules")
     for stadium in STADIUMS:
         check_rules(resolve_stadium(config, stadium), stadium)
@@ -114,7 +135,11 @@ def apply_resources(directory, config):
     stadium_path = directory / "stadiums.json"
     if stadium_path.exists():
         stadiums = json.loads(stadium_path.read_text())
+        from tools.stadium_celebrations import celebrations
+        goal_celebrations = celebrations(directory.parent)
         for name, stadium in stadiums["stadiums"].items():
+            stadium["publicHappyCutsceneName"] = goal_celebrations[name]["animation"]
+            stadium["publicHappySound"] = goal_celebrations[name]["sound"]
             if name in art_paths:
                 stadium["path"] = art_paths[name]
             if not (ROOT / "assets/models/stadiums" / stadium["path"]).exists():
@@ -122,20 +147,29 @@ def apply_resources(directory, config):
         stadium_path.write_text(json.dumps(stadiums, indent=2) + "\n")
     lang_path = directory / "lang.json"
     if lang_path.exists():
-        text = palette_translations(lang_path.read_text(encoding="utf-8-sig"))
+        from tools.power_descriptions import update_translations
+        text = update_translations(palette_translations(lang_path.read_text(encoding="utf-8-sig")), config["rules"])
         translations = {
-            "en": "Free local league. Play CPU matches during the event. Wins and draws add points; defeats do not eliminate you. Results and rankings are saved.",
-            "fr": "Ligue locale gratuite. Jouez contre l'ordinateur pendant l'événement. Les victoires et les matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les résultats sont sauvegardés.",
-            "de": "Kostenlose lokale Liga. Spiele während des Events gegen den Computer. Siege und Unentschieden bringen Punkte; Niederlagen führen nicht zum Ausscheiden. Ergebnisse werden gespeichert.",
-            "es": "Liga local gratuita. Juega contra el ordenador durante el evento. Las victorias y los empates suman puntos; las derrotas no te eliminan. Los resultados se guardan.",
+            "en": "Free tournament league. Only human tournament matchmaking counts. Wins and draws add points; defeats do not eliminate you. CPU games and challenges do not count.",
+            "fr": "Ligue gratuite. Seuls les matchs humains via la file du tournoi comptent. Victoires et matchs nuls rapportent des points ; une défaite ne vous élimine pas. Les matchs CPU et les défis ne comptent pas.",
+            "de": "Kostenlose Turnierliga. Nur menschliche Spiele aus der Turnierwarteschlange zählen. Siege und Unentschieden bringen Punkte; Niederlagen führen nicht zum Ausscheiden. CPU-Spiele und Herausforderungen zählen nicht.",
+            "es": "Liga gratuita. Solo cuentan los partidos humanos de la cola del torneo. Las victorias y los empates suman puntos; las derrotas no te eliminan. Los partidos CPU y los desafíos no cuentan.",
         }
+        if config['general']['tournament'].get('format')=='elimination':
+            top=config['general']['tournament']['qualifying_top']
+            translations={
+                'en':f'Free qualification: the top {top} players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.',
+                'fr':f'Qualification gratuite : les {top} premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.',
+                'de':f'Kostenlose Qualifikation: Die besten {top} mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.',
+                'es':f'Clasificación gratuita: los {top} mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones.'}
         for key in ("tournament_help_content", "tournament_elimination_rule"):
             block = json.dumps(translations, ensure_ascii=False, indent=4).replace("\n", "\n    ")
             pattern = r'("' + key + r'"\s*:\s*)\{.*?\n    \}'
             text, count = re.subn(pattern, lambda match: match[1] + block, text, count=1, flags=re.S)
             if count != 1:
                 raise ConfigError(f"Missing tournament translation block: {key}")
-        lang_path.write_text(text)
+        from tools.tournament_text import update_tournament_text
+        lang_path.write_text(update_tournament_text(text))
     (directory / "game_config.json").write_text(json.dumps(config, indent=2) + "\n")
 
 

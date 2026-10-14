@@ -71,7 +71,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         route = urlsplit(self.path).path
         if route == "/api/health":
-            self.json_response({"ok": True, "service": "boufbowl-offline", "protocol": "1.9.6", "schema_version": 4,
+            self.json_response({"ok": True, "service": "boufbowl-offline", "protocol": "1.9.6", "schema_version": 8,
                                 "rules_version": self.server.service.config["rules_version"]})
             return
         if route == "/crossdomain.xml":

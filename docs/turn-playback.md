@@ -68,3 +68,32 @@ Presentation scores are approximate displays; original server probability draws
 were not available. Deterministic engine rolls and full events remain in records.
 Combat ties retain damage to both participants; the original wire fight has a
 first/second winner role, so the presentation uses the first fighter for that case.
+
+## Cinematic restoration
+
+New matches optionally enter backend `introduction` before placement. MATCH_INFORMATION
+has `skipIntro=false` for an unacknowledged player. The original PlayIntroductionCommand
+runs its camera/versus sequence and sends INTRODUCTION_DONE; only when all human
+participants acknowledge does the server broadcast the first FIELD_STATE and start
+placement's deadline. Reconnects retain intro acknowledgements. Spectators skip
+intros and cannot advance them. The intro timeout starts placement independently
+of a missing acknowledgement.
+
+New turn records snapshot `presentation`. The adapter sets isCutscene for goal,
+combat, pass, reception/interception and rebound interactions when enabled.
+Original interaction functions already request illustration cinematics and movies;
+they do not need the absent animated-cutscene library. UIController and movie
+playback catch unavailable symbols and complete callbacks so the scene can resume.
+Recorded scenario payloads retain exact flags for replay. Legacy records without
+presentation keep the old noncinematic adapter behavior.
+
+
+Experimental class powers resolve before movement. Their events record affected
+player IDs, actual signed HP deltas, characteristic/range/attack modifiers,
+remaining uses, Ecaflip's seeded draw, or the chosen Zobal mask. The adapter maps
+HP deltas to `ClassOrderTarget.preResolutionHitPointsDelta` and masks to both
+order and `ClassOrderInformation.zobalMask`, so the original class effects and
+mask-change scripts play. Fight score displays include the temporary stats and
+attack modifiers. Temporary bonuses expire before final state hashing; masks and
+usage counters survive. Old provisional-power records still reproduce using
+their stored rules and original simulation version.

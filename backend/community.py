@@ -1,4 +1,5 @@
 """Authenticated community, history, presence and ranking queries for the client."""
+from backend.results import result_kind
 import json
 import hashlib
 import time
@@ -98,7 +99,7 @@ class Community:
     def rankings(self):
         players = [self.store.profile(row[0]) for row in self.store.db.execute('SELECT id FROM profiles')]
         players.sort(key=lambda p: (-p['statistics']['rating'], p['nickname'].casefold(), p['id']))
-        return [{'index': i, 'rank': i+1, 'player': self.player_summary(p['id']),
+        return [{'index': i, 'rank': i+1, 'league':self.league_for(p['id']), 'qualified':self.league_for(p['id'])>0, 'player': self.player_summary(p['id']),
                  'wins': p['statistics']['wins'], 'draws': p['statistics']['draws'],
                  'losses': p['statistics']['defeats'], 'rating': p['statistics']['rating']} for i,p in enumerate(players)]
 
@@ -118,6 +119,7 @@ class Community:
             result.append({'id': str(match['id']), 'players': [r['nickname'] for r in match['rosters']],
                            'stadium': match['stadium'], 'score': match['score'], 'phase': match['phase'],
                            'side': side, 'created': match.get('created'), 'ended': match.get('ended',row[1] if match['phase']=='ended' else None),
+                           'result_kind':result_kind(match), 'ranked':result_kind(match)=='ranked',
                            'given_up': match.get('given_up'), 'turns': turns, 'replay_available': turns>0 and match['phase']=='ended'})
         return {'matches': result, 'offset': offset, 'more': len(rows)>20}
 
@@ -126,7 +128,7 @@ class Community:
             profile = self.store.authenticate(body.get('session'))
             self.touch(profile)
             action = body.get('action','overview'); result = {}
-            receipt = body.get('request_id') if action in ('friend','spectate','stop_spectating','channels','message','report') else None
+            receipt = body.get('request_id') if action in ('friend','spectate','stop_spectating','channels','message','report','moderate','buy') else None
             digest = None
             if receipt is not None:
                 if not isinstance(receipt,str) or not 1<=len(receipt)<=100: raise ServiceError('REQUEST_ID','Invalid community request ID')
@@ -144,7 +146,7 @@ class Community:
             elif action == 'player':
                 target=self.target_player(body['nickname'])
                 match=self.store.active_match(target)
-                result={**self.presence_data(target), 'player':self.player_summary(target), 'statistics':self.store.profile(target)['statistics'],
+                result={'role':self.role(target),**self.presence_data(target), 'player':self.player_summary(target), 'statistics':self.store.profile(target)['statistics'],
                         'match':str(match['id']) if match else None,
                         'can_spectate':bool(match and target!=profile and not self.store.active_match(profile) and not self.blocked(profile,target))}
             elif action == 'friend': result = self.friend_action(profile,body['verb'],body['nickname'])
@@ -189,6 +191,12 @@ class Community:
                 rows=self.store.db.execute('SELECT * FROM chat_messages WHERE id<? AND ((sender=? AND recipient=?) OR (sender=? AND recipient=?)) ORDER BY id DESC LIMIT 50',(before,profile,target,target,profile)).fetchall()
                 result['messages']=[{'id':r['id'],'from':self.store.profile(r['sender'])['nickname'],'message':r['message'],'created':r['created']} for r in reversed(rows)]
                 result['before']=rows[-1]['id'] if rows else None
+            elif action == 'wallet': result=self.wallet_data(profile)
+            elif action == 'buy': result=self.buy_cosmetic(profile,body.get('item_id'))
+            elif action == 'news': result=self.news_data(profile)
+            elif action == 'progression': result=self.progression_data(profile)
+            elif action == 'moderation': result=self.moderation_data(profile,self.page(body))
+            elif action == 'moderate': result=self.moderate(profile,body)
             elif action == 'report': self.save_report(profile,body['nickname'],body['reason'])
             else: raise ServiceError('COMMUNITY_ACTION','Unknown community action')
             response={'ok':True,**result}

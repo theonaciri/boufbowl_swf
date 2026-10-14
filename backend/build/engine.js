@@ -1,47 +1,4 @@
 // @bun
-// ../boufbowl_server/src/rng.ts
-import { createHash } from "crypto";
-
-class DeterministicRNG {
-  state;
-  constructor(seed) {
-    this.state = BigInt(seed);
-    if (this.state === 0n)
-      this.state = 1n;
-  }
-  next() {
-    let x = this.state;
-    x ^= x << 13n;
-    x ^= x >> 7n;
-    x ^= x << 17n;
-    this.state = BigInt.asUintN(64, x);
-    return Number(x & 0xffffffffn);
-  }
-  nextFloat() {
-    return this.next() / 4294967296;
-  }
-  nextInt(min, max) {
-    return Math.floor(this.nextFloat() * (max - min)) + min;
-  }
-  chance(probability) {
-    return this.nextFloat() < probability;
-  }
-}
-function hashWorldState(state) {
-  return createHash("sha256").update(canonicalJSON({
-    ...state,
-    entities: [...state.entities].sort((a, b) => a.id - b.id)
-  })).digest("hex");
-}
-function canonicalJSON(value) {
-  if (value === null || typeof value !== "object")
-    return JSON.stringify(value);
-  if (Array.isArray(value))
-    return "[" + value.map(canonicalJSON).join(",") + "]";
-  const object = value;
-  return "{" + Object.keys(object).filter((k) => object[k] !== undefined).sort().map((k) => JSON.stringify(k) + ":" + canonicalJSON(object[k])).join(",") + "}";
-}
-
 // ../boufbowl_server/src/hex.ts
 var HEX_DIRECTIONS = [
   { q: 1, r: 0 },
@@ -90,6 +47,129 @@ function hexRound(h) {
   return { q, r };
 }
 
+// ../boufbowl_server/src/coordinates.ts
+var SIMULATION_SCALE = 1e4;
+
+// backend/movement-risk.ts
+function referenceDistance(cfg, elements) {
+  const r = cfg.client_ranges;
+  return elements.TERRE * r.earth_distance_bonus + elements.FEU * r.fire_distance_bonus + elements.AIR * r.air_distance_bonus + elements.EAU * r.water_distance_bonus;
+}
+function resolveMovementRisk(context, tick) {
+  const { cfg, state, movements, rng, events } = context;
+  const risk = cfg.movement.overextension;
+  if (!risk?.enabled || !cfg.client_ranges)
+    return;
+  context.rangeRisk ??= new Map;
+  for (const [id, m] of movements) {
+    const e = state.entities.find((actor) => actor.id === id);
+    if (!e || e.hp <= 0 || e.status.knocked_down || e.status.stunned)
+      continue;
+    let test = context.rangeRisk.get(id);
+    if (!test) {
+      const action = context.actions.find((a) => a.entity_id === id && ["move", "follow"].includes(a.action_type));
+      const safe = Math.max(0, referenceDistance(cfg, action.params.elements ?? e.elements) + (e.range_bonus ?? 0));
+      test = {
+        safe,
+        max: Math.max(safe, referenceDistance(cfg, action.params.elements ?? e.elements) * cfg.client_ranges.max_distance_factor + (e.range_bonus ?? 0)),
+        origin: m.risk_origin,
+        probability: 0,
+        success: true,
+        score: e.stats.endurance,
+        distance: 0
+      };
+      context.rangeRisk.set(id, test);
+    }
+    test.distance = hexDistance(test.origin, m.current);
+    if (test.distance <= test.safe || test.max <= test.safe)
+      continue;
+    test.draw ??= rng.nextFloat();
+    const ratio = Math.max(0, Math.min(1, (test.distance - test.safe) / (test.max - test.safe)));
+    test.probability = risk.fall_probability_at_max * Math.pow(ratio, risk.exponent);
+    if (test.draw >= test.probability)
+      continue;
+    test.success = false;
+    e.status.knocked_down = true;
+    m.done = true;
+    const landing = m.next && m.progress > SIMULATION_SCALE / 2 ? m.next : m.current;
+    e.position = { ...landing };
+    e.precise_position = { q: landing.q * SIMULATION_SCALE, r: landing.r * SIMULATION_SCALE };
+    m.current = { ...landing };
+    m.next = undefined;
+    m.progress = 0;
+    const carried = state.ball.holder_entity_id === id;
+    events.push({ tick, type: "fall", actor: id, params: {
+      position: { ...e.position },
+      has_ball: carried,
+      probability: test.probability,
+      random_draw: test.draw,
+      distance: test.distance,
+      safe_range: test.safe,
+      max_range: test.max
+    } });
+    if (carried) {
+      e.status.carrying_ball = false;
+      state.ball = { position: { ...e.position }, holder_entity_id: null, in_flight: false };
+      events.push({ tick, type: "ball_drop", actor: id, params: { position: { ...e.position } } });
+    }
+  }
+}
+function publishMovementTests(context) {
+  for (const [id, test] of context.rangeRisk ?? [])
+    context.events.push({ tick: context.state.tick, type: "movement_test", actor: id, params: {
+      success: test.success,
+      probability: test.probability,
+      random_draw: test.draw ?? null,
+      distance: test.distance,
+      safe_range: test.safe,
+      max_range: test.max,
+      inherent_score: test.score
+    } });
+}
+
+// ../boufbowl_server/src/rng.ts
+import { createHash } from "crypto";
+
+class DeterministicRNG {
+  state;
+  constructor(seed) {
+    this.state = BigInt(seed);
+    if (this.state === 0n)
+      this.state = 1n;
+  }
+  next() {
+    let x = this.state;
+    x ^= x << 13n;
+    x ^= x >> 7n;
+    x ^= x << 17n;
+    this.state = BigInt.asUintN(64, x);
+    return Number(x & 0xffffffffn);
+  }
+  nextFloat() {
+    return this.next() / 4294967296;
+  }
+  nextInt(min, max) {
+    return Math.floor(this.nextFloat() * (max - min)) + min;
+  }
+  chance(probability) {
+    return this.nextFloat() < probability;
+  }
+}
+function hashWorldState(state) {
+  return createHash("sha256").update(canonicalJSON({
+    ...state,
+    entities: [...state.entities].sort((a, b) => a.id - b.id)
+  })).digest("hex");
+}
+function canonicalJSON(value) {
+  if (value === null || typeof value !== "object")
+    return JSON.stringify(value);
+  if (Array.isArray(value))
+    return "[" + value.map(canonicalJSON).join(",") + "]";
+  const object = value;
+  return "{" + Object.keys(object).filter((k) => object[k] !== undefined).sort().map((k) => JSON.stringify(k) + ":" + canonicalJSON(object[k])).join(",") + "}";
+}
+
 // ../boufbowl_server/src/constants.ts
 var VERSION = {
   PROTOCOL: "1.0.0",
@@ -110,6 +190,8 @@ var EMPTY_ELEMENTS = {
   EAU: 0
 };
 function maxMovementDistance(cfg, elements) {
+  if (cfg.movement.overextension !== undefined && cfg.client_ranges)
+    return referenceDistance(cfg, elements) * cfg.client_ranges.max_distance_factor;
   const base = cfg.movement.base_movement_range ?? 7;
   const eauBonus = cfg.movement.eau_range_bonus_per_action ?? 2;
   const airBonus = cfg.movement.air_range_bonus_per_action ?? 1;
@@ -168,9 +250,6 @@ function dodgeSucceeds(contest) {
   return contest.defender_feu > contest.attacker_terre && contest.defender_agility >= contest.attacker_agility;
 }
 
-// ../boufbowl_server/src/coordinates.ts
-var SIMULATION_SCALE = 1e4;
-
 // ../boufbowl_server/src/simulator/movement.ts
 var SCALE = SIMULATION_SCALE;
 var fixed = (p) => ({
@@ -223,9 +302,10 @@ function setupMovements(cfg, state, actions, _size) {
     if (!e || e.hp <= 0 || !target)
       continue;
     table.set(e.id, {
+      risk_origin: { ...e.position },
       target: { ...target },
       current: { ...e.position },
-      budget: maxMovementDistance(cfg, e.elements),
+      budget: Math.max(0, Math.floor(maxMovementDistance(cfg, e.elements) + (e.range_bonus ?? 0))),
       traveled: 0,
       done: hexEqual(e.position, target),
       progress: 0,
@@ -324,7 +404,7 @@ function resolveDuels(cfg, state, actions, rng, tick, dueledPairs) {
     for (let j = i + 1;j < state.entities.length; j++) {
       const a = state.entities[i];
       const b = state.entities[j];
-      if (a.team_id === b.team_id)
+      if (a.team_id === b.team_id || a.power_locked && b.power_locked)
         continue;
       if (a.status.stunned || b.status.stunned || a.status.knocked_down || a.hp <= 0 || b.status.knocked_down || b.hp <= 0)
         continue;
@@ -375,9 +455,9 @@ function resolveDuels(cfg, state, actions, rng, tick, dueledPairs) {
   return events;
 }
 function performDuel(cfg, a, b, ea, eb, rng) {
-  const powerA = attackPower(cfg, a.stats.strength, ea.TERRE);
-  const powerB = attackPower(cfg, b.stats.strength, eb.TERRE);
-  const aAttacks = powerA >= powerB;
+  const powerA = attackPower(cfg, a.stats.strength, ea.TERRE) + (a.attack_bonus ?? 0);
+  const powerB = attackPower(cfg, b.stats.strength, eb.TERRE) + (b.attack_bonus ?? 0);
+  const aAttacks = a.power_locked ? false : b.power_locked ? true : powerA >= powerB;
   const attacker = aAttacks ? a : b;
   const defender = aAttacks ? b : a;
   const atk = aAttacks ? ea : eb;
@@ -397,7 +477,7 @@ function performDuel(cfg, a, b, ea, eb, rng) {
       ballDropped: false
     };
   }
-  if (powerA === powerB) {
+  if (powerA === powerB && !a.power_locked && !b.power_locked) {
     const tieDamage = cfg.combat.duel.damage_on_tie + atk.TERRE;
     attacker.hp = Math.max(0, attacker.hp - tieDamage);
     defender.hp = Math.max(0, defender.hp - tieDamage);
@@ -513,7 +593,7 @@ function targetedThrow(cfg, start, receiver, movement) {
 }
 
 // ../boufbowl_server/src/simulator/ball.ts
-var active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned;
+var active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !e.power_locked;
 var point = (e) => e.precise_position ?? fixed(e.position);
 var clamp = (cfg, p) => Math.max(cfg.simulation.probability_min, Math.min(cfg.simulation.probability_max, p));
 function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movements) {
@@ -528,7 +608,7 @@ function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movem
     const start = fractional(point(e));
     const predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
     const target = predicted?.target ?? action.params.target_position;
-    if (!target || !throwInRange(cfg, start, target, e.elements))
+    if (!target || !throwInRange({ ...cfg, ball: { ...cfg.ball, base_range: cfg.ball.base_range + (e.range_bonus ?? 0) } }, start, target, e.elements))
       continue;
     consumed.add(e.id);
     e.status.carrying_ball = false;
@@ -691,6 +771,7 @@ function executeTick(context, tick) {
   restoreStandingPlayers(context, tick);
   const pausedThisTick = new Set([...context.movements].filter(([, movement]) => movement.pause > 0).map(([id]) => id));
   const steps = movePlayers(context, tick);
+  resolveMovementRisk(context, tick);
   fightPlayers(context, tick);
   const thrown = (context.throwResolver ?? resolveThrows)(cfg, state, actions, rng, tick, consumedThrows, context.movements);
   events.push(...thrown.events);
@@ -767,30 +848,79 @@ function hasPendingWork(context, tick, steps, pausedThisTick) {
 }
 
 // ../boufbowl_server/src/simulator/abilities.ts
-function resolveAbilities(cfg, state, actions) {
-  const activations = actions.filter((a) => a.action_type === "ability").map((a) => {
-    const caster = state.entities.find((e) => e.id === a.entity_id);
+function resolveAbilities(cfg, state, actions, rng) {
+  const activations = actions.filter((a) => a.action_type === "ability").map((action) => {
+    const caster = state.entities.find((e) => e.id === action.entity_id);
     const rule = caster && cfg.abilities?.[caster.class_name];
-    return caster && rule && caster.hp > 0 && !caster.status.knocked_down && !caster.status.stunned && (caster.ability_uses_remaining ?? 0) > 0 ? { caster, rule } : null;
+    return caster && rule && caster.hp > 0 && !caster.status.knocked_down && !caster.status.stunned && (caster.ability_uses_remaining ?? 0) > 0 ? { caster, rule, action } : null;
   }).filter((a) => a !== null);
+  const living = new Set(state.entities.filter((e) => e.hp > 0).map((e) => e.id));
   const events = [];
-  for (const { caster, rule } of activations) {
+  const teams = new Set;
+  for (const { caster, rule, action } of activations) {
+    if (rule.target && teams.has(caster.team_id))
+      throw new Error("Only one class power per team per turn");
+    teams.add(caster.team_id);
     caster.ability_uses_remaining--;
     const targets = [];
+    if (!rule.target) {
+      for (const target of state.entities) {
+        if (target.team_id !== caster.team_id || target.hp <= 0)
+          continue;
+        target.hp = Math.min(target.max_hp, target.hp + rule.heal);
+        if (rule.element)
+          target.elements[rule.element] += rule.bonus;
+        targets.push(target.id);
+      }
+      events.push({ tick: 0, type: "ability", actor: caster.id, params: {
+        name: rule.name,
+        targets,
+        heal: rule.heal,
+        element: rule.element ?? null,
+        bonus: rule.bonus,
+        uses_remaining: caster.ability_uses_remaining
+      } });
+      continue;
+    }
+    caster.power_locked = true;
+    if (rule.change_mask) {
+      caster.zobal_mask = action.params.zobal_mask;
+      events.push({ tick: 0, type: "ability", actor: caster.id, params: {
+        name: rule.name,
+        targets: [],
+        zobal_mask: caster.zobal_mask,
+        uses_remaining: caster.ability_uses_remaining
+      } });
+      continue;
+    }
+    const enemyRoll = rule.enemy_chance !== undefined ? rng.nextFloat() : undefined;
+    const enemy = enemyRoll !== undefined ? enemyRoll < rule.enemy_chance : rule.target === "enemies";
+    const bonus = enemyRoll !== undefined && enemy ? rule.enemy_elements : rule.elements;
+    const hpDeltas = {};
     for (const target of state.entities) {
-      if (target.team_id !== caster.team_id || target.hp <= 0)
+      if (!living.has(target.id) || target.team_id !== caster.team_id !== enemy)
         continue;
-      target.hp = Math.min(target.max_hp, target.hp + rule.heal);
-      if (rule.element)
-        target.elements[rule.element] += rule.bonus;
       targets.push(target.id);
+      const before = target.hp;
+      target.hp = Math.max(0, Math.min(target.max_hp, target.hp + (rule.hp ?? 0)));
+      hpDeltas[target.id] = target.hp - before;
+      const fields = { TERRE: "strength", FEU: "agility", AIR: "precision", EAU: "endurance" };
+      for (const [element, value] of Object.entries(bonus ?? {})) {
+        const field = fields[element];
+        target.stats[field] = Math.max(0, target.stats[field] + Number(value));
+      }
+      target.range_bonus = (target.range_bonus ?? 0) + (rule.range ?? 0);
+      target.attack_bonus = (target.attack_bonus ?? 0) + (rule.attack ?? 0);
     }
     events.push({ tick: 0, type: "ability", actor: caster.id, params: {
       name: rule.name,
       targets,
-      heal: rule.heal,
-      element: rule.element ?? null,
-      bonus: rule.bonus,
+      hp_deltas: hpDeltas,
+      elements: bonus ?? {},
+      range: rule.range ?? 0,
+      attack: rule.attack ?? 0,
+      target: enemy ? "enemies" : "allies",
+      ...enemyRoll !== undefined ? { random_draw: enemyRoll } : {},
       uses_remaining: caster.ability_uses_remaining
     } });
   }
@@ -825,6 +955,27 @@ class OrderValidator {
       return fail("Invalid order format");
     if (order.player_id !== playerId || order.turn_number !== turn)
       return fail("Player or turn mismatch");
+    const powers = order.actions.filter((a) => a?.action_type === "ability");
+    const modern = Object.values(this.config.abilities ?? {}).some((r) => r.target);
+    if (modern) {
+      if (powers.length > 1)
+        return fail("Only one class power per team per turn");
+      for (const power of powers) {
+        if (order.actions.some((a) => a !== power && a.entity_id === power.entity_id))
+          return fail("A class power cannot be combined with any other action");
+        const caster = state.entities.find((e) => e.id === power.entity_id && e.team_id === team);
+        if (!caster || caster.hp <= 0 || caster.status.stunned || caster.status.knocked_down || (caster.ability_uses_remaining ?? 0) <= 0 || !this.config.abilities?.[caster.class_name])
+          return fail("Class power unavailable");
+        if (Object.values(power.params?.elements ?? {}).some((v) => v !== 0))
+          return fail("A class power cannot assign elements");
+        if (Object.keys(power.params ?? {}).some((k) => !["elements", "zobal_mask"].includes(k)))
+          return fail("A class power cannot target a movement or ball action");
+        if (caster.class_name === "Zobal" && (![1, 2, 3].includes(power.params?.zobal_mask) || power.params.zobal_mask === (caster.zobal_mask ?? 1)))
+          return fail("Choose a different Zobal mask");
+        if (caster.class_name !== "Zobal" && power.params?.zobal_mask !== undefined)
+          return fail("Only Zobal can select a mask");
+      }
+    }
     const allocations = new Map, seen = new Set;
     for (const [index, a] of order.actions.entries()) {
       if (!a || !Number.isSafeInteger(a.entity_id) || !a.params || typeof a.params !== "object" || Array.isArray(a.params))
@@ -873,7 +1024,7 @@ class OrderValidator {
         case "move":
           if (seen.has(`${e.id}:follow`))
             warn("MOVEMENT_CONFLICT", index);
-          if (!target || hexDistance(e.position, target) > maxMovementDistance(this.config, elements))
+          if (!target || hexDistance(e.position, target) > maxMovementDistance(this.config, elements) + (modern ? Math.max(0, ...state.entities.filter((p) => p.team_id === team && p.hp > 0 && (p.ability_uses_remaining ?? 0) > 0).map((p) => this.config.abilities?.[p.class_name]?.range ?? 0)) : 0))
             warn("MOVE_OUT_OF_RANGE", index);
           break;
         case "throw":
@@ -935,7 +1086,8 @@ function simulateTurn4(cfg, initialState, orderA, orderB, turnNumber, seed, onWa
     e.elements = {
       ...actions.find((a) => a.entity_id === e.id)?.params.elements ?? EMPTY_ELEMENTS
     };
-  const events = resolveAbilities(cfg, state, actions), dueledPairs = new Set, consumedThrows = new Set;
+  const originalStats = new Map(state.entities.map((e) => [e.id, { ...e.stats }]));
+  const events = resolveAbilities(cfg, state, actions, rng), dueledPairs = new Set, consumedThrows = new Set;
   const flights = [];
   const knockedAtStart = new Set(state.entities.filter((e) => e.status.knocked_down).map((e) => e.id));
   const carrier = state.entities.find((e) => e.id === state.ball.holder_entity_id);
@@ -988,6 +1140,7 @@ function simulateTurn4(cfg, initialState, orderA, orderB, turnNumber, seed, onWa
     if (outcome.goalScored || !outcome.workRemains)
       break;
   }
+  publishMovementTests(context);
   if (state.ball.in_flight) {
     const f = flights.at(-1);
     state.ball.position = { ...f.target };
@@ -1024,8 +1177,15 @@ function simulateTurn4(cfg, initialState, orderA, orderB, turnNumber, seed, onWa
         }
       });
   }
+  for (const e of state.entities) {
+    e.stats = originalStats.get(e.id);
+    delete e.range_bonus;
+    delete e.attack_bonus;
+    delete e.power_locked;
+  }
   const final_entity_states = state.entities.map((e) => ({
     ...e.ability_uses_remaining !== undefined ? { ability_uses_remaining: e.ability_uses_remaining } : {},
+    ...e.zobal_mask !== undefined ? { zobal_mask: e.zobal_mask } : {},
     entity_id: e.id,
     position: { ...e.position },
     hp: e.hp,
@@ -1182,6 +1342,74 @@ class OpponentAI {
   }
 }
 
+// backend/cpu-powers.ts
+function addCPUPower(cfg, world, order, level) {
+  if (level === "beginner" || !Object.values(cfg.abilities ?? {}).some((r) => r.target))
+    return order;
+  const active3 = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned;
+  const allies = world.entities.filter((e) => e.team_id === order.team_index && active3(e));
+  const enemies = world.entities.filter((e) => e.team_id !== order.team_index && active3(e));
+  const receivers = new Set(order.actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id));
+  const nearest = [...allies].sort((a, b) => hexDistance(a.position, world.ball.position) - hexDistance(b.position, world.ball.position) || a.id - b.id)[0];
+  const movements = new Map(order.actions.filter((a) => ["move", "follow"].includes(a.action_type)).map((a) => [a.entity_id, a]));
+  const moving = (e) => {
+    const a = movements.get(e.id);
+    return a && (a.action_type === "follow" || hexDistance(e.position, a.params.target_position) > 0);
+  };
+  const threatened = (e) => enemies.some((other) => hexDistance(e.position, other.position) <= 3);
+  function value(rule, targets, hostile) {
+    let score = 0;
+    for (const target of targets) {
+      if (rule.hp > 0)
+        score += Math.min(rule.hp, target.max_hp - target.hp) * 2;
+      if (rule.hp < 0)
+        score += hostile ? Math.min(-rule.hp, target.hp) * 2 + (target.hp <= -rule.hp ? 6 : 0) : rule.hp * 2;
+      if (rule.range)
+        score += (hostile ? -rule.range : rule.range) * (hostile || moving(target) ? 1.5 : 0);
+      if (rule.attack)
+        score += (hostile ? -rule.attack : rule.attack) * (threatened(target) || hostile ? 1.5 : 0.25);
+      for (const [element, amount] of Object.entries(rule.elements ?? {})) {
+        const weight = element === "EAU" ? moving(target) ? 1 : 0.15 : element === "AIR" ? receivers.has(target.id) || world.ball.holder_entity_id === target.id ? 1 : 0.25 : threatened(target) ? 1 : 0.25;
+        score += Number(amount) * weight * (hostile ? -1 : 1);
+      }
+    }
+    return score;
+  }
+  const choices = [];
+  for (const caster of allies) {
+    const rule = cfg.abilities?.[caster.class_name];
+    if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id))
+      continue;
+    if (world.ball.holder_entity_id === null && caster.id === nearest?.id && hexDistance(caster.position, world.ball.position) <= 3)
+      continue;
+    if (rule.target === "allies" && rule.hp < 0 && allies.some((e) => e.hp <= -rule.hp))
+      continue;
+    let score = rule.enemy_chance !== undefined ? (1 - rule.enemy_chance) * value(rule, allies, false) + rule.enemy_chance * value({ elements: rule.enemy_elements }, enemies, true) : value(rule, rule.target === "enemies" ? enemies : allies, rule.target === "enemies");
+    const params = {};
+    if (rule.change_mask) {
+      if (moving(caster) || order.turn_number % 4 !== 0)
+        continue;
+      params.zobal_mask = (caster.zobal_mask ?? 1) % 3 + 1;
+      score = 2;
+    }
+    if (rule.target === "allies" && !rule.change_mask) {
+      const ownBenefit = value({ ...rule, hp: 0 }, [caster], false);
+      score -= Math.max(0, ownBenefit) * (rule.enemy_chance === undefined ? 1 : 1 - rule.enemy_chance);
+    }
+    score -= moving(caster) ? 1.5 : 0;
+    if (score >= 2)
+      choices.push({ caster, score, params });
+  }
+  choices.sort((a, b) => b.score - a.score || a.caster.id - b.caster.id);
+  const selected = choices[0];
+  if (!selected)
+    return order;
+  return { ...order, actions: [
+    ...order.actions.filter((a) => a.entity_id !== selected.caster.id && a.action_type !== "ability"),
+    { entity_id: selected.caster.id, action_type: "ability", params: selected.params }
+  ] };
+}
+
 // backend/engine.ts
 import { readFileSync } from "fs";
 import { createInterface } from "readline";
@@ -1199,11 +1427,17 @@ for await (const line of createInterface({ input: process.stdin })) {
   try {
     const request = JSON.parse(line);
     const cfg = merge(base, request.rules?.simulation ?? {});
+    if (request.rules?.client_ranges)
+      cfg.client_ranges = request.rules.client_ranges;
     if (request.rules?.abilities)
       cfg.abilities = request.rules.abilities;
     cfg.pitch.width_half = Math.floor(cfg.pitch.width / 2);
     cfg.pitch.height_half = Math.floor(cfg.pitch.height / 2);
     const orders = request.orders.map((order, team) => order ?? (request.cpu?.[team] ? new OpponentAI(cfg, request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world) : defaultOrder(`player-${team}`, request.turn, team, request.world.entities.filter((entity) => entity.team_id === team))));
+    for (let team = 0;team < orders.length; team++) {
+      if (request.cpu?.[team] && request.orders[team] == null)
+        orders[team] = addCPUPower(cfg, request.world, orders[team], request.ai?.level ?? cfg.ai?.default_level ?? "normal");
+    }
     for (let team = 0;team < orders.length; team++) {
       if (!request.cpu?.[team])
         continue;
@@ -1216,6 +1450,10 @@ for await (const line of createInterface({ input: process.stdin })) {
     const warnings = [];
     const result = simulateTurn4(cfg, request.world, orders[0], orders[1], request.turn, request.seed, (warning) => warnings.push(warning.code === "RECEPTION_REQUIRES_FEU" ? { ...warning, code: "RECEPTION_REQUIRES_AIR" } : warning));
     result.simulation_version += "+client-ball-2";
+    if (Object.values(cfg.abilities ?? {}).some((r) => r.target))
+      result.simulation_version += "+class-powers-1";
+    if (cfg.movement.overextension?.enabled)
+      result.simulation_version += "+movement-risk-1";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + `
 `);
   } catch (error) {

@@ -487,3 +487,204 @@ profile was retained across all four launches. The regression restores the smoke
 Wine prefix's previous language preference afterward. Original labels translate;
 new replacement-server dialog labels remain English. Android's shared patch is
 compiled/package-checked; device runtime language testing remains pending.
+
+## Full-screen cinematics — 2026-10-14
+
+The prior service always sent skipIntro=true and the turn adapter always marked
+isCutscene=false. Both policies are now configurable and enabled by default.
+New matches freeze presentation settings. Introduction acknowledgements are saved
+per human side, require both players for human matches, ignore spectators/duplicate
+acks, restore across restart and release placement with its full clock. Missing
+acks use a 90-second configurable watchdog. Farmstead camera movement matches the
+available shared stadium geometry; the original versus artwork uses actual kits.
+
+Goal, combat, pass, reception/interception and rebound paths use existing illustration
+and movie SWFs, rather than the missing animated-cutscene library. Client movie/
+cutscene loaders catch unavailable symbols and finish callbacks instead of leaving
+a frozen scene. New turn records store the exact cinematic scenario and presentation
+policy; historical scenarios stay unchanged. No authoritative simulation code changed.
+
+102 automated tests pass, including introduction gating, restart, duplicate and
+spectator acknowledgements, watchdog behavior, legacy flags and unchanged outcomes.
+The native desktop check captured the stadium/versus sequence, INTRODUCTION_DONE,
+subsequent placement, turn completion and one result. A forced touchdown replay
+rendered Illustration_touchdown and Illustration_bouftous_contents, completed both
+and sent ResolutionDone before the final state/result. Native combat also rendered
+its cinematic and completed playback. Reproduction tools: tools/smoke_cinematics.py
+and tools/smoke_mock.py --require-cinematic with a cinematic-enabled fixture.
+Evidence: evidence/cinematic-versus.png, cinematic-touchdown.png and cinematic-combat.png.
+
+
+### 2026-10-14 — Experimental class powers and distinct base statistics
+
+- Replaced provisional teammate heals with the proposed 14 class effects in
+  `resources/game_config.json`. Powers remain explicitly experimental.
+- Element bonuses adjust characteristics (strength/agility/precision/endurance),
+  keeping allocation at three action slots. Temporary range/attack/stat modifiers
+  expire before final state hashing. HP and masks persist.
+- The original FieldModel already enforced one selected power and exposed Zobal's
+  three-mask picker. Added guards against movement/pass edits while selected;
+  the backend and worker now enforce one power, caster exclusivity, eligibility,
+  stadium usage budgets and valid mask transitions.
+- Ecaflip uses the turn RNG and records the outcome. Signed HP deltas and mask
+  selections flow through the recovered resolution protocol. Previous rules
+  without `target` keep their old implementation and simulation version.
+- Added 14 distinct experimental base profiles, each totaling 42 element points.
+  Both AS3 preview construction and server normalization use these overrides.
+- Localized descriptions in all four languages come from effective rules,
+  including live stadium overrides. Validation and runtime checks are recorded
+  below after completion.
+
+- Validation: all 113 tests passed, including all 14 effects, seeded Ecaflip
+  outcomes, caster exclusivity, stadium allowances, signed HP replay deltas,
+  persistent masks, distinct base stats and unchanged legacy replay hashes/events.
+  The rebuilt original native 3D client completed three power probes: Sacrieur /
+  Roublard, Zobal / Ecaflip, and Cra / Sadida. All reached acknowledgement, next
+  field state and match end without a client error. Traces/screenshots are under
+  `evidence/class-powers-*`. Linux packages and the signed Android APK were
+  refreshed; Android runtime behavior still requires a device check.
+- Reproduce probes: `python3 -m tools.build_power_fixtures --output /tmp/powers`,
+  then `xvfb-run -a -s '-screen 0 1280x800x24' python3 -m tools.smoke_mock
+  --fixture /tmp/powers/wounds.json` (also `masks.json` and `range.json`).
+
+
+### 2026-10-14 — CPU powers and cheating/abuse review
+
+- Added a deterministic CPU power selector for normal/expert games using only
+  public field state. It replaces every regular action of the selected caster,
+  preserves carriers/receivers/retrievers, observes status and stadium allowances,
+  and avoids lethal sacrifices. Beginner remains simpler. Recorded explicit
+  orders bypass selection, preserving deterministic replay verification.
+- Reviewed authoritative validation, rating rewards, active replay exports,
+  turn-seed derivation, authentication, queue/social limits and server work locks.
+  [Cheating and abuse review](cheating-and-abuse.md) separates existing safeguards
+  from proposed hardening. Priority gaps are future-seed disclosure through active
+  replay exports and practice/arranged matches contributing to competitive rating.
+  No hardening policy was silently applied during this review.
+
+- Validation: the complete 117-test suite passed after the worker change; five
+  focused CPU tests passed, including a subsequently added difficulty/legacy-rule
+  check. Tests cover single-caster exclusivity, deterministic choices, exhausted
+  or disabled casters, carrier/receiver preservation, sacrifice safety, useful
+  healing, and reuse of recorded orders. The compiled worker is updated; this is
+  a backend change and requires no client/SWF or Android APK rebuild.
+
+
+### 2026-10-14 — Seed privacy and ranked result separation
+
+- Active exports retain animation envelopes but omit raw turn records, seeds and
+  audit hashes; full verification is rejected until completion. Completed exports
+  retain records and verify with the recorded seed. Each newly resolved turn draws
+  an independent private seed, including unfinished legacy matches.
+- Added server-owned source/mode and result-policy version to new matches. Human
+  normal/tournament queues create ranked matches; CPU and direct challenges remain
+  practice/casual. Ranked counters/rating and tournament points require provenance;
+  client-supplied ranked flags cannot alter the policy. History exposes result kind.
+- Schema 5 transactionally archives legacy statistics, reconstructs non-ranked
+  counters and starts clean ranked statistics at 1000. Legacy matches without
+  queue provenance are casual. Neither results nor historical replay packets are
+  deleted, and reopening does not reset new ranked progress.
+- Updated the History mode label and tournament help text in all four languages.
+  Verification covers live participant/spectator exports, pending-order privacy,
+  independent legacy-match seeds, completed replay verification, forged flags,
+  ranked wins/losses/draws, non-ranked counts, tournament eligibility and migration.
+
+- Validation: all 125 tests passed. Native 3D playback of a redacted live snapshot
+  (no raw audit records) reached script completion, resolution acknowledgement,
+  next field state and match end. Evidence is in `evidence/seed-private-live-replay*`.
+  Linux packages and Android APK are refreshed; Android runtime remains a device
+  validation item. Match records and legacy statistics are preserved by schema 5.
+
+## 2026-10-14 — Disposable data, orange-cell falls and reference match
+
+- User clarified that all prior matches/replays should be removed and this game
+  has no live data. Deleted the development DB/export and obsolete stored-replay
+  evidence. Removed legacy-stat archives and migration/reconstruction code.
+  Schema 6 clears incompatible databases. This supersedes the schema-5
+  preservation approach described earlier in this chronological log.
+- Traced original safe/risky cell ranges, MovementTest/FALL/ball dispersion and
+  period illustration protocol. Historical movement-fall odds were not recovered.
+- Added configurable cumulative overextension risk with client-aligned ranges,
+  original fall interaction, knockdown and carried-ball drop.
+- Reference screenshots/source exposed incorrect regeneration semantics and
+  four class health caps. Corrected these and added period warning/halftime data.
+- Built and verified an authored 14-turn Kara comparison (goals 5/14, halftime 7,
+  score 0–2), then played it through the original native client. All 14 turns,
+  acknowledgements and match-end presentation completed, including cinematics.
+- Detailed evidence, reproduction commands and limitations:
+  [reference-match-comparison.md](reference-match-comparison.md).
+- Final validation: 130 automated tests passed, configuration/schema validation
+  and whitespace checks passed. Linux .deb/tar and Android ARM64 APK rebuilt;
+  APK ZIP integrity and signing verification passed. No Android device run.
+
+## 2026-10-14 — Stadium-specific goal celebrations
+
+- Confirmed original stadium mappings and all referenced illustration symbols.
+  Added a dedicated celebration manifest and build-time validation/application,
+  independent of the substitute geometry paths. Original Brakmar/Bonta share
+  the human crowd; Sable/Beach uses the crab illustration.
+- All nine native original-client goal probes rendered their expected animation,
+  finished and acknowledged resolution before MATCH_END. Captured each stadium
+  under `evidence/stadium-celebrations/`; focused 18-test suite passed.
+- Started original tournament source investigation and documented protocol,
+  timer/panel behavior and implementation plan in `tournament-lifecycle.md`.
+
+## 2026-10-14 — Original tournament interface and scheduled lifecycle
+
+- Original source confirms server-clock milliseconds, future/running/past tabs,
+  200 ms countdowns, stadium/reward artwork and closing-with-live-matches state.
+  Restored the Tournament button: it had been redirected into generic Play controls.
+- Added schema 7 with frozen scheduled instances, registrations, watchers and
+  unique award ledger; incompatible development DBs reset without migration.
+- Default entry window is 45 minutes every hour, with a 15-minute gap and rotating
+  stadiums. Upcoming instances and history are delivered in original packets.
+- Stopped entry/queues at cutoff while allowing already-started matches to finish
+  and count. Closing appears in past with closed=false. Final standings/podium
+  and local G/I/C currency awards are committed once, with closure notifications.
+- Added a running countdown to TournamentView, four-language local names/rewards
+  and shorter finished label. Play popup requests the current tournament at runtime.
+- Full suite: 138 tests passed. Native live original-client future/running/closing/
+  past/next panels, reward artwork, podium and closure chat passed. Lifecycle and
+  late-finish/restart/idempotency probes are documented in tournament-lifecycle.md.
+- Original Register and Play native probe also passed: second human pairing,
+  one engine-recorded turn, native 3D resolution, both acknowledgements and MATCH_END.
+  The scripted peer acknowledges through the same protocol; it is not a CPU player.
+- Refreshed Android ARM64 APK; ZIP integrity, signing and packaged stadium
+  mappings passed. Linux packages refreshed with final backend/docs. No device run.
+
+
+## 2026-10-14 — remaining frontend restoration
+
+Implemented the unused-feature audit except explicitly excluded advanced training.
+Schema 8 adds trusted moderator/admin roles, profile sanctions and action audit,
+cosmetic ownership/spending, optional seasons and persistent knockout rounds.
+No legacy migration/archive layer was added; original assets/sources are retained.
+
+Five ranked leagues now qualify after configurable ranked human results and
+promote/relegate by rating; optional seasons archive counters and credit late
+results to the originating season. Wallet purchases use server-owned prices,
+atomic receipts and persisted unlocks. Free customization remains the default.
+
+Hourly default tournaments now use qualification/top four, fixed semifinals and
+finals. Draws advance the higher qualification seed; byes and active-player
+walkovers are explicit. Unplayed registration cannot qualify/earn awards, and
+late games postpone subsequent rounds/events to avoid overlapping running cups.
+The original qualification/countdown/eliminated/podium interface is reused.
+
+Replay pause/speed/previous-next turn controls use the original scene clock and
+restore pre-turn snapshots/period/score/masks without submitting live commands.
+News uses original LoginMotdUI artwork; added account/community controls are
+styled consistently. Moderator actions authorize every entry path, enforce
+mute on public/private chat, reject ban/kick authentication, preserve anonymous
+identity after expiry and audit changes. Provision roles using backend.manage,
+never a client role request.
+
+Native checks passed wallet purchase, league/news panels, moderator mute,
+replay pause/resume/speed/seek/result, and tournament qualification/round/final
+screens. Captures are in evidence/frontend-restoration and evidence/knockout.
+The edge tests also cover late season results, halftime replay chapters/masks,
+bracket capacity, late-round calendar protection and offline walkovers.
+See frontend-restoration.md for operating instructions and explicit limitations.
+
+Final automated validation: 160 tests passed; git diff --check passed. Linux
+package contents match the current workspace client, backend and settings.

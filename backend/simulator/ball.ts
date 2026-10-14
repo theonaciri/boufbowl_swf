@@ -12,7 +12,7 @@ import { fixed, fractional, withinRadius, distanceSquared, SCALE } from "./movem
 import type { MovementTable } from "./movement";
 import { targetedThrow } from "./throwTarget";
 const active = (e: WorldState["entities"][number]) =>
-  e.hp > 0 && !e.status.knocked_down && !e.status.stunned;
+  e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !(e as any).power_locked;
 const point = (e: WorldState["entities"][number]) =>
   e.precise_position ?? fixed(e.position);
 const clamp = (cfg: GameConfig, p: number) =>
@@ -52,7 +52,7 @@ export function resolveThrows(
     const start = fractional(point(e));
     const predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
     const target = predicted?.target ?? action.params.target_position;
-    if (!target || !throwInRange(cfg, start, target, e.elements)) continue;
+    if (!target || !throwInRange({...cfg, ball: {...cfg.ball, base_range: cfg.ball.base_range + ((e as any).range_bonus ?? 0)}}, start, target, e.elements)) continue;
     consumed.add(e.id);
     e.status.carrying_ball = false;
     state.ball.holder_entity_id = null;
