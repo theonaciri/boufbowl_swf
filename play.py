@@ -19,7 +19,7 @@ from backend.storage import ServiceError
 def main():
     config = load_config()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--lang", choices=("en", "fr", "de", "es"), default=config["general"]["language"])
+    parser.add_argument("--lang", choices=("en", "fr", "de", "es"), default=None, help="Override the saved game language for this launch")
     parser.add_argument("--mode", choices=("menus", "tutorial", "mock", "server"), default=config["general"]["startup_mode"])
     parser.add_argument("--server-url", help="Use a standalone backend URL instead of starting a local backend")
     parser.add_argument("--profile", help="Local device profile name (otherwise use the saved selection)")
@@ -27,6 +27,8 @@ def main():
     parser.add_argument("--fixture", type=Path, help="Replay a local protocol fixture in mock mode")
     parser.add_argument("--scene-3d", action="store_true", help="Enable the original resolution animation scene for this launch")
     args = parser.parse_args()
+    language_override=args.lang is not None
+    if args.lang is None: args.lang=config["general"]["language"]
     root = Path(__file__).resolve().parent
     client_config = json.loads((root / "resources/config.json").read_text())
     if args.scene_3d or args.mode == "server":
@@ -97,12 +99,15 @@ def main():
             from urllib.parse import urlencode
             parameters = {"lang": args.lang, "tuto": tutorial, "mock": mock,
                           "server": "1" if args.mode == "server" else "0"}
+            if language_override:
+                parameters["languageOverride"]="1"
             if args.profile:
                 parameters["profile"] = args.profile
             if args.server_url:
                 parameters["backend"] = args.server_url.rstrip("/")
             url = f"http://127.0.0.1:{port}/bin/boufbowl-client-1.9.6.swf?{urlencode(parameters)}"
-            print(f"Starting Boufbowl {args.mode} ({args.lang}). Logs: {logs}", flush=True)
+            language_label=args.lang if language_override else "saved language or " + args.lang
+            print(f"Starting Boufbowl {args.mode} ({language_label}). Logs: {logs}", flush=True)
             try:
                 return subprocess.call(
                     ["wine", str(root / "bin/flashplayer_32_sa.exe"), url],

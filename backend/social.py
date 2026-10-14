@@ -122,9 +122,7 @@ class Social:
         settings = self.tournament_config(identity)
         if not settings["start_time"] <= time.time() < settings["end_time"]:
             raise ServiceError("TOURNAMENT_CLOSED", "This tournament is outside its configured time window")
-        match = self.create_match(profile, None, settings["stadium"])
-        match["tournament"] = settings["id"]
-        self.store.save_match(match)
+        self.join_queue(profile, [settings["stadium"]], tournament=settings["id"])
 
     def tournament_leaderboard(self, profile, identity):
         entries = self.tournament_entries(self.tournament_config(identity))

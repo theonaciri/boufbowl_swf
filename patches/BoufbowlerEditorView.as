@@ -171,6 +171,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.v
             _loc7_ = _loc6_.getNext();
             _loc8_ = param3 || _loc7_.boufbowlerClass == param5;
             _loc9_ = !_loc7_.isUniqueCharacter || (param2.indexOf(_loc7_.uniqueCharacter) == -1 || Boolean(param4.isUniqueCharacter) && param4.uniqueCharacter == _loc7_.uniqueCharacter);
+            if(!param3) _loc9_ = _loc9_ && _loc7_.isUniqueCharacter == param4.isUniqueCharacter && (!_loc7_.isUniqueCharacter || _loc7_.uniqueCharacter == param4.uniqueCharacter);
             if(_loc7_.boufbowlerClass == param5)
             {
                this.updatePictures(_loc7_,_loc9_,_loc7_.availability);

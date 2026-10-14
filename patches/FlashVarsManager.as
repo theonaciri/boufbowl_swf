@@ -6,6 +6,7 @@ package com.ankamagames.xgaming.utils.flashvars
    import com.ankamagames.xgaming.utils.logging.LoggerFactory;
    import com.reider.log4AS3.ILogger;
    import flash.display.DisplayObject;
+   import flash.net.SharedObject;
    import flash.errors.IllegalOperationError;
    
    public class FlashVarsManager
@@ -49,6 +50,12 @@ package com.ankamagames.xgaming.utils.flashvars
          if(this._flashVars == null)
          {
             throw new IllegalOperationError("\'init\' method must be called before!");
+         }
+         if(param1 == "lang" && this._flashVars.getItem("languageOverride") != "1")
+         {
+            var preferences:SharedObject=SharedObject.getLocal("BoufbowlPreferences","/");
+            var language:String=String(preferences.data.language);
+            if(["fr","en","de","es"].indexOf(language)>=0) return language;
          }
          if(param1 == "lang" && this._flashVars.getItem(param1) == null) return "en";
          return this._flashVars.getItem(param1);

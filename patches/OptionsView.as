@@ -1,0 +1,198 @@
+package com.ankamagames.boufbowl.client.options.view
+{
+   import as3.collections.iterators.IMapIterator;
+   import com.ankamagames.boufbowl.client.application.IColorScheme;
+   import com.ankamagames.boufbowl.client.application.sound.event.InterfaceSoundEvent;
+   import com.ankamagames.boufbowl.client.application.sound.event.InterfaceSoundEvents;
+   import com.ankamagames.boufbowl.client.components.options.OptionsUI;
+   import com.ankamagames.boufbowl.client.i18n.LangConstants;
+   import com.ankamagames.boufbowl.config.IBoufbowlConfig;
+   import com.ankamagames.xgaming.utils.display.Color3;
+   import com.ankamagames.xgaming.utils.i18n.ITranslator;
+   import flash.display.DisplayObject;
+   import flash.display.Sprite;
+   import flash.net.SharedObject;
+   import flash.text.TextField;
+   import flash.text.TextFormat;
+   import flash.events.MouseEvent;
+   import flash.system.Capabilities;
+   
+   public class OptionsView extends OptionsUI
+   {
+      
+      private var _languageRow:Sprite;
+      private var _languageButton:Sprite;
+      private var _languageValue:TextField;
+      private var _languageLabel:TextField;
+      private var _languageHint:TextField;
+      private var _selectedLanguage:String;
+      private var _languageCodes:Array=["fr","en","de","es"];
+      private var _languageNames:Array=["Français","English","Deutsch","Español"];
+      private var _config:IBoufbowlConfig;
+      
+      private var _translator:ITranslator;
+      
+      private var _colorScheme:IColorScheme;
+      
+      private const CONTAINER_SUFFIX:String = "Container";
+      
+      public function OptionsView(param1:ITranslator, param2:IBoufbowlConfig, param3:IColorScheme)
+      {
+         super();
+         this._config = param2;
+         this._translator = param1;
+         this._colorScheme = param3;
+         this.init();
+      }
+      
+      public function show() : void
+      {
+         this.updateLanguageChoice();
+         this.layoutOptions();
+         soundCheckbox.selected = this._config.soundEnabled;
+         soundMasterVolume.value = this._config.soundMasterVolume;
+         serverHost = this._config.serverHost;
+         serverPort = this._config.serverPort.toString();
+         statsCheckbox.selected = this._config.showStats;
+         chronoCheckbox.selected = this._config.chronoEnabled;
+         scene3dCheckbox.selected = this._config.activate3DScene;
+         visible = true;
+      }
+      
+      public function hide() : void
+      {
+         visible = false;
+      }
+      
+      private function init() : void
+      {
+         this.hide();
+         this.initUI();
+         this.initTexts();
+         this.initLanguageChoice();
+      }
+      
+      private function initUI() : void
+      {
+         title = this._translator.getText(LangConstants.OPTIONS_TITLE);
+         soundCheckbox.boxColor = Color3.fromRgbUInt(this._colorScheme.checkboxBoxColor);
+         soundCheckbox.tickColor = Color3.fromRgbUInt(this._colorScheme.checkboxTickColor);
+         soundMasterVolume.thumbColor = this._colorScheme.checkboxBoxColor;
+         statsCheckbox.boxColor = Color3.fromRgbUInt(this._colorScheme.checkboxBoxColor);
+         statsCheckbox.tickColor = Color3.fromRgbUInt(this._colorScheme.checkboxTickColor);
+         chronoCheckbox.boxColor = Color3.fromRgbUInt(this._colorScheme.checkboxBoxColor);
+         chronoCheckbox.tickColor = Color3.fromRgbUInt(this._colorScheme.checkboxTickColor);
+         scene3dCheckbox.boxColor = Color3.fromRgbUInt(this._colorScheme.checkboxBoxColor);
+         scene3dCheckbox.tickColor = Color3.fromRgbUInt(this._colorScheme.checkboxTickColor);
+         soundCheckbox.addEventListener(MouseEvent.CLICK,this.checkboxClickHandler);
+         statsCheckbox.addEventListener(MouseEvent.CLICK,this.checkboxClickHandler);
+         chronoCheckbox.addEventListener(MouseEvent.CLICK,this.checkboxClickHandler);
+         scene3dCheckbox.addEventListener(MouseEvent.CLICK,this.checkboxClickHandler);
+      }
+      
+      private function initTexts() : void
+      {
+         soundCheckbox.componentLabel = this._translator.getText(LangConstants.OPTIONS_SOUND_MASTER_VOLUME_ENABLED);
+         serverTitle = this._translator.getText(LangConstants.OPTIONS_SERVER);
+         statsCheckbox.componentLabel = this._translator.getText(LangConstants.OPTIONS_SHOW_STATS);
+         chronoCheckbox.componentLabel = this._translator.getText(LangConstants.OPTIONS_CHRONO_ENABLED);
+         scene3dCheckbox.componentLabel = this._translator.getText(LangConstants.OPTIONS_SCENE3D_ENABLED);
+         closeButton.setTooltip(this._translator.getText(LangConstants.CLOSE));
+         disconnectButton.componentLabel = this._translator.getText(LangConstants.LOGOUT);
+         shortcutsTitle = this._translator.getText(LangConstants.OPTIONS_SHORTCUTS_TITLE);
+         shortcutsExplanation = this._translator.getText(LangConstants.OPTIONS_SHORTCUTS_EXPLANATION);
+         versionInfos = this.computeVersionInfos();
+      }
+      
+      private function languageText(parent:Sprite, text:String, x:Number, y:Number, width:Number) : TextField
+      {
+         var field:TextField=new TextField();
+         field.defaultTextFormat=new TextFormat("_sans",12,0x333333);
+         field.text=text; field.x=x; field.y=y; field.width=width; field.height=22;
+         field.selectable=false; field.mouseEnabled=false; parent.addChild(field);
+         return field;
+      }
+
+      private function initLanguageChoice() : void
+      {
+         this._languageRow=new Sprite(); addChild(this._languageRow);
+         this._languageLabel=this.languageText(this._languageRow,"",0,3,125);
+         this._languageButton=new Sprite(); this._languageButton.x=130; this._languageButton.buttonMode=true;
+         this._languageButton.graphics.beginFill(0xe5dfb2); this._languageButton.graphics.drawRoundRect(0,0,180,27,6); this._languageButton.graphics.endFill();
+         this._languageRow.addChild(this._languageButton);
+         this._languageValue=this.languageText(this._languageButton,"",8,3,164);
+         this._languageHint=this.languageText(this._languageRow,"",0,32,350);
+         this._languageHint.wordWrap=true; this._languageHint.height=35;
+         this._languageButton.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void {
+            var index:int=_languageCodes.indexOf(_selectedLanguage);
+            _selectedLanguage=String(_languageCodes[(index+1)%_languageCodes.length]);
+            _languageValue.text=String(_languageNames[_languageCodes.indexOf(_selectedLanguage)]) + " >";
+         });
+      }
+
+      private function updateLanguageChoice() : void
+      {
+         var saved:SharedObject=SharedObject.getLocal("BoufbowlPreferences","/");
+         this._selectedLanguage=String(saved.data.language);
+         if(this._languageCodes.indexOf(this._selectedLanguage)<0) this._selectedLanguage=this._translator.language;
+         this._languageValue.text=String(this._languageNames[this._languageCodes.indexOf(this._selectedLanguage)]) + " >";
+         var labels:Object={fr:["Langue du jeu","Fermez les options pour enregistrer. Redémarrez le jeu pour appliquer."],en:["Game language","Close settings to save. Restart the game to apply."],de:["Spielsprache","Zum Speichern Einstellungen schließen. Danach das Spiel neu starten."],es:["Idioma del juego","Cierra ajustes para guardar. Reinicia el juego para aplicar."]};
+         var text:Array=labels[this._translator.language] || labels.en;
+         this._languageLabel.text=text[0]; this._languageHint.text=text[1];
+      }
+
+      public function saveLanguage() : void
+      {
+         if(this._languageCodes.indexOf(this._selectedLanguage)<0) return;
+         var saved:SharedObject=SharedObject.getLocal("BoufbowlPreferences","/");
+         saved.data.language=this._selectedLanguage; saved.flush();
+      }
+
+      private function computeVersionInfos() : String
+      {
+         var _loc1_:String = "v" + this._config.version + " / Player " + Capabilities.version;
+         if(Capabilities.isDebugger)
+         {
+            _loc1_ += " (debug)";
+         }
+         return _loc1_;
+      }
+      
+      private function checkboxClickHandler(param1:MouseEvent) : void
+      {
+         dispatchEvent(new InterfaceSoundEvent(InterfaceSoundEvents.LOGIN_CHECKBOX_CLICKED));
+      }
+      
+      private function layoutOptions() : void
+      {
+         var _loc2_:Boolean = false;
+         var _loc3_:String = null;
+         var _loc4_:DisplayObject = null;
+         var _loc1_:IMapIterator = this._config.optionsVisibility.getMapIterator();
+         var _loc5_:int = optionsYReference.y;
+         while(_loc1_.hasNext())
+         {
+            _loc2_ = Boolean(_loc1_.getNext());
+            _loc3_ = _loc1_.getKey() + this.CONTAINER_SUFFIX;
+            _loc4_ = getChildByName(_loc3_);
+            if(_loc4_ == null)
+            {
+               throw new Error("There is no container with the name " + _loc3_ + ".");
+            }
+            _loc4_.visible = _loc2_;
+            if(_loc2_)
+            {
+               _loc4_.y = _loc5_;
+               _loc5_ += _loc4_.height;
+            }
+         }
+         this._languageRow.x=soundContainer.x;
+         this._languageRow.y=_loc5_+5;
+         _loc5_+=75;
+         buttonsContainer.y = _loc5_;
+         _loc5_ += buttonsContainer.height;
+         optionsMainBackground.height = _loc5_ - optionsMainBackground.y;
+      }
+   }
+}
+

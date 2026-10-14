@@ -158,7 +158,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
       
       public function get classChangeAllowed() : Boolean
       {
-         return true;
+         return this.customisationType != CustomisationType.BOUFBOWLER_APPEARANCE;
       }
       
       public function get uniqueCharactersInClub() : Array
@@ -188,6 +188,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
       
       public function setBoufbowlerAttributes(param1:int, param2:int, param3:uint) : void
       {
+         if(!this.classChangeAllowed && (param1 != this._currentBoufbowlerClass || param3 != this._currentUniqueCharacter)) return;
          this._currentBoufbowlerClass = param1;
          this._currentGender = param2;
          this._currentUniqueCharacter = param3;
@@ -215,8 +216,11 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
             throw new IllegalStateError("Palette with id " + param1 + " doesn\'t exist in the applicablePalettes lists");
          }
          this._currentPalette = _loc3_;
-         this.updated(SELECTED_PALETTE_CHANGED);
          this.updateColorsId(param2);
+         this._currentHairColorId = this.validColorIndex(BoufbowlerPaletteItem.HAIR_COLOR,this._currentHairColorId);
+         this._currentEyeColorId = this.validColorIndex(BoufbowlerPaletteItem.EYE_COLOR,this._currentEyeColorId);
+         this._currentSkinColorId = this.validColorIndex(BoufbowlerPaletteItem.SKIN_COLOR,this._currentSkinColorId);
+         this.updated(SELECTED_PALETTE_CHANGED);
          this.updateColors();
       }
       
@@ -378,8 +382,18 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
          }
       }
       
+      private function validColorIndex(kind:uint, index:int) : int
+      {
+         var colors:Array=this._currentPalette.getColorArray(kind);
+         return index >= 0 && index < colors.length ? index : 0;
+      }
+
       private function updateColors() : void
       {
+         // A previous palette can have more swatches. Never retain an invalid index.
+         this._currentHairColorId = this.validColorIndex(BoufbowlerPaletteItem.HAIR_COLOR,this._currentHairColorId);
+         this._currentEyeColorId = this.validColorIndex(BoufbowlerPaletteItem.EYE_COLOR,this._currentEyeColorId);
+         this._currentSkinColorId = this.validColorIndex(BoufbowlerPaletteItem.SKIN_COLOR,this._currentSkinColorId);
          this._currentHairColor = this._currentPalette.getColor(BoufbowlerPaletteItem.HAIR_COLOR,this._currentHairColorId);
          this._currentEyeColor = this._currentPalette.getColor(BoufbowlerPaletteItem.EYE_COLOR,this._currentEyeColorId);
          this._currentSkinColor = this._currentPalette.getColor(BoufbowlerPaletteItem.SKIN_COLOR,this._currentSkinColorId);

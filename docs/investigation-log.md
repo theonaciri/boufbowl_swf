@@ -429,3 +429,61 @@ open and no information panel reappears. Evidence is under `evidence/client-*`.
 The Linux bundle resolves two turns using its bundled Bun runtime without a system
 Bun installation. Android compilation/package validation does not imply device
 runtime validation.
+
+## Palette follow-up, human tournaments and explicit teams — 2026-10-14
+
+The user could no longer reproduce the reported palette crash. Investigation did
+find a separate character-editor issue: switching from the expanded 16-hair-color
+palette retained an index when its color was absent from the smaller palette.
+Character indices are now validated before notifying the view and rendering.
+A native probe selected the highest swatches, switched repeatedly between Cra,
+Pastel and Vivid, saved Pastel (palette 101), then played a two-turn CPU match.
+
+The original appearance and replacement actions were using the same unlocked
+editor. Restored their distinction: appearance preserves class/special identity
+and allows gender/name/colors; replacement allows class/special-character changes.
+The original screen is shared, but class and special-character controls are now
+restricted in appearance mode. Persistence retains owned player IDs.
+
+Tournament requests still used the earlier CPU league policy. They now join a
+persistent human queue isolated from normal searches, respecting configured
+tournament times and stadium. Transactional pairing removes busy entrants and
+never pairs one player twice during a batch. Expired/closed searches do not turn
+into CPU games. Database schema 4 adds tournament_id to queue entries while
+preserving existing queued device profiles.
+
+The original Home Play and Tournament actions now expose the shared dialog with
+human search, explicit CPU matchmaking, tournament search and cancellation. Team
+selection is displayed there and the owned club ID is included in match requests.
+The backend selects that stored club before pairing rather than relying on a
+potentially stale implicit selection. Native probing chose team 2 and confirmed
+Offline Brakmar's roster was used; its two turns and result completed.
+
+Regression coverage adds separate tournament/normal queues, four-player pairing
+without busy-opponent reuse, restart/search expiry without CPU fallback, closed
+tournament cleanup, explicit team selection/ownership and schema-3 queue migration.
+`tools/smoke_matchmaking_colors.py` reproduces native customization and queue checks.
+
+## Gear language selector and service refresh — 2026-10-14
+
+The original Services refresh triggers RefreshPremiumContentCommand, sending
+UpdatePremiumContentMessage. Backend UPDATE_PREMIUM_CONTENT replies with an empty
+PREMIUM_CONTENT_UPDATED, which clears the pending flag. Customization is already
+locally unlocked; this is not a game updater.
+
+The original gear popup now includes a four-language selector. Closing settings
+saves the selection in local BoufbowlPreferences SharedObject storage. Startup
+FlashVars language resolution uses explicit launcher override, then saved choice,
+then launch/configuration default. Desktop --lang marks an explicit override;
+normal launches no longer accidentally override the player's saved setting.
+Android reads the same preference through the shared patch. The restart requirement
+avoids rebuilding active match views or losing unsaved editor changes. Chat language
+subscriptions and server accounts remain independent of local interface language.
+
+Validation: 97 automated tests pass. `tools/smoke_language.py` opened the original
+gear popup, cycled all four choices, saved French, restarted into French, launched
+once in English using --lang, then restarted into French again. The same server
+profile was retained across all four launches. The regression restores the smoke
+Wine prefix's previous language preference afterward. Original labels translate;
+new replacement-server dialog labels remain English. Android's shared patch is
+compiled/package-checked; device runtime language testing remains pending.

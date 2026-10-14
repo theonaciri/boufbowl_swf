@@ -55,7 +55,7 @@ are inserted once per participant; playback and exporting award nothing.
 
 ## Storage and replay behavior
 
-SQLite schema 3 migrates schema 1/2 databases additively. Existing tokens, accounts,
+SQLite schema 4 migrates schema 1/2/3 databases additively. Existing tokens, accounts,
 clubs, games and immutable turn records are preserved. New tables hold presence,
 friendships, blocks, channel subscriptions, spectator replay access and reports.
 New matches record creation/end timestamps, surrender side and the exact match-end

@@ -67,7 +67,7 @@ class Store:
             INSERT OR IGNORE INTO schema_versions VALUES(1);
         """)
         version = self.db.execute("SELECT MAX(version) FROM schema_versions").fetchone()[0]
-        if version not in (1, 2, 3):
+        if version not in (1, 2, 3, 4):
             raise ServiceError("DATABASE_VERSION", "Unsupported database version")
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS accounts(
@@ -82,6 +82,9 @@ class Store:
               joined REAL NOT NULL, heartbeat REAL NOT NULL);
             INSERT OR IGNORE INTO schema_versions VALUES(2);
         """)
+        if 'tournament_id' not in {r[1] for r in self.db.execute('PRAGMA table_info(matchmaking_queue)')}:
+            self.db.execute('ALTER TABLE matchmaking_queue ADD COLUMN tournament_id TEXT')
+        self.db.execute('INSERT OR IGNORE INTO schema_versions VALUES(4)')
         if 'recovery_hash' not in {r[1] for r in self.db.execute('PRAGMA table_info(accounts)')}:
             self.db.execute('ALTER TABLE accounts ADD COLUMN recovery_hash TEXT')
         if 'kind' not in {r[1] for r in self.db.execute('PRAGMA table_info(sessions)')}:

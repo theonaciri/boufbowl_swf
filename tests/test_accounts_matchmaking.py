@@ -243,3 +243,77 @@ class AccountMatchmakingTests(unittest.TestCase):
             self.assertEqual(other.hello({'session':token})['auth_mode'],'device')
             self.assertEqual(other.store.authenticate(token),'legacy')
         finally:other.close()
+
+    def test_tournament_queue_is_human_and_separate_from_normal_search(self):
+        self.command(self.a,'tournament_match',tournament_id=1)
+        self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
+        self.command(self.b)
+        self.assertIsNone(self.s.store.active_match(self.pid(self.b)))
+        self.command(self.b,'tournament_match',tournament_id=1)
+        match=self.s.store.active_match(self.pid(self.a))
+        self.assertEqual(set(match['profiles']),{self.pid(self.a),self.pid(self.b)})
+        self.assertEqual(match['tournament'],1)
+        self.assertEqual(match['stadium'],self.config['general']['tournament']['stadium'])
+
+    def test_tournament_pairing_never_reuses_a_busy_opponent(self):
+        c=self.s.hello({'nickname':'Charlie','clubs':[initial_club()]})
+        d=self.s.hello({'nickname':'Diane','clubs':[initial_club()]})
+        for player in (self.a,self.b,c,d):
+            self.command(player,'tournament_match',tournament_id=1)
+        matches=[json.loads(row[0]) for row in self.s.store.db.execute('SELECT state_json FROM matches')]
+        self.assertEqual(len(matches),2)
+        participants=[p for match in matches for p in match['profiles']]
+        self.assertEqual(len(set(participants)),4)
+        with self.assertRaises(ServiceError):self.command(self.a,'tournament_match',tournament_id=1)
+        self.assertEqual(self.s.store.db.execute('SELECT COUNT(*) FROM matches').fetchone()[0],2)
+
+    def test_tournament_search_restores_and_expires_without_cpu_fallback(self):
+        self.command(self.a,'tournament_match',tournament_id=1)
+        self.s.close();self.s=Service(self.path,self.config)
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['tournament'],'1')
+        with self.s.store.transaction():
+            self.s.store.db.execute('UPDATE matchmaking_queue SET joined=joined-1000')
+            self.s.match_queued_players()
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['status'],'idle')
+        self.assertEqual(self.s.store.db.execute('SELECT COUNT(*) FROM matches').fetchone()[0],0)
+
+    def test_closed_tournament_removes_waiting_players(self):
+        self.command(self.a,'tournament_match',tournament_id=1)
+        self.s.config['general']['tournament']['end_time']=time.time()-1
+        with self.s.store.transaction():self.s.match_queued_players()
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['status'],'idle')
+        with self.assertRaises(ServiceError):self.command(self.b,'tournament_match',tournament_id=1)
+
+    def test_match_request_uses_explicit_owned_team_and_preserves_roster(self):
+        selected=deepcopy(initial_club());selected['clubId']='2';selected['clubName']='Selected second team'
+        selected['boufbowler'][0]['boufbowlerClass']=14
+        with self.s.store.transaction():
+            collection=self.s.collection(self.pid(self.a));collection['clubs']['2']=selected
+            self.s.store.save_club(self.pid(self.a),collection)
+        self.command(self.a,'cpu_match',club_id='2',stadium=1)
+        match=self.s.store.active_match(self.pid(self.a))
+        self.assertEqual(match['rosters'][0]['name'],'Selected second team')
+        self.assertEqual(match['rosters'][0]['characters'][0]['boufbowlerClass'],14)
+        self.assertEqual(self.s.collection(self.pid(self.a))['active'],'2')
+
+    def test_unowned_team_cannot_join_queue_or_mutate_selection(self):
+        with self.assertRaises(ServiceError):self.command(self.a,club_id='999')
+        self.assertEqual(self.s.collection(self.pid(self.a))['active'],'1')
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['status'],'idle')
+
+    def test_v3_queue_migration_preserves_waiting_device(self):
+        self.command(self.a)
+        self.s.close()
+        with sqlite3.connect(self.path) as db:
+            db.executescript('ALTER TABLE matchmaking_queue RENAME TO queue_new;'
+                'CREATE TABLE matchmaking_queue(profile_id TEXT PRIMARY KEY REFERENCES profiles(id),stadiums_json TEXT NOT NULL,joined REAL NOT NULL,heartbeat REAL NOT NULL);'
+                'INSERT INTO matchmaking_queue SELECT profile_id,stadiums_json,joined,heartbeat FROM queue_new;'
+                'DROP TABLE queue_new;DELETE FROM schema_versions WHERE version=4;')
+        db.close()
+        self.s=Service(self.path,self.config)
+        status=self.s.matchmaking_status(self.pid(self.a))
+        self.assertEqual(status['status'],'waiting')
+        self.assertIsNone(status['tournament'])
+        self.assertEqual(self.s.store.db.execute('SELECT MAX(version) FROM schema_versions').fetchone()[0],4)
+        self.command(self.b)
+        self.assertIsNotNone(self.s.store.active_match(self.pid(self.a)))

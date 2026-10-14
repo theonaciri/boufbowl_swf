@@ -123,6 +123,7 @@
          if(response.abilities != null) serverAbilities = response.abilities;
          if(response.club_names != null) serverNames = response.club_names;
          if(response.auth_mode != null) serverAuthMode = String(response.auth_mode);
+         if(response.profile != null && response.profile.club_id != null) serverClubId=String(response.profile.club_id);
          if(response.profile != null) serverAccountUsername = response.profile.account_username;
          if(response.matchmaking != null)
          {
@@ -316,10 +317,20 @@
          if(serverActive) { serverStatus("Saving club..."); serverSend({operation:"save_club",club:serverSnapshot(club)}); }
       }
 
-      private static function serverPlay() : void
+      public static function serverPlay() : void
       {
          if(serverCurrentMatch != null) { startServer(serverBase.replace(/\/api\/$/,""),null,true); return; }
-         serverDialog("Play",250);
+         serverDialog("Play",310);
+         var selectedClub:String=serverClubId;
+         var clubIds:Array=[];
+         for(var clubKey:String in serverNames) clubIds.push(clubKey);
+         clubIds.sort(Array.NUMERIC);
+         var clubLabel:TextField=serverText(serverPanel,"Team: " + serverNames[selectedClub],20,245,500);
+         serverAction(serverPanel,"Change team",560,245,180,function():void {
+            var clubIndex:int=clubIds.indexOf(selectedClub);
+            selectedClub=String(clubIds[(clubIndex+1)%clubIds.length]);
+            clubLabel.text="Team: " + serverNames[selectedClub];
+         });
          var selected:int = 0;
          var stadiums:Array = @ENABLED_STADIUMS@;
          var names:Array = ["Any stadium","Farmstead","Brakmar","Beach","Bonta","Frigost","Kara","Forest","Ballotin","Pixel"];
@@ -329,17 +340,20 @@
             stadiumLabel.text = selected == 0 ? "Any stadium" : names[int(stadiums[selected-1])];
          });
          serverAction(serverPanel,"Find opponent",20,85,160,function():void {
-            serverClosePanel(); serverSend({operation:"queue_join",stadiums:selected == 0 ? stadiums : [stadiums[selected-1]]});
+            serverClosePanel(); serverSend({operation:"queue_join",club_id:selectedClub,stadiums:selected == 0 ? stadiums : [stadiums[selected-1]]});
          });
-         serverAction(serverPanel,"Play CPU",200,85,140,function():void {
-            serverClosePanel(); serverSend({operation:"cpu_match",stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
+         serverAction(serverPanel,"CPU matchmaking",200,85,140,function():void {
+            serverClosePanel(); serverSend({operation:"cpu_match",club_id:selectedClub,stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
          });
          serverAction(serverPanel,"Cancel search",360,85,170,function():void { serverSend({operation:"queue_leave"}); });
+         if(@TOURNAMENT_ENABLED@) serverAction(serverPanel,"Find tournament",20,200,220,function():void {
+            serverClosePanel(); serverSend({operation:"tournament_match",tournament_id:@TOURNAMENT_ID@,club_id:selectedClub});
+         });
          serverAction(serverPanel,"Community",550,200,180,function():void { serverCommunityPanel("Friends"); });
          serverText(serverPanel,"Challenge a player by nickname",20,130,500);
          var guest:TextField = serverInput(serverPanel,"",20,160,490);
          serverAction(serverPanel,"Challenge",540,160,180,function():void {
-            serverClosePanel(); serverSend({operation:"challenge",nickname:guest.text,stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
+            serverClosePanel(); serverSend({operation:"challenge",club_id:selectedClub,nickname:guest.text,stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
          });
       }
 
@@ -663,6 +677,7 @@
          });
       }
 
+      private static var serverClubId:String;
       private static var serverPlayers:Object={};
       public static function serverCanSpectate(nickname:String) : Boolean
       {

@@ -70,7 +70,7 @@ blocks filter delivery and invitations. One-second
 message spacing is enforced. The original leaderboard reflects saved results.
 `general.tournament` configures a free local points league, its stadium, active
 time window (Unix seconds), and win/draw/loss points. Tournament match requests
-start CPU matches and count completed results; this is the replacement league
+join a separate human queue and count completed results; this is the replacement league
 policy, rather than the historical paid bracket system.
 
 The replacement engine has its own deterministic combat/probability semantics.

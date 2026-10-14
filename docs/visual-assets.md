@@ -60,3 +60,17 @@ Validation covers both platform palette catalogs, repeatable translations,
 texture dependencies and unchanged scenery UVs. Native Brakmar replay confirms
 that the surface renders and resolution completes; character customization
 shows the expanded color choices. Android is package-verified, not device-tested.
+
+### Character editor modes and palette switches
+
+Appearance customization changes name, gender and colors while retaining class
+and special-character identity. Replacement enables class/special-character
+selection and recalculates the configured role/attributes. Both use the recovered
+editor screen and save changes to the owned roster. Appearance now disables
+other classes and special identities rather than granting the same controls as
+replacement.
+
+Both club and character palette models bound swatch indices when a new palette
+has fewer colors. Character selection previously retained a high hair/eye/skin
+index whenever the old color was absent from the new palette. It now selects a
+valid index before updating the view or creating an animated character.

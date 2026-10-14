@@ -61,7 +61,7 @@ connects to this same Linux backend; it does not host the server itself.
 
 ## Playing humans
 
-**Play** in the top toolbar opens **Find opponent**, **Play CPU**, search
+**Play** in the top toolbar opens **Find opponent**, **CPU matchmaking**, search
 cancellation and nickname challenges. Choose any enabled stadium or cycle to a
 specific stadium before searching. The original matchmaking Play request also
 joins the human queue. CPU opponents are explicit; a search never silently falls
@@ -105,7 +105,7 @@ Authenticated `POST /api/command` operations include `queue_join` with optional
 Hello, command and poll responses include `matchmaking` status. Existing original
 protobuf match requests, cancellation and challenge answers remain supported.
 
-Database version 1 migrates automatically to version 2. Existing profiles,
+Database versions 1–3 migrate automatically to version 4. Existing profiles,
 device tokens, clubs, matches and results are preserved. The new tables store
 accounts, failed-authentication buckets and queue entries; sessions gain a kind
 field. Standard SQLite backup/restore includes all account and queue state.
@@ -116,3 +116,25 @@ human matches. `tools/smoke_human_match.py` runs two actual Flash clients: separ
 account logins, matchmaking, two native replay turns each, four acknowledgements
 and two saved results. Run it under Xvfb as a module. Native CPU regression also
 passes. Android remains package-verified; no device is attached.
+
+### Tournament matchmaking and team selection
+
+Both the original Home Play/Tournament buttons and the toolbar Play button open
+the shared controls. **Find opponent** joins the human queue; **CPU matchmaking**
+starts a CPU match only when explicitly selected. **Find tournament** joins the
+configured tournament's separate human queue at its fixed stadium. There is no
+automatic CPU fallback for normal or tournament searches. Cancel search leaves
+either queue. A profile has one queue entry, so switching queue type replaces it.
+
+Pairing occurs under one database transaction. Entries belonging to players in
+an active match are removed, and a player paired earlier in that transaction is
+excluded from subsequent pairings. Blocked players cannot pair. Tournament
+searches expire on heartbeat/search limits or when the tournament closes;
+reconnecting restores a still-valid search. Schema 4 adds a nullable tournament
+ID to queue entries while retaining old normal searches and device tokens.
+
+The Play dialog displays **Team** and offers **Change team**. The chosen owned
+`club_id` accompanies queue, CPU, challenge and tournament requests, so the server
+selects that club before creating/pairing the match. This uses the stored customized
+roster, not the offline seed team. `select_club` also selects an owned club explicitly;
+unowned IDs fail and an active match prevents changing selection.

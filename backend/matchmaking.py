@@ -14,9 +14,15 @@ class Matchmaking:
     def leave_queue(self, profile):
         self.store.db.execute('DELETE FROM matchmaking_queue WHERE profile_id=?',(profile,))
 
-    def join_queue(self, profile, stadiums=None):
+    def join_queue(self, profile, stadiums=None, tournament=None):
         if self.store.active_match(profile):
             raise ServiceError('MATCH_ACTIVE','Finish your current match before searching')
+        if tournament is not None:
+            settings=self.tournament_config(tournament)
+            if not settings['start_time'] <= time.time() < settings['end_time']:
+                raise ServiceError('TOURNAMENT_CLOSED','This tournament is outside its configured time window')
+            stadiums=[settings['stadium']]
+            tournament=str(settings['id'])
         enabled={i for i,name in enumerate(STADIUMS,1) if self.config['stadiums'][name]['enabled']}
         if stadiums is None: stadiums=sorted(enabled)
         if not isinstance(stadiums,list) or not stadiums or any(not isinstance(i,int) or isinstance(i,bool) or i not in enabled for i in stadiums):
@@ -25,8 +31,8 @@ class Matchmaking:
             raise ServiceError('PLAYER_BUSY','Stop spectating before searching')
         self.cancel_challenges(profile)
         now=time.time()
-        self.store.db.execute('INSERT INTO matchmaking_queue VALUES(?,?,?,?) ON CONFLICT(profile_id) DO UPDATE SET stadiums_json=excluded.stadiums_json,heartbeat=excluded.heartbeat',
-                              (profile,json.dumps(sorted(set(stadiums))),now,now))
+        self.store.db.execute('INSERT INTO matchmaking_queue(profile_id,stadiums_json,joined,heartbeat,tournament_id) VALUES(?,?,?,?,?) ON CONFLICT(profile_id) DO UPDATE SET stadiums_json=excluded.stadiums_json,joined=CASE WHEN matchmaking_queue.tournament_id IS excluded.tournament_id THEN matchmaking_queue.joined ELSE excluded.joined END,heartbeat=excluded.heartbeat,tournament_id=excluded.tournament_id',
+                              (profile,json.dumps(sorted(set(stadiums))),now,now,tournament))
         self.match_queued_players()
 
     def match_queued_players(self):
@@ -37,6 +43,12 @@ class Matchmaking:
         available=[]
         for row in rows:
             if self.store.active_match(row['profile_id']): self.leave_queue(row['profile_id']);continue
+            if row['tournament_id'] is not None:
+                try:
+                    tournament=self.tournament_config(row['tournament_id'])
+                    if not tournament['start_time'] <= now < tournament['end_time']: raise ServiceError('TOURNAMENT_CLOSED','Tournament ended')
+                except ServiceError:
+                    self.leave_queue(row['profile_id']);continue
             available.append(row)
         matched=set()
         for i,first in enumerate(available):
@@ -45,6 +57,7 @@ class Matchmaking:
             choices=[]
             for second in available[i+1:]:
                 if second['profile_id'] in matched or self.blocked(first['profile_id'], second['profile_id']): continue
+                if first['tournament_id'] != second['tournament_id']: continue
                 common=set(json.loads(first['stadiums_json'])) & set(json.loads(second['stadiums_json']))
                 common={n for n in common if self.config['stadiums'][STADIUMS[n-1]]['enabled']}
                 if not common: continue
@@ -53,11 +66,12 @@ class Matchmaking:
                 if distance<=window: choices.append((distance,second['joined'],second['profile_id'],second,min(common)))
             if choices:
                 _,_,_,second,stadium=min(choices,key=lambda c:c[:3])
-                self.create_match(first['profile_id'],second['profile_id'],stadium)
+                self.create_match(first['profile_id'],second['profile_id'],stadium, tournament=int(first['tournament_id']) if first['tournament_id'] is not None else None)
                 matched.update((first['profile_id'],second['profile_id']))
 
     def matchmaking_status(self, profile):
         row=self.store.db.execute('SELECT * FROM matchmaking_queue WHERE profile_id=?',(profile,)).fetchone()
         return {'status':'waiting' if row else 'idle', 'joined':row['joined'] if row else None,
                 'stadiums':json.loads(row['stadiums_json']) if row else [],
+                'tournament':row['tournament_id'] if row else None,
                 'waiting_players':self.store.db.execute('SELECT COUNT(*) FROM matchmaking_queue').fetchone()[0]}

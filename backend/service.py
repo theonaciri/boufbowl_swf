@@ -169,6 +169,7 @@ class Service(Social, Accounts, Matchmaking, Community):
         data = self.store.profile(profile)
         account=self.store.db.execute('SELECT username FROM accounts WHERE profile_id=?',(profile,)).fetchone()
         return {"nickname": data["nickname"], "statistics": data["statistics"],
+                "club_id":data["club"]["active"], "club_name":self.club(profile)["clubName"],
                 "account_username": account['username'] if account else None}
 
     def command(self, body):
@@ -184,7 +185,13 @@ class Service(Social, Accounts, Matchmaking, Community):
                     raise ServiceError("REQUEST_CONFLICT", "A request ID cannot be reused for another command")
                 return json.loads(previous["response_json"])
             operation = body.get("operation", "protocol")
-            if operation == "save_club":
+            if operation in ("queue_join","cpu_match","tournament_match","challenge") and body.get("club_id") is not None:
+                self.select_club(profile, body["club_id"])
+            if operation == "select_club":
+                self.select_club(profile, body["club_id"])
+            elif operation == "tournament_match":
+                self.tournament_match(profile, body["tournament_id"])
+            elif operation == "save_club":
                 self.save_club(profile, body["club"])
             elif operation == "clubs":
                 self.emit(profile, "PREDEFINED_CLUBS", {"club": [{"clubId": c["clubId"], "boufbowler": c["boufbowler"]}
@@ -216,6 +223,18 @@ class Service(Social, Accounts, Matchmaking, Community):
             self.store.db.execute("INSERT INTO commands VALUES(?,?,?,?)", (profile, request_id, digest, json.dumps(response)))
             return response
 
+    def select_club(self, profile, identity):
+        if self.store.active_match(profile):
+            raise ServiceError("MATCH_ACTIVE", "Finish your current match before selecting a team")
+        collection=self.collection(profile)
+        key=str(identity)
+        if key not in collection['clubs']:
+            raise ServiceError("CLUB_OWNERSHIP", "This club does not belong to your profile")
+        collection['active']=key
+        self.store.save_club(profile,collection)
+        self.emit(profile,"CLUB_INFORMATION",self.club(profile))
+        self.emit_ranking(profile)
+
     def save_club(self, profile, club):
         collection = self.collection(profile)
         normalized = self.normalize_club(club)
@@ -243,7 +262,7 @@ class Service(Social, Accounts, Matchmaking, Community):
             raise ServiceError("NO_ACTIVE_MATCH", "No active match for this profile")
         return match, self.side(match, profile)
 
-    def create_match(self, left, right, stadium):
+    def create_match(self, left, right, stadium, tournament=None):
         if not isinstance(stadium, int) or isinstance(stadium, bool) or not 1 <= stadium <= len(STADIUMS):
             raise ServiceError("INVALID_STADIUM", "Choose an available stadium")
         key = STADIUMS[stadium - 1]
@@ -287,6 +306,7 @@ class Service(Social, Accounts, Matchmaking, Community):
                  "created": time.time(), "rosters": rosters, "phase": "placement", "turn": 1, "period": 1, "score": [0, 0], "seed": secrets.randbits(32),
                  "orders": {}, "placements": {}, "acks": [], "world": self.initial_world(rosters, rules),
                  "deadline": time.time() + rules["match"]["placement_seconds"]}
+        if tournament is not None: match["tournament"] = tournament
         cursor = self.store.db.execute("INSERT INTO matches(state_json,updated) VALUES(?,?)", ("{}", time.time()))
         match["id"] = cursor.lastrowid
         for side, participant in enumerate((left, right), 1):

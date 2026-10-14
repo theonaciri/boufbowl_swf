@@ -190,6 +190,7 @@ class BackendTests(unittest.TestCase):
 
     def test_configured_tournament_records_results_and_emits_leaderboard(self):
         self.protocol(self.alice,'MATCH_REQUEST',{'tournamentId':'1'})
+        self.protocol(self.bob,'MATCH_REQUEST',{'tournamentId':'1'})
         with self.service.store.transaction():
             match=self.service.store.active_match(self.identity(self.alice)); match['score']=[1,0]
             self.service.end_match(match)
