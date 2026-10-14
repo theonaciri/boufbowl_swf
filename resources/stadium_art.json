@@ -88,17 +88,39 @@
       ],
       "source": "../boufbowl/assets/courts/1648.webp",
       "sha256": "0eb219c0d380c5d55b5b2acb554d09016eb18e08df31890baa7380e242cec63b"
+    },
+    "frigost": {
+      "path": "assets/textures/stadiums/frigost.png",
+      "region": [
+        28,
+        185,
+        838,
+        424
+      ],
+      "source": "../boufbowl/art_sources/flash_vectors/libraries/bin/boufbowl-client-1.9.6.swf/images/1640.jpg",
+      "sha256": "c62285d541c879b3f37de726ef928f985b40ad580b5428c9f18f91fe13a8b330"
     }
   },
   "stadiums": {
-    "FARMSTEAD": "original",
+    "FARMSTEAD": "grass",
     "BRAKMAR": "brakmar",
     "BEACH": "sand",
-    "BONTA": "grass",
-    "FRIGOST": "clouds",
+    "BONTA": "prairies",
+    "FRIGOST": "frigost",
     "KARA": "kara",
     "FOREST": "meadow",
-    "BALLOTIN": "wabbits",
-    "PIXEL": "prairies"
+    "BALLOTIN": "clouds",
+    "PIXEL": "wabbits"
+  },
+  "frame_sources": {
+    "FARMSTEAD": 1632,
+    "BRAKMAR": 1634,
+    "BEACH": 1636,
+    "BONTA": 1638,
+    "FRIGOST": 1640,
+    "KARA": 1642,
+    "FOREST": 1644,
+    "BALLOTIN": 1646,
+    "PIXEL": 1648
   }
 }

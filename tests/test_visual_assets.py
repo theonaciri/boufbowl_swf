@@ -49,3 +49,10 @@ class VisualAssetTests(unittest.TestCase):
                 coordinates=list(map(float,uv.text.split()))
                 self.assertTrue(all(0<=v<=1 for v in coordinates))
         self.assertEqual(len(distinct),9)
+
+    def test_stadium_surface_sources_match_the_original_frame_inventory(self):
+        manifest=json.loads((ROOT/'resources/stadium_art.json').read_text())
+        for stadium,bitmap in manifest['frame_sources'].items():
+            art=manifest['textures'][manifest['stadiums'][stadium]]
+            self.assertEqual(Path(art['source']).stem,str(bitmap),stadium)
+        self.assertEqual(len(set(manifest['stadiums'].values())),9)

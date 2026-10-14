@@ -29,6 +29,6 @@ def inject_server(source, config, android=False):
     source = source.replace('addButton("Offline",8,60,null);', 'addButton("Play",8,60,function():void { if(serverActive) serverPlay(); });')
     source = source.replace('toolbar.graphics.drawRect(0,0,348,26);', 'toolbar.graphics.drawRect(0,0,404,26);')
     source = source.replace('Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);',
-                            'addButton("Server",343,55,function():void { serverConnectionPanel(); });\n         Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);')
+                            'addButton("Server",343,55,function():void { serverConnectionPanel(); });\n         Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);\n         serverLayoutToolbar();\n         Stage(app.contextInjector.getInstance(Stage)).addEventListener(Event.RESIZE,function(event:Event):void { serverLayoutToolbar(); });')
     source = source.replace('if(mockActive) mockStatus(text);', 'if(mockActive) mockStatus(text); else if(serverActive) serverTrace(text);')
     return source

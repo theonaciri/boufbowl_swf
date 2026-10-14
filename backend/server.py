@@ -30,7 +30,10 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
-        self.wfile.write(payload)
+        try:
+            self.wfile.write(payload)
+        except (BrokenPipeError,ConnectionResetError):
+            pass  # A client can cancel its request before the response is ready.
 
     def do_POST(self):
         route = urlsplit(self.path).path

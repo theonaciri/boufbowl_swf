@@ -21,6 +21,8 @@ class Store:
         if str(path) != ":memory:":
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
+        self.changed = threading.Condition(self.lock)
+        self.closed = False
         self.db = sqlite3.connect(str(path), check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.executescript("""
@@ -114,6 +116,7 @@ class Store:
     @contextmanager
     def transaction(self):
         with self.lock:
+            if self.closed: raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
             self.db.execute("BEGIN IMMEDIATE")
             try:
                 yield
@@ -122,6 +125,7 @@ class Store:
                 raise
             else:
                 self.db.execute("COMMIT")
+                self.changed.notify_all()
 
     @staticmethod
     def digest(value):
@@ -216,5 +220,8 @@ class Store:
             self.db.backup(target)
 
     def close(self):
-        with self.lock:
-            self.db.close()
+        with self.changed:
+            if not self.closed:
+                self.closed = True
+                self.db.close()
+            self.changed.notify_all()

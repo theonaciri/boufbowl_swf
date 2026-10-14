@@ -91,3 +91,12 @@ the embedded local backend; Android needs a reachable server URL. An explicit
 Use **Server → Community** for friends, rankings, match history, saved replay
 playback/downloads, live spectating, private conversations and subscriptions.
 See [community and replays](community-and-replays.md) for API and operator report review.
+
+### Event delivery
+
+`POST /api/poll` accepts optional `wait_ms` (integer 0–1000). Empty polls wait
+without holding a SQLite transaction and wake immediately on committed events.
+Omit it for the original immediate response. Shutdown wakes pending polls safely.
+The patched client uses long polling and a six-second application request deadline;
+that deadline is separate from matchmaking and match planning deadlines. See
+[community and replays](community-and-replays.md) for timeout transport limitations.

@@ -141,6 +141,12 @@ class Community:
                 result['channels'] = [r[0] for r in self.store.db.execute('SELECT language FROM chat_subscriptions WHERE profile_id=? ORDER BY language', (profile,))]
                 result['language'] = self.store.db.execute('SELECT language FROM presence WHERE profile_id=?', (profile,)).fetchone()[0]
                 result['spectating'] = str(self.spectator_match(profile)['id']) if self.spectator_match(profile) else None
+            elif action == 'player':
+                target=self.target_player(body['nickname'])
+                match=self.store.active_match(target)
+                result={**self.presence_data(target), 'player':self.player_summary(target), 'statistics':self.store.profile(target)['statistics'],
+                        'match':str(match['id']) if match else None,
+                        'can_spectate':bool(match and target!=profile and not self.store.active_match(profile) and not self.blocked(profile,target))}
             elif action == 'friend': result = self.friend_action(profile,body['verb'],body['nickname'])
             elif action == 'rankings':
                 offset = self.page(body); rows = self.rankings()

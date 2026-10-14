@@ -65,7 +65,7 @@
          var oldProfileName:String = serverProfileName;
          var explicitLocal:Boolean = url == "";
          stopMock();
-         if(oldSession != null && !resume)
+         if(!resume)
          {
             var chat:com.ankamagames.boufbowl.client.chat.model.IChatModel = app.contextInjector.getInstance(com.ankamagames.boufbowl.client.chat.model.IChatModel);
             chat.clearMessages(); chat.clear();
@@ -148,24 +148,34 @@
 
       private static function serverRequest(route:String, body:Object, complete:Function) : void
       {
-         var generation:uint = serverGeneration;
-         var loader:URLLoader = new URLLoader();
-         loader.addEventListener(Event.COMPLETE,function(event:Event):void {
+         var generation:uint=serverGeneration;
+         var loader:URLLoader=new URLLoader();
+         var done:Boolean=false;
+         var timeout:uint;
+         var finish:Function=function(response:Object):void {
+            if(done) return; done=true; clearTimeout(timeout);
             if(generation != serverGeneration) return;
-            try { complete(com.adobe.serialization.json.JSON.decode(String(loader.data))); }
+            complete(response);
+         };
+         timeout=setTimeout(function():void {
+            if(done) return;
+            if(generation == serverGeneration) { app.hideMessageBox(); serverTrace("Request cancelled after 6 seconds: " + route); }
+            try { finish({ok:false,retryable:false,code:"REQUEST_TIMEOUT",error:"Request cancelled after 6 seconds"}); }
+            // URLLoader.close() terminates the legacy Windows player under Wine.
+            // Retire this request and discard late completion instead.
+            finally { loader.removeEventListener(Event.COMPLETE,onComplete); }
+         },6000);
+         var onComplete:Function=function(event:Event):void {
+            try { finish(com.adobe.serialization.json.JSON.decode(String(loader.data))); }
             catch(error:Error) { serverStatus("Server response error: " + error.toString()); serverTrace("ERROR " + error.toString()); }
-         });
-         loader.addEventListener(IOErrorEvent.IO_ERROR,function(event:IOErrorEvent):void {
-            if(generation == serverGeneration) complete({ok:false,retryable:true,error:event.text});
-         });
-         loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR,function(event:SecurityErrorEvent):void {
-            if(generation == serverGeneration) complete({ok:false,retryable:true,error:event.text});
-         });
-         var request:URLRequest = new URLRequest(serverBase + route);
-         request.method = URLRequestMethod.POST;
-         request.contentType = "application/json";
-         request.data = com.adobe.serialization.json.JSON.encode(body);
-         loader.load(request);
+         };
+         loader.addEventListener(Event.COMPLETE,onComplete);
+         loader.addEventListener(IOErrorEvent.IO_ERROR,function(event:IOErrorEvent):void { finish({ok:false,retryable:true,error:event.text}); });
+         loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR,function(event:SecurityErrorEvent):void { finish({ok:false,retryable:true,error:event.text}); });
+         var request:URLRequest=new URLRequest(serverBase+route);
+         request.method=URLRequestMethod.POST; request.contentType="application/json";
+         request.data=com.adobe.serialization.json.JSON.encode(body);
+         try { loader.load(request); } catch(error:Error) { finish({ok:false,retryable:true,error:error.message}); }
       }
 
       private static function serverSend(body:Object) : void
@@ -195,7 +205,7 @@
       {
          if(!serverActive || serverSession == null || serverPolling) return;
          serverPolling = true;
-         serverRequest("poll",{session:serverSession,cursor:serverCursor},function(response:Object):void {
+         serverRequest("poll",{session:serverSession,cursor:serverCursor,wait_ms:1000},function(response:Object):void {
             serverPolling = false;
             if(response.ok)
             {
@@ -207,7 +217,7 @@
                }
             }
             else serverStatus("Connection interrupted: " + response.error);
-            serverPollTimer = setTimeout(serverPoll,500);
+            serverPollTimer = setTimeout(serverPoll,response.ok ? 0 : 250);
          });
       }
 
@@ -215,7 +225,8 @@
       {
          if(packet.channel == "COMMUNITY") { if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
          if(mockActive && packet.channel == "MATCH") return;
-         if(packet.type == "MATCH_INFORMATION") serverInMatch = true;
+         if(packet.type == "RESOLUTION_SCENARIO") { app.hideMessageBox(); serverStatus("Loading turn animation"); }
+         if(packet.type == "MATCH_INFORMATION") { serverClosePanel(); serverInMatch = true; }
          if(packet.channel == "MATCH" && !serverInMatch) return;
          var data:ByteArray = new ByteArray();
          var hex:String = String(packet.hex);
@@ -235,6 +246,10 @@
       private static function serverOutgoing(request:Object) : void
       {
          var chat:Boolean = getQualifiedClassName(request).indexOf("com.ankamagames.xgaming.chat.protocol::") == 0;
+         if(!chat && getQualifiedClassName(request).split("::").pop() == "WhoisRequestMessage")
+         {
+            serverPlayerInformation(String(request.nickname)); return;
+         }
          var message:Object = chat ? new com.ankamagames.xgaming.chat.protocol.UnionProtocol().encode(request) : new com.ankamagames.boufbowl.protocol.UnionProtocol().encode(request);
          var data:ByteArray = new ByteArray();
          message.writeExternal(data);
@@ -356,12 +371,12 @@
          field.displayAsPassword = secret; parent.addChild(field); return field;
       }
 
-      private static function serverAction(parent:Sprite, title:String, x:int, y:int, width:int, callback:Function) : void
+      private static function serverAction(parent:Sprite, title:String, x:int, y:int, width:int, callback:Function) : Sprite
       {
          var button:Sprite = new Sprite(); button.x=x; button.y=y; button.buttonMode=true;
          button.graphics.beginFill(0x3578cf); button.graphics.drawRect(0,0,width,28); button.graphics.endFill();
          var label:TextField = serverText(button,title,4,2,width-8); label.mouseEnabled=false;
-         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); }); parent.addChild(button);
+         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); }); parent.addChild(button); return button;
       }
 
       private static function serverAccountPanel() : void
@@ -475,6 +490,10 @@
          var choice:TextField=serverInput(panel,selected,20,310,320);
          serverText(panel,tab == "History" || tab == "Watch" ? "Match ID" : "Player nickname",350,310,180);
          serverAction(panel,"Refresh",620,310,150,function():void { serverCommunityPanel(tab,offset,choice.text); });
+         var friendMatches:Object={};
+         var friendWatch:Sprite;
+         var refreshWatch:Function=function():void { if(friendWatch != null) friendWatch.visible=friendMatches[choice.text.toLowerCase()] != null; };
+         choice.addEventListener(Event.CHANGE,function(event:Event):void { refreshWatch(); });
          listing.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void {
             var character:int=listing.getCharIndexAtPoint(listing.mouseX,listing.mouseY);
             if(character<0) return;
@@ -483,6 +502,7 @@
             if(tab == "Friends") { found=/^  (.*?) \((?:online|offline)/.exec(line); if(found != null) choice.text=found[1]; }
             else if(tab == "Rankings") { found=/^\d+\. (.*?)   /.exec(line); if(found != null) choice.text=found[1]; }
             else if(tab == "History" || tab == "Watch") { found=/^#(\d+)/.exec(line); if(found != null) choice.text=found[1]; }
+            refreshWatch();
          });
          var action:String=tab == "Friends" || tab == "Channels" ? "overview" : tab == "Rankings" ? "rankings" : tab == "History" ? "history" : tab == "Watch" ? "live" : "messages";
          if(tab == "Messages")
@@ -514,7 +534,12 @@
                for each(var group:String in ["friends","incoming","outgoing","blocked"])
                {
                   lines.push(group.toUpperCase());
-                  for each(var friend:Object in data[group]) lines.push("  " + friend.nickname + (friend.online ? " (online" + (friend.match != null ? ", match " + friend.match : "") + ")" : " (offline)"));
+                  for each(var friend:Object in data[group])
+                  {
+                     lines.push("  " + friend.nickname + (friend.online ? " (online" + (friend.match != null ? ", match " + friend.match : "") + ")" : " (offline)"));
+                     if(friend.match != null && group != "blocked") friendMatches[friend.nickname.toLowerCase()]=friend.match;
+                  }
+                  refreshWatch();
                }
             }
             else if(tab == "Channels")
@@ -543,7 +568,8 @@
             for(i=0;i<verbs.length;i++) serverFriendButton(String(verbs[i]),20+i*108,choice);
             serverAction(panel,"Message",20,390,130,function():void { serverCommunityPanel("Messages",0,choice.text); });
             serverAction(panel,"Challenge",165,390,145,function():void { serverClosePanel(); serverSend({operation:"challenge",nickname:choice.text,stadium:@ENABLED_STADIUMS@[0]}); });
-            serverAction(panel,"Spectate",325,390,145,function():void { serverCommunityRequest({action:"spectate",nickname:choice.text},function(data:Object):void { serverClosePanel(); }); });
+            friendWatch=serverAction(panel,"Spectate",325,390,145,function():void { serverCommunityRequest({action:"spectate",nickname:choice.text},function(data:Object):void { serverClosePanel(); }); });
+            refreshWatch();
          }
          else if(tab == "Rankings")
             serverAction(panel,"Find player",20,350,160,function():void {
@@ -634,5 +660,38 @@
       {
          serverCommunityRequest({action:"friend",verb:enabled ? "block" : "unblock",nickname:nickname},function(data:Object):void {
             serverStatus(nickname + (enabled ? " blocked" : " unblocked"));
+         });
+      }
+
+      private static var serverPlayers:Object={};
+      public static function serverCanSpectate(nickname:String) : Boolean
+      {
+         var player:Object=serverPlayers[nickname.toLowerCase()];
+         return player != null && player.can_spectate == true;
+      }
+      public static function serverPlayerLookup(nickname:String, ready:Function) : void
+      {
+         serverRequest("community",{session:serverSession,action:"player",nickname:nickname},function(data:Object):void {
+            serverPlayers[nickname.toLowerCase()]=data.ok ? data : {can_spectate:false};
+            ready();
+         });
+      }
+      private static function serverLayoutToolbar() : void
+      {
+         toolbar.x=Math.max(0,Stage(app.contextInjector.getInstance(Stage)).stageWidth-toolbar.width-80);
+      }
+
+      public static function serverPlayerInformation(nickname:String) : void
+      {
+         serverCommunityRequest({action:"player",nickname:nickname},function(data:Object):void {
+            serverTrace("Player information opened: " + data.nickname);
+            serverDialog("Player: " + data.nickname,240);
+            serverText(serverPanel,"Club: " + data.player.club.clubName,20,50,750);
+            serverText(serverPanel,"Rating: " + data.statistics.rating + "   Wins: " + data.statistics.wins + "   Draws: " + data.statistics.draws + "   Losses: " + data.statistics.defeats,20,90,750);
+            serverText(serverPanel,data.online ? "Online" + (data.match != null ? " - match " + data.match : "") : "Offline",20,130,750);
+            serverAction(serverPanel,"Private message",20,180,200,function():void { serverCommunityPanel("Messages",0,nickname); });
+            if(data.can_spectate) serverAction(serverPanel,"Spectate match",250,180,200,function():void {
+               serverCommunityRequest({action:"spectate",match:data.match},function(result:Object):void { serverClosePanel(); });
+            });
          });
       }

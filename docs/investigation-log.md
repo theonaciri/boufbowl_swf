@@ -374,3 +374,58 @@ received four ResolutionDone messages and persisted exactly two human results.
 The explicit CPU regression also completes two native turns and one result.
 Both platform client builds compile. Android is package-verified without device
 runtime testing. Reproduction and API/setup details: docs/accounts-and-matchmaking.md.
+
+## Community completion and client regressions — 2026-10-14
+
+Schema 3 persists accepted/pending friends, blocks, presence, language subscriptions,
+private history, reports and watcher replay access while retaining existing profiles.
+Rankings and history use saved results; exact turn scenarios are retained for replay
+export/import. Live watchers receive the original animation protocol and chat, but
+only player acknowledgements advance authority. The shared client exposes Friends,
+Rankings, History, Watch, Messages and Channels. Local reports have an operator CLI.
+See `docs/community-and-replays.md` for access rules and remaining external features.
+
+Native testing verified saved JSON via the Flash FileReference dialog, replay and
+live watcher animations. Four external/privileged game requests remain explicit
+errors; all recovered chat requests have local handlers.
+
+The reported chat lag was the client's 500 ms polling interval. Condition-based
+long polling now wakes on commits without holding the SQLite transaction, including
+safe shutdown. CPU turns already resolve when orders arrive; 3D scene loading adds
+its own delay. Waiting modals now close on scenario arrival.
+
+First-login Private/Information channels were absent because General configuration
+made the chat model appear initialized. Clearing before initial server connection
+restores channel creation. Player information now uses a public summary endpoint;
+original nickname menus query match availability before offering Spectate. Native
+screenshots cover players both with and without a match. Toolbar placement now
+maintains an 80 px right margin.
+
+Palette indices could survive a switch from ten colors to five and dereference an
+undefined Color3. All selectors now clamp indices before notifications. Native
+editing switched the tenth default swatch into a five-color palette, saved and
+played two turns. Match rosters freeze contrasting kits, preventing viewpoint-
+dependent character colors and inconsistent darkness flags.
+
+Stadium identities were corrected against original FieldBackground frame labels
+and bitmap IDs, rather than guessed atlas appearances. In particular Frigost uses
+bitmap 1640 (ice), Ballotin 1646 (clouds), Pixel 1648 (wabbits), Bonta 1638 (prairies)
+and Farmstead 1632 (grass). The ice JPEG is converted to a generated PNG. Existing
+Farmstead geometry remains a substitute for missing stadium-specific 3D models.
+
+A delayed eight-second response verified the six-second application deadline.
+Forcibly closing a pending URLLoader exits the legacy Windows player under Wine;
+the safe cancellation retires its callback and discards late responses. This is
+separate from matchmaking search deadlines. Recompiling two decompiled chat command
+classes also lost constructor injection metadata; those unnecessary patches were
+removed and original command bytecode restored. Rebuild class indexing is now
+computed by name instead of relying on fixed positions.
+
+Validation: 90 automated tests pass. The final native regression saves an original
+private message, opens player information, changes/saves the shorter palette,
+completes two Frigost 3D turns and a result, then retires a deliberately delayed
+request at six seconds. Waiting past the late response confirms the player stays
+open and no information panel reappears. Evidence is under `evidence/client-*`.
+The Linux bundle resolves two turns using its bundled Bun runtime without a system
+Bun installation. Android compilation/package validation does not imply device
+runtime validation.

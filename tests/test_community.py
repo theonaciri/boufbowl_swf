@@ -182,3 +182,49 @@ class CommunityTests(unittest.TestCase):
         self.api(self.bob,'friend',verb='block',nickname='Alice')
         replay=export_replay(self.service,match['id'],False,self.identity(self.alice))
         self.assertEqual(len(replay['records']),1)
+
+    def test_long_poll_wakes_on_committed_events_without_blocking_commands(self):
+        from concurrent.futures import ThreadPoolExecutor
+        profile=self.identity(self.alice)
+        cursor=self.service.store.db.execute('SELECT MAX(seq) FROM events WHERE profile_id=?',(profile,)).fetchone()[0]
+        with ThreadPoolExecutor(1) as pool:
+            future=pool.submit(self.service.poll,{'session':self.alice['session'],'cursor':cursor,'wait_ms':1000})
+            time.sleep(.05)
+            started=time.monotonic()
+            self.api(self.bob,'friend',verb='add',nickname='Alice')
+            with self.service.store.transaction():
+                self.service.emit(profile,'PING_RESULT',{'timestamp':123})
+            response=future.result(timeout=2)
+        self.assertLess(time.monotonic()-started,.3)
+        self.assertEqual([e['type'] for e in response['events']],['PING_RESULT'])
+        self.assertEqual(self.api(self.alice)['incoming'][0]['nickname'],'Bob')
+
+    def test_long_poll_timeout_and_player_spectator_visibility(self):
+        profile=self.identity(self.alice)
+        cursor=self.service.store.db.execute('SELECT MAX(seq) FROM events WHERE profile_id=?',(profile,)).fetchone()[0]
+        start=time.monotonic()
+        self.assertEqual(self.service.poll({'session':self.alice['session'],'cursor':cursor,'wait_ms':30})['events'],[])
+        self.assertGreaterEqual(time.monotonic()-start,.025)
+        self.assertFalse(self.api(self.bob,'player',nickname='Alice')['can_spectate'])
+        self.start()
+        self.assertTrue(self.api(self.bob,'player',nickname='Alice')['can_spectate'])
+        self.api(self.alice,'friend',verb='block',nickname='Bob')
+        self.assertFalse(self.api(self.bob,'player',nickname='Alice')['can_spectate'])
+
+    def test_match_kits_are_consistent_and_do_not_change_owned_club_colors(self):
+        with self.service.store.transaction():
+            match=self.service.create_match(self.identity(self.alice),self.identity(self.bob),1)
+        left,right=[r['firstColor'] for r in match['rosters']]
+        self.assertNotEqual(left,right)
+        self.assertEqual(self.service.club(self.identity(self.bob))['firstColor'],left)
+        self.assertEqual(self.service.match_information(match,1)['rightRoster']['firstColor'],self.service.match_information(match,2)['rightRoster']['firstColor'])
+
+    def test_shutdown_releases_long_poll_without_using_closed_database(self):
+        from concurrent.futures import ThreadPoolExecutor
+        profile=self.identity(self.alice)
+        cursor=self.service.store.db.execute('SELECT MAX(seq) FROM events WHERE profile_id=?',(profile,)).fetchone()[0]
+        with ThreadPoolExecutor(1) as pool:
+            future=pool.submit(self.service.poll,{'session':self.alice['session'],'cursor':cursor,'wait_ms':1000})
+            time.sleep(.05)
+            self.service.close()
+            with self.assertRaises(ServiceError): future.result(timeout=2)

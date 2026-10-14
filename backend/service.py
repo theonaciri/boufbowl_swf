@@ -264,6 +264,13 @@ class Service(Social, Accounts, Matchmaking, Community):
         rules = resolve_stadium(self.config, key)
         left_club = self.club(left)
         right_club = self.club(right) if right else deepcopy(left_club)
+        team_colors = [deepcopy(left_club['firstColor']), deepcopy(right_club['firstColor']) if right else {'r':210,'g':80,'b':60}]
+        difference = lambda a,b: sum(abs(a[k]-b[k]) for k in ('r','g','b'))
+        if difference(*team_colors)<90:
+            team_colors[1]=deepcopy(right_club['secondColor'])
+            if difference(*team_colors)<90:
+                bright=sum(team_colors[0].values())>382
+                team_colors[1]={k:0 if bright else 255 for k in ('r','g','b')}
         rosters = []
         for side, club in enumerate((left_club, right_club), 1):
             players = deepcopy(club["boufbowler"])
@@ -272,8 +279,8 @@ class Service(Social, Accounts, Matchmaking, Community):
                 player["attributes"] = self.attributes(player["boufbowlerClass"], rules)
             rosters.append({"characters": players, "nickname": self.store.profile((left, right)[side - 1])["nickname"] if (left, right)[side - 1] else "CPU",
                             "name": club["clubName"] if side == 1 or right else "CPU team",
-                            "firstColor": club["firstColor"] if side == 1 or right else {"r": 210, "g": 80, "b": 60},
-                            "secondColor": club["secondColor"], "patternColor": club["patternColor"], "firstColorIsDark": False,
+                            "firstColor": team_colors[side-1],
+                            "secondColor": club["secondColor"], "patternColor": club["patternColor"], "firstColorIsDark": sum((299,587,114)[i]*c for i,c in enumerate((team_colors[side-1][k] for k in ("r","g","b")))) < 128000,
                             "ranking": {k:self.store.profile((left,right)[side-1])["statistics"][k] if (left,right)[side-1] else 0 for k in ("wins","draws","defeats")},
                             "sigilBackground": club["sigilBackground"], "sigilCharge": club["sigilCharge"]})
         match = {"profiles": [left, right], "stadium": stadium, "rules": rules, "rules_version": self.config["rules_version"],
@@ -413,6 +420,7 @@ class Service(Social, Accounts, Matchmaking, Community):
 
     def close(self):
         self.stopping.set()
+        with self.store.changed: self.store.changed.notify_all()
         self.maintenance.join(timeout=35)
         self.engine.close()
         self.store.close()
@@ -647,6 +655,25 @@ class Service(Social, Accounts, Matchmaking, Community):
             self.store.save_match(match)
 
     def poll(self, body):
+        if self.stopping.is_set(): raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
+        wait_ms=body.get('wait_ms',0)
+        if not isinstance(wait_ms,int) or isinstance(wait_ms,bool) or not 0<=wait_ms<=1000:
+            raise ServiceError('POLL_WAIT','Poll wait must be 0–1000 milliseconds')
+        response=self.poll_once(body)
+        if response['events'] or not wait_ms: return response
+        deadline=time.monotonic()+wait_ms/1000
+        with self.store.changed:
+            if self.stopping.is_set(): raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
+            profile=self.store.authenticate(body.get('session'))
+            while True:
+                if self.stopping.is_set(): raise ServiceError('SERVICE_STOPPING', 'Server is shutting down')
+                if self.store.poll(profile,body.get('cursor',0)): break
+                remaining=deadline-time.monotonic()
+                if remaining<=0: break
+                self.store.changed.wait(remaining)
+        return self.poll_once(body)
+
+    def poll_once(self, body):
         with self.store.transaction():
             profile = self.store.authenticate(body.get("session"))
             self.touch(profile)

@@ -40,7 +40,7 @@ def main():
                 with service.store.lock:
                     count=service.store.db.execute('SELECT COUNT(*) FROM chat_messages').fetchone()[0]
                 if count != 1: raise RuntimeError('French native chat did not send')
-                subprocess.run(['xdotool','mousemove','650','60','click','1'],check=True)
+                subprocess.run(['xdotool','mousemove','570','60','click','1'],check=True)
                 time.sleep(.5)
                 subprocess.run(['xdotool','mousemove','380','290','click','1'],check=True)
                 deadline=time.monotonic()+150;match=None;captured=set()

@@ -29,6 +29,7 @@ def windows():
 
 
 def click(window,x,y):
+    if y==30: x-=80  # Toolbar is now 80 pixels inset from the right edge.
     subprocess.run(['xdotool','windowraise',window,'windowfocus',window,'mousemove','--window',window,str(x),str(y),'click','1'],check=True)
 
 

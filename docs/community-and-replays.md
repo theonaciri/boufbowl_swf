@@ -138,3 +138,32 @@ The recovered game protocol audit leaves four requests without local execution:
 privileged administration and fail explicitly. Every recovered chat request now
 has a local implementation, including reports. Account login, friendships, blocks,
 match history and replay controls use the documented replacement HTTP API.
+
+## Client responsiveness and regression fixes — 2026-10-14
+
+Event polling uses `wait_ms:1000`: the server wakes the waiting poll immediately
+when a transaction saves an event, and the client starts the next poll without a
+500 ms timer. The wait releases the database lock. Human turn resolution still
+requires both players' orders; loading original 3D animation assets can also take
+several seconds. The client hides the opponent-waiting modal when a scenario arrives.
+
+Every replacement HTTP request has a six-second application deadline. It returns
+`REQUEST_TIMEOUT`, releases the command queue and ignores late responses. This
+limit does not cancel matchmaking. The Windows Flash player under Wine exits when
+`URLLoader.close()` aborts a pending load, so the client detaches the completion
+handler instead; the underlying connection may finish later. A timeout does not
+undo a mutation already accepted by the server; refresh its state before retrying.
+
+Original chat initialization now creates Private and Information channels before
+loading General subscriptions. `/whois` and the Information action open a public
+player summary. Spectate is shown only for a spectatable active match, including
+in the original nickname menu. The toolbar keeps an 80 px right margin on resize.
+
+Club palette changes clamp all three selected color indices before notification,
+including switching from the ten-color default to a five-color palette. Match
+creation freezes contrasting team kits; both viewers, character models and replays
+use those same colors. Later club edits affect subsequent matches.
+
+`tools/smoke_client_regressions.py` checks first-login original private chat, player
+information, active-match spectate visibility, palette switching/saving, two-turn
+Frigost 3D playback and six-second retirement with ignored late responses.

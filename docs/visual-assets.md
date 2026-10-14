@@ -1,26 +1,28 @@
 # Stadium textures and customization palettes
 
-`resources/stadium_art.json` selects a surface for each stadium. Farmstead keeps
-its original texture. Eight court atlases were imported from the neighboring
-`boufbowl/assets/courts` directory and converted losslessly from WebP to PNG for
-Flash/AIR. The manifest records source paths and SHA-256 hashes; runtime builds
+`resources/stadium_art.json` selects a surface for each stadium. All nine fields now use the exact bitmap selected by the original 2D background
+frame label. Eight court atlases were imported from the neighboring
+`boufbowl/assets/courts` directory; Frigost ice was recovered from original bitmap
+1640 in the untouched client archive. The eight WebP atlases and recovered ice
+JPEG were converted to PNG without resizing or repainting for Flash/AIR. The manifest records source paths and SHA-256 hashes; runtime builds
 need only the copies included here. Source archives remain unchanged.
 
 | Stadium | Surface |
 | --- | --- |
-| Farmstead | Original prairie pitch |
+| Farmstead | Grass, bitmap 1632 |
 | Brakmar | Brakmar |
 | Beach | Sand |
-| Bonta | Grass |
-| Frigost | Clouds |
+| Bonta | Prairies, bitmap 1638 |
+| Frigost | Ice, bitmap 1640 |
 | Kara | Kara |
 | Forest | Meadow |
-| Ballotin | Wabbits |
-| Pixel | Prairies atlas |
+| Ballotin | Clouds, bitmap 1646 |
+| Pixel | Wabbits, bitmap 1648 |
 
 These are configurable visual themes, not recovered original 3D stadium models.
-All variants retain the available Farmstead geometry and scenery. In particular,
-Clouds for Frigost and Prairies for Pixel are selected substitutes. Choosing a
+All variants retain the available Farmstead geometry and scenery. The mappings were verified against the original `FieldBackground` frame labels,
+rather than inferred from file/theme names. Original geometry/scenery for the
+other stadiums is still unavailable; the pitch artwork now matches the 2D view. Choosing a
 texture changes appearance only; stadium balance remains in `game_config.json`.
 The recovered 2D strategic backgrounds remain embedded in the original client.
 
