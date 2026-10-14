@@ -56,7 +56,7 @@ results and shifts remaining rounds and the next tournament to avoid overlap.
 ## Replays
 
 **Server → Community → History → Watch** opens saved playback. Controls provide
-pause/resume, speed 0.5/1/2/4 and previous/next turn. Scene and cinematic clocks
+pause/resume, speed 0.5/1/2/4 and previous/next turn and Exit replay. Scene and cinematic clocks
 follow pause/speed. Seeking recreates the match context from the recorded pre-turn
 field snapshot, including period, side, score and Zobal masks, then plays the
 remaining recorded scenarios. A paused seek remains paused.
@@ -111,7 +111,7 @@ not prevent somebody from creating an unrelated anonymous profile. See
 
 ## Verification and packages
 
-All 163 automated tests passed. Tests cover qualification, league filtering, season rollover and late
+All 169 automated tests passed. Tests cover qualification, league filtering, season rollover and late
 results, currency enforcement/retries, trusted roles, sanctions and bracket
 boundaries. Native Flash checks exercised wallet purchase, original news artwork,
 moderator mute, replay pause/speed/seek, qualification/round countdowns,
@@ -132,3 +132,9 @@ connection failures. Unknown/expired anonymous credentials renew before wallet
 and league queries; expired account credentials require account login instead.
 `tools.smoke_session_recovery` checks startup, expiry during wallet/league requests
 and account re-login in the native client.
+
+
+The Accueil/Quitter/Club toolbar is hidden during introductions, matches,
+spectating and replay playback. It returns on results/exit; replay exit remains
+available in the bottom playback controls. Full-screen action illustrations are
+restricted to ball actions, once per type per turn, including old replay playback.

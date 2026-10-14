@@ -64,7 +64,9 @@ class ClassPowerTests(unittest.TestCase):
                 scenario=adapt_turn(record)
                 Codec().encode('ResolutionScenarioMessage',scenario)
                 for item in scenario['classOrder'][0]['target']:
-                    self.assertEqual(item['preResolutionHitPointsDelta'],effects.get('hp',0))
+                    self.assertEqual(item.get('preResolutionHitPointsDelta',0),effects.get('hp',0))
+                    expected_numbers=[v for v in [effects.get('hp',0),*effects.get('elements',{}).values(),effects.get('range',0),effects.get('attack',0)] if v]
+                    self.assertEqual(item['effectDeltas'],list(dict.fromkeys(expected_numbers)))
 
     def test_ecaflip_both_outcomes_and_reproducibility(self):
         world=self.world('Ecaflip');outcomes=set()
@@ -160,3 +162,26 @@ class ClassPowerTests(unittest.TestCase):
             self.assertEqual(set(rule['descriptions']),{'fr','en','de','es'})
             self.assertTrue(all(rule['descriptions'].values()))
         self.assertEqual(resolve_stadium(load_config(),'KARA')['match']['class_ability_uses'],2)
+
+
+    def test_descriptions_end_with_effects_in_every_language(self):
+        from tools.power_descriptions import client_abilities
+        for ability in client_abilities(self.rules).values():
+            for language,text in ability['descriptions'].items():
+                for suffix in ('Un seul pouvoir','One power per team','Eine Kraft pro Team','Un poder por equipo'):
+                    self.assertNotIn(suffix,text)
+                self.assertTrue(text.endswith('.'),(language,text))
+
+    def test_display_numbers_are_applied_changes_and_never_change_hp(self):
+        world=self.world('Enutrof');response=self.run_power(world)
+        scenario=adapt_turn(dict(initial=world,orders=response['orders'],result=response['result'],rules=self.rules))
+        for target in scenario['classOrder'][0]['target']:
+            self.assertNotIn('preResolutionHitPointsDelta',target)
+            self.assertEqual(target['effectDeltas'],[3])
+        self.assertEqual([e['hp'] for e in response['result']['final_world_state']['entities']],[e['hp'] for e in world['entities']])
+        # A heal at the cap is not a fake +2 (and not a +0 popup).
+        world=self.world('Eniripsa')
+        for entity in world['entities']:entity['hp']=entity['max_hp']
+        response=self.run_power(world)
+        scenario=adapt_turn(dict(initial=world,orders=response['orders'],result=response['result'],rules=self.rules))
+        self.assertTrue(all('preResolutionHitPointsDelta' not in t and 'effectDeltas' not in t for t in scenario['classOrder'][0]['target']))

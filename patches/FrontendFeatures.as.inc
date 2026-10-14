@@ -1,3 +1,28 @@
+      public static function tracePowerNumber(actor:String,value:int):void { serverTrace("Power display " + actor + " delta=" + value); }
+      public static function setMatchToolbar(active:Boolean):void {
+         if(serverInMatch != active)serverTrace(active ? "Match toolbar hidden" : "Match toolbar shown");
+         serverInMatch=active;
+         if(toolbar != null)toolbar.visible=!active;
+      }
+      public static function filterBallCutscenes(message:com.ankamagames.boufbowl.protocol.ResolutionScenarioMessage):void {
+         var entries:Array=message.interaction.concat();
+         entries.sort(function(a:Object,b:Object):Number {
+            var ticks:Number=a.interactionDetails.startTick-b.interactionDetails.startTick;
+            return ticks != 0 ? ticks : a.interactionId-b.interactionId;
+         });
+         var shown:Object={};var kept:int=0;var suppressed:int=0;
+         for each(var entry:Object in entries) {
+            var details:Object=entry.interactionDetails;var kind:int=int(details.type);
+            var ballAction:Boolean=kind==12 || kind==13 || kind==14 || kind==15 || kind==17 || kind==21;
+            if(kind==20)for each(var participant:Object in details.participants) if(participant.hasBall)ballAction=true;
+            var category:int=kind==17 ? 12 : kind;
+            if(details.isCutscene) {
+               if(ballAction && !shown[category]) { shown[category]=true;kept++; }
+               else { details.isCutscene=false;suppressed++; }
+            }
+         }
+         serverTrace("Action cinematics: turn " + message.turn + " kept=" + kept + " suppressed=" + suppressed);
+      }
       private static function serverCaption(text:String):String {
          var labels:Object=@LOCAL_UI@;
          var lang:String=AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang;
@@ -75,7 +100,7 @@
       }
       private static function replayBuildControls():void {
          replayControls=new Sprite();replayControls.x=10;replayControls.y=530;
-         serverFrame(replayControls,0,0,740,36);
+         serverFrame(replayControls,0,0,800,36);
          serverAction(replayControls,"Pause / resume",5,3,145,function():void {
             if(!mockActive)return;replayPaused=!replayPaused;replayApplyTiming();replayUpdateLabel();mockStatus(replayPaused ? "Replay paused" : "Replay resumed");
          });
@@ -84,7 +109,8 @@
          });
          serverAction(replayControls,"Previous turn",250,3,135,function():void { replaySeek(replayCurrentTurn-1); });
          serverAction(replayControls,"Next turn",395,3,120,function():void { replaySeek(replayCurrentTurn+1); });
-         replayLabel=serverText(replayControls,"",525,4,210);replayUpdateLabel();
+         serverAction(replayControls,"Exit replay",525,3,125,function():void { stopMock();showHome(); });
+         replayLabel=serverText(replayControls,"",655,4,140);replayUpdateLabel();
          Stage(app.contextInjector.getInstance(Stage)).addChild(replayControls);
       }
       private static function replaySeek(turn:int):void {

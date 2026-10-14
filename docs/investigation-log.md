@@ -732,3 +732,32 @@ unchanged. Backend normalization rejects unknown designs. Asset/protocol coverag
 high-ID wire customization, saved selections after restart and invalid-ID
 rejection pass; the complete suite passes 163 tests. Native original selector
 checks render the added heart and fairy artwork and exercise their final pages.
+
+
+## 2026-10-14 — ball cinematics, power numbers, descriptions and toolbar
+
+Full-screen action flags are now restricted to ball interactions and one eligible
+sequence per type per turn. Fights require a participant carrying the ball at
+that interaction; off-ball fights do not consume the slot. Replay export filters
+stored flags without editing records. The shared client also filters imported or
+cached replay messages before script building, preserving normal field actions,
+timing, simulation and interaction links.
+
+Pure stat/range/attack powers previously carried preResolutionHitPointsDelta=0;
+the original buff renderer printed that HP number. Added optional ClassOrderTarget
+presentation amounts (tag 4, repeated signed integers) from actual applied effects.
+HP fields are emitted only for genuine nonzero HP changes. Buff animations show
+real signed values, skip zero and stagger mixed effects. The protocol extension
+is optional and original reference sources remain unchanged.
+
+Removed the constraint suffix beginning "Un seul pouvoir par équipe et par tour"
+from generated tooltip/log descriptions in all four languages. Rules remain
+server-enforced. A six-turn, two-human integration test confirms +1 HP after turns
+3/6, disabled regeneration, no revival, HP cap, restart persistence and actual
+FIELD_STATE HP updates. Regeneration logic already followed that interval policy.
+
+Toolbar visibility follows match/replay/spectating state, including introduction
+and field initialization. Home/exit restore it; replay has its own exit control.
+The native probes cover cached off-ball fights, repeated passes/receptions and
+nonzero/mixed power effects. Browser options are documented separately; Ruffle
+integration has not been validated for this game.

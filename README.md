@@ -251,16 +251,17 @@ cannot update the installed app. The APK build leaves the desktop SWF unchanged.
 See [Android instructions](android/README.md) for signing and emulator builds.
 
 Run `python3 -m unittest discover -s tests -v` to check server/configuration changes.
-The current validation passed 163 automated tests and native desktop playback
+The current validation passed 169 automated tests and native desktop playback
 of a complete 14-turn Kara comparison match;
 the latest live-server APK has package checks but no current device validation.
 
 Full-screen cinematics are enabled for new matches: stadium camera introduction,
-versus, goals/celebrations, combat, passes, receptions/interceptions and rebounds.
+versus, goals/celebrations, ball-carrier combat, passes, receptions/interceptions and rebounds.
+Each ball-action type gets at most one full-screen sequence per turn.
 Placement waits for introduction completion, with a timeout fallback. Configure
 `general.cinematics` in [game_config.json](resources/game_config.json); see
 [cinematic settings](docs/game-configuration.md#cinematic-presentation).
-Previously saved replays retain their recorded animation flags.
+Stored replay data is retained; playback applies the same ball-only cinematic limit.
 
 General settings, balance, class abilities and stadium overrides are in
 [resources/game_config.json](resources/game_config.json). Configuration is
@@ -345,3 +346,10 @@ with the local `backend.manage role` command; clients cannot self-promote.
 
 All embedded heraldry is available: 27 blason icons and 32 backgrounds, including
 the two previously unmapped heart backgrounds. See [visual assets](docs/visual-assets.md).
+
+
+The top Accueil/Quitter/Club toolbar appears outside matches only. Power numbers
+show actual nonzero bonuses/maluses instead of +0, and power descriptions contain
+only their effects. Regeneration was verified across six real turns and a restart.
+[Browser playback options](docs/browser-play.md) explain a self-hosted Ruffle
+prototype and the compatibility checks still required.

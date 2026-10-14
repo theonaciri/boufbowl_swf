@@ -63,6 +63,7 @@ package com.ankamagames.boufbowl.client.match.controller
       
       override public function execute() : void
       {
+         com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.setMatchToolbar(true);
          this._matchCreation.clear();
          var _loc1_:MatchInformationMessage = MatchInformationMessage(this._event.message);
          this._fieldFactory.ownSide = _loc1_.side;

@@ -80,11 +80,13 @@ intros and cannot advance them. The intro timeout starts placement independently
 of a missing acknowledgement.
 
 New turn records snapshot `presentation`. The adapter sets isCutscene for goal,
-combat, pass, reception/interception and rebound interactions when enabled.
+ball-carrier combat, pass, reception/interception and rebound interactions when
+enabled, at most once per action type per turn.
 Original interaction functions already request illustration cinematics and movies;
 they do not need the absent animated-cutscene library. UIController and movie
 playback catch unavailable symbols and complete callbacks so the scene can resume.
-Recorded scenario payloads retain exact flags for replay. Legacy records without
+Stored scenario payloads remain unchanged; replay export and the client filter
+old flags with the same current ball-only policy. Legacy records without
 presentation keep the old noncinematic adapter behavior.
 
 
@@ -97,3 +99,11 @@ mask-change scripts play. Fight score displays include the temporary stats and
 attack modifiers. Temporary bonuses expire before final state hashing; masks and
 usage counters survive. Old provisional-power records still reproduce using
 their stored rules and original simulation version.
+
+
+ClassOrderTarget tag 4 (`effectDeltas`, repeated SINT32) carries presentation-only
+power amounts. Optional HP delta fields retain their original gameplay meaning.
+The original buff-number renderer now uses nonzero effect values and skips +0;
+multiple distinct effects are staged to avoid overlapping numbers. The top toolbar
+is hidden throughout match/replay/spectator play and returns outside the match.
+Replay controls include their own Exit replay action.

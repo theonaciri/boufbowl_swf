@@ -17,7 +17,7 @@ def main():
     base=json.loads((ROOT/'tests/fixtures/interactions/ability-record.json').read_text())
     rules=load_config()['rules'];engine=Engine()
     try:
-        for label,left,right in [('wounds','Sacrier','Rogue'),('masks','Zobal','Ecaflip'),('range','Cra','Sadida')]:
+        for label,left,right in [('wounds','Sacrier','Rogue'),('masks','Zobal','Ecaflip'),('range','Cra','Sadida'),('elements','Enutrof','Iop')]:
             world=deepcopy(base['initial']);entities={e['id']:e for e in world['entities']}
             entities[11]['class_name']=left;entities[21]['class_name']=right
             if left=='Zobal':entities[11]['zobal_mask']=1

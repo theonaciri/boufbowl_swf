@@ -191,16 +191,18 @@ introduction completion; CPU and spectator slots do not delay it. After the
 configured timeout, the server starts placement with a full placement clock.
 Reconnects preserve acknowledgements and skip an already-completed introduction.
 
-Interaction cinematics enable the original goal/celebration, combat, pass,
-reception/interception and rebound sequences, using the supplied illustration
+Interaction cinematics enable goal/celebration, ball-carrier combat, pass,
+reception/interception and rebound sequences. Each action type gets at most one
+full-screen sequence per turn, shared by both teams; off-ball fights do not
+consume the fight slot. Later actions still animate on the field, using the supplied illustration
 and movie libraries. They require 3D playback; desktop server mode enables it.
 Unavailable movie/cutscene symbols are skipped without blocking completion.
 The missing `cutscenes-animated.swf` library is not needed by these illustration
 paths. Simulation results, scoring and balance are unchanged.
 
 These presentation settings are saved with new matches/turn records. Restart the
-backend after editing. Existing recorded scenarios retain their original flags;
-old replays are not retroactively rewritten. Turning introductions off starts
+backend after editing. Stored replay records remain unchanged. Playback filters even old saved flags
+through the same ball-only, once-per-type policy. Turning introductions off starts
 placement immediately; turning interactions off uses normal field animations.
 
 To generate a cinematic test replay without changing the existing fixtures:
@@ -281,3 +283,13 @@ server-owned unlocks and trusted catalog prices from
 announcements. Tournament format/qualification/round parameters select the
 points-only or knockout schedule. See [frontend restoration](frontend-restoration.md)
 for complete behavior and the local CLI used to provision moderator/admin roles.
+
+
+Power descriptions contain only their effects in all four languages. The former
+constraint paragraph is removed from tooltips/log descriptions; authoritative
+one-caster, exclusive-order and stadium-use rules still apply. Class-order targets
+have an optional repeated `effectDeltas` field for animated values. These numbers
+are separate from actual HP deltas, so a +3 element bonus cannot heal a player.
+Zero changes do not produce +0 popups; mixed effects such as Sacrier -1/+2 are
+shown in successive number animations. Regeneration remains +1 HP after each
+class's configured number of completed turns, capped at maximum, with no revival.

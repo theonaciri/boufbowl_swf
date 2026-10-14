@@ -128,6 +128,8 @@
             var message:BoufbowlMessage = new BoufbowlMessage();
             message.readExternal(data);
             mockIndex++;
+            if(step.type == "MATCH_INFORMATION") setMatchToolbar(true);
+            if(step.type == "MATCH_END") setMatchToolbar(false);
             if(step.type == "FIELD_STATE" && step.decoded != null && step.decoded.teamState != null) replayCurrentTurn=int(step.decoded.teamState.turn);
             replayUpdateLabel();
             // Arm the next acknowledgement before dispatch: 2D playback may

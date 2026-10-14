@@ -5,7 +5,7 @@ import time
 import unittest
 from backend.service import Service
 from backend.storage import ServiceError
-from backend.turn_adapter import adapt_turn
+from backend.turn_adapter import adapt_turn, limit_ball_cutscenes
 from tests import test_backend as helpers
 from tools.game_config import ROOT
 
@@ -76,7 +76,48 @@ class CinematicTests(unittest.TestCase):
             self.assertFalse(any(i['interactionDetails']['isCutscene'] for i in old['interaction']))
             record['presentation']={'interactions':True}
             animated=adapt_turn(record)
-            self.assertTrue(any(i['interactionDetails']['isCutscene'] for i in animated['interaction']),name)
+            self.assertEqual(any(i['interactionDetails']['isCutscene'] for i in animated['interaction']),name!='combat',name)
             self.assertEqual(record['result'],expected)
             record['presentation']['interactions']=False
             self.assertEqual(adapt_turn(record),old)
+
+
+    def test_ball_carrier_fights_allow_one_cinematic_and_off_ball_fights_do_not_consume_it(self):
+        record=json.loads((ROOT/'tests/fixtures/interactions/combat-record.json').read_text())
+        record['presentation']={'interactions':True}
+        without=adapt_turn(record)
+        self.assertFalse(any(i['interactionDetails']['isCutscene'] for i in without['interaction']))
+        actor=next(e['actor'] for e in record['result']['events'] if e['type']=='duel')
+        for carrier in (actor,next(e['params']['defender'] for e in record['result']['events'] if e['type']=='duel')):
+            record['initial']['ball']['holder_entity_id']=carrier
+            with_ball=adapt_turn(record)
+            self.assertEqual(sum(i['interactionDetails']['isCutscene'] for i in with_ball['interaction']),1)
+            fight=deepcopy(with_ball['interaction'][0]);fight['interactionId']=2;fight['interactionDetails']['startTick']+=100
+            combined=deepcopy(without);combined['interaction']+=with_ball['interaction']+[fight]
+            for index,entry in enumerate(combined['interaction'],1):entry['interactionId']=index;entry['interactionDetails']['isCutscene']=True
+            filtered=limit_ball_cutscenes(combined)
+            self.assertEqual([i['interactionDetails']['isCutscene'] for i in filtered['interaction']],[False,True,False])
+            for entry in combined['interaction']:entry['interactionDetails']['isCutscene']=False
+            self.assertEqual(limit_ball_cutscenes(filtered),filtered)
+
+    def test_one_per_action_type_keeps_field_playback_and_links_and_resets_each_turn(self):
+        record=json.loads((ROOT/'tests/fixtures/interactions/reception-record.json').read_text())
+        record['presentation']={'interactions':True};scenario=adapt_turn(record)
+        scenario['interaction']+=deepcopy(scenario['interaction'])
+        for index,entry in enumerate(scenario['interaction'],1):
+            entry['interactionId']=index;entry['interactionDetails']['startTick']=index*100;entry['interactionDetails']['isCutscene']=True
+        before=deepcopy(scenario);filtered=limit_ball_cutscenes(scenario)
+        self.assertEqual([e['interactionDetails']['isCutscene'] for e in filtered['interaction']],[True,True,False,False])
+        self.assertEqual(scenario,before)
+        for original,changed in zip(before['interaction'],filtered['interaction']):
+            changed['interactionDetails']['isCutscene']=original['interactionDetails']['isCutscene']
+        self.assertEqual(filtered,before)
+        scenario['turn']+=1
+        self.assertEqual(sum(e['interactionDetails']['isCutscene'] for e in limit_ball_cutscenes(scenario)['interaction']),2)
+
+    def test_goal_and_conceded_goal_share_a_slot_and_non_ball_types_stay_on_field(self):
+        entries=[]
+        for index,kind in enumerate((10,11,30,31,12,17,13,13,14,14,15,15,21,21),1):
+            entries.append({'interactionId':index,'interactionDetails':{'type':kind,'startTick':index,'participants':[],'isCutscene':True}})
+        filtered=limit_ball_cutscenes({'interaction':entries})
+        self.assertEqual([e['interactionDetails']['type'] for e in filtered['interaction'] if e['interactionDetails']['isCutscene']],[12,13,14,15,21])

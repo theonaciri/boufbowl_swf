@@ -550,5 +550,11 @@
     "fr": "Connectez-vous au serveur dans Club.",
     "de": "Verbinde dich zuerst im Club mit einem Server.",
     "es": "Conecta con el servidor desde Club."
+  },
+  "Exit replay": {
+    "en": "Exit replay",
+    "fr": "Quitter le replay",
+    "de": "Replay verlassen",
+    "es": "Salir del replay"
   }
 }

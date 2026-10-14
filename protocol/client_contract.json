@@ -1605,6 +1605,15 @@
           "message": null,
           "repeated": false,
           "required": false
+        },
+        {
+          "name": "effectDeltas",
+          "tag": 4,
+          "wire": "VARINT",
+          "scalar": "SINT32",
+          "message": null,
+          "repeated": true,
+          "required": false
         }
       ]
     },

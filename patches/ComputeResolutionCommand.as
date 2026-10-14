@@ -30,6 +30,7 @@ package com.ankamagames.boufbowl.client.match.resolution.controller
       
       override public function execute() : void
       {
+         StartUpApplicationCommand.filterBallCutscenes(this._match.resolutionMessage);
          var _loc1_:ClassOrderInformation = null;
          var _loc2_:IBoufbowlerInMatchModel = null;
          for each(_loc1_ in this._match.resolutionMessage.classOrder)

@@ -28,7 +28,7 @@ def inject_server(source, config, android=False):
     source = source.replace("      private static function displayer()", helper + "\n      private static function displayer()", 1)
     source = re.sub(r"(public static function offlineRequest\(request:Object\) : void\s*\{)",
                     r"\1\n         if(serverActive && !mockActive) { serverOutgoing(request); return; }", source, count=1)
-    source = re.sub(r"(public static function showHome\(\) : void\s*\{)", r"\1\n         serverInMatch = false;", source, count=1)
+    source = re.sub(r"(public static function showHome\(\) : void\s*\{)", r"\1\n         setMatchToolbar(false);", source, count=1)
     source = re.sub(r"(public static function showTeams\(\) : void\s*\{)",
                     r'\1\n         if(serverActive) { serverSend({operation:"clubs"}); return; }', source, count=1)
     source = re.sub(r"(public static function teamName\(id:UInt64\) : String\s*\{)",

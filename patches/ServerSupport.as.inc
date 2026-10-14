@@ -85,7 +85,7 @@
          serverActive = true;serverConnecting=true;serverRole="player";
          clearTimeout(serverPollTimer);
          serverSending = false; serverPolling = false; serverQueue = [];
-         serverInMatch = false;
+         setMatchToolbar(false);
          var vars:FlashVarsManager = app.contextInjector.getInstance(FlashVarsManager);
          var connection:SharedObject = SharedObject.getLocal("BoufbowlConnection","/");
          if(url == null) url = vars.getValue("backend");
@@ -296,7 +296,7 @@
          if(packet.channel == "COMMUNITY") { if(packet.type == "MODERATED") { serverStatus(packet.verb + ": " + packet.reason); if(packet.verb == "kick" || packet.verb == "ban") { stopMock();showHome(); } } if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
          if(mockActive && packet.channel == "MATCH") return;
          if(packet.type == "RESOLUTION_SCENARIO") { app.hideMessageBox(); serverStatus("Loading turn animation"); }
-         if(packet.type == "MATCH_INFORMATION") { serverClosePanel(); serverInMatch = true; }
+         if(packet.type == "MATCH_INFORMATION") { serverClosePanel(); setMatchToolbar(true); }
          if(packet.channel == "MATCH" && !serverInMatch) return;
          var data:ByteArray = new ByteArray();
          var hex:String = String(packet.hex);
@@ -310,7 +310,7 @@
          else if(packet.channel == "MATCH") pipeline.sendDataUpstream(message,app.contextInjector.getInstance(MatchMessageHandler));
          else pipeline.sendDataUpstream(message,app.contextInjector.getInstance(LobbyMessageHandler));
          serverTrace("Incoming " + packet.type);
-         if(packet.type == "MATCH_END") serverCurrentMatch = null;
+         if(packet.type == "MATCH_END") { serverCurrentMatch = null;setMatchToolbar(false); }
       }
 
       private static function serverOutgoing(request:Object) : void

@@ -295,3 +295,39 @@ class BackendTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class RegenerationMatchTests(unittest.TestCase):
+    setUp=BackendTests.setUp
+    tearDown=BackendTests.tearDown
+    command=BackendTests.command
+    protocol=BackendTests.protocol
+    identity=BackendTests.identity
+
+    def test_six_real_turns_regenerate_once_per_three_and_publish_updated_hp(self):
+        self.service.config['rules']['match'].update(turns_per_match=8,turns_per_period=8,planning_seconds=60)
+        for player in (self.alice,self.bob):self.command(player,'queue_join')
+        profile=self.identity(self.alice)
+        with self.service.store.transaction():
+            match=self.service.store.active_match(profile);self.service.finish_placement(match)
+            living,disabled,dead,healthy=match['world']['entities'][:4]
+            for entity in (living,disabled):entity['hp']=entity['max_hp']-4
+            dead['hp']=0;dead['status']['knocked_down']=True
+            for player in match['rosters'][0]['characters']:
+                if int(player['id'])==living['id']:player['attributes']['hitPointRegenRate']=3
+                if int(player['id'])==disabled['id']:player['attributes']['hitPointRegenRate']=0
+            original=living['hp'];unchanged=disabled['hp'];self.service.store.save_match(match)
+        for turn in range(1,7):
+            for player in (self.alice,self.bob):self.protocol(player,'ORDERS',{'turn':turn,'orders':[]})
+            for player in (self.alice,self.bob):self.protocol(player,'RESOLUTION_DONE',{'turn':turn})
+            match=self.service.store.active_match(profile);entities={e['id']:e for e in match['world']['entities']}
+            self.assertEqual(entities[living['id']]['hp'],original+turn//3)
+            self.assertEqual(entities[disabled['id']]['hp'],unchanged)
+            self.assertEqual(entities[dead['id']]['hp'],0)
+            self.assertEqual(entities[healthy['id']]['hp'],healthy['max_hp'])
+            row=self.service.store.db.execute('SELECT packet_json FROM events WHERE profile_id=? ORDER BY seq DESC LIMIT 1',(profile,)).fetchone()
+            packet=json.loads(row[0]);self.assertEqual(packet['type'],'FIELD_STATE')
+            state=self.service.codec.open_envelope(bytes.fromhex(packet['hex']))['payload']
+            displayed={int(p['id']):p['currentHitPoints'] for p in state['teamState']['boufbowlerStates']}
+            self.assertEqual(displayed[living['id']],original+turn//3)
+            if turn==3:
+                self.service.close();self.service=Service(self.path,self.service.config)

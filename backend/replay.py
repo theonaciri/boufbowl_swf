@@ -3,7 +3,7 @@ from copy import deepcopy
 import json
 from backend.storage import ServiceError
 from backend.results import result_kind
-from backend.turn_adapter import adapt_turn
+from backend.turn_adapter import adapt_turn, limit_ball_cutscenes
 
 
 def export_replay(service, match_id, verify=False, profile=None):
@@ -41,7 +41,7 @@ def export_replay(service, match_id, verify=False, profile=None):
         snapshot.update(world=record['initial'],turn=turn,period=(turn-1)//match['rules']['match']['turns_per_period']+1,score=score[:])
         chapters.append({'turn':turn,'period':snapshot['period'],'field_step':len(steps),'zobal_masks':{str(e['id']):e['zobal_mask'] for e in record['initial']['entities'] if 'zobal_mask' in e}})
         append('FIELD_STATE',service.field_state(snapshot,2),wait=index>0)
-        append('RESOLUTION_SCENARIO',record.get('scenario') or adapt_turn(record),delay=2000)
+        append('RESOLUTION_SCENARIO',limit_ball_cutscenes(record['scenario']) if record.get('scenario') else adapt_turn(record),delay=2000)
         score=[a+b for a,b in zip(score,record['result']['score'])]
     snapshot.update(world=records[-1]['result']['final_world_state'],turn=records[-1]['result']['turn_number']+1)
     snapshot['score']=score

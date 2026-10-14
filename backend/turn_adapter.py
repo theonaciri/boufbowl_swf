@@ -44,6 +44,29 @@ def maneuver(success=True, score=10):
             "score": {"inherentScore": int(score), "finalScore": int(score)}}
 
 
+def limit_ball_cutscenes(scenario):
+    """Only the first eligible ball action of each type may use a fullscreen sequence.
+
+    Keep disabled flags disabled and leave track timing, interaction links and
+    simulation data untouched. Off-ball fights do not consume the fight slot.
+    """
+    scenario = deepcopy(scenario)
+    shown = set()
+    entries = sorted(scenario['interaction'], key=lambda entry: (
+        entry['interactionDetails']['startTick'], entry['interactionId']))
+    for entry in entries:
+        details = entry['interactionDetails']
+        kind = details['type']
+        ball_action = kind in (12, 13, 14, 15, 17, 21) or (
+            kind == 20 and any(p.get('hasBall', False) for p in details['participants']))
+        category = 12 if kind == 17 else kind
+        enabled = bool(details.get('isCutscene') and ball_action and category not in shown)
+        details['isCutscene'] = enabled
+        if enabled:
+            shown.add(category)
+    return scenario
+
+
 def adapt_turn(record):
     initial, result = record["initial"], record["result"]
     events = result["events"]
@@ -140,12 +163,22 @@ def adapt_turn(record):
                 entity = entities[target]
                 delta = params.get("hp_deltas", {}).get(str(target), params.get("hp_deltas", {}).get(target))
                 healed = max(0, min(entity["max_hp"], entity["hp"] + (int(delta) if delta is not None else int(params.get("heal", 0)))))
-                targets.append({"boufbowlerId": str(target), "preResolutionHitPointsDelta": healed - entity["hp"]})
+                hp_delta = healed - entity["hp"]
+                display = [hp_delta] if hp_delta else []
+                target_data = {"boufbowlerId": str(target)}
+                if hp_delta: target_data['preResolutionHitPointsDelta'] = hp_delta
+                targets.append(target_data)
                 entity["hp"] = healed
                 for element, amount in params.get("elements", {}).items():
                     stat = {"TERRE": "strength", "FEU": "agility", "AIR": "precision", "EAU": "endurance"}[element]
-                    entity["stats"][stat] = max(0, entity["stats"][stat] + amount)
+                    before = entity["stats"][stat]
+                    entity["stats"][stat] = max(0, before + amount)
+                    if entity["stats"][stat] != before: display.append(entity["stats"][stat] - before)
                 entity["attack_bonus"] = entity.get("attack_bonus", 0) + params.get("attack", 0)
+                display.extend(params[key] for key in ('range','attack') if params.get(key))
+                if not params.get('elements') and params.get('element') and params.get('bonus'):
+                    display.append(params['bonus'])
+                if display: target_data['effectDeltas'] = list(dict.fromkeys(display))
             ability = {"boufbowlerId": str(actor), "target": targets}
             if "zobal_mask" in params: ability["zobalMask"] = params["zobal_mask"]
             abilities.append(ability)
@@ -270,4 +303,4 @@ def adapt_turn(record):
         if turn % period == 0: scenario['periodInformations'] = {'status':2,'remainingPeriodTurns':0}
         elif turn == total-2: scenario['periodInformations'] = {'status':3,'remainingPeriodTurns':2}
         elif period-turn%period == 2: scenario['periodInformations'] = {'status':1,'remainingPeriodTurns':2}
-    return scenario
+    return limit_ball_cutscenes(scenario)
