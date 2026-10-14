@@ -20,7 +20,8 @@ def main():
     cfg=load_config();cfg['general']['cinematics']['introductions']=False
     cfg['general']['economy']['free_customization']=False
     cfg['rules']['match'].update(turns_per_match=2,turns_per_period=2)
-    evidence=ROOT/'evidence/frontend-restoration';evidence.mkdir(parents=True,exist_ok=True)
+    language=os.environ.get('BOUFBOWL_SMOKE_LANG','en')
+    evidence=ROOT/('evidence/frontend-restoration'+('-'+language if language!='en' else ''));evidence.mkdir(parents=True,exist_ok=True)
     data=Path(os.environ.get('BOUFBOWL_SMOKE_DATA','/tmp/boufbowl-live-smoke-data'))
     nickname='FrontendRestore'+str(int(time.time()))
     with tempfile.TemporaryDirectory(prefix='boufbowl-restoration-smoke-') as tmp:
@@ -31,7 +32,7 @@ def main():
         threading.Thread(target=server.serve_forever,daemon=True).start()
         env=dict(os.environ,XDG_DATA_HOME=str(data),XDG_STATE_HOME=str(state))
         before=windows();log=(evidence/'launch.log').open('w')
-        process=subprocess.Popen([sys.executable,str(ROOT/'play.py'),'--mode','server','--lang','en','--profile',nickname,
+        process=subprocess.Popen([sys.executable,str(ROOT/'play.py'),'--mode','server','--lang',language,'--profile',nickname,
             '--server-url',f'http://127.0.0.1:{server.server_port}'],env=env,stdout=log,stderr=subprocess.STDOUT)
         trace=state/'boufbowl-tutorial/mock.log'
         def text():return trace.read_text() if trace.exists() else ''

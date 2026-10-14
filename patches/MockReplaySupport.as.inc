@@ -53,9 +53,10 @@
          if(mockLabel == null)
          {
             mockLabel = new TextField();
-            mockLabel.defaultTextFormat = new TextFormat("_sans",12,0xffff99);
+            mockLabel.defaultTextFormat = new TextFormat("Verdana",11,0x463d2b);
             mockLabel.background = true;
-            mockLabel.backgroundColor = 0x20252b;
+            mockLabel.backgroundColor = 0xfffce8;
+            mockLabel.embedFonts=true;mockLabel.border=true;mockLabel.borderColor=0xb4a570;
             mockLabel.x = 10;
             mockLabel.y = 570;
             mockLabel.width = 512;

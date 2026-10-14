@@ -10,6 +10,14 @@ def inject_server(source, config, android=False):
     imports = "   import flash.net.SharedObject;\n   import flash.net.URLRequestMethod;\n"
     source = source.replace("   public class StartUpApplicationCommand", imports + "\n   public class StartUpApplicationCommand", 1)
     helper = (ROOT / "patches/ServerSupport.as.inc").read_text() + "\n" + (ROOT / "patches/FrontendFeatures.as.inc").read_text()
+    helper=helper.replace("@LOCAL_UI@",json.dumps(json.loads((ROOT/'resources/local_ui.json').read_text()),ensure_ascii=True))
+    palettes=json.loads((ROOT/'resources/palettes.json').read_text())
+    previews={}
+    for kind,key in (('club_palette','club_palettes'),('character_palette','character_palettes')):
+        for palette in palettes[key]:
+            colors=palette.get('colors') or palette['hair'][:2]+palette['eyes'][:1]+palette['skin'][:2]
+            previews[kind+':'+str(palette['id'])]=colors
+    helper=helper.replace("@COSMETIC_PALETTES@",json.dumps(previews))
     helper = helper.replace("@ENABLED_STADIUMS@", json.dumps([i for i,name in enumerate(("FARMSTEAD","BRAKMAR","BEACH","BONTA","FRIGOST","KARA","FOREST","BALLOTIN","PIXEL"),1) if config["stadiums"][name]["enabled"]]))
     tournament=config["general"].get("tournament",{"enabled":False})
     helper=helper.replace("@TOURNAMENT_ENABLED@",str(tournament["enabled"]).lower())
@@ -32,5 +40,17 @@ def inject_server(source, config, android=False):
     source = source.replace('toolbar.graphics.drawRect(0,0,348,26);', 'toolbar.graphics.drawRect(0,0,404,26);')
     source = source.replace('Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);',
                             'addButton("Server",343,55,function():void { serverConnectionPanel(); });\n         Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);\n         serverLayoutToolbar();\n         Stage(app.contextInjector.getInstance(Stage)).addEventListener(Event.RESIZE,function(event:Event):void { serverLayoutToolbar(); });')
+    start=source.index('      private static function addButton(')
+    match=re.search(r'\n      (?:public|private|override)',source[start+10:])
+    if match:
+        end=start+10+match.start()
+    else:
+        end=source.rfind('   }')
+    source=source[:start]+"""      private static function addButton(label:String, xPos:int, width:int, callback:Function) : void
+      {
+         serverAction(toolbar,label,xPos,0,width,callback != null ? callback : function():void {});
+      }
+"""+source[end:]
+    source=source.replace('toolbar.graphics.beginFill(0x20252b,0.95);','toolbar.graphics.beginFill(0xfffce8,.95);').replace('toolbar.graphics.beginFill(2106667,0.95);','toolbar.graphics.beginFill(0xfffce8,.95);')
     source = source.replace('if(mockActive) mockStatus(text);', 'if(mockActive) mockStatus(text); else if(serverActive) serverTrace(text);')
     return source

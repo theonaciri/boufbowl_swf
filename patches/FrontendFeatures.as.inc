@@ -1,3 +1,52 @@
+      private static function serverCaption(text:String):String {
+         var labels:Object=@LOCAL_UI@;
+         var lang:String=AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang;
+         if(labels[text] != null)return String(labels[text][lang] || text);
+         var colon:int=text.indexOf(": ");
+         if(colon>0 && labels[text.substring(0,colon)] != null)return serverCaption(text.substring(0,colon))+": "+serverCaption(text.substring(colon+2));
+         return text;
+      }
+      private static function serverFrame(parent:Sprite,x:int,y:int,width:int,height:int):void {
+         var template:com.ankamagames.boufbowl.client.components.MessageBoxResizableTextUI=new com.ankamagames.boufbowl.client.components.MessageBoxResizableTextUI();
+         var skin:flash.display.MovieClip=template.textBackgroundInstance;
+         template.removeChild(skin);skin.width=width;skin.height=height;skin.x=x;skin.y=y;
+         skin.mouseEnabled=false;skin.mouseChildren=false;parent.addChild(skin);
+         var bounds:flash.geom.Rectangle=skin.getBounds(parent);skin.x+=x-bounds.x;skin.y+=y-bounds.y;
+      }
+      private static function serverHeading(parent:Sprite,title:String,x:int,y:int,width:int):TextField {
+         var field:TextField=serverText(parent,title,x,y,width);
+         var format:TextFormat=field.defaultTextFormat;format.font="Copperplate Gothic Bold";format.bold=false;format.size=17;format.color=0x738c38;
+         field.defaultTextFormat=format;field.text=serverCaption(title);field.height=32;return field;
+      }
+      private static function serverRows(parent:Sprite,x:int,y:int,width:int,height:int,step:int):void {
+         var rows:Sprite=new Sprite();rows.x=x;rows.y=y;rows.mouseEnabled=false;rows.mouseChildren=false;
+         for(var i:int=0;i<height/step;i++) {
+            rows.graphics.beginFill(i%2==0 ? 0xf0eccb : 0xfffcec,.85);
+            rows.graphics.drawRect(0,i*step,width,Math.min(step,height-i*step));rows.graphics.endFill();
+         }
+         parent.addChild(rows);
+      }
+      private static function serverRewardBalance(parent:Sprite,wallet:Object):void {
+         var classes:Array=[com.ankamagames.boufbowl.client.components.matchmaking.rewards.BowltonGold,com.ankamagames.boufbowl.client.components.matchmaking.rewards.BowltonIron,com.ankamagames.boufbowl.client.components.matchmaking.rewards.BowltonCopper];
+         var keys:Array=["glory","influence","coins"];var labels:Array=["Glory","Influence","Coins"];
+         for(var i:int=0;i<3;i++) {
+            var type:Class=classes[i];var icon:flash.display.DisplayObject=new type();icon.width=26;icon.height=26;parent.addChild(icon);
+            var bounds:flash.geom.Rectangle=icon.getBounds(parent);icon.x+=24+i*245-bounds.x;icon.y+=51-bounds.y;
+            serverText(parent,serverCaption(labels[i])+"  " + wallet[keys[i]],60+i*245,55,170);
+         }
+      }
+      private static function serverPalettePreview(parent:Sprite,item:Object,x:int,y:int):void {
+         var palettes:Object=@COSMETIC_PALETTES@;
+         var colors:Array=palettes[item.kind+":"+item.asset_id];if(colors == null)return;
+         var preview:Sprite=new Sprite();preview.x=x;preview.y=y;preview.mouseEnabled=false;
+         for(var i:int=0;i<Math.min(5,colors.length);i++) {
+            preview.graphics.lineStyle(1,0x82764e);preview.graphics.beginFill(parseInt(String(colors[i]),16));
+            preview.graphics.moveTo(i*17+8,0);preview.graphics.lineTo(i*17+15,4);preview.graphics.lineTo(i*17+15,12);
+            preview.graphics.lineTo(i*17+8,16);preview.graphics.lineTo(i*17+1,12);preview.graphics.lineTo(i*17+1,4);
+            preview.graphics.lineTo(i*17+8,0);preview.graphics.endFill();
+         }
+         parent.addChild(preview);
+      }
       public static var serverTournamentRounds:Object={};
       public static function serverTournamentDetails(id:Object):Object { return serverTournamentRounds[serverId(id)]; }
       private static var serverRole:String = "player";
@@ -26,7 +75,7 @@
       }
       private static function replayBuildControls():void {
          replayControls=new Sprite();replayControls.x=10;replayControls.y=530;
-         replayControls.graphics.beginFill(0xf7f3d2,.95);replayControls.graphics.drawRoundRect(0,0,740,34,8);replayControls.graphics.endFill();
+         serverFrame(replayControls,0,0,740,36);
          serverAction(replayControls,"Pause / resume",5,3,145,function():void {
             if(!mockActive)return;replayPaused=!replayPaused;replayApplyTiming();replayUpdateLabel();mockStatus(replayPaused ? "Replay paused" : "Replay resumed");
          });
@@ -58,12 +107,15 @@
       private static function serverWalletPanel():void {
          serverCommunityRequest({action:"wallet"},function(data:Object):void {
             serverDialog("Wallet and cosmetic collection",440);serverTrace("Wallet opened");
-            serverText(serverPanel,"Glory: " + data.wallet.glory + "   Influence: " + data.wallet.influence + "   Coins: " + data.wallet.coins,20,50,740);
+            serverRewardBalance(serverPanel,data.wallet);
             serverText(serverPanel,data.free_customization ? "Free customization: claim cosmetics at no cost." : "Spend tournament rewards on cosmetic palettes.",20,85,740);
+            serverRows(serverPanel,20,121,740,210,35);
             var y:int=125;
             for each(var item:Object in data.catalog) {
-               var costs:Array=[];for(var currency:String in item.price) costs.push(item.price[currency] + " " + currency);
-               serverText(serverPanel,item.name + (item.owned ? " (owned)" : "") + "   " + (costs.length ? costs.join(", ") : "free"),20,y,490);
+               var costs:Array=[];for(var currency:String in item.price) costs.push(item.price[currency] + " " + serverCaption(currency));
+               serverPalettePreview(serverPanel,item,30,y+6);
+               serverText(serverPanel,serverCaption(item.name) + (item.owned ? "  ("+serverCaption("Owned")+")" : ""),130,y+2,260);
+               serverText(serverPanel,costs.length ? costs.join(", ") : serverCaption("Free"),385,y+2,200);
                if(!item.owned) {
                   (function(identity:String,row:int):void {
                      serverAction(serverPanel,data.free_customization ? "Claim" : "Buy",590,row,150,function():void { serverCommunityRequest({action:"buy",item_id:identity},function(result:Object):void { serverWalletPanel(); }); });
@@ -83,11 +135,22 @@
          serverCommunityRequest({action:"progression"},function(data:Object):void {
             serverDialog("Ranked progression",420);serverTrace("Progression opened");
             var names:Object={1:"Craqueleur",2:"Abraknyde",3:"Wabbit",4:"Tofu",5:"Piou",0:"Unranked"};
-            var lines:Array=["League: " + names[data.ranking.league] + "   Rating: " + data.rating,"Qualifying ranked games: " + data.qualifying_games];
-            for each(var tier:Object in data.leagues)lines.push(names[tier.id] + ": " + tier.min_rating + " rating");
-            lines.push(data.season != null ? "Season " + data.season : "Seasons disabled");
-            for each(var old:Object in data.season_history)lines.push("Season " + old.season + ": " + old.rating + " rating / W " + old.wins + " D " + old.draws + " L " + old.defeats);
-            var text:TextField=serverText(serverPanel,lines.join("\n"),20,55,730);text.multiline=true;text.height=330;
+            serverText(serverPanel,"Rating: " + data.rating + "   /   " + names[data.ranking.league],20,50,730);
+            serverText(serverPanel,"Qualifying ranked games: " + data.qualifying_games,20,78,730);
+            var row:int=113;serverRows(serverPanel,20,row,740,190,38);
+            for each(var tier:Object in data.leagues) {
+               var cube:com.ankamagames.boufbowl.client.components.league.LeagueCubeUI=new com.ankamagames.boufbowl.client.components.league.LeagueCubeUI();
+               cube.league=int(tier.id);cube.width=30;cube.height=32;serverPanel.addChild(cube);var bounds:flash.geom.Rectangle=cube.getBounds(serverPanel);cube.x+=32-bounds.x;cube.y+=row+3-bounds.y;
+               var caption:TextField=serverText(serverPanel,names[tier.id],85,row+8,230);
+               serverText(serverPanel,String(tier.min_rating) + "+",340,row+8,140);
+               if(int(data.ranking.league)==int(tier.id))serverText(serverPanel,serverCaption("Your league"),560,row+8,170);
+               row+=38;
+            }
+            serverText(serverPanel,data.season != null ? "Season " + data.season : "Seasons disabled",20,317,730);
+            var lines:Array=[];
+            for each(var old:Object in data.season_history)lines.push("Season " + old.season + ": " + old.rating + " / W " + old.wins + " D " + old.draws + " L " + old.defeats);
+            var text:TextField=serverText(serverPanel,lines.join("\n"),20,346,730);text.multiline=true;text.height=60;text.mouseWheelEnabled=true;
+
          });
       }
       private static function serverNewsPanel():void {
@@ -116,10 +179,20 @@
                   });
                })(String(verbs[i]),i);
             }
-            var lines:Array=[];
-            for each(var report:Object in data.reports)lines.push("Report #" + report.id + " " + report.target + ": " + report.reason);
-            for each(var sanction:Object in data.sanctions)lines.push(sanction.nickname + " / " + sanction.kind + " / " + sanction.reason);
-            for each(var entry:Object in data.audit)lines.push("Audit " + entry.action + ": " + entry.target_name + " / " + entry.reason);
-            var text:TextField=serverText(serverPanel,lines.length ? lines.join("\n") : "No reports or sanctions.",20,225,750);text.multiline=true;text.height=180;text.mouseWheelEnabled=true;
+            serverRows(serverPanel,20,265,750,140,28);
+            var text:TextField=serverText(serverPanel,"",25,265,740);text.multiline=true;text.wordWrap=true;text.height=140;text.mouseWheelEnabled=true;text.selectable=true;
+            var render:Function=function(kind:String):void {
+               var lines:Array=[];
+               if(kind=="Reports") for each(var report:Object in data.reports)lines.push("#"+report.id+"  "+report.target+" - "+report.reason);
+               if(kind=="Sanctions") for each(var sanction:Object in data.sanctions)lines.push(sanction.nickname+" / "+serverCaption(sanction.kind)+" - "+sanction.reason);
+               if(kind=="Audit") for each(var entry:Object in data.audit)lines.push(serverCaption(entry.action)+": "+entry.target_name+" - "+entry.reason);
+               text.text=lines.length ? lines.join("\n") : serverCaption("No entries");text.scrollV=1;
+            };
+            var sections:Array=["Reports","Sanctions","Audit"];
+            for(var section:int=0;section<sections.length;section++) {
+               (function(kind:String,index:int):void { serverAction(serverPanel,kind,20+index*255,225,240,function():void { render(kind); }); })(sections[section],section);
+            }
+            render(data.reports.length ? "Reports" : data.sanctions.length ? "Sanctions" : "Audit");
+
          });
       }

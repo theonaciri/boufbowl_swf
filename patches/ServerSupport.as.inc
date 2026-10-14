@@ -16,6 +16,7 @@
       private static var serverInMatch:Boolean = false;
       private static var serverCurrentMatch:String;
       private static var serverPanel:Sprite;
+      private static var serverStatusTimer:uint;
       private static var serverProfileName:String;
       private static var serverEmbedded:Boolean = false;
       private static var serverAuthMode:String = "device";
@@ -34,15 +35,18 @@
          if(serverLabel == null)
          {
             serverLabel = new TextField();
-            serverLabel.defaultTextFormat = new TextFormat("_sans",12,0xffffff);
+            serverLabel.defaultTextFormat = new TextFormat("Verdana",11,0x463d2b);
+            serverLabel.embedFonts=true;serverLabel.border=true;serverLabel.borderColor=0xb4a570;
             serverLabel.background = true;
-            serverLabel.backgroundColor = 0x20252b;
+            serverLabel.backgroundColor = 0xfffce8;
             serverLabel.x = 10; serverLabel.y = 570; serverLabel.width = 512; serverLabel.height = 24;
             serverLabel.mouseEnabled = false;
          }
          serverLabel.width = Math.min(512, Stage(app.contextInjector.getInstance(Stage)).stageWidth / 2);
          serverLabel.wordWrap = true;
-         serverLabel.text = text;
+         serverLabel.text = text;serverLabel.visible=true;
+         clearTimeout(serverStatusTimer);
+         serverStatusTimer=setTimeout(function():void { if(serverLabel != null)serverLabel.visible=false; },8000);
          serverLabel.height = Math.min(72, serverLabel.textHeight + 6);
          serverLabel.y = 594 - serverLabel.height;
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverLabel);
@@ -377,32 +381,51 @@
       private static function serverDialog(title:String, height:int) : void
       {
          serverClosePanel(); serverPanel = new Sprite();
-         serverPanel.graphics.lineStyle(2,0xb3a66a); serverPanel.graphics.beginFill(0xf7f3d2); serverPanel.graphics.drawRoundRect(0,0,800,height,14); serverPanel.graphics.endFill();
+         serverFrame(serverPanel,0,0,800,height);
          serverPanel.x = 110; serverPanel.y = Math.max(80,(600-height)/2);
-         serverText(serverPanel,title,20,10,680);
+         serverHeading(serverPanel,title,24,10,650);
          serverAction(serverPanel,"Close",690,10,90,function():void { serverClosePanel(); });
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
       }
 
       private static function serverText(parent:Sprite, text:String, x:int, y:int, width:int) : TextField
       {
-         var field:TextField = new TextField(); field.defaultTextFormat = new TextFormat("_sans",15,0x463d2b);
-         field.text = text; field.x = x; field.y = y; field.width = width; field.height = 28; parent.addChild(field); return field;
+         var field:TextField = new TextField();
+         field.defaultTextFormat = new TextFormat("Verdana",12,0x463d2b);
+         field.embedFonts=true;field.antiAliasType="advanced";
+         field.text = serverCaption(text); field.x = x; field.y = y; field.width = width; field.height = 28;
+         field.selectable=false;parent.addChild(field); return field;
       }
 
       private static function serverInput(parent:Sprite, text:String, x:int, y:int, width:int, secret:Boolean = false) : TextField
       {
-         var field:TextField = serverText(parent,text,x,y,width); field.type = "input";
-         field.background = true; field.backgroundColor = 0xffffff; field.textColor = 0x000000;
-         field.displayAsPassword = secret; parent.addChild(field); return field;
+         var field:TextField = serverText(parent,text,x+7,y+3,width-14); field.type = "input";
+         field.text=text;field.selectable=true;field.height=23;field.displayAsPassword = secret;
+         var outline:Sprite=new Sprite();outline.x=x;outline.y=y;
+         outline.graphics.lineStyle(1,0xa99c6d);outline.graphics.beginFill(0xfffef0);
+         outline.graphics.drawRoundRect(0,0,width,28,5);outline.graphics.endFill();
+         outline.graphics.lineStyle(1,0xe2dab3);outline.graphics.moveTo(2,2);outline.graphics.lineTo(width-2,2);
+         outline.mouseEnabled=false;parent.addChildAt(outline,parent.getChildIndex(field));
+         field.addEventListener(flash.events.FocusEvent.FOCUS_IN,function(event:flash.events.FocusEvent):void { outline.filters=[new flash.filters.GlowFilter(0x9dae43,.5,4,4,1)]; });
+         field.addEventListener(flash.events.FocusEvent.FOCUS_OUT,function(event:flash.events.FocusEvent):void { outline.filters=[]; });
+         return field;
       }
 
       private static function serverAction(parent:Sprite, title:String, x:int, y:int, width:int, callback:Function) : Sprite
       {
-         var button:Sprite = new Sprite(); button.x=x; button.y=y; button.buttonMode=true;
-         button.graphics.lineStyle(1,0xb3a66a);button.graphics.beginFill(0xdce6a8); button.graphics.drawRoundRect(0,0,width,28,8); button.graphics.endFill();
-         var label:TextField = serverText(button,title,4,2,width-8); label.mouseEnabled=false;
-         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); }); parent.addChild(button); return button;
+         var button:Sprite = new Sprite(); button.x=x; button.y=y; button.buttonMode=true;button.mouseChildren=false;
+         var skin:com.ankamagames.boufbowl.client.ui.SimpleButton=new com.ankamagames.boufbowl.client.ui.SimpleButton();
+         skin.componentLabel="";skin.width=width;skin.height=28;button.addChild(skin);
+         var bounds:flash.geom.Rectangle=skin.getBounds(button);skin.x-=bounds.x;skin.y-=bounds.y;
+         var label:TextField = serverText(button,title,5,5,width-10);
+         var format:TextFormat=label.defaultTextFormat;format.font="Copperplate Gothic Bold";format.bold=false;format.size=12;format.align="center";format.color=0x657e30;
+         label.defaultTextFormat=format;label.text=serverCaption(title);label.mouseEnabled=false;
+         while(label.textWidth>width-14 && Number(format.size)>9) { format.size=Number(format.size)-1;label.setTextFormat(format); }
+         button.addEventListener(MouseEvent.MOUSE_OVER,function(event:MouseEvent):void { skin.selected=true;label.textColor=0x3e5c1e; });
+         button.addEventListener(MouseEvent.MOUSE_OUT,function(event:MouseEvent):void { skin.selected=false;label.textColor=0x657e30; });
+         button.addEventListener(MouseEvent.MOUSE_DOWN,function(event:MouseEvent):void { skin.y=1;label.y=6; });
+         button.addEventListener(MouseEvent.MOUSE_UP,function(event:MouseEvent):void { skin.y=0;label.y=5; });
+         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); });parent.addChild(button);return button;
       }
 
       private static function serverAccountPanel() : void
@@ -463,39 +486,18 @@
 
       private static function serverConnectionPanel() : void
       {
-         if(serverPanel != null && serverPanel.parent != null) serverPanel.parent.removeChild(serverPanel);
-         serverPanel = new Sprite();
-         serverPanel.graphics.lineStyle(2,0xb3a66a);serverPanel.graphics.beginFill(0xf7f3d2); serverPanel.graphics.drawRoundRect(0,0,800,300,14); serverPanel.graphics.endFill();
-         serverPanel.x = 110; serverPanel.y = 150;
-         var title:TextField = new TextField(); title.defaultTextFormat = new TextFormat("_sans",16,0x463d2b);
-         title.text = "Connect to your Boufbowl server"; title.width = 760; title.height = 30; title.x = 20; title.y = 10;
-         serverPanel.addChild(title);
-         var input:TextField = new TextField(); input.type = "input"; input.background = true; input.backgroundColor = 0xffffff;
-         input.defaultTextFormat = new TextFormat("_sans",16,0x000000); input.width = 620; input.height = 30; input.x = 20; input.y = 50;
-         input.text = serverEmbedded ? "" : serverBase != null ? serverBase.replace(/\/api\/$/,"") : @DEFAULT_URL@;
-         serverPanel.addChild(input);
-         var profileLabel:TextField = new TextField(); profileLabel.text = "Device:"; profileLabel.textColor = 0x463d2b;
-         profileLabel.x = 20; profileLabel.y = 100; profileLabel.width = 80; profileLabel.height = 25;
-         serverPanel.addChild(profileLabel);
-         var profile:TextField = new TextField(); profile.type = "input"; profile.background = true; profile.backgroundColor = 0xffffff;
-         profile.defaultTextFormat = new TextFormat("_sans",16,0x000000); profile.width = 520; profile.height = 28; profile.x = 120; profile.y = 95;
-         profile.text = serverProfileName != null ? serverProfileName : "Local Player";
-         serverPanel.addChild(profile);
-         var button:Sprite = new Sprite(); button.graphics.beginFill(0x3578cf); button.graphics.drawRect(0,0,100,30); button.graphics.endFill();
-         button.x = 660; button.y = 50;
-         var label:TextField = new TextField(); label.text = "Connect"; label.textColor = 0xffffff; label.width = 100; label.height = 30; label.mouseEnabled = false;
-         button.addChild(label); button.buttonMode = true;
-         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void {
-            serverPanel.parent.removeChild(serverPanel); startServer(input.text,profile.text);
-         });
-         serverPanel.addChild(button);
+         serverDialog("Clubhouse",300);serverPanel.y=150;
+         serverText(serverPanel,"Server address",20,50,160);
+         var input:TextField=serverInput(serverPanel,serverEmbedded ? "" : serverBase != null ? serverBase.replace(/\/api\/$/,"") : @DEFAULT_URL@,170,50,460);
+         serverText(serverPanel,"Player nickname",20,95,160);
+         var profile:TextField=serverInput(serverPanel,serverProfileName != null ? serverProfileName : "Local Player",170,95,460);
+         serverAction(serverPanel,"Connect",660,50,100,function():void { serverClosePanel();startServer(input.text,profile.text); });
          serverAction(serverPanel,"Account",660,95,100,function():void { serverAccountPanel(); });
          serverAction(serverPanel,"Community",20,140,180,function():void { serverCommunityPanel("Friends"); });
          serverAction(serverPanel,"Wallet / cosmetics",220,140,220,function():void { serverWalletPanel(); });
          serverAction(serverPanel,"Leagues / seasons",460,140,250,function():void { serverProgressionPanel(); });
          serverAction(serverPanel,"News",20,185,180,function():void { serverNewsPanel(); });
          if(serverRole == "moderator" || serverRole == "admin") serverAction(serverPanel,"Moderation",220,185,220,function():void { serverModerationPanel(); });
-         Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
       }
 
       private static function serverCommunityRequest(body:Object, complete:Function) : void
@@ -516,7 +518,9 @@
          var tabs:Array=["Friends","Rankings","History","Watch","Messages","Channels"];
          for(var i:int=0;i<tabs.length;i++) serverCommunityTab(String(tabs[i]),20+i*125);
          var listing:TextField=serverText(panel,"Loading...",20,85,760);
+         serverRows(panel,20,85,760,220,28);panel.setChildIndex(listing,panel.numChildren-1);
          listing.height=220; listing.multiline=true; listing.wordWrap=true; listing.selectable=true;
+         listing.defaultTextFormat=new TextFormat("Verdana",12,0x463d2b,false,null,null,null,null,null,null,null,7);
          var choice:TextField=serverInput(panel,selected,20,310,320);
          serverText(panel,tab == "History" || tab == "Watch" ? "Match ID" : "Player nickname",350,310,180);
          serverAction(panel,"Refresh",620,310,150,function():void { serverCommunityPanel(tab,offset,choice.text); });

@@ -688,3 +688,19 @@ See frontend-restoration.md for operating instructions and explicit limitations.
 
 Final automated validation: 160 tests passed; git diff --check passed. Linux
 package contents match the current workspace client, backend and settings.
+
+
+## 2026-10-14 — custom interface visual integration
+
+Committed the complete restoration baseline as 0d61444 before the requested UI
+revision. Replaced generic rectangles/buttons with original SimpleButton and
+message-box frame symbols. Corrected embedded-art local bounds before positioning
+frames and league icons. Shared changes apply to the toolbar, account/play and
+community screens, wallet, leagues, news, moderation and replay controls.
+
+Added four-language main captions, embedded Verdana text, button hover/press and
+long-label fitting, warm input surfaces/focus, wallet reward-token artwork,
+hexagonal palette previews and original league badges. Moderation now separates
+reports, sanctions and audit history; status notices use cream/olive styling and
+dismiss after eight seconds while retaining the half-screen width limit.
+The original reference SWFs and assets remain untouched.

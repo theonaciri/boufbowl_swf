@@ -1,0 +1,542 @@
+{
+  "Clubhouse": {
+    "en": "Clubhouse",
+    "fr": "Club-house",
+    "de": "Vereinshaus",
+    "es": "Club"
+  },
+  "Close": {
+    "en": "Close",
+    "fr": "Fermer",
+    "de": "Schließen",
+    "es": "Cerrar"
+  },
+  "Connect": {
+    "en": "Connect",
+    "fr": "Connexion",
+    "de": "Verbinden",
+    "es": "Conectar"
+  },
+  "Server address": {
+    "en": "Server address",
+    "fr": "Adresse du serveur",
+    "de": "Serveradresse",
+    "es": "Dirección del servidor"
+  },
+  "Player nickname": {
+    "en": "Player nickname",
+    "fr": "Nom du joueur",
+    "de": "Spielername",
+    "es": "Nombre del jugador"
+  },
+  "Account": {
+    "en": "Account",
+    "fr": "Compte",
+    "de": "Konto",
+    "es": "Cuenta"
+  },
+  "Community": {
+    "en": "Community",
+    "fr": "Communauté",
+    "de": "Gemeinschaft",
+    "es": "Comunidad"
+  },
+  "Wallet / cosmetics": {
+    "en": "Wallet / cosmetics",
+    "fr": "Récompenses / couleurs",
+    "de": "Belohnungen / Farben",
+    "es": "Premios / colores"
+  },
+  "Leagues / seasons": {
+    "en": "Leagues / seasons",
+    "fr": "Ligues / saisons",
+    "de": "Ligen / Saisons",
+    "es": "Ligas / temporadas"
+  },
+  "News": {
+    "en": "News",
+    "fr": "Actualités",
+    "de": "Neuigkeiten",
+    "es": "Noticias"
+  },
+  "Moderation": {
+    "en": "Moderation",
+    "fr": "Modération",
+    "de": "Moderation",
+    "es": "Moderación"
+  },
+  "Wallet and cosmetic collection": {
+    "en": "Wallet and cosmetic collection",
+    "fr": "Récompenses et couleurs",
+    "de": "Belohnungen und Farben",
+    "es": "Premios y colores"
+  },
+  "Ranked progression": {
+    "en": "Ranked progression",
+    "fr": "Progression en ligue",
+    "de": "Ligafortschritt",
+    "es": "Progreso en liga"
+  },
+  "Claim": {
+    "en": "Claim",
+    "fr": "Obtenir",
+    "de": "Freischalten",
+    "es": "Obtener"
+  },
+  "Buy": {
+    "en": "Buy",
+    "fr": "Acheter",
+    "de": "Kaufen",
+    "es": "Comprar"
+  },
+  "Free": {
+    "en": "Free",
+    "fr": "Gratuit",
+    "de": "Kostenlos",
+    "es": "Gratis"
+  },
+  "Your league": {
+    "en": "Your league",
+    "fr": "Votre ligue",
+    "de": "Deine Liga",
+    "es": "Tu liga"
+  },
+  "Seasons disabled": {
+    "en": "Seasons disabled",
+    "fr": "Classement permanent",
+    "de": "Dauerhafte Rangliste",
+    "es": "Clasificación permanente"
+  },
+  "Award / purchase history": {
+    "en": "Award / purchase history",
+    "fr": "Historique des récompenses",
+    "de": "Belohnungsverlauf",
+    "es": "Historial de premios"
+  },
+  "Friends": {
+    "en": "Friends",
+    "fr": "Amis",
+    "de": "Freunde",
+    "es": "Amigos"
+  },
+  "Rankings": {
+    "en": "Rankings",
+    "fr": "Classement",
+    "de": "Rangliste",
+    "es": "Clasificación"
+  },
+  "History": {
+    "en": "History",
+    "fr": "Historique",
+    "de": "Verlauf",
+    "es": "Historial"
+  },
+  "Watch": {
+    "en": "Watch",
+    "fr": "Spectateurs",
+    "de": "Zuschauen",
+    "es": "Espectadores"
+  },
+  "Messages": {
+    "en": "Messages",
+    "fr": "Messages",
+    "de": "Nachrichten",
+    "es": "Mensajes"
+  },
+  "Channels": {
+    "en": "Channels",
+    "fr": "Canaux",
+    "de": "Kanäle",
+    "es": "Canales"
+  },
+  "Refresh": {
+    "en": "Refresh",
+    "fr": "Actualiser",
+    "de": "Aktualisieren",
+    "es": "Actualizar"
+  },
+  "Send": {
+    "en": "Send",
+    "fr": "Envoyer",
+    "de": "Senden",
+    "es": "Enviar"
+  },
+  "Previous": {
+    "en": "Previous",
+    "fr": "Précédent",
+    "de": "Zurück",
+    "es": "Anterior"
+  },
+  "Next": {
+    "en": "Next",
+    "fr": "Suivant",
+    "de": "Weiter",
+    "es": "Siguiente"
+  },
+  "Pause / resume": {
+    "en": "Pause / resume",
+    "fr": "Pause / reprendre",
+    "de": "Pause / fortsetzen",
+    "es": "Pausa / continuar"
+  },
+  "Speed": {
+    "en": "Speed",
+    "fr": "Vitesse",
+    "de": "Tempo",
+    "es": "Velocidad"
+  },
+  "Previous turn": {
+    "en": "Previous turn",
+    "fr": "Tour précédent",
+    "de": "Vorige Runde",
+    "es": "Turno anterior"
+  },
+  "Next turn": {
+    "en": "Next turn",
+    "fr": "Tour suivant",
+    "de": "Nächste Runde",
+    "es": "Turno siguiente"
+  },
+  "Ocean club palette": {
+    "en": "Ocean club palette",
+    "fr": "Couleurs océaniques",
+    "de": "Ozeanfarben",
+    "es": "Colores oceánicos"
+  },
+  "Forest club palette": {
+    "en": "Forest club palette",
+    "fr": "Couleurs forestières",
+    "de": "Waldfarben",
+    "es": "Colores del bosque"
+  },
+  "Sunset club palette": {
+    "en": "Sunset club palette",
+    "fr": "Couleurs du couchant",
+    "de": "Abendfarben",
+    "es": "Colores del ocaso"
+  },
+  "Pastel character palette": {
+    "en": "Pastel character palette",
+    "fr": "Tons pastel",
+    "de": "Pastelltöne",
+    "es": "Tonos pastel"
+  },
+  "Vivid character palette": {
+    "en": "Vivid character palette",
+    "fr": "Tons vifs",
+    "de": "Leuchtende Farben",
+    "es": "Tonos vivos"
+  },
+  "Natural character palette": {
+    "en": "Natural character palette",
+    "fr": "Tons naturels",
+    "de": "Naturfarben",
+    "es": "Tonos naturales"
+  },
+  "Username": {
+    "en": "Username",
+    "fr": "Identifiant",
+    "de": "Benutzername",
+    "es": "Usuario"
+  },
+  "Password": {
+    "en": "Password",
+    "fr": "Mot de passe",
+    "de": "Passwort",
+    "es": "Contraseña"
+  },
+  "New password": {
+    "en": "New password",
+    "fr": "Nouveau mot de passe",
+    "de": "Neues Passwort",
+    "es": "Nueva contraseña"
+  },
+  "Recovery code": {
+    "en": "Recovery code",
+    "fr": "Code de récupération",
+    "de": "Wiederherstellungscode",
+    "es": "Código de recuperación"
+  },
+  "Log in": {
+    "en": "Log in",
+    "fr": "Connexion",
+    "de": "Anmelden",
+    "es": "Iniciar sesión"
+  },
+  "Create / link": {
+    "en": "Create / link",
+    "fr": "Créer / associer",
+    "de": "Erstellen / verknüpfen",
+    "es": "Crear / vincular"
+  },
+  "Change password": {
+    "en": "Change password",
+    "fr": "Changer le mot de passe",
+    "de": "Passwort ändern",
+    "es": "Cambiar contraseña"
+  },
+  "Log out": {
+    "en": "Log out",
+    "fr": "Déconnexion",
+    "de": "Abmelden",
+    "es": "Cerrar sesión"
+  },
+  "Use device profile": {
+    "en": "Use device profile",
+    "fr": "Profil anonyme",
+    "de": "Anonymes Profil",
+    "es": "Perfil anónimo"
+  },
+  "Recover account": {
+    "en": "Recover account",
+    "fr": "Récupérer le compte",
+    "de": "Konto wiederherstellen",
+    "es": "Recuperar cuenta"
+  },
+  "Find opponent": {
+    "en": "Find opponent",
+    "fr": "Trouver un adversaire",
+    "de": "Gegner finden",
+    "es": "Buscar rival"
+  },
+  "CPU matchmaking": {
+    "en": "CPU matchmaking",
+    "fr": "Jouer contre le CPU",
+    "de": "CPU-Spiel",
+    "es": "Jugar contra CPU"
+  },
+  "Cancel search": {
+    "en": "Cancel search",
+    "fr": "Annuler la recherche",
+    "de": "Suche abbrechen",
+    "es": "Cancelar búsqueda"
+  },
+  "Find tournament": {
+    "en": "Find tournament",
+    "fr": "Jouer en tournoi",
+    "de": "Turnierspiel",
+    "es": "Jugar torneo"
+  },
+  "Change stadium": {
+    "en": "Change stadium",
+    "fr": "Changer de stade",
+    "de": "Stadion wechseln",
+    "es": "Cambiar estadio"
+  },
+  "Change team": {
+    "en": "Change team",
+    "fr": "Changer d’équipe",
+    "de": "Team wechseln",
+    "es": "Cambiar equipo"
+  },
+  "Challenge": {
+    "en": "Challenge",
+    "fr": "Défier",
+    "de": "Herausfordern",
+    "es": "Desafiar"
+  },
+  "Reason": {
+    "en": "Reason",
+    "fr": "Motif",
+    "de": "Grund",
+    "es": "Motivo"
+  },
+  "Duration (seconds)": {
+    "en": "Duration (seconds)",
+    "fr": "Durée (secondes)",
+    "de": "Dauer (Sekunden)",
+    "es": "Duración (segundos)"
+  },
+  "kick": {
+    "en": "kick",
+    "fr": "Exclure",
+    "de": "Entfernen",
+    "es": "Expulsar"
+  },
+  "ban": {
+    "en": "ban",
+    "fr": "Bannir",
+    "de": "Sperren",
+    "es": "Bloquear"
+  },
+  "mute": {
+    "en": "mute",
+    "fr": "Rendre muet",
+    "de": "Stummschalten",
+    "es": "Silenciar"
+  },
+  "unban": {
+    "en": "unban",
+    "fr": "Lever le ban",
+    "de": "Entsperren",
+    "es": "Desbloquear"
+  },
+  "unmute": {
+    "en": "unmute",
+    "fr": "Rétablir la parole",
+    "de": "Stummschaltung aufheben",
+    "es": "Restaurar voz"
+  },
+  "Home": {
+    "en": "Home",
+    "fr": "Accueil",
+    "de": "Start",
+    "es": "Inicio"
+  },
+  "Teams": {
+    "en": "Teams",
+    "fr": "Équipes",
+    "de": "Teams",
+    "es": "Equipos"
+  },
+  "Play": {
+    "en": "Play",
+    "fr": "Jouer",
+    "de": "Spielen",
+    "es": "Jugar"
+  },
+  "Quit": {
+    "en": "Quit",
+    "fr": "Quitter",
+    "de": "Beenden",
+    "es": "Salir"
+  },
+  "Server": {
+    "en": "Server",
+    "fr": "Club",
+    "de": "Club",
+    "es": "Club"
+  },
+  "Glory": {
+    "en": "Glory",
+    "fr": "Gloire",
+    "de": "Ruhm",
+    "es": "Gloria"
+  },
+  "Influence": {
+    "en": "Influence",
+    "fr": "Influence",
+    "de": "Einfluss",
+    "es": "Influencia"
+  },
+  "Coins": {
+    "en": "Coins",
+    "fr": "Pièces",
+    "de": "Münzen",
+    "es": "Monedas"
+  },
+  "Reports": {
+    "en": "Reports",
+    "fr": "Signalements",
+    "de": "Meldungen",
+    "es": "Denuncias"
+  },
+  "Sanctions": {
+    "en": "Sanctions",
+    "fr": "Sanctions",
+    "de": "Sanktionen",
+    "es": "Sanciones"
+  },
+  "Audit": {
+    "en": "Audit",
+    "fr": "Journal",
+    "de": "Protokoll",
+    "es": "Registro"
+  },
+  "No entries": {
+    "en": "No entries",
+    "fr": "Aucune entrée",
+    "de": "Keine Einträge",
+    "es": "Sin entradas"
+  },
+  "Owned": {
+    "en": "Owned",
+    "fr": "Obtenu",
+    "de": "Freigeschaltet",
+    "es": "Obtenido"
+  },
+  "Rating": {
+    "en": "Rating",
+    "fr": "Cote",
+    "de": "Wertung",
+    "es": "Puntuación"
+  },
+  "Qualifying ranked games": {
+    "en": "Qualifying ranked games",
+    "fr": "Matchs de qualification",
+    "de": "Qualifikationsspiele",
+    "es": "Partidas de clasificación"
+  },
+  "Spend tournament rewards on cosmetic palettes.": {
+    "en": "Spend tournament rewards on cosmetic palettes.",
+    "fr": "Échangez vos récompenses de tournoi contre de nouvelles couleurs.",
+    "de": "Tausche Turnierbelohnungen gegen neue Farben.",
+    "es": "Cambia tus premios de torneo por nuevos colores."
+  },
+  "Free customization: claim cosmetics at no cost.": {
+    "en": "Free customization: claim cosmetics at no cost.",
+    "fr": "Personnalisation gratuite : obtenez toutes les couleurs sans frais.",
+    "de": "Kostenlose Anpassung: Schalte alle Farben gratis frei.",
+    "es": "Personalización gratuita: obtén todos los colores sin coste."
+  },
+  "glory": {
+    "en": "glory",
+    "fr": "gloire",
+    "de": "Ruhm",
+    "es": "gloria"
+  },
+  "influence": {
+    "en": "influence",
+    "fr": "influence",
+    "de": "Einfluss",
+    "es": "influencia"
+  },
+  "coins": {
+    "en": "coins",
+    "fr": "pièces",
+    "de": "Münzen",
+    "es": "monedas"
+  },
+  "Player": {
+    "en": "Player",
+    "fr": "Joueur",
+    "de": "Spieler",
+    "es": "Jugador"
+  },
+  "anonymous device": {
+    "en": "anonymous device",
+    "fr": "profil anonyme",
+    "de": "anonymes Profil",
+    "es": "perfil anónimo"
+  },
+  "Any stadium": {
+    "en": "Any stadium",
+    "fr": "Tous les stades",
+    "de": "Alle Stadien",
+    "es": "Todos los estadios"
+  },
+  "Team": {
+    "en": "Team",
+    "fr": "Équipe",
+    "de": "Team",
+    "es": "Equipo"
+  },
+  "Challenge a player by nickname": {
+    "en": "Challenge a player by nickname",
+    "fr": "Défier un joueur par son nom",
+    "de": "Spieler nach Namen herausfordern",
+    "es": "Desafiar a un jugador por nombre"
+  },
+  "Match ID": {
+    "en": "Match ID",
+    "fr": "N° de match",
+    "de": "Spiel-ID",
+    "es": "ID de partida"
+  },
+  "Loading...": {
+    "en": "Loading...",
+    "fr": "Chargement…",
+    "de": "Laden…",
+    "es": "Cargando…"
+  }
+}

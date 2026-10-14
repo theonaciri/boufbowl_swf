@@ -71,8 +71,15 @@ rather than replay controls.
 **Server → News** uses original `LoginMotdUI` artwork with configurable localized
 announcements and current tournament/progression data. `general.news` has the four
 existing languages. Obsolete external paid-tournament announcements were replaced.
-Added account, community, wallet and moderator controls use the game's cream,
-gold and green styling; anonymous device access remains available.
+Added screens and the top toolbar reuse original `SimpleButton` artwork and
+`MessageBoxResizableTextUI` frames, including their bevels/shadows. Body text uses
+embedded Verdana, with original Copperplate headings/buttons; cream surfaces, olive headings and input focus states follow
+the existing interface. Wallet balances use original Bowlton reward tokens,
+cosmetics have palette previews, and league rows use original league cubes.
+Moderation separates reports, sanctions and audit views. Main labels are localized
+in `resources/local_ui.json`; long button captions shrink to fit. Status notices
+use the same palette, stay within half the screen and dismiss after eight seconds.
+Anonymous device access remains available.
 
 ## Moderator role
 
