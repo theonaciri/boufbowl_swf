@@ -251,7 +251,7 @@ cannot update the installed app. The APK build leaves the desktop SWF unchanged.
 See [Android instructions](android/README.md) for signing and emulator builds.
 
 Run `python3 -m unittest discover -s tests -v` to check server/configuration changes.
-The current validation passed 160 automated tests and native desktop playback
+The current validation passed 163 automated tests and native desktop playback
 of a complete 14-turn Kara comparison match;
 the latest live-server APK has package checks but no current device validation.
 
@@ -342,3 +342,6 @@ The [frontend restoration guide](docs/frontend-restoration.md) covers five ranke
 leagues, optional seasons, wallet/cosmetics, replay pause/speed/turn selection,
 news and moderator roles. Advanced training is excluded. Grant moderator roles
 with the local `backend.manage role` command; clients cannot self-promote.
+
+All embedded heraldry is available: 27 blason icons and 32 backgrounds, including
+the two previously unmapped heart backgrounds. See [visual assets](docs/visual-assets.md).

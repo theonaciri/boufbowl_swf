@@ -316,12 +316,9 @@ package com.ankamagames.boufbowl.client.application.controller
             i++;
          }
          i = 1;
-         while(i <= 8)
-         {
-            backgrounds.addItem(i,new SigilBackgroundItem(1,0,i));
-            charges.addItem(i,new SigilChargeItem(1,0,i));
-            i++;
-         }
+         // All embedded heraldry: 32 backgrounds, 27 charges.
+         for(i=1;i<=32;i++) backgrounds.addItem(i,new SigilBackgroundItem(1,0,i));
+         for(i=1;i<=27;i++) charges.addItem(i,new SigilChargeItem(1,0,i));
          premium.updateCustomisationAssetsLists(stadiums,uniqueCharacters,clubPalettes,palettes,backgrounds,charges);
          premium.updateCustomisationCredits(10,10,10,10);
          premium.updateTournamentTickets(0);

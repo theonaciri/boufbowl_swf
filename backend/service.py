@@ -94,6 +94,10 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
     def normalize_club(self, club):
         if not isinstance(club, dict):
             raise ServiceError("INVALID_CLUB", "Club data is required")
+        for field,enum in (("sigilBackground","SigilBackground"),("sigilCharge","SigilCharge")):
+            value=club.get(field)
+            if not isinstance(value,int) or isinstance(value,bool) or value not in self.codec.contract['enums'][enum].values():
+                raise ServiceError("INVALID_SIGIL","Choose an available blason design")
         self.codec.encode("ClubInformationMessage", club)
         normalized = deepcopy(club)
         normalized["clubName"] = self.name(club["clubName"])

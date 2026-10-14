@@ -5589,7 +5589,9 @@
       "NOTCHED_FESS": 27,
       "NOTCHED_BEND": 28,
       "HEART_CROSS": 29,
-      "HEART_BEND_SINISTER": 30
+      "HEART_BEND_SINISTER": 30,
+      "HEART_FESS": 31,
+      "HEART_PALE": 32
     },
     "SigilCharge": {
       "BOUCLIER": 1,

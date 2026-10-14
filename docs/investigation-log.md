@@ -716,3 +716,19 @@ the renewal instead of leaving panels stalled. Account credentials require login
 including access to Account while disconnected; ban/kick errors never trigger
 anonymous renewal. Club has no automatic opening path. Removed the redundant
 Play, Teams and Tutorial toolbar buttons; original home controls remain available.
+
+
+## 2026-10-14 — complete embedded heraldry
+
+Audited SWF SymbolClass/DefineSprite/FrameLabel tags. BlasonIconUI has 27 labeled
+icon frames; BlasonBackgroundUI has 32 labeled background frames. Startup had
+limited both catalogs to eight items. Expanded both shared platform lists to the
+full inventory. The protocol originally described only 30 background frames;
+added HEART_FESS=31 and HEART_PALE=32 without renumbering existing IDs 29/30.
+
+Added a shared SigilBackground patch, registered it in desktop rebuilds, and
+extended the recovered replacement wire enum. Original sources/assets remain
+unchanged. Backend normalization rejects unknown designs. Asset/protocol coverage,
+high-ID wire customization, saved selections after restart and invalid-ID
+rejection pass; the complete suite passes 163 tests. Native original selector
+checks render the added heart and fairy artwork and exercise their final pages.

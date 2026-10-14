@@ -19,6 +19,7 @@ original = args.original or root.parent / "swf_sources/boufbowl_client/bin/boufb
 config = load_config(args.config)
 config_source = args.config.read_bytes()
 classes = [
+    "com.ankamagames.boufbowl.protocol.SigilBackground",
     "com.ankamagames.boufbowl.resolution.display.script.runner.AsvmTimeProvider",
     "com.ankamagames.boufbowl.resolution.display.script.runner.SceneController",
     "com.ankamagames.boufbowl.client.matchmaking.view.tournament.TournamentView",

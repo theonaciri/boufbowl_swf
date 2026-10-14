@@ -111,7 +111,7 @@ not prevent somebody from creating an unrelated anonymous profile. See
 
 ## Verification and packages
 
-All 160 automated tests passed. Tests cover qualification, league filtering, season rollover and late
+All 163 automated tests passed. Tests cover qualification, league filtering, season rollover and late
 results, currency enforcement/retries, trusted roles, sanctions and bracket
 boundaries. Native Flash checks exercised wallet purchase, original news artwork,
 moderator mute, replay pause/speed/seek, qualification/round countdowns,

@@ -74,3 +74,32 @@ Both club and character palette models bound swatch indices when a new palette
 has fewer colors. Character selection previously retained a high hair/eye/skin
 index whenever the old color was absent from the new palette. It now selects a
 valid index before updating the view or creating an animated character.
+
+
+### Complete blason and background catalog
+
+The original SWF has **27 blason icons** and **32 backgrounds**. Startup previously
+exposed only eight of each. Both Linux and Android now populate the original
+scrolling selectors with every embedded design, all available without extra
+purchases. Existing colors and save/reload behavior are retained.
+
+The original SigilBackground enum omitted two labeled heart frames present in
+the artwork. The shared protocol patch adds `HEART_FESS = 31` (horizontal split)
+and `HEART_PALE = 32` (vertical split). Existing `HEART_CROSS = 29` and
+`HEART_BEND_SINISTER = 30` IDs remain unchanged. All 27 icon IDs are unchanged.
+These IDs describe original artwork, not newly generated designs. Original
+reference sources and SWFs remain untouched.
+
+The backend validates supported design IDs before saving. High IDs round-trip
+through the customization protocol and persist across server restarts. The asset
+audit compares actual SWF frame labels to the protocol catalog:
+
+```sh
+python3 -m tools.heraldry
+python3 -m unittest tests.test_heraldry -v
+xvfb-run -a -s '-screen 0 1280x800x24' python3 -m tools.smoke_heraldry
+```
+
+Native verification exercises the original selectors, scrolling to their final
+entries, choosing the heart background and fairy icon, confirming the save and
+reopening the editor. Evidence is under `evidence/heraldry/`.
