@@ -29,7 +29,9 @@ class AccountMatchmakingTests(unittest.TestCase):
 
     def command(self, player, operation='queue_join', **fields):
         self.n+=1
-        return self.s.command({'session':player['session'],'request_id':str(self.n),'operation':operation,**fields})
+        response=self.s.command({'session':player['session'],'request_id':str(self.n),'operation':operation,**fields})
+        self.s.resolution_queue.join()
+        return response
 
     def protocol(self,player,name,payload):
         return self.command(player,'protocol',hex=self.s.codec.envelope(name,payload).hex())

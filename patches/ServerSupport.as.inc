@@ -12,6 +12,11 @@
       private static var serverSending:Boolean = false;
       private static var serverPolling:Boolean = false;
       private static var serverPollTimer:uint;
+      private static var serverPollEpoch:uint = 0;
+      private static var serverPollWait:uint = 1000;
+      private static var serverPollFailures:uint = 0;
+      private static var serverCommandFailures:uint = 0;
+      private static var serverSendTimer:uint;
       private static var serverNames:Object = {};
       private static var serverTournamentId:String;
       private static var serverAbilities:Object = {};
@@ -85,7 +90,9 @@
          serverGeneration++;
          serverAccountBusy = false;
          serverActive = true;serverConnecting=true;serverRole="player";
-         clearTimeout(serverPollTimer);
+         clearTimeout(serverPollTimer);clearTimeout(serverSendTimer);
+         serverPollEpoch++;serverPollWait=1000;serverPollFailures=0;serverCommandFailures=0;
+         Stage(app.contextInjector.getInstance(Stage)).addEventListener(flash.events.Event.ACTIVATE,serverResume,false,0,true);
          serverSending = false; serverPolling = false; serverQueue = [];
          setMatchToolbar(false);
          var vars:FlashVarsManager = app.contextInjector.getInstance(FlashVarsManager);
@@ -164,6 +171,7 @@
 
       private static function serverMetadata(response:Object) : void
       {
+         if(response.hasOwnProperty("poll_wait_ms"))serverPollWait=uint(Math.min(20000,Math.max(0,Number(response.poll_wait_ms))));
          if(response.hasOwnProperty("spectating")) serverSpectating = response.spectating;
          if(response.subscriptions != null) serverSubscriptions=response.subscriptions;
          if(response.language != null) AccountInformations(app.contextInjector.getInstance(AccountInformations)).lang=String(response.language);
@@ -222,17 +230,20 @@
             }
             complete(response);
          };
+         var timeoutMs:uint=route == "poll" ? 30000 : 15000;
          timeout=setTimeout(function():void {
             if(done) return;
-            if(generation == serverGeneration) { app.hideMessageBox(); serverTrace("Request cancelled after 6 seconds: " + route); }
-            try { finish({ok:false,retryable:false,code:"REQUEST_TIMEOUT",error:"Request cancelled after 6 seconds"}); }
+            if(generation == serverGeneration) serverTrace("Request timed out; will retry: " + route);
+            try { finish({ok:false,retryable:true,code:"REQUEST_TIMEOUT",error:"Connection timed out"}); }
             // URLLoader.close() terminates the legacy Windows player under Wine.
             // Retire this request and discard late completion instead.
             finally { loader.removeEventListener(Event.COMPLETE,onComplete); }
-         },6000);
+         },timeoutMs);
          var onComplete:Function=function(event:Event):void {
-            try { finish(com.adobe.serialization.json.JSON.decode(String(loader.data))); }
-            catch(error:Error) { serverStatus("Server response error: " + error.toString(),true); serverTrace("ERROR " + error.toString()); }
+            var response:Object;
+            try { response=com.adobe.serialization.json.JSON.decode(String(loader.data)); }
+            catch(error:Error) { finish({ok:false,retryable:true,error:"Incomplete server response"});return; }
+            finish(response);
          };
          loader.addEventListener(Event.COMPLETE,onComplete);
          loader.addEventListener(IOErrorEvent.IO_ERROR,function(event:IOErrorEvent):void { finish({ok:false,retryable:true,error:event.text}); });
@@ -258,7 +269,13 @@
          body.session = serverSession;
          serverRequest("command",body,function(response:Object):void {
             serverSending = false;
-            if(response.retryable) { serverStatus("Connection interrupted; retrying command",true); setTimeout(serverPump,1500); return; }
+            if(response.retryable) {
+               serverCommandFailures++;
+               if(serverCommandFailures == 1)serverStatus("Connection interrupted; your command is saved and will retry",true);
+               clearTimeout(serverSendTimer);
+               serverSendTimer=setTimeout(serverPump,serverRetryDelay(serverCommandFailures));return;
+            }
+            serverCommandFailures=0;
             serverQueue.shift();
             if(response.ok) serverMetadata(response);
             else { if(body.request_class == "MatchRequestMessage") { MatchCreationModel(app.contextInjector.getInstance(MatchCreationModel)).matchRequestRunning=false;app.hideMessageBox(); } serverStatus("Request failed: " + response.error,true); serverTrace("ERROR " + response.error); }
@@ -266,29 +283,58 @@
          });
       }
 
+      private static function serverRetryDelay(failures:uint) : uint
+      {
+         return uint(Math.min(4000,500 * Math.pow(2,Math.min(failures-1,3))) * (0.8 + Math.random()*0.4));
+      }
+
+      private static function serverResume(event:flash.events.Event) : void
+      {
+         if(!serverActive || serverSession == null || serverConnecting)return;
+         // AIR can suspend URLLoader and timers while Android is in the
+         // background. Retire the old poll logically; never reset its cursor
+         // or discard commands whose responses may have been lost.
+         clearTimeout(serverPollTimer);clearTimeout(serverSendTimer);
+         serverPollEpoch++;serverPolling=false;
+         serverPoll();serverPump();
+      }
+
       private static function serverPoll() : void
       {
          if(!serverActive || serverSession == null || serverPolling) return;
          serverPolling = true;
-         serverRequest("poll",{session:serverSession,cursor:serverCursor,wait_ms:1000},function(response:Object):void {
+         var epoch:uint=++serverPollEpoch;
+         serverRequest("poll",{session:serverSession,cursor:serverCursor,wait_ms:serverPollWait,compact:true},function(response:Object):void {
+            if(epoch != serverPollEpoch)return;
             serverPolling = false;
-            if(response.ok)
-            {
-               serverMetadata(response);
-               for each(var packet:Object in response.events)
+            try {
+               if(response.ok)
                {
-                  serverPacket(packet);
-                  serverCursor = Number(packet.seq);
+                  serverMetadata(response);
+                  for each(var packet:Object in response.events)
+                  {
+                     if(Number(packet.seq) <= serverCursor)continue;
+                     serverPacket(packet);
+                     serverCursor = Number(packet.seq);
+                  }
+                  serverPollFailures=0;
                }
-            }
-            else {
-               serverStatus("Connection interrupted: " + response.error,true);
-               if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID") {
-                  serverGeneration++;serverQueue=[];serverSending=false;stopMock();showHome();serverCurrentMatch=null;
-                  serverStatus(response.error,true);return;
+               else {
+                  serverPollFailures++;
+                  if(serverPollFailures == 1)serverStatus("Connection interrupted; reconnecting: " + response.error,true);
+                  if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID") {
+                     serverGeneration++;serverPollEpoch++;serverActive=false;
+                     clearTimeout(serverSendTimer);serverQueue=[];serverSending=false;stopMock();showHome();serverCurrentMatch=null;
+                     serverStatus(response.error,true);return;
+                  }
                }
+            } catch(error:Error) {
+               serverPollFailures++;
+               serverStatus("Server event error: " + error.toString(),true);
+            } finally {
+               if(serverActive && epoch == serverPollEpoch)
+                  serverPollTimer=setTimeout(serverPoll,serverPollFailures == 0 ? 0 : serverRetryDelay(serverPollFailures));
             }
-            serverPollTimer = setTimeout(serverPoll,response.ok ? 0 : 250);
          });
       }
 

@@ -4,7 +4,7 @@ import argparse
 import hashlib
 import json
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
 import os
 from pathlib import Path
 import shutil
@@ -12,7 +12,7 @@ import subprocess
 import threading
 from urllib.parse import parse_qs, urlsplit
 from tools.game_config import load_config
-from backend.server import Handler as BackendHandler, default_database
+from backend.server import Handler as BackendHandler, BackendHTTPServer, default_database
 from backend.service import Service
 from backend.storage import ServiceError
 
@@ -87,7 +87,7 @@ def main():
                 def log_message(self, fmt, *values):
                     http_log.write((fmt % values) + "\n")
 
-            server = ThreadingHTTPServer(
+            server = BackendHTTPServer(
                 ("127.0.0.1", 0), partial(Handler, directory=str(root))
             )
             service = Service(args.database, config) if args.mode == "server" and not args.server_url else None
@@ -120,6 +120,8 @@ def main():
                     stdout=wine_log, stderr=subprocess.STDOUT,
                 )
             finally:
+                if service:
+                    service.stop()
                 server.shutdown()
                 server.server_close()
                 thread.join()

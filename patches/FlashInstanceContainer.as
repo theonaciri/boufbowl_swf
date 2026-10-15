@@ -29,12 +29,27 @@ package com.ankamagames.xgaming.ui.components
          // Ruffle currently stores scale9Grid but does not apply it when drawing.
          // Keep Flash standalone/AIR artwork on the native vector path.
          if(Capabilities.playerType == "PlugIn")
-            addEventListener(Event.ENTER_FRAME,this.updateBrowserArtwork,false,0,true);
+         {
+            addEventListener(Event.ADDED_TO_STAGE,this.startBrowserArtwork,false,0,true);
+            addEventListener(Event.REMOVED_FROM_STAGE,this.stopBrowserArtwork,false,0,true);
+            if(stage != null) this.startBrowserArtwork();
+         }
       }
 
       private static var browserSlices:Dictionary = new Dictionary(true);
       private var browserArtworkInitialized:Boolean = false;
       private var browserArtworkHosts:Array = [];
+
+      private function startBrowserArtwork(event:Event = null) : void
+      {
+         if(!this.browserArtworkInitialized || this.browserArtworkHosts.length > 0)
+            addEventListener(Event.ENTER_FRAME,this.updateBrowserArtwork,false,0,true);
+      }
+
+      private function stopBrowserArtwork(event:Event) : void
+      {
+         removeEventListener(Event.ENTER_FRAME,this.updateBrowserArtwork);
+      }
 
       private function updateBrowserArtwork(event:Event) : void
       {
@@ -72,6 +87,9 @@ package com.ankamagames.xgaming.ui.components
          for(var index:int=0;index<container.numChildren;index++)
          {
             var child:DisplayObject = container.getChildAt(index);
+            // Nested components maintain their own artwork. Scanning them here
+            // registers the same backgrounds with every ancestor each frame.
+            if(child is FlashInstanceContainer) continue;
             if(!(child is DisplayObjectContainer)) continue;
             var host:DisplayObjectContainer = DisplayObjectContainer(child);
             if((browserSlices[host] != null || staticArtwork(host)) && repairBrowserSkin(host))
@@ -110,6 +128,8 @@ package com.ankamagames.xgaming.ui.components
             for(var index:int=0;index<host.numChildren;index++)
                if(!staticArtwork(host.getChildAt(index))) return false;
             var bounds:Rectangle=host.getBounds(host);
+            var content:Rectangle=host.getRect(host);
+            if(content.width <= 0 || content.height <= 0) content=bounds.clone();
             if(bounds.width <= 0 || bounds.height <= 0 || bounds.width > 1024 || bounds.height > 600
                || grid.left < bounds.left || grid.right > bounds.right
                || grid.top < bounds.top || grid.bottom > bounds.bottom) return false;
@@ -138,7 +158,7 @@ package com.ankamagames.xgaming.ui.components
                   tiles.push(tile);host.addChild(tile);
                }
             texture.dispose();
-            slices={bounds:bounds,grid:grid,tiles:tiles,originals:originals,frame:frame};
+            slices={bounds:bounds,content:content,grid:grid,tiles:tiles,originals:originals,frame:frame};
             browserSlices[host]=slices;
          }
          if(host.scaleX != slices.horizontal || host.scaleY != slices.vertical)
@@ -159,10 +179,15 @@ package com.ankamagames.xgaming.ui.components
          var right:Number = bounds.right-grid.right;
          var top:Number = grid.top-bounds.top;
          var bottom:Number = bounds.bottom-grid.bottom;
-         var width:Number = Math.max(bounds.width*horizontal,left+right);
-         var height:Number = Math.max(bounds.height*vertical,top+bottom);
-         var columns:Array = [bounds.x*horizontal,bounds.x*horizontal+left,bounds.x*horizontal+width-right,bounds.x*horizontal+width];
-         var rows:Array = [bounds.y*vertical,bounds.y*vertical+top,bounds.y*vertical+height-bottom,bounds.y*vertical+height];
+         // Flash scales the fill rectangle, then adds the unscaled stroke
+         // margins. Scaling getBounds() instead expands thick chat borders.
+         var content:Rectangle = slices.content;
+         var x:Number = content.x*horizontal-(content.left-bounds.left);
+         var y:Number = content.y*vertical-(content.top-bounds.top);
+         var width:Number = Math.max(content.width*horizontal+bounds.width-content.width,left+right);
+         var height:Number = Math.max(content.height*vertical+bounds.height-content.height,top+bottom);
+         var columns:Array = [x,x+left,x+width-right,x+width];
+         var rows:Array = [y,y+top,y+height-bottom,y+height];
          for(var row:int=0;row<3;row++)
          {
             for(var column:int=0;column<3;column++)

@@ -29,7 +29,9 @@ class SeedAndResultTests(unittest.TestCase):
 
     def command(self,player,operation,**body):
         self.seq+=1
-        return self.service.command(dict(session=player['session'],request_id=str(self.seq),operation=operation,**body))
+        response=self.service.command(dict(session=player['session'],request_id=str(self.seq),operation=operation,**body))
+        self.service.resolution_queue.join()
+        return response
 
     def protocol(self,player,name,payload):
         return self.command(player,'protocol',hex=self.service.codec.envelope(name,payload).hex())

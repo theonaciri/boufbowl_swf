@@ -76,6 +76,13 @@ package away3d.core.session
       
       private var drawing:Vector.<IGraphicsData> = Vector.<IGraphicsData>([this.fill,this.path,this.end]);
       
+      // Fixed scratch storage: subdivision depth is capped at five levels.
+      // Each level owns its three midpoints while its four children render.
+      private var browserVertices:Array;
+      private var browserMapping:Matrix = new Matrix();
+      private var browserBitmapWidth:Number;
+      private var browserBitmapHeight:Number;
+
       private var _renderers:Dictionary = new Dictionary(true);
       
       private var _renderer:Renderer;
@@ -609,14 +616,26 @@ package away3d.core.session
             var targetGraphics:Graphics = param9 ? param9 : this.graphics;
             // Ruffle ignores GraphicsTrianglePath.uvtData. Use affine bitmap
             // fills on adaptively subdivided triangles to preserve perspective.
-            var vertices:Array = [];
+            if(this.browserVertices == null)
+            {
+               this.browserVertices=[];
+               for(var slot:int=0;slot<18;slot++)
+                  this.browserVertices.push(new Vector.<Number>(5,true));
+            }
             for(var vertex:int=0;vertex<3;vertex++)
             {
                var depth:Number = param2[vertex*3+2];
-               vertices.push([this._vertices[vertex*2],this._vertices[vertex*2+1],
-                  param2[vertex*3]*depth,param2[vertex*3+1]*depth,depth]);
+               var data:Vector.<Number> = this.browserVertices[vertex];
+               data[0]=this._vertices[vertex*2];
+               data[1]=this._vertices[vertex*2+1];
+               data[2]=param2[vertex*3]*depth;
+               data[3]=param2[vertex*3+1]*depth;
+               data[4]=depth;
             }
-            browserTriangle(targetGraphics,param1,vertices[0],vertices[1],vertices[2],param8,param7,0);
+            this.browserBitmapWidth=param1.width;
+            this.browserBitmapHeight=param1.height;
+            targetGraphics.lineStyle();
+            browserTriangle(targetGraphics,param1,this.browserVertices[0],this.browserVertices[1],this.browserVertices[2],param8,param7,0);
             return;
          }
          this.path.vertices = this._vertices;
@@ -633,13 +652,16 @@ package away3d.core.session
          }
       }
       
-      private function browserMidpoint(a:Array,b:Array) : Array
+      private function browserMidpoint(a:Vector.<Number>,b:Vector.<Number>,result:Vector.<Number>) : void
       {
-         return [(a[0]+b[0])*0.5,(a[1]+b[1])*0.5,(a[2]+b[2])*0.5,
-            (a[3]+b[3])*0.5,(a[4]+b[4])*0.5];
+         result[0]=(a[0]+b[0])*0.5;
+         result[1]=(a[1]+b[1])*0.5;
+         result[2]=(a[2]+b[2])*0.5;
+         result[3]=(a[3]+b[3])*0.5;
+         result[4]=(a[4]+b[4])*0.5;
       }
 
-      private function browserTriangle(g:Graphics, bitmap:BitmapData, a:Array,b:Array,c:Array,
+      private function browserTriangle(g:Graphics, bitmap:BitmapData, a:Vector.<Number>,b:Vector.<Number>,c:Vector.<Number>,
          repeat:Boolean,smooth:Boolean,level:int) : void
       {
          var minimum:Number = Math.min(a[4],b[4],c[4]);
@@ -648,9 +670,13 @@ package away3d.core.session
             Math.abs(a[0]-c[0]),Math.abs(a[1]-c[1]),Math.abs(b[0]-c[0]),Math.abs(b[1]-c[1]));
          if(level < 5 && minimum > 0 && extent*(maximum/minimum-1) > 6)
          {
-            var ab:Array=browserMidpoint(a,b);
-            var bc:Array=browserMidpoint(b,c);
-            var ca:Array=browserMidpoint(c,a);
+            var offset:int=3+level*3;
+            var ab:Vector.<Number> = this.browserVertices[offset];
+            var bc:Vector.<Number> = this.browserVertices[offset+1];
+            var ca:Vector.<Number> = this.browserVertices[offset+2];
+            browserMidpoint(a,b,ab);
+            browserMidpoint(b,c,bc);
+            browserMidpoint(c,a,ca);
             browserTriangle(g,bitmap,a,ab,ca,repeat,smooth,level+1);
             browserTriangle(g,bitmap,ab,b,bc,repeat,smooth,level+1);
             browserTriangle(g,bitmap,ca,bc,c,repeat,smooth,level+1);
@@ -658,24 +684,25 @@ package away3d.core.session
             return;
          }
          if(a[4] == 0 || b[4] == 0 || c[4] == 0) return;
-         var u0:Number=a[2]/a[4]*bitmap.width;
-         var v0:Number=a[3]/a[4]*bitmap.height;
-         var du1:Number=b[2]/b[4]*bitmap.width-u0;
-         var dv1:Number=b[3]/b[4]*bitmap.height-v0;
-         var du2:Number=c[2]/c[4]*bitmap.width-u0;
-         var dv2:Number=c[3]/c[4]*bitmap.height-v0;
+         var u0:Number=a[2]/a[4]*this.browserBitmapWidth;
+         var v0:Number=a[3]/a[4]*this.browserBitmapHeight;
+         var du1:Number=b[2]/b[4]*this.browserBitmapWidth-u0;
+         var dv1:Number=b[3]/b[4]*this.browserBitmapHeight-v0;
+         var du2:Number=c[2]/c[4]*this.browserBitmapWidth-u0;
+         var dv2:Number=c[3]/c[4]*this.browserBitmapHeight-v0;
          var determinant:Number=du1*dv2-du2*dv1;
          if(Math.abs(determinant) < 0.00000001) return;
          var dx1:Number=b[0]-a[0];
          var dy1:Number=b[1]-a[1];
          var dx2:Number=c[0]-a[0];
          var dy2:Number=c[1]-a[1];
-         var mapping:Matrix=new Matrix((dx1*dv2-dx2*dv1)/determinant,
-            (dy1*dv2-dy2*dv1)/determinant,(dx2*du1-dx1*du2)/determinant,
-            (dy2*du1-dy1*du2)/determinant);
+         var mapping:Matrix=this.browserMapping;
+         mapping.a=(dx1*dv2-dx2*dv1)/determinant;
+         mapping.b=(dy1*dv2-dy2*dv1)/determinant;
+         mapping.c=(dx2*du1-dx1*du2)/determinant;
+         mapping.d=(dy2*du1-dy1*du2)/determinant;
          mapping.tx=a[0]-mapping.a*u0-mapping.c*v0;
          mapping.ty=a[1]-mapping.b*u0-mapping.d*v0;
-         g.lineStyle();
          g.beginBitmapFill(bitmap,mapping,repeat,smooth);
          g.moveTo(a[0],a[1]);
          g.lineTo(b[0],b[1]);

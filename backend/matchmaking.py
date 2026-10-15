@@ -4,7 +4,7 @@ import time
 from backend.storage import ServiceError
 from tools.game_config import STADIUMS
 
-DEFAULTS={'rating_window':200,'widen_per_second':5,'heartbeat_timeout':30,'search_timeout':300}
+DEFAULTS={'rating_window':200,'widen_per_second':5,'heartbeat_timeout':90,'search_timeout':300}
 
 
 class Matchmaking:

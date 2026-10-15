@@ -7,6 +7,7 @@ import secrets
 import time
 import threading
 import logging
+import queue
 
 from backend.engine import Engine
 from backend.storage import ServiceError, Store
@@ -35,6 +36,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
     def __init__(self, path, config=None, engine=None):
         self.config = deepcopy(config or load_config())
         self.store = Store(path)
+        self.resolution_lock = threading.Lock()
         self.codec = Codec()
         self.chat_codec = Codec(ROOT / "protocol/chat_contract.json", "ChatMessage")
         try:
@@ -44,25 +46,37 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
             raise
         with self.store.transaction():
             self.maintain_progression();self.maintain_tournaments()
+            for row in self.store.db.execute("SELECT state_json FROM matches").fetchall():
+                match = json.loads(row[0])
+                if match.get("phase") == "simulating":
+                    match["phase"] = "orders"
+                    match["deadline"] = time.time()
+                    self.store.save_match(match)
         self.stopping = threading.Event()
+        self.resolution_queue = queue.Queue()
+        self.resolution_worker = threading.Thread(target=self.process_resolutions, daemon=True)
+        self.resolution_worker.start()
         self.maintenance = threading.Thread(target=self.maintain, daemon=True)
         self.maintenance.start()
 
     def maintain(self):
         while not self.stopping.wait(1):
             try:
-                with self.store.transaction():
-                    self.maintain_progression()
-                    self.maintain_tournaments()
-                    self.match_queued_players()
-                    for row in self.store.db.execute("SELECT state_json FROM matches").fetchall():
-                        match = json.loads(row[0])
-                        if match.get("phase") != "ended" and match.get("deadline", float("inf")) <= time.time():
-                            self.tick_match(match)
-                    for row in self.store.db.execute("SELECT * FROM challenges WHERE status='pending' AND expires<=?", (time.time(),)).fetchall():
-                        self.cancel_offer(row)
+                self.maintain_once()
             except Exception:
                 logging.exception("Match deadline maintenance failed")
+
+    def maintain_once(self):
+        with self.store.transaction():
+            self.maintain_progression()
+            self.maintain_tournaments()
+            self.match_queued_players()
+            for row in self.store.db.execute("SELECT state_json FROM matches").fetchall():
+                match = json.loads(row[0])
+                if match.get("phase") != "ended" and match.get("deadline", float("inf")) <= time.time():
+                    self.tick_match(match)
+            for row in self.store.db.execute("SELECT * FROM challenges WHERE status='pending' AND expires<=?", (time.time(),)).fetchall():
+                self.cancel_offer(row)
 
     def packet(self, name, payload, channel="LOBBY"):
         return {"channel": channel, "type": name, "hex": self.codec.envelope(name, payload).hex()}
@@ -180,7 +194,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                     self.emit(profile, "RESOLUTION_SCENARIO", match["scenario"], "MATCH")
             elif self.spectator_match(profile):
                 self.restore_spectating(profile, self.spectator_match(profile))
-            return {"ok": True, **self.channel_state(profile), "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None, "session": token, "cursor": cursor, "profile": self.public_profile(profile),
+            return {"ok": True, "poll_wait_ms": 20000, **self.channel_state(profile), "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None, "session": token, "cursor": cursor, "profile": self.public_profile(profile),
                     "auth_mode": self.store.session_kind(token), "matchmaking": self.matchmaking_status(profile),
                     "abilities": client_abilities((match or self.spectator_match(profile))["rules"] if (match or self.spectator_match(profile)) else self.config["rules"]),
                     "zobal_masks": self.match_masks(match or self.spectator_match(profile)),
@@ -242,7 +256,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 self.handle_protocol(profile, data["type"], data["payload"])
             else:
                 raise ServiceError("COMMAND_UNKNOWN", "Unknown backend operation")
-            response = {"ok": True, "profile": self.public_profile(profile), "matchmaking": self.matchmaking_status(profile),
+            response = {"ok": True, **self.channel_state(profile), "profile": self.public_profile(profile), "matchmaking": self.matchmaking_status(profile),
                         "current_match": str(self.store.active_match(profile)["id"]) if self.store.active_match(profile) else None,
                         "tournament_id": self.current_tournament_id(),
                     "club_names": {key: club["clubName"] for key, club in self.collection(profile)["clubs"].items()}}
@@ -477,7 +491,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 response.update(clubname=self.club(row["id"])["clubName"], administrator=self.role(row["id"])=="admin", moderator=self.role(row["id"]) in ("moderator","admin"))
             self.emit(profile, "WHOIS_RESULT", response)
         elif name == "STATS_REQUEST":
-            profiles = self.store.db.execute("SELECT COUNT(*) FROM presence WHERE seen>?", (time.time()-30,)).fetchone()[0]
+            profiles = self.store.db.execute("SELECT COUNT(*) FROM presence WHERE seen>?", (time.time()-90,)).fetchone()[0]
             matches = sum(json.loads(row[0]).get("phase") != "ended" for row in self.store.db.execute("SELECT state_json FROM matches"))
             self.emit(profile, "STATS_RESULT", {"connectedClients": profiles, "currentMatchs": matches})
         elif name == "MATCH_SPECTATE_REQUEST":
@@ -504,17 +518,23 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
         else:
             raise ServiceError("FEATURE_UNSUPPORTED", f"Unsupported client request: {name}")
 
-    def close(self):
+    def stop(self):
         self.stopping.set()
-        with self.store.changed: self.store.changed.notify_all()
+        self.store.wake_all()
+
+    def close(self):
+        self.stop()
         self.maintenance.join(timeout=35)
-        self.engine.close()
-        self.store.close()
+        self.resolution_queue.put(None)
+        self.resolution_worker.join(timeout=35)
+        with self.resolution_lock:
+            self.engine.close()
+            self.store.close()
 
     def place(self, profile, payload):
         match, side = self.profile_match(profile)
         if payload["turn"] != match["turn"] or match["phase"] != "placement":
-            if payload["turn"] <= match["turn"] and match["phase"] in ("orders", "resolution"):
+            if payload["turn"] <= match["turn"] and match["phase"] in ("orders", "simulating", "resolution"):
                 return
             raise ServiceError("PHASE_CHANGED", "Placement belongs to another match phase")
         if str(side) in match["placements"]:
@@ -580,7 +600,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
     def orders(self, profile, payload):
         match, side = self.profile_match(profile)
         if payload["turn"] != match["turn"] or match["phase"] != "orders":
-            if payload["turn"] <= match["turn"] and match["phase"] == "resolution":
+            if payload["turn"] <= match["turn"] and match["phase"] in ("simulating", "resolution"):
                 return  # A deadline can resolve before the client's automatic submission arrives.
             raise ServiceError("PHASE_CHANGED", "Orders belong to another match phase")
         if str(side) in match["orders"]:
@@ -662,28 +682,70 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 "nonce": f"{match['id']}:{match['turn']}:{side}", "actions": actions}
 
     def resolve(self, match):
-        initial = deepcopy(match["world"])
-        # Each turn gets an independent private seed, retained for retry/verification.
+        if match["phase"] == "simulating":
+            return
+        # Commit immutable inputs and the private seed before releasing the lock.
+        # Retried commands see the saved receipt, not a second simulation.
         turn_key = str(match["turn"])
         seeds = match.setdefault("turn_seeds", {})
-        if turn_key not in seeds: seeds[turn_key] = secrets.randbits(32)
-        seed = seeds[turn_key]
+        if turn_key not in seeds:
+            seeds[turn_key] = secrets.randbits(32)
         match["seed_policy"] = "independent-turn-v1"
-        result = self.engine.simulate(initial, [match["orders"].get("1"), match["orders"].get("2")],
-                                      match["turn"], seed, match["rules"], [p is None for p in match["profiles"]])
-        record = {"format_version": 1, "initial": initial, "orders": result["orders"], "result": result["result"],
-                  "rules": match["rules"], "rules_version": match["rules_version"], "seed_policy": match["seed_policy"], "warnings": result["warnings"],
-                  "presentation":deepcopy(match.get("presentation",self.cinematic_settings()))}
-        from backend.turn_adapter import adapt_turn
-        scenario = adapt_turn(record)
-        record["scenario"] = deepcopy(scenario)
-        self.store.db.execute("INSERT INTO turns VALUES(?,?,?)", (match["id"], match["turn"], json.dumps(record)))
-        match["pending"] = result["result"]
-        match["scenario"] = scenario
-        match["phase"] = "resolution"
-        match["acks"] = []
+        match["phase"] = "simulating"
         match["deadline"] = time.time() + 300
-        self.broadcast(match, "RESOLUTION_SCENARIO", scenario)
+        snapshot = deepcopy(match)
+        self.store.save_match(match)
+        self.store.after_commit(lambda: self.resolution_queue.put(snapshot))
+
+    def process_resolutions(self):
+        while True:
+            snapshot = self.resolution_queue.get()
+            try:
+                if snapshot is None:
+                    return
+                self.complete_resolution(snapshot)
+            finally:
+                self.resolution_queue.task_done()
+
+    def complete_resolution(self, snapshot):
+        with self.resolution_lock:
+            if not self.stopping.is_set():
+                self.run_resolution(snapshot)
+
+    def run_resolution(self, snapshot):
+        try:
+            initial = snapshot["world"]
+            result = self.engine.simulate(initial, [snapshot["orders"].get("1"), snapshot["orders"].get("2")],
+                                          snapshot["turn"], snapshot["turn_seeds"][str(snapshot["turn"])],
+                                          snapshot["rules"], [p is None for p in snapshot["profiles"]])
+            record = {"format_version": 1, "initial": initial, "orders": result["orders"], "result": result["result"],
+                      "rules": snapshot["rules"], "rules_version": snapshot["rules_version"],
+                      "seed_policy": snapshot["seed_policy"], "warnings": result["warnings"],
+                      "presentation": snapshot.get("presentation", self.cinematic_settings())}
+            from backend.turn_adapter import adapt_turn
+            scenario = adapt_turn(record)
+            record["scenario"] = deepcopy(scenario)
+            with self.store.transaction():
+                match = self.store.match(snapshot["id"])
+                # A surrender may have ended the match during simulation.
+                if match["phase"] != "simulating" or match["turn"] != snapshot["turn"]:
+                    return
+                self.store.db.execute("INSERT INTO turns VALUES(?,?,?)", (match["id"], match["turn"], json.dumps(record)))
+                match["pending"] = result["result"]
+                match["scenario"] = scenario
+                match["phase"] = "resolution"
+                match["acks"] = []
+                match["deadline"] = time.time() + 300
+                self.broadcast(match, "RESOLUTION_SCENARIO", scenario)
+                self.store.save_match(match)
+        except Exception:
+            logging.exception("Turn simulation failed; keeping inputs for retry")
+            with self.store.transaction():
+                match = self.store.match(snapshot["id"])
+                if match["phase"] == "simulating" and match["turn"] == snapshot["turn"]:
+                    match["phase"] = "orders"
+                    match["deadline"] = time.time() + 5
+                    self.store.save_match(match)
 
     def acknowledge(self, profile, payload):
         match, side = self.profile_match(profile)
@@ -779,44 +841,77 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
             self.store.save_match(match)
 
     def poll(self, body):
-        if self.stopping.is_set(): raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
-        wait_ms=body.get('wait_ms',0)
-        if not isinstance(wait_ms,int) or isinstance(wait_ms,bool) or not 0<=wait_ms<=1000:
-            raise ServiceError('POLL_WAIT','Poll wait must be 0–1000 milliseconds')
-        response=self.poll_once(body)
-        if response['events'] or not wait_ms: return response
-        deadline=time.monotonic()+wait_ms/1000
-        with self.store.changed:
-            if self.stopping.is_set(): raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
-            profile=self.store.authenticate(body.get('session'))
-            while True:
-                if self.stopping.is_set(): raise ServiceError('SERVICE_STOPPING', 'Server is shutting down')
-                if self.store.poll(profile,body.get('cursor',0)): break
-                remaining=deadline-time.monotonic()
-                if remaining<=0: break
-                self.store.changed.wait(remaining)
-        return self.poll_once(body)
+        wait_ms = body.get("wait_ms", 0)
+        if not isinstance(wait_ms, int) or isinstance(wait_ms, bool) or not 0 <= wait_ms <= 20000:
+            raise ServiceError("POLL_WAIT", "Poll wait must be 0–20000 milliseconds")
+        if not isinstance(body.get("compact", False), bool):
+            raise ServiceError("POLL_COMPACT", "Compact polling must be a boolean")
+        deadline = time.monotonic() + wait_ms / 1000
+        with self.store.lock:
+            if self.stopping.is_set():
+                raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
+            profile = self.store.authenticate(body.get("session"))
+            self.poll_heartbeat(profile)
+            with self.store.watch(profile) as condition:
+                while True:
+                    if self.stopping.is_set():
+                        raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
+                    events = self.store.poll(profile, body.get("cursor", 0))
+                    remaining = deadline - time.monotonic()
+                    if events or remaining <= 0:
+                        break
+                    condition.wait(remaining)
+                    if self.stopping.is_set():
+                        raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
+                    self.store.authenticate(body.get("session"))
+            # A waiting connection is not proof of continued connectivity. Only
+            # receipt of a new request updates its heartbeat.
+            return self.poll_response(profile, events, body.get("compact", False))
+
+    def poll_heartbeat(self, profile):
+        now = time.time()
+        presence = self.store.db.execute("SELECT seen FROM presence WHERE profile_id=?", (profile,)).fetchone()
+        queue = self.store.db.execute("SELECT heartbeat,tournament_id FROM matchmaking_queue WHERE profile_id=?", (profile,)).fetchone()
+        if presence and presence[0] > now - 10 and (not queue or queue[0] > now - 10):
+            return
+        with self.store.transaction():
+            self.touch(profile)
+            if queue:
+                # An already-expired queue entry must not be resurrected.
+                if queue[0] < now - self.matchmaking_settings()["heartbeat_timeout"]:
+                    if queue["tournament_id"] is not None:
+                        self.emit(profile, "TOURNAMENT_OFFER_CANCELED", {})
+                    self.leave_queue(profile)
+                else:
+                    self.store.db.execute("UPDATE matchmaking_queue SET heartbeat=? WHERE profile_id=?", (now, profile))
 
     def poll_once(self, body):
-        with self.store.transaction():
-            profile = self.store.authenticate(body.get("session"))
-            self.touch(profile)
-            self.maintain_tournaments()
-            self.match_queued_players()
-            self.store.db.execute('UPDATE matchmaking_queue SET heartbeat=? WHERE profile_id=?',(time.time(),profile))
-            self.match_queued_players()
-            self.tick(profile)
-            match = self.store.active_match(profile)
-            events = self.store.poll(profile, body.get("cursor", 0))
-            metadata = {}
-            if any(event["type"] in ("MATCH_INFORMATION", "MATCH_END") for event in events):
-                active = match or self.spectator_match(profile)
-                metadata = {"abilities": client_abilities(active["rules"] if active else self.config["rules"]),
-                            "zobal_masks": self.match_masks(active)}
-            return {"ok": True, "tournament_id": self.current_tournament_id(), **metadata, **self.channel_state(profile), "events": events, "profile": self.public_profile(profile),
-                    "matchmaking": self.matchmaking_status(profile),
-                    "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None,
-                    "current_match": str(match["id"]) if match else None}
+        return self.poll({**body, "wait_ms": 0})
+
+    def poll_response(self, profile, events, compact):
+        # Correct phase clocks when packets spent time waiting for a mobile
+        # client to reconnect; never restart a full planning timer on delivery.
+        for event in events:
+            if event["type"] == "FIELD_STATE" and "created_at" in event:
+                payload = self.codec.open_envelope(bytes.fromhex(event["hex"]))["payload"]
+                elapsed = max(0, int((time.time() - event["created_at"]) * 1000))
+                payload["phaseInfos"]["remainingTime"] = max(0, payload["phaseInfos"]["remainingTime"] - elapsed)
+                event["hex"] = self.codec.envelope("FIELD_STATE", payload).hex()
+        chat_messages = {"RECEIVE_FROM_CHANNEL", "RECEIVE_FROM_CLIENT", "RECEIVE_FROM_SERVER"}
+        if compact and all(event["channel"] == "CHAT" and event["type"] in chat_messages for event in events):
+            return {"ok": True, "events": events, "matchmaking": self.matchmaking_status(profile),
+                    "tournament_id": self.current_tournament_id()}
+        match = self.store.active_match(profile)
+        spectator = self.spectator_match(profile)
+        metadata = {}
+        if any(event["type"] in ("MATCH_INFORMATION", "MATCH_END") for event in events):
+            active = match or spectator
+            metadata = {"abilities": client_abilities(active["rules"] if active else self.config["rules"]),
+                        "zobal_masks": self.match_masks(active)}
+        return {"ok": True, "tournament_id": self.current_tournament_id(), **metadata, **self.channel_state(profile),
+                "events": events, "profile": self.public_profile(profile), "matchmaking": self.matchmaking_status(profile),
+                "spectating": str(spectator["id"]) if spectator else None,
+                "current_match": str(match["id"]) if match else None}
 
     def customize(self, profile, name, payload):
         club = self.club(profile)

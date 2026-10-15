@@ -75,7 +75,7 @@ class TournamentRounds:
                 if completed:winner=self.round_winner(completed,data['seed_order']);eligible.append(winner)
                 else:
                     # No played match means no advancement; entering once alone at cutoff earns a walkover.
-                    ready=[p for p in pair if p in queued and self.store.db.execute('SELECT 1 FROM presence WHERE profile_id=? AND seen>?',(p,now-30)).fetchone()]
+                    ready=[p for p in pair if p in queued and self.store.db.execute('SELECT 1 FROM presence WHERE profile_id=? AND seen>?',(p,now-90)).fetchone()]
                     winner=ready[0] if len(ready)==1 else None
                     if winner:eligible.append(winner)
                 for p in pair:

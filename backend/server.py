@@ -23,6 +23,11 @@ def default_database():
     return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "boufbowl-offline/backend.sqlite"
 
 
+class BackendHTTPServer(ThreadingHTTPServer):
+    # Reconnects after a mobile network recovers can arrive in a burst.
+    request_queue_size = 1024
+
+
 class Handler(SimpleHTTPRequestHandler):
     def json_response(self, response):
         payload = json.dumps(response).encode()
@@ -57,7 +62,7 @@ class Handler(SimpleHTTPRequestHandler):
             response = routes[route](body)
         except ServiceError as error:
             response = {"ok": False, "code": error.code, "error": str(error),
-                        "retryable": error.code in ("ENGINE_UNAVAILABLE", "ENGINE_TIMEOUT")}
+                        "retryable": error.code in ("ENGINE_UNAVAILABLE", "ENGINE_TIMEOUT", "SERVICE_STOPPING")}
         except (ProtocolError, ValueError, KeyError, TypeError) as error:
             response = {"ok": False, "code": "REQUEST_INVALID", "error": str(error)}
         self.json_response(response)
@@ -132,7 +137,7 @@ def main():
     if bool(args.tls_cert) != bool(args.tls_key):
         parser.error("Provide both --tls-cert and --tls-key")
     service = Service(args.database, load_config(args.config))
-    server = ThreadingHTTPServer((args.host, args.port), partial(Handler, directory=str(ROOT)))
+    server = BackendHTTPServer((args.host, args.port), partial(Handler, directory=str(ROOT)))
     server.service = service
     if args.tls_cert:
         context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -145,6 +150,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        service.stop()
         server.server_close()
         service.close()
 

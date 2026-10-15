@@ -58,7 +58,7 @@ class CommunityTests(unittest.TestCase):
         self.command(self.alice,'queue_join');self.command(self.bob,'queue_join')
         self.assertIsNone(self.service.store.active_match(self.identity(self.alice)))
         self.api(self.bob,'friend',verb='unblock',nickname='Alice')
-        self.service.poll({'session':self.alice['session'],'cursor':0})
+        self.service.maintain_once()
         self.assertIsNotNone(self.service.store.active_match(self.identity(self.alice)))
 
     def test_language_rooms_isolate_subscribers_and_persist_channel_metadata(self):
@@ -148,7 +148,7 @@ class CommunityTests(unittest.TestCase):
 
     def test_presence_expiration_and_reports(self):
         self.api(self.alice,'friend',verb='add',nickname='Bob');self.api(self.bob,'friend',verb='accept',nickname='Alice')
-        self.service.store.db.execute('UPDATE presence SET seen=? WHERE profile_id=?',(time.time()-60,self.identity(self.bob)))
+        self.service.store.db.execute('UPDATE presence SET seen=? WHERE profile_id=?',(time.time()-120,self.identity(self.bob)))
         self.assertFalse(self.api(self.alice)['friends'][0]['online'])
         self.api(self.alice,'report',nickname='Bob',reason='abusive message')
         self.assertEqual(self.service.store.db.execute('SELECT reason FROM reports').fetchone()[0],'abusive message')

@@ -64,7 +64,7 @@ class Social:
                 channel['lang'] = language
                 if not self.store.db.execute('SELECT 1 FROM chat_subscriptions WHERE profile_id=? AND language=?',(profile,language)).fetchone():
                     raise ServiceError('CHAT_CHANNEL','Join this language channel before sending')
-                recipients = [r[0] for r in self.store.db.execute('SELECT s.profile_id FROM chat_subscriptions s JOIN presence p ON p.profile_id=s.profile_id WHERE s.language=? AND p.seen>?',(language,time.time()-30))]
+                recipients = [r[0] for r in self.store.db.execute('SELECT s.profile_id FROM chat_subscriptions s JOIN presence p ON p.profile_id=s.profile_id WHERE s.language=? AND p.seen>?',(language,time.time()-90))]
             elif channel["channelType"] == 3:
                 match = self.store.active_match(profile) or self.spectator_match(profile)
                 if not match: raise ServiceError('CHAT_CHANNEL','Join a match before using its channel')
@@ -72,10 +72,10 @@ class Social:
                 recipients = [*match['profiles'], *[r[0] for r in self.store.db.execute('SELECT profile_id FROM spectators WHERE match_id=?',(match_id,))]]
             else:
                 raise ServiceError("CHAT_CHANNEL", "Only general and match channels are writable")
-            for target in recipients:
-                if target and not self.blocked(profile,target):
-                    self.emit_chat(target, "RECEIVE_FROM_CHANNEL", {"fromChannel": channel, "message": text,
-                                   "fromNickname": self.store.profile(profile)["nickname"]})
+            recipients = [target for target in recipients if target and not self.blocked(profile, target)]
+            payload = {"fromChannel": channel, "message": text, "fromNickname": self.store.profile(profile)["nickname"]}
+            self.store.emit_many(recipients, {"channel": "CHAT", "type": "RECEIVE_FROM_CHANNEL",
+                                             "hex": self.chat_codec.envelope("RECEIVE_FROM_CHANNEL", payload).hex()})
         self.store.db.execute("INSERT INTO chat_messages(sender,recipient,match_id,message,created,language) VALUES(?,?,?,?,?,?)",
                               (profile, recipient, match_id, text, time.time(), language))
 

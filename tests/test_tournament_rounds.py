@@ -88,7 +88,7 @@ class TournamentRoundTests(unittest.TestCase):
 
     def test_offline_or_cancelled_queue_cannot_earn_a_walkover(self):
         self.qualify();self.join('Alice')
-        self.service.store.db.execute('UPDATE presence SET seen=? WHERE profile_id=?',(self.anchor-60,self.pid('Alice')))
+        self.service.store.db.execute('UPDATE presence SET seen=? WHERE profile_id=?',(self.anchor-120,self.pid('Alice')))
         self.advance(20)
         _,bracket=self.service.round_state(1)
         self.assertEqual(bracket.get('champions'),[])

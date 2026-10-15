@@ -23,6 +23,9 @@ class Store:
             Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
         self.changed = threading.Condition(self.lock)
+        self.waiters = {}
+        self.pending_notifications = set()
+        self.commit_callbacks = []
         self.closed = False
         self.db = sqlite3.connect(str(path), check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
@@ -134,9 +137,12 @@ class Store:
 
     @contextmanager
     def transaction(self):
+        callbacks = []
         with self.lock:
             if self.closed: raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
             self.db.execute("BEGIN IMMEDIATE")
+            self.pending_notifications = set()
+            self.commit_callbacks = []
             try:
                 yield
             except BaseException:
@@ -144,7 +150,42 @@ class Store:
                 raise
             else:
                 self.db.execute("COMMIT")
-                self.changed.notify_all()
+                for profile in self.pending_notifications:
+                    self.notify(profile)
+                callbacks = self.commit_callbacks
+            finally:
+                self.pending_notifications = set()
+                self.commit_callbacks = []
+        # Simulation must never keep the database locked while waiting on Bun.
+        for callback in callbacks:
+            callback()
+
+    @contextmanager
+    def watch(self, profile):
+        """Register before checking the cursor, under the same lock as commit."""
+        with self.lock:
+            condition, count = self.waiters.get(profile, (threading.Condition(self.lock), 0))
+            self.waiters[profile] = (condition, count + 1)
+            try:
+                yield condition
+            finally:
+                _, count = self.waiters[profile]
+                if count == 1:
+                    del self.waiters[profile]
+                else:
+                    self.waiters[profile] = (condition, count - 1)
+
+    def notify(self, profile):
+        if profile in self.waiters:
+            self.waiters[profile][0].notify_all()
+
+    def wake_all(self):
+        with self.lock:
+            for condition, _ in self.waiters.values():
+                condition.notify_all()
+
+    def after_commit(self, callback):
+        self.commit_callbacks.append(callback)
 
     @staticmethod
     def digest(value):
@@ -173,14 +214,17 @@ class Store:
         return self.db.execute('SELECT kind FROM sessions WHERE token_hash=?', (self.digest(token),)).fetchone()[0]
 
     def authenticate(self, token):
-        if not isinstance(token, str) or not 16 <= len(token) <= 128:
-            raise ServiceError("SESSION_INVALID", "A valid device session is required")
-        row = self.db.execute("SELECT profile_id FROM sessions WHERE token_hash=? AND expires>?",
-                              (self.digest(token), time.time())).fetchone()
-        if not row:
-            raise ServiceError("SESSION_INVALID", "Device session expired or unknown")
-        self.check_sanctions(row["profile_id"])
-        return row["profile_id"]
+        with self.lock:
+            if self.closed:
+                raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
+            if not isinstance(token, str) or not 16 <= len(token) <= 128:
+                raise ServiceError("SESSION_INVALID", "A valid device session is required")
+            row = self.db.execute("SELECT profile_id FROM sessions WHERE token_hash=? AND expires>?",
+                                  (self.digest(token), time.time())).fetchone()
+            if not row:
+                raise ServiceError("SESSION_INVALID", "Device session expired or unknown")
+            self.check_sanctions(row["profile_id"])
+            return row["profile_id"]
 
     def check_sanctions(self, identity):
         row=self.db.execute("SELECT kind,reason FROM sanctions WHERE profile_id=? AND kind IN ('ban','kick') AND (expires IS NULL OR expires>?) ORDER BY kind LIMIT 1",(identity,time.time())).fetchone()
@@ -216,9 +260,22 @@ class Store:
         return None
 
     def emit(self, profile, packet):
-        if profile is not None:
-            self.db.execute("INSERT INTO events(profile_id,packet_json,created) VALUES(?,?,?)",
-                            (profile, json.dumps(packet), time.time()))
+        self.emit_many((profile,), packet)
+
+    def emit_many(self, profiles, packet):
+        profiles = tuple(dict.fromkeys(p for p in profiles if p is not None))
+        if not profiles:
+            return
+        now = time.time()
+        payload = json.dumps({"created_at": now, **packet})
+        self.db.executemany("INSERT INTO events(profile_id,packet_json,created) VALUES(?,?,?)",
+                            ((profile, payload, now) for profile in profiles))
+        if self.db.in_transaction:
+            self.pending_notifications.update(profiles)
+        else:
+            with self.lock:
+                for profile in profiles:
+                    self.notify(profile)
 
     def poll(self, profile, cursor):
         if not isinstance(cursor, int) or isinstance(cursor, bool) or cursor < 0:
@@ -258,3 +315,4 @@ class Store:
                 self.closed = True
                 self.db.close()
             self.changed.notify_all()
+            self.wake_all()

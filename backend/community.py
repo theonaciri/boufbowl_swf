@@ -45,7 +45,7 @@ class Community:
 
     def presence_data(self, target):
         row = self.store.db.execute('SELECT seen FROM presence WHERE profile_id=?', (target,)).fetchone()
-        online = bool(row and row[0] > time.time() - 30)
+        online = bool(row and row[0] > time.time() - 90)
         match = self.store.active_match(target) if online else None
         return {'nickname': self.store.profile(target)['nickname'], 'online': online,
                 'match': str(match['id']) if match else None}

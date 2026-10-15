@@ -37,7 +37,9 @@ class BackendTests(unittest.TestCase):
 
     def command(self, player, operation="protocol", **payload):
         self.sequence += 1
-        return self.service.command({"session": player["session"], "request_id": str(self.sequence), "operation": operation, **payload})
+        response = self.service.command({"session": player["session"], "request_id": str(self.sequence), "operation": operation, **payload})
+        self.service.resolution_queue.join()
+        return response
 
     def protocol(self, player, name, payload):
         return self.command(player, hex=self.service.codec.envelope(name, payload).hex())
@@ -173,13 +175,15 @@ class BackendTests(unittest.TestCase):
             match = self.service.store.active_match(self.identity(self.alice))
             match["deadline"] = time.time() - 1
             self.service.store.save_match(match)
-        self.service.poll({"session": self.alice["session"], "cursor": 0})
+        self.service.maintain_once()
+        self.service.resolution_queue.join()
         with self.service.store.transaction():
             match = self.service.store.active_match(self.identity(self.alice))
             self.assertEqual(match["phase"], "orders")
             match["deadline"] = time.time() - 1
             self.service.store.save_match(match)
-        self.service.poll({"session": self.alice["session"], "cursor": 0})
+        self.service.maintain_once()
+        self.service.resolution_queue.join()
         self.assertEqual(self.service.store.active_match(self.identity(self.alice))["phase"], "resolution")
 
     def test_challenge_requires_guest_acceptance_and_creates_human_match(self):

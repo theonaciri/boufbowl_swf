@@ -56,7 +56,7 @@
     "matchmaking": {
       "rating_window": 200,
       "widen_per_second": 5,
-      "heartbeat_timeout": 30,
+      "heartbeat_timeout": 90,
       "search_timeout": 300
     },
     "cinematics": {
