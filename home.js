@@ -558,11 +558,15 @@
       ]) {
         const item = data.downloads?.[key],
           url = item?.url && safeURL(item.url);
-        if (!url) continue;
         const link = $("download-" + id);
+        if (!url) {
+          link.removeAttribute("href");
+          link.setAttribute("aria-disabled", "true");
+          link.textContent = "BUILD INDISPONIBLE";
+          $(id + "-status").textContent = "INDISPONIBLE";
+          continue;
+        }
         link.href = url;
-        link.textContent =
-          key === "android" ? "TÉLÉCHARGER L’APK ↗" : key === "windows" ? "WINDOWS · TÉLÉCHARGER ↗" : "LINUX · TÉLÉCHARGER ↗";
         if (item.local) link.setAttribute("download", "");
         else {
           link.target = "_blank";
