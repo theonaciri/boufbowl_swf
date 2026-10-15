@@ -922,6 +922,9 @@ em {
   margin-top: 15px;
   color: #56604e;
 }
+#download-windows {
+  margin-top: 18px;
+}
 .volunteer-section {
   background: var(--orange);
   display: grid;

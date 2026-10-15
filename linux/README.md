@@ -1,5 +1,13 @@
 # Boufbowl for Linux
 
+For players connecting to the shared server, build the small remote-only archive:
+`python3 -m tools.build_player_downloads --server-url https://YOUR_SERVER`.
+Extract `build/Boufbowl-linux.tar.gz` and run `./jouer.sh`.
+It requires Wine with 32-bit support and Internet, but no Python or local server.
+The same command produces a Windows ZIP that runs without Wine.
+
+The following instructions describe the separate offline/development package.
+
 The .deb and tar archive include the compiled original Flash client, assets,
 Flash Player, Python/SQLite replacement backend, Bun runtime and launcher.
 Default startup runs persistent local matches. A graphical X11/XWayland session

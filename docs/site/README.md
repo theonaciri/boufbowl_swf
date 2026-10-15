@@ -15,7 +15,7 @@ comme rapportée ; son URL source reste à renseigner.
 `resources/site.json` configure les liens publics :
 
 - `contact_url` : Discord Dofus 3, avec une invitation issue de sa fiche Discord.
-- `android_download_url` et `desktop_download_url` : URL HTTPS facultatives pour
+- `android_download_url`, `desktop_download_url` (Linux) et `windows_download_url` : URL HTTPS facultatives pour
   distribuer des builds depuis un autre hébergement.
 - `tot_quote_source_url` : URL HTTPS à ajouter ultérieurement.
 
@@ -24,17 +24,26 @@ disponibles. Un fichier absent n’est pas présenté comme téléchargeable. Le
 fichiers locaux servis sont exclusivement :
 
 - `android/build/BoufbowlOffline.apk` → `/downloads/BoufbowlOffline.apk`.
-- `linux/build/BoufbowlOffline-linux.tar.gz` → `/downloads/BoufbowlOffline-linux.tar.gz`.
+- `linux/build/Boufbowl-linux.tar.gz` → `/downloads/Boufbowl-linux.tar.gz`.
+- `windows/build/Boufbowl-windows.zip` → `/downloads/Boufbowl-windows.zip`.
 
 Les chemins arbitraires et les liens symboliques sortant du dossier de build ne
 sont pas accessibles. Les paquets sont des artefacts ignorés par Git. Le site
 indique leur taille et les prérequis de la plateforme. Le téléchargement ne
 nécessite aucun accès au dépôt GitHub privé.
 
-Les constructeurs acceptent `--server-url https://adresse-du-serveur` pour
-configurer le serveur distant : valeur par défaut du client Android et lanceur
-`play-online.sh` de l’archive Linux. Reconstruire les builds si cette adresse
-change. L’archive Linux x86-64 conserve aussi le lanceur local `play.sh`.
+Construire les paquets joueurs Desktop avec
+`python3 -m tools.build_player_downloads --server-url https://adresse-du-serveur`.
+Ils contiennent uniquement le lecteur Flash, les instructions et un lanceur :
+`Jouer.cmd` sous Windows, `jouer.sh` sous Linux. Le jeu, les ressources et les
+requêtes de compte sont chargés depuis le serveur distant. Ni Python, ni Bun,
+ni base de données ou serveur local ne sont nécessaires chez les joueurs.
+Wine avec prise en charge 32 bits reste nécessaire sous Linux ; Windows utilise
+directement le lecteur fourni. Les tailles affichées proviennent des archives
+réelles, indépendamment pour chaque plateforme. Le gros paquet hors ligne de
+`linux/build.py` est réservé au développement et n’est plus proposé sur le site.
+Le constructeur Android accepte également `--server-url` pour son serveur par
+défaut. Reconstruire les paquets si cette adresse change.
 Le certificat Android est conservé hors du dépôt dans le cache des outils.
 
 ## Interactions et accessibilité
@@ -100,11 +109,13 @@ mobile. Un APK compilé et signé ne remplace pas une validation sur appareil An
 
 ## Builds de test produits pour ce déploiement
 
-Les builds Android ARM64 et Linux x86-64 ont été produits avec l’adresse du serveur
+Les builds Android ARM64, Windows et Linux x86-64 ont été produits avec l’adresse du serveur
 actuelle. L’APK a été contrôlé avec `apksigner verify` (signatures v1 et v2),
 `aapt dump badging` et une vérification de l’intégrité ZIP. Il cible Android 35,
 requiert Android 23 minimum et contient le runtime ARM64. Aucune validation sur
 un appareil physique n’a été effectuée lors de cette livraison.
+Les archives Desktop et leurs liens ont été contrôlés ; l’exécution du nouveau
+lanceur Windows n’a pas été testée sur une machine Windows dans cet environnement.
 
 Pour ce serveur de compilation ARM, les outils Android 35 x86-64 ont été exécutés
 avec QEMU et les bibliothèques amd64 de compilation croisée. Le chemin de l’outil

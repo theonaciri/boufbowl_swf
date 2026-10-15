@@ -1,6 +1,7 @@
 # Android packages, staging assets, and converted video cache
 /android/build/
 /linux/build/
+/windows/build/
 # The small compiled simulation worker is distributed with source checkouts.
 /backend/runtime/
 *.sqlite
