@@ -6,16 +6,24 @@ import subprocess
 import tarfile
 import sys
 import argparse
+import shlex
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import apply_resources, load_config
+from backend.server import STATIC_PAGES
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rebuild-worker", action="store_true", help="Recompile the worker from sibling server source")
     parser.add_argument("--archive-only", action="store_true", help="Build the portable archive without Debian packaging tools")
+    parser.add_argument("--server-url", help="Include a play-online.sh launcher for this server")
     args = parser.parse_args()
+    if args.server_url:
+        endpoint = urlsplit(args.server_url)
+        if endpoint.scheme not in ('http','https') or not endpoint.hostname or endpoint.username or endpoint.password or endpoint.query or endpoint.fragment:
+            parser.error('--server-url must be an HTTP(S) URL without credentials, query or fragment')
     root = Path(__file__).resolve().parent.parent
     config = load_config()
     build = root / "linux/build"
@@ -35,7 +43,7 @@ def main():
     apply_resources(bundle / "resources", config)
     (bundle / "backend/runtime").mkdir(exist_ok=True)
     shutil.copy2(bun, bundle / "backend/runtime/bun")
-    for name in ("play.py", "play.sh", "README.md", "admin.html"):
+    for name in ("play.py", "play.sh", "README.md", *STATIC_PAGES):
         shutil.copy2(root / name, bundle / name)
     (bundle / "README.txt").write_text(
         "Boufbowl Offline for Linux\n\n"
@@ -46,9 +54,18 @@ def main():
         "Server > Community opens friends, rankings, history, replays, spectating and chat.\n"
         "The local backend and Bun simulation runtime are bundled.\n"
         "For LAN/Android: python3 -m backend.server --host 0.0.0.0 --port 9900\n")
+    if args.server_url:
+        launcher = bundle / 'play-online.sh'
+        launcher.write_text('#!/bin/sh\ncd "$(dirname "$0")" || exit 1\nexec ./play.sh --mode server --server-url '+shlex.quote(args.server_url)+' "$@"\n')
+        launcher.chmod(0o755)
+        with (bundle / 'README.txt').open('a') as instructions:
+            instructions.write('\nOnline play: run ./play-online.sh to connect to '+args.server_url+'\n')
+
     archive = build / "BoufbowlOffline-linux.tar.gz"
-    with tarfile.open(archive, "w:gz") as output:
+    temporary_archive = archive.with_name("." + archive.name + ".building")
+    with tarfile.open(temporary_archive, "w:gz") as output:
         output.add(bundle, arcname=bundle.name)
+    temporary_archive.replace(archive)
 
     if args.archive_only:
         print("Built", archive)

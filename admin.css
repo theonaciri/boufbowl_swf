@@ -640,3 +640,5 @@ dialog::backdrop {
     flex-wrap: wrap;
   }
 }
+
+.admin-legal-footer { display: flex; flex-wrap: wrap; gap: 20px; padding: 24px 0; margin-top: 32px; border-top: 1px solid var(--line); font-size: 12px; }

@@ -46,3 +46,11 @@ Rebuilding the Flash client needs Java and FFDec. Rebuilding the simulation work
 uses `python3 linux/build.py --rebuild-worker` and the sibling `boufbowl_server`
 source. Packaging needs Python, dpkg-deb and Bun; the resulting package bundles
 Bun. Readable changes remain in `patches/`.
+
+### Online distribution from the website
+
+`python3 linux/build.py --archive-only --server-url https://YOUR_SERVER` adds
+`play-online.sh` to the portable archive. Use it to connect to the shared server;
+`play.sh` still launches with the existing local defaults. The homepage discovers
+`linux/build/BoufbowlOffline-linux.tar.gz` automatically and serves it at
+`/downloads/BoufbowlOffline-linux.tar.gz`. Rebuild if the server address changes.

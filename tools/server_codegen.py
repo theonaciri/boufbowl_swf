@@ -6,7 +6,7 @@ import re
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def inject_server(source, config, android=False):
+def inject_server(source, config, android=False, server_url=None):
     imports = "   import flash.net.SharedObject;\n   import flash.net.URLRequestMethod;\n"
     source = source.replace("   public class StartUpApplicationCommand", imports + "\n   public class StartUpApplicationCommand", 1)
     helper = (ROOT / "patches/ServerSupport.as.inc").read_text() + "\n" + (ROOT / "patches/ServerTracking.as.inc").read_text() + "\n" + (ROOT / "patches/FrontendFeatures.as.inc").read_text()
@@ -25,7 +25,7 @@ def inject_server(source, config, android=False):
     helper=helper.replace("@TOURNAMENT_ENABLED@",str(tournament["enabled"]).lower())
     host = config["general"]["server"]["host"]
     port = config["general"]["server"]["port"]
-    helper = helper.replace("@DEFAULT_URL@", json.dumps(f"http://{host}:{port}" if android else ""))
+    helper = helper.replace("@DEFAULT_URL@", json.dumps(server_url if server_url is not None else f"http://{host}:{port}" if android else ""))
     helper = helper.replace("@TRACE_URL@", json.dumps("" if android else "../__mock_trace"))
     source = source.replace("      private static function displayer()", helper + "\n      private static function displayer()", 1)
     source = re.sub(r"(public static function offlineRequest\(request:Object\) : void\s*\{)",

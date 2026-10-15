@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
@@ -27,9 +28,14 @@ def main():
     parser.add_argument("--android-sdk", type=Path, default=Path.home() / "Android/Sdk")
     parser.add_argument("--jdk", type=Path, required=True, help="JDK 17 or newer directory")
     parser.add_argument("--arch", choices=("armv8", "x64"), default="armv8")
+    parser.add_argument("--server-url", help="Default remote game server for this build")
     parser.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime")
     parser.add_argument("--keystore", type=Path, help="Optional PKCS12 signing certificate")
     args = parser.parse_args()
+    if args.server_url:
+        endpoint = urlsplit(args.server_url)
+        if endpoint.scheme not in ('http','https') or not endpoint.hostname or endpoint.username or endpoint.password or endpoint.query or endpoint.fragment:
+            parser.error('--server-url must be an HTTP(S) server URL without credentials, query or fragment')
     game_config = load_config(args.config)
     android = Path(__file__).resolve().parent
     root = android.parent
@@ -91,7 +97,7 @@ def main():
         replacements.extend([package + "." + source.stem, source])
     with tempfile.TemporaryDirectory(prefix=".configured-patches-", dir=build) as temporary:
         startup = Path(temporary) / "StartUpApplicationCommand.as"
-        startup.write_text(startup_source((android / "patches/StartUpApplicationCommand.as").read_text(), game_config, android=True))
+        startup.write_text(startup_source((android / "patches/StartUpApplicationCommand.as").read_text(), game_config, android=True, server_url=args.server_url))
         for index in range(0, len(replacements), 2):
             if replacements[index].endswith(".StartUpApplicationCommand"):
                 replacements[index + 1] = startup
@@ -119,11 +125,13 @@ def main():
     if args.debug:
         suffix += "-debug"
     output = build / ("BoufbowlOffline" + suffix + ".apk")
+    temporary_output = output.with_name("." + output.stem + ".building.apk")
     run([java, "-Xmx2g", "-jar", adt, "-package", "-target", "apk-debug" if args.debug else "apk",
          "-arch", args.arch, "-storetype", "pkcs12", "-keystore", certificate,
-         "-storepass", password, output, android / "application.xml",
+         "-storepass", password, temporary_output, android / "application.xml",
          "-C", stage, "bin/" + swf_name, "assets", "resources",
          "-platformsdk", args.android_sdk.resolve()], env=env)
+    temporary_output.replace(output)
     print("Built", output)
 
 

@@ -358,3 +358,15 @@ checks still required.
 ### Administrator pages
 
 Use `/admin.html`, `/moderation.html`, and `/tournaments.html` for statistics, live chat moderation, and tournament scheduling. See [the administrator console guide](docs/admin-console.md) for roles, conversation filters, suspensions, recurring events, rules, and prizes.
+
+### Textes juridiques en français
+
+Les projets de politique de confidentialité, CGU, mentions légales, notice sur les traceurs, charte communautaire et règlement des tournois sont accessibles à `/legal.html`. Leurs sources et les champs `[]` à compléter sont présentés dans [le guide des textes juridiques](docs/legal/README.md).
+
+### French homepage and builds
+
+The website root serves the French fan-game homepage. Play at `/play.html`;
+`/browser.html` redirects there. See [homepage assets, configuration and build distribution](docs/site/README.md).
+Configure Discord, external download links and the future source for the Tot quote in `resources/site.json`.
+Local Android and Linux artifacts are discovered automatically by `/api/site` and distributed under `/downloads/`.
+Use `--server-url https://YOUR_SERVER` with either native build script to target the shared game server.

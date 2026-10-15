@@ -173,7 +173,7 @@ def apply_resources(directory, config):
     (directory / "game_config.json").write_text(json.dumps(config, indent=2) + "\n")
 
 
-def startup_source(source, config, android=False):
+def startup_source(source, config, android=False, server_url=None):
     """Compile configured preview attributes and client-supported rules into AS3."""
     from tools.visual_assets import palette_source
     source = palette_source(str(source))
@@ -238,7 +238,7 @@ def startup_source(source, config, android=False):
                     ") stadiums.addItem(i,new StadiumItem(1,0,i));", source)
     from tools.mock_codegen import inject_mock
     from tools.server_codegen import inject_server
-    return inject_server(inject_mock(source + "\n", config, android), config, android)
+    return inject_server(inject_mock(source + "\n", config, android), config, android, server_url=server_url)
 
 
 def flashvars_source(source, config):

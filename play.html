@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Boufbowl</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background: #171717;
+        color: #eee;
+        font-family: sans-serif;
+      }
+      #game {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+      }
+      ruffle-player {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      #status {
+        position: fixed;
+        max-width: calc(100% - 2rem);
+        text-align: center;
+        padding: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <p id="status" role="status">Chargement de Boufbowl…</p>
+    <script src="vendor/ruffle/ruffle.js?v=2026-10-13"></script>
+    <script>
+      (async () => {
+        const status = document.getElementById("status");
+        try {
+          if (!window.RufflePlayer) {
+            throw new Error(
+              "Ruffle is missing. Install its self-hosted release in vendor/ruffle/.",
+            );
+          }
+          const response = await fetch("api/client", { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(
+              "Restart the updated backend server, then reload this page.",
+            );
+          }
+          const client = await response.json();
+          const player = window.RufflePlayer.newest().createPlayer();
+          document.getElementById("game").appendChild(player);
+          await player.load({
+            url: client.url,
+            backgroundExecutionMode: "none",
+            scale: "exactFit",
+            forceScale: true,
+            parameters: {
+              lang: "fr",
+              tuto: "0",
+              mock: "0",
+              server: "1",
+              scene3d: "1",
+              backend: location.origin,
+              clientPlatform: "browser",
+              clientRuntime: "ruffle",
+              clientOS:
+                navigator.userAgentData?.platform || navigator.platform || "",
+              clientBrowser: (() => {
+                for (const [token, name] of [
+                  ["Edg", "Edge"],
+                  ["OPR", "Opera"],
+                  ["Firefox", "Firefox"],
+                  ["Chrome", "Chrome"],
+                  ["Version", "Safari"],
+                ]) {
+                  const match = navigator.userAgent.match(
+                    new RegExp(token + "/([\\d.]+)"),
+                  );
+                  if (match) return name + " " + match[1];
+                }
+                return "unknown";
+              })(),
+            },
+          });
+          status.hidden = true;
+        } catch (error) {
+          status.textContent = "Unable to load Boufbowl: " + error.message;
+          console.error(error);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -48,3 +48,7 @@ venv/
 *~
 .DS_Store
 Thumbs.db
+
+# Local server state and build-host runtime (not distribution artifacts)
+/.local/
+/runtime/

@@ -56,6 +56,11 @@ window.AdminConsole = (() => {
   right.append(signout);
   nav.append(brand, links, right);
   document.body.prepend(nav);
+  const legalFooter = el("footer", null, "admin-legal-footer");
+  for (const [href, label] of [["legal.html", "Informations juridiques"], ["confidentialite.html", "Confidentialité"], ["conditions-utilisation.html", "CGU"]]) {
+    const link = el("a", label); link.href = href; legalFooter.append(link);
+  }
+  document.body.append(legalFooter);
   let onReady;
   async function connect() {
     try {

@@ -97,3 +97,13 @@ The latest replacement-server APK was compiled and its package/signature checked
 on Ubuntu. No Android device/emulator is currently attached, so the new live
 backend flows have not been verified on Android hardware. The earlier emulator
 checks above apply to the prior offline build.
+
+### Build for the website's shared server
+
+Pass `--server-url https://YOUR_SERVER` to the build command to set the default
+remote endpoint in the packaged Android client. Existing saved connection choices
+remain available. The website discovers `android/build/BoufbowlOffline.apk` and
+links it at `/downloads/BoufbowlOffline.apk`; no public GitHub release is required.
+Rebuild when the remote server URL changes. On ARM Linux build hosts, the Android
+SDK's host tools must be ARM-compatible; the upstream Linux command-line package
+may contain x86-64 `aapt`/`aapt2` binaries.

@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f4f0e5" />
+    <meta
+      name="description"
+      content="Le Boufbowl reprend du service ! Un fan game gratuit et indépendant : stratégie, équipes personnalisées et baffes réglementaires. Jouez sur le Web, Android et Desktop. Bénévoles bienvenus."
+    />
+    <title>Boufbowl — Le retour du sport. Et des bleus.</title>
+    <link rel="icon" href="assets/site/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="home.css" />
+    <link rel="preload" href="assets/site/cinematic-poster.webp" as="image" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <div class="topline">
+      <span>UN FAN GAME. ZÉRO PUB. BEAUCOUP DE PASSION.</span
+      ><span>CHANTIER OUVERT AUX BONNES VOLONTÉS ↗</span>
+    </div>
+    <header class="site-header">
+      <a class="wordmark" href="#" aria-label="Boufbowl, accueil"
+        ><span class="brand-ball" aria-hidden="true">B</span>BOUF<span
+          >BOWL</span
+        ><sup>LE RETOUR</sup></a
+      ><button
+        id="menu-toggle"
+        class="menu-toggle"
+        aria-controls="main-nav"
+        aria-expanded="false"
+        aria-label="Ouvrir le menu"
+      >
+        ☰
+      </button>
+      <nav id="main-nav" aria-label="Navigation principale">
+        <a href="#le-jeu">Le jeu</a><a href="#vestiaires">Les vestiaires</a
+        ><a href="#le-chantier">Le chantier</a
+        ><a href="#telecharger">Télécharger</a
+        ><a href="#benevoles"
+          >Rejoindre l’équipe <span class="nav-dot"></span
+        ></a>
+      </nav>
+      <a class="button button-small header-play" href="play.html"
+        >JOUER <span>↗</span></a
+      >
+    </header>
+    <main id="contenu">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="status-dot"></span> LE BOUFBOWL REPREND DU SERVICE
+            <span class="tiny-line"></span>
+          </div>
+          <h1 id="hero-title">
+            LE BEAU JEU.<br />LES BEAUX<br /><em>BLEUS.</em
+            ><span class="asterisk" aria-hidden="true">✳</span>
+          </h1>
+          <p>
+            Douze ans d’arrêt de jeu, ça suffisait.<br />Rechaussez les crampons
+            : le Boufbowl revient.<br />Le ballon a survécu. Pour vos dents, on
+            ne promet rien.
+          </p>
+          <div class="hero-actions">
+            <a class="button" href="play.html"
+              >ENTRER SUR LE TERRAIN <span>↗</span></a
+            ><button class="text-button" data-video-open>
+              <span class="play-circle">▷</span> VOIR LE JEU
+            </button>
+          </div>
+          <p class="hero-platforms">
+            <a href="play.html">◎ Web</a><a href="#telecharger">♧ Android</a
+            ><a href="#telecharger">▣ Desktop</a
+            ><span class="alpha">VERSION EN RESTAURATION</span>
+          </p>
+        </div>
+        <div class="hero-visual">
+          <div
+            class="hero-art game-carousel"
+            id="game-carousel"
+            role="region"
+            aria-roledescription="carrousel"
+            aria-label="Le vrai Boufbowl en images"
+            tabindex="0"
+          >
+            <div class="carousel-stage" id="carousel-stage">
+              <img
+                id="carousel-image"
+                src="assets/site/cinematic-poster.webp"
+                alt="Animation plein écran du client Boufbowl original"
+                width="1280"
+                height="750"
+                fetchpriority="high"
+              />
+              <video
+                id="carousel-video"
+                muted
+                playsinline
+                loop
+                preload="none"
+                hidden
+                aria-label="Animation originale du jeu"
+              ></video>
+              <button
+                class="carousel-expand"
+                id="carousel-expand"
+                aria-label="Voir les images en grand"
+              >
+                ⤢ <span>PLEIN ÉCRAN</span>
+              </button>
+            </div>
+            <div class="carousel-caption">
+              <span class="eyebrow"
+                >CAPTURES & ANIMATIONS ORIGINALES DU JEU</span
+              >
+              <h2 id="carousel-title">LES BAFFES D’ÉPOQUE.</h2>
+              <p id="carousel-description">
+                Le client original reprend du service. Les crampons aussi.
+              </p>
+            </div>
+            <div class="carousel-controls">
+              <button id="carousel-prev" aria-label="Image précédente">
+                ←
+              </button>
+              <span id="carousel-count" aria-live="off">01 / 25</span>
+              <button id="carousel-next" aria-label="Image suivante">→</button>
+              <button
+                id="carousel-pause"
+                aria-pressed="false"
+                aria-label="Mettre le carrousel en pause"
+              >
+                Ⅱ
+              </button>
+            </div>
+            <div class="carousel-categories" aria-label="Choisir une scène">
+              <button data-scene="cinematic" aria-pressed="true">
+                LES CINÉMATIQUES</button
+              ><button data-scene="orders" aria-pressed="false">
+                LES ORDRES</button
+              ><button data-scene="resolution" aria-pressed="false">
+                LA 3D</button
+              ><button data-scene="team" aria-pressed="false">L’ÉQUIPE</button
+              ><button data-scene="goultard" aria-pressed="false">
+                GOULTARD & CIE
+              </button>
+            </div>
+            <span
+              id="carousel-announcement"
+              class="sr-only"
+              aria-live="polite"
+            ></span>
+          </div>
+          <button
+            id="brawl-button"
+            class="brawl-button"
+            aria-label="Encourager les joueurs"
+          >
+            POUF ! <span>← CLIQUE, POUR VOIR</span>
+          </button>
+        </div>
+        <div class="hero-bottom">
+          <span>FAN GAME INDÉPENDANT · NON AFFILIÉ À ANKAMA GAMES</span
+          ><a href="#le-jeu">DESCENDRE SUR LA PELOUSE <span>↓</span></a>
+        </div>
+      </section>
+      <div class="ticker" aria-hidden="true">
+        <div>
+          <span>LE FAIR-PLAY, OUI.</span><span>LES CROCHETTES, AUSSI.</span
+          ><span>✳</span><span>LE FAIR-PLAY, OUI.</span
+          ><span>LES CROCHETTES, AUSSI.</span><span>✳</span
+          ><span>LE FAIR-PLAY, OUI.</span><span>LES CROCHETTES, AUSSI.</span
+          ><span>✳</span>
+        </div>
+      </div>
+      <section id="le-jeu" class="section game-section">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">01 / LE SPORT, PRESQUE</span>
+            <h2>
+              UNE BALLE.<br />DIX BONNES RAISONS<br />DE
+              <em>GARDER SES DISTANCES.</em>
+            </h2>
+          </div>
+          <p>
+            Composez votre équipe, préparez vos actions, puis regardez votre
+            génie tactique rencontrer un adversaire. Généralement à pleine
+            vitesse.
+          </p>
+        </div>
+        <div class="game-grid">
+          <button
+            class="video-card reveal"
+            data-video-open
+            aria-label="Voir les archives vidéo du tutoriel Boufbowl"
+          >
+            <img
+              src="assets/site/tutorial-poster.webp"
+              alt="Une scène des archives animées du tutoriel original"
+              width="960"
+              height="540"
+              loading="lazy"
+            /><span class="video-shade"></span
+            ><span class="video-badge">ARCHIVES DU JEU / TUTORIEL ORIGINAL</span
+            ><span class="big-play">▷</span
+            ><span class="video-caption"
+              >LES RÈGLES SONT SIMPLES.<br /><strong
+                >LES ADVERSAIRES, MOINS.</strong
+              ><span>REGARDER LES IMAGES ↗</span></span
+            >
+          </button>
+          <div class="game-features">
+            <article class="feature reveal">
+              <span class="feature-number">01</span>
+              <div>
+                <h3>LE CERVEAU AVANT LE CRAMPON.</h3>
+                <p>
+                  Des actions à préparer, des passes à tenter et des pouvoirs de
+                  classe à bien placer. Un sport tactique où réfléchir peut
+                  encore vous sauver les tibias.
+                </p>
+              </div>
+              <span>↗</span>
+            </article>
+            <article class="feature reveal">
+              <span class="feature-number">02</span>
+              <div>
+                <h3>VOTRE ÉQUIPE. VOS MAUVAISES IDÉES.</h3>
+                <p>
+                  Créez vos personnages, ajustez leur apparence et rassemblez un
+                  club qui vous ressemble. On ne juge pas. Enfin, pas avant le
+                  match.
+                </p>
+              </div>
+              <span>↗</span>
+            </article>
+            <article class="feature reveal">
+              <span class="feature-number">03</span>
+              <div>
+                <h3>LA GLOIRE SE GAGNE SUR LA PELOUSE.</h3>
+                <p>
+                  Matchs, ladder, tournois ponctuels ou récurrents : le tableau
+                  d’affichage attend vos exploits. Les canaux de discussion
+                  aussi.
+                </p>
+              </div>
+              <span>↗</span>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section id="vestiaires" class="section locker-section">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">02 / ÇA SENT LE RETOUR</span>
+            <h2>
+              LE TALENT SE TRAVAILLE.<br /><em>LE STYLE SE PERSONNALISE.</em>
+            </h2>
+          </div>
+          <p>
+            Les interfaces d’origine reprennent vie.<br />Les choix douteux de
+            couleurs sont toujours les vôtres.
+          </p>
+        </div>
+        <div class="locker-grid">
+          <div class="locker-art reveal">
+            <span class="doodle-star" aria-hidden="true">✳</span
+            ><img
+              src="assets/site/goultard-original.webp"
+              width="340"
+              height="550"
+              alt="Goultard dans l’interface originale de création des personnages"
+              loading="lazy"
+            />
+            <div class="art-label">
+              PRÊT À MOUILLER LE MAILLOT.<br /><strong
+                >ET CELUI DES AUTRES.</strong
+              >
+            </div>
+          </div>
+          <div class="locker-display reveal">
+            <div
+              class="screen-tabs"
+              role="tablist"
+              aria-label="Découvrir les interfaces du jeu"
+            >
+              <button
+                id="tab-team"
+                role="tab"
+                aria-selected="true"
+                aria-controls="game-screen"
+                data-screen="team"
+              >
+                01. L’équipe</button
+              ><button
+                id="tab-custom"
+                role="tab"
+                aria-selected="false"
+                aria-controls="game-screen"
+                data-screen="customization"
+                tabindex="-1"
+              >
+                02. Le style</button
+              ><button
+                id="tab-club"
+                role="tab"
+                aria-selected="false"
+                aria-controls="game-screen"
+                data-screen="club"
+                tabindex="-1"
+              >
+                03. Le club
+              </button>
+            </div>
+            <div
+              id="game-screen"
+              role="tabpanel"
+              aria-labelledby="tab-team"
+              tabindex="0"
+            >
+              <img
+                id="screen-image"
+                src="assets/site/game-team.png"
+                alt="Capture réelle de la composition de l’équipe dans Boufbowl"
+                width="1024"
+                height="600"
+                loading="lazy"
+              />
+              <div class="screen-caption">
+                <span class="status-dot"></span
+                ><span id="screen-description"
+                  >Dix joueurs. Un collectif. Quelques ego à faire rentrer dans
+                  le vestiaire.</span
+                ><span>CAPTURE DU JEU ↗</span>
+              </div>
+            </div>
+            <p class="honest-note">
+              Le chantier a aussi son uniforme : environ deux personnages sur
+              trois empruntent encore le corps des Crâ. Les autres patrons de
+              couture sont recherchés.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section id="le-chantier" class="section chantier-section">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">03 / JOURNAL DE BORD</span>
+            <h2>
+              ON A RETROUVÉ LE JEU.<br /><em>PAS TOUTES SES CHAUSSETTES.</em>
+            </h2>
+          </div>
+          <span class="stamp">RESTAURATION<br />EN COURS ↗</span>
+        </div>
+        <div class="restoration-intro reveal">
+          <p>
+            Le client Flash d’origine a été sauvé des vestiaires du temps. Dans
+            son sac : à peu près la moitié des ressources. Depuis, on recoud les
+            maillots, on remet le serveur sur pieds et on tente de rendre au
+            Boufbowl sa bonne vieille mauvaise humeur.
+          </p>
+          <p>
+            Ce n’est pas encore le grand lancement. C’est une reconstruction
+            jouable, en évolution, sur Web, Android et Desktop. Une belle
+            occasion d’entrer dans l’équipe avant le coup d’envoi officiel.
+          </p>
+        </div>
+        <div class="status-grid">
+          <article class="status-card reveal">
+            <div class="status-label green">● ÇA TOURNE DÉJÀ</div>
+            <h3>LE TERRAIN<br />EST ROUVERT.</h3>
+            <ul>
+              <li>Création et personnalisation des personnages</li>
+              <li>Classements et ladder</li>
+              <li>Tournois ponctuels et récurrents</li>
+              <li>Canaux de discussion</li>
+              <li>Clients Web, Android et Desktop Flash</li>
+            </ul>
+            <span class="card-foot"
+              >LES FONDATIONS SONT LÀ. LES MARQUES DE CRAMPONS AUSSI.</span
+            >
+          </article>
+          <article class="status-card orange-card reveal">
+            <div class="status-label">◒ AU SERVICE COUTURE</div>
+            <h3>DES CORPS<br />À RETROUVER.</h3>
+            <p>
+              Les personnages du tutoriel sont complets : Crâ homme et femme,
+              Enutrof femme, Eniripsa femme et Iop homme.
+            </p>
+            <p>
+              Les autres ont retrouvé leurs illustrations plein écran dans
+              toutes leurs poses, mais pas encore toutes leurs pièces animées,
+              couleurs et textures.
+            </p>
+            <span class="card-foot">ON CHERCHE DES BRAS. LITTÉRALEMENT.</span>
+          </article>
+          <article class="status-card reveal">
+            <div class="status-label orange">↗ AU BANC D’ESSAI</div>
+            <h3>LA MÉMOIRE<br />A BESOIN DE VOUS.</h3>
+            <p>
+              Les pouvoirs, les probabilités de lancer, de réception et de chute
+              doivent retrouver leurs sensations d’antan.
+            </p>
+            <p>
+              Pour l’instant, de vieilles vidéos YouTube servent d’arbitres.
+              Souvent en 240p. Vos souvenirs et vos tests feront mieux que les
+              pixels.
+            </p>
+            <span class="card-foot"
+              >TESTEURS, ARCHIVISTES ET VIEUX BRISCARDS : À VOUS DE JOUER.</span
+            >
+          </article>
+        </div>
+        <details class="technical-notes">
+          <summary>SOUS LE MAILLOT, COMMENT ÇA TOURNE ? <span>+</span></summary>
+          <p>
+            Le client originel, des correctifs ActionScript 3, un serveur
+            actuellement écrit en Python, une base SQLite et des ressources
+            supplémentaires. Le serveur pourra évoluer ; la priorité reste de
+            retrouver le jeu. Le dépôt GitHub est encore privé. Demandez l’accès
+            pour contribuer ; l’ouverture du code est prévue après le nettoyage
+            du projet et son lancement.
+          </p>
+        </details>
+      </section>
+      <section id="telecharger" class="section download-section">
+        <div class="download-header reveal">
+          <span class="eyebrow">04 / CHOISISSEZ VOTRE TERRAIN</span>
+          <h2>LES MÊMES BAFFES.<br /><em>TROIS FAÇONS DE LES PRENDRE.</em></h2>
+          <p>
+            Le jeu se reconstruit sur Web, Android et Desktop. Les versions
+            natives sont distribuées au fil des builds de test.
+          </p>
+        </div>
+        <div class="platform-grid">
+          <article class="platform-card reveal">
+            <img
+              class="platform-icon"
+              src="assets/site/platform-web.svg"
+              alt=""
+              width="42"
+              height="42"
+              loading="lazy"
+            /><span class="platform-status">ACCÈS DIRECT</span>
+            <h3>WEB</h3>
+            <p>
+              Un navigateur, une équipe, un peu de témérité. Le vestiaire est au
+              bout du clic.
+            </p>
+            <a class="button" href="play.html"
+              >JOUER DANS LE NAVIGATEUR <span>↗</span></a
+            ><small>Version en restauration · ordinateur conseillé</small>
+          </article>
+          <article class="platform-card reveal">
+            <img
+              class="platform-icon"
+              src="assets/site/platform-android.svg"
+              alt=""
+              width="42"
+              height="42"
+              loading="lazy"
+            /><span id="android-status" class="platform-status"
+              >BUILD DE TEST</span
+            >
+            <h3>ANDROID</h3>
+            <p>
+              La tactique au bout des doigts. Les crampons ne sont pas fournis
+              avec le téléphone.
+            </p>
+            <a
+              id="download-android"
+              class="button button-outline"
+              href="#benevoles"
+              >DEMANDER LE BUILD <span>↗</span></a
+            ><small id="android-detail"
+              >APK · Android 6+ · ARM64 · sur demande</small
+            >
+          </article>
+          <article class="platform-card reveal">
+            <img
+              class="platform-icon"
+              src="assets/site/platform-desktop.svg"
+              alt=""
+              width="42"
+              height="42"
+              loading="lazy"
+            /><span id="desktop-status" class="platform-status"
+              >BUILD DE TEST</span
+            >
+            <h3>DESKTOP</h3>
+            <p>
+              Le client Flash retrouve un écran digne de ses grosses bottes. À
+              l’ancienne.
+            </p>
+            <a
+              id="download-desktop"
+              class="button button-outline"
+              href="#benevoles"
+              >DEMANDER LE BUILD <span>↗</span></a
+            ><small id="desktop-detail"
+              >Client natif Flash · disponibilité selon plateforme</small
+            >
+          </article>
+        </div>
+      </section>
+      <section id="benevoles" class="section volunteer-section">
+        <div class="volunteer-main reveal">
+          <span class="eyebrow">05 / MERCATO OUVERT</span>
+          <h2>
+            ON RECRUTE.<br /><em>MÊME SANS<br />ABDOMINAUX.</em>
+          </h2>
+          <p>
+            Pas besoin de marquer en finale pour sauver le Boufbowl. Un dessin,
+            une archive, un test ou un bon montage peut faire gagner toute
+            l’équipe.
+          </p>
+          <button class="button button-cream" data-volunteer="Je veux aider">
+            JE REJOINS LE CHANTIER <span>↗</span></button
+          ><a
+            class="discord-note"
+            data-project-contact
+            href="https://discord.com/invite/dofus-3-1255519861275230280"
+            target="_blank"
+            rel="noopener"
+            >RETROUVEZ-NOUS SUR LE DISCORD DOFUS 3 ↗</a
+          >
+          <span class="volunteer-note"
+            >BÉNÉVOLAT · PROJET NON COMMERCIAL · BONNE HUMEUR CONSEILLÉE</span
+          >
+        </div>
+        <div class="volunteer-jobs reveal">
+          <button data-volunteer="Graphisme et animation">
+            <span>01</span>
+            <div>
+              <h3>LES MAINS DANS LES PIXELS</h3>
+              <p>
+                Éléments de pantins Flash, corps, couleurs de classes et
+                textures 2D des terrains 3D.
+              </p>
+            </div>
+            <span>↗</span></button
+          ><button data-volunteer="Sons, musiques et archives">
+            <span>02</span>
+            <div>
+              <h3>LES OREILLES DU VESTIAIRE</h3>
+              <p>
+                Sons, musiques, anciennes captures et vidéos plus nettes qu’un
+                souvenir de 2013.
+              </p>
+            </div>
+            <span>↗</span></button
+          ><button data-volunteer="Tests et équilibrage">
+            <span>03</span>
+            <div>
+              <h3>LES ARBITRES DU DÉTAIL</h3>
+              <p>
+                Tester les pouvoirs, passes, réceptions et chutes. Raconter ce
+                qui ne sent pas encore le jeu d’origine.
+              </p>
+            </div>
+            <span>↗</span></button
+          ><button data-volunteer="Vidéo de lancement et mise en relation">
+            <span>04</span>
+            <div>
+              <h3>LES VOIX DU RETOUR</h3>
+              <p>
+                Créer la vidéo de lancement ou nous conseiller pour contacter
+                Ankama avec les formes.
+              </p>
+            </div>
+            <span>↗</span>
+          </button>
+        </div>
+      </section>
+      <section class="section manifesto-section reveal">
+        <span class="eyebrow">UN RETOUR PAR PASSION. PAS UNE BOUTIQUE.</span>
+        <h2>LA SEULE CHOSE À ENCAISSER,<br /><em>C’EST UN PLAQUAGE.</em></h2>
+        <div class="manifesto-values">
+          <span>✳ ZÉRO PUBLICITÉ</span><span>✳ AUCUN KAMA À ACHETER</span
+          ><span>✳ AUCUN BUT D’ENRICHISSEMENT</span>
+        </div>
+        <p>
+          Boufbowl est un fan game indépendant, non commercial et non affilié à
+          ANKAMA Games. Les noms, personnages et éléments d’origine
+          appartiennent à leurs ayants droit.
+        </p>
+        <details class="quote-details">
+          <summary>À PROPOS DU RESPECT DE L’UNIVERS <span>+</span></summary>
+          <blockquote>
+            « Tant que c’est fait avec respect, que c’est non commercial et que
+            ça ne cannibalise pas notre univers, je ne vois aucun problème. »
+          </blockquote>
+          <p>
+            — Tot, propos du 12 octobre 2026 rapportés par le porteur du projet.
+            <span id="quote-source">Source publique à documenter.</span> Cette
+            citation n’est pas présentée comme une autorisation spécifique du
+            projet ou une affiliation.
+          </p>
+        </details>
+      </section>
+      <section class="final-cta">
+        <p>LE SIFFLET A SONNÉ.</p>
+        <a href="play.html">À VOUS DE <em>JOUER.</em> <span>↗</span></a
+        ><span>LES DENTS DE LAIT NE SONT PAS UNE ARMURE.</span>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <a class="wordmark" href="#">BOUF<span>BOWL</span></a>
+      <p>RESSUSCITÉ PAR DES FANS.<br />PAS PAR UN ENIRIPSA. ENFIN, ON CROIT.</p>
+      <div>
+        <a href="legal.html">Informations juridiques</a
+        ><a href="confidentialite.html">Confidentialité</a
+        ><a href="conditions-utilisation.html">CGU</a
+        ><a href="mentions-legales.html">Mentions légales</a>
+      </div>
+      <button id="motion-toggle" aria-pressed="false">
+        METTRE LES ANIMATIONS EN PAUSE Ⅱ
+      </button>
+    </footer>
+    <dialog
+      id="video-dialog"
+      class="video-dialog"
+      aria-labelledby="video-title"
+    >
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">LES ARCHIVES ONT ENCORE DU CRAMPON</span>
+          <h2 id="video-title">Le Boufbowl en images</h2>
+        </div>
+        <button data-close-dialog aria-label="Fermer la vidéo">×</button>
+      </div>
+      <div
+        class="archive-tabs"
+        role="group"
+        aria-label="Choisir une archive vidéo"
+      >
+        <button
+          class="button button-small"
+          data-archive="intro"
+          aria-pressed="true"
+        >
+          LE TUTORIEL ORIGINAL</button
+        ><button
+          class="button button-small button-outline"
+          data-archive="field"
+          aria-pressed="false"
+        >
+          AU BORD DU TERRAIN
+        </button>
+      </div>
+      <video
+        id="archive-video"
+        controls
+        playsinline
+        preload="none"
+        poster="assets/site/tutorial-poster.webp"
+      >
+        <source src="assets/site/tutorial-archive.mp4" type="video/mp4" />
+        <p>
+          Votre navigateur ne prend pas en charge la vidéo.
+          <a href="assets/site/tutorial-archive.mp4"
+            >Télécharger les images du tutoriel</a
+          >.
+        </p>
+      </video>
+      <p>
+        Extrait du tutoriel original, issu des archives du client. Ce n’est pas
+        la bande-annonce de lancement du fan game : on cherche justement
+        quelqu’un pour la réaliser.
+      </p>
+    </dialog>
+    <dialog id="volunteer-dialog" aria-labelledby="volunteer-title">
+      <div class="dialog-header">
+        <span class="eyebrow">UNE PLACE VOUS ATTEND DANS L’ÉQUIPE</span
+        ><button data-close-dialog aria-label="Fermer la candidature">×</button>
+      </div>
+      <h2 id="volunteer-title">BIENVENUE AU VESTIAIRE.</h2>
+      <p>
+        Le GitHub est encore privé. Pour participer, demandez un accès au
+        porteur du projet en précisant ce que vous aimeriez apporter.
+      </p>
+      <label for="volunteer-message"
+        >Votre point de départ — à personnaliser</label
+      ><textarea id="volunteer-message" rows="6"></textarea>
+      <div class="dialog-actions">
+        <button id="copy-message" class="button">
+          COPIER LE MESSAGE <span>↗</span></button
+        ><a
+          id="contact-project"
+          class="button button-outline"
+          hidden
+          target="_blank"
+          rel="noopener"
+          >CONTACTER LE PROJET ↗</a
+        >
+      </div>
+      <p id="contact-detail">
+        Retrouvez le porteur du projet sur le Discord Dofus 3 pour proposer
+        votre aide et demander l’accès au dépôt privé.
+      </p>
+      <p id="copy-status" role="status" aria-live="polite"></p>
+    </dialog>
+    <div id="brawl-announcer" aria-live="polite" class="sr-only"></div>
+    <script src="home.js" defer></script>
+  </body>
+</html>

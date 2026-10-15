@@ -30,8 +30,50 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
-STATIC_PAGES = ("browser.html", "admin.html", "moderation.html", "tournaments.html",
-                "admin.css", "admin.js", "moderation.js", "tournaments.js")
+STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
+                "admin.css", "admin.js", "moderation.js", "tournaments.js",
+                "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
+                "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
+
+
+DOWNLOAD_FILES = {
+    '/downloads/BoufbowlOffline.apk': ('android/build/BoufbowlOffline.apk', 'android'),
+    '/downloads/BoufbowlOffline-linux.tar.gz': ('linux/build/BoufbowlOffline-linux.tar.gz', 'desktop'),
+}
+
+
+def download_path(root, relative):
+    path = root / relative
+    # Only known build artifacts may be served; symlinks cannot escape their build folder.
+    return path if path.is_file() and path.resolve().is_relative_to(root / Path(relative).parent) else None
+
+
+def site_manifest(root):
+    try:
+        settings = json.loads((root / 'resources/site.json').read_text())
+        if not isinstance(settings, dict): settings = {}
+    except (OSError, ValueError):
+        settings = {}
+
+    def public_url(key):
+        value = settings.get(key)
+        if not isinstance(value, str): return None
+        parsed = urlsplit(value)
+        return value if parsed.scheme == 'https' and parsed.hostname and not parsed.username and not parsed.password else None
+
+    downloads = {}
+    for route, (relative, platform) in DOWNLOAD_FILES.items():
+        path = download_path(root, relative)
+        external = public_url(('android' if platform == 'android' else 'desktop') + '_download_url')
+        downloads[platform] = {
+            'url': external or (route if path else None),
+            'local': bool(path and not external),
+            'size': path.stat().st_size if path and not external else None,
+            'description': ('APK · Android 6+ · ARM64' if platform == 'android' else
+                            'Desktop · client Flash' if external else 'Linux x86-64 · Python 3 + Wine requis'),
+        }
+    return {'ok': True, 'downloads': downloads, 'contact_url': public_url('contact_url'),
+            'tot_quote_source_url': public_url('tot_quote_source_url')}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -69,7 +111,7 @@ class Handler(SimpleHTTPRequestHandler):
             route = '/resources/*'
         elif route.lstrip('/') not in STATIC_PAGES and route not in ('/', '/__mock_trace', '/crossdomain.xml',
                             '/api/hello', '/api/command', '/api/poll', '/api/replay', '/api/community',
-                            '/api/account', '/api/telemetry', '/api/metrics', '/api/admin', '/api/client', '/api/health'):
+                            '/api/account', '/api/telemetry', '/api/metrics', '/api/admin', '/api/site', '/api/client', '/api/health'):
             route = '/unknown'
         try:
             handler()
@@ -134,6 +176,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def handle_get(self):
         route = urlsplit(self.path).path
+        if route == "/api/site":
+            self.json_response(site_manifest(Path(self.directory).resolve()))
+            return
         if route == "/api/client":
             client = Path(self.directory) / "bin/boufbowl-client-1.9.6.swf"
             digest = hashlib.sha256(client.read_bytes()).hexdigest()
@@ -169,8 +214,20 @@ class Handler(SimpleHTTPRequestHandler):
         # Apply the static-file allowlist to both GET and HEAD requests.
         route = urlsplit(self.path).path
         if route == "/":
-            self.path = "/browser.html"
-            route = "/browser.html"
+            self.path = "/index.html"
+            route = "/index.html"
+        if route == "/browser.html":
+            self.send_response(302)
+            self.send_header('Location', '/play.html')
+            self.end_headers()
+            return None
+        if route in DOWNLOAD_FILES:
+            path = download_path(Path(self.directory).resolve(), DOWNLOAD_FILES[route][0])
+            if path is None:
+                self.send_error(404)
+                return None
+            self.path = '/' + DOWNLOAD_FILES[route][0]
+            return super().send_head()
         if route.lstrip("/") not in STATIC_PAGES and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
             self.send_error(404)
             return
