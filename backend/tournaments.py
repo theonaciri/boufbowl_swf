@@ -13,7 +13,7 @@ REWARD_BALANCES = {1: (20,10,10), 2: (10,10,10), 3: (0,5,10), 4: (0,0,10)}
 
 class Tournaments:
     def schedule_tournaments(self):
-        cfg = self.config['general']['tournament']
+        cfg = self.tournament_settings()
         if not cfg['enabled']: return
         now = time.time(); repeat = cfg.get('repeat_seconds',0)
         index = max(0, int((now-cfg['start_time'])//repeat)) if repeat else 0
@@ -28,7 +28,8 @@ class Tournaments:
             previous=self.store.db.execute('SELECT settings_json FROM tournaments WHERE id<? ORDER BY id DESC LIMIT 1',(settings['id'],)).fetchone()
             if previous and repeat:
                 previous=json.loads(previous[0]);gap=repeat-(cfg['end_time']-cfg['start_time'])
-                start=max(settings['start_time'],previous['end_time']+gap)
+                same_series=previous.get('series_id')==settings.get('series_id')
+                start=max(settings['start_time'],previous['end_time']+(gap if same_series else 0))
                 settings.update(start_time=start,end_time=start+(cfg['end_time']-cfg['start_time']))
             phase = 'upcoming' if now < settings['start_time'] else 'open' if now < settings['end_time'] else 'closing'
             self.store.db.execute('INSERT OR IGNORE INTO tournaments(id,settings_json,phase) VALUES(?,?,?)',
@@ -47,7 +48,7 @@ class Tournaments:
         return json.loads(row[0])
 
     def current_tournament_id(self):
-        if not self.config['general']['tournament']['enabled']: return None
+        if not self.tournament_settings()['enabled']: return None
         now=time.time()
         row=self.store.db.execute("SELECT id FROM tournaments WHERE phase='open' AND json_extract(settings_json,'$.start_time')<=? AND json_extract(settings_json,'$.end_time')>? ORDER BY id LIMIT 1",(now,now)).fetchone()
         return str(row[0]) if row else None
@@ -88,7 +89,7 @@ class Tournaments:
     def send_tournaments(self, profile):
         rows=self.store.db.execute('SELECT * FROM tournaments ORDER BY id DESC').fetchall()
         outstanding=[self.tournament_packet(r,profile) for r in reversed(rows) if r['phase'] in ('upcoming','open')]
-        past=[self.tournament_packet(r,profile) for r in rows if r['phase'] in ('closing','ended')][:self.config['general']['tournament'].get('past_count',10)]
+        past=[self.tournament_packet(r,profile) for r in rows if r['phase'] in ('closing','ended')][:self.tournament_settings().get('past_count',10)]
         packet=self.packet('OUTSTANDING_TOURNAMENTS',{'tournaments':outstanding,'currentTime':time.time()*1000})
         packet['round_states']=self.tournament_round_metadata(profile,rows)
         self.store.emit(profile,packet)
@@ -96,7 +97,7 @@ class Tournaments:
 
     def tournament_match(self, profile, identity=None):
         self.maintain_tournaments()
-        if not self.config['general']['tournament']['enabled']:
+        if not self.tournament_settings()['enabled']:
             raise ServiceError('TOURNAMENT_CLOSED','Tournament entry is disabled')
         if identity is None and self.current_tournament_id() is None:
             raise ServiceError('TOURNAMENT_CLOSED','No tournament is running yet')
@@ -140,6 +141,7 @@ class Tournaments:
             if profile not in played or threshold is None or len(rewards)<=threshold: continue
             reward=rewards[threshold];entry['reward']=reward
             balances=dict(zip(('glory','influence','coins'),REWARD_BALANCES[reward]))
+            if rank==1 and 'prizes' in settings: balances=settings['prizes']
             added=self.store.db.execute('INSERT OR IGNORE INTO tournament_rewards VALUES(?,?,?,?,?)',(settings['id'],profile,reward,json.dumps(balances),time.time())).rowcount
             if added:
                 stats=self.store.profile(profile)['statistics'];wallet=stats.setdefault('tournament_wallet',{'glory':0,'influence':0,'coins':0})
@@ -167,7 +169,9 @@ class Tournaments:
                 active=any(json.loads(m[0]).get('tournament')==settings['id'] and json.loads(m[0])['phase']!='ended' for m in self.store.db.execute('SELECT state_json FROM matches'))
                 if not active:
                     self.finalize_tournament(row);phase='ended'
-                else:self.store.db.execute('UPDATE tournaments SET phase=? WHERE id=?',(phase,settings['id']))
+                else:
+                    self.store.db.execute('UPDATE tournaments SET phase=? WHERE id=?',(phase,settings['id']))
+                    self.shift_upcoming_tournaments(settings['id'],max(now+60,settings['end_time']))
             elif phase!=old:self.store.db.execute('UPDATE tournaments SET phase=? WHERE id=?',(phase,settings['id']))
             if phase!=old:
                 changed=True

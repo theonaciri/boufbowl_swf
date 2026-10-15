@@ -101,10 +101,13 @@ class TournamentRounds:
         return False
 
     def shift_upcoming_tournaments(self, identity, end):
-        cfg=self.config['general']['tournament'];gap=max(0,cfg.get('repeat_seconds',0)-(cfg['end_time']-cfg['start_time']))
+        previous=self.tournament_config(identity)
         for row in self.store.db.execute("SELECT * FROM tournaments WHERE id>? AND phase='upcoming' ORDER BY id",(identity,)).fetchall():
-            settings=json.loads(row['settings_json']);duration=settings['end_time']-settings['start_time'];start=max(settings['start_time'],end+gap)
-            settings.update(start_time=start,end_time=start+duration);end=settings['end_time']
+            settings=json.loads(row['settings_json']);duration=settings['end_time']-settings['start_time']
+            same_series=previous.get('series_id')==settings.get('series_id')
+            gap=max(0,settings.get('repeat_seconds',0)-duration) if same_series else 0
+            start=max(settings['start_time'],end+gap)
+            settings.update(start_time=start,end_time=start+duration);end=settings['end_time'];previous=settings
             self.store.db.execute('UPDATE tournaments SET settings_json=? WHERE id=?',(json.dumps(settings),settings['id']))
 
     def knockout_order(self, settings, entries):

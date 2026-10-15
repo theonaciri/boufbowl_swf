@@ -9,6 +9,7 @@ import threading
 import logging
 import queue
 
+from backend.admin import Admin
 from backend.engine import Engine
 from backend.storage import ServiceError, Store
 from backend.tracking import Tracking, metrics_report
@@ -33,7 +34,7 @@ CLASS_NAMES = ("Cra", "Ecaflip", "Eniripsa", "Enutrof", "Feca", "Iop", "Osamodas
                "Rogue", "Sacrier", "Sadida", "Sram", "Xelor", "Zobal")
 
 
-class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, Social, Accounts, Matchmaking, Community):
+class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournaments, Social, Accounts, Matchmaking, Community):
     def __init__(self, path, config=None, engine=None):
         self.config = deepcopy(config or load_config())
         self.store = Store(path)
@@ -353,6 +354,8 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 for offer in self.store.db.execute("SELECT * FROM challenges WHERE (host=? OR guest=?) AND status='pending'",(participant,participant)).fetchall():
                     self.cancel_offer(offer)
         rules = resolve_stadium(self.config, key)
+        if tournament is not None:
+            rules["match"].update(self.tournament_config(tournament).get("match_rules", {}))
         left_club = self.club(left)
         right_club = self.club(right) if right else deepcopy(left_club)
         team_colors = [deepcopy(left_club['firstColor']), deepcopy(right_club['firstColor']) if right else {'r':210,'g':80,'b':60}]

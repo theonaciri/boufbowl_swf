@@ -21,6 +21,9 @@ class Matchmaking:
             settings=self.tournament_config(tournament)
             if not settings['start_time'] <= time.time() < settings['end_time']:
                 raise ServiceError('TOURNAMENT_CLOSED','This tournament is outside its configured time window')
+            rating=self.store.profile(profile)['statistics']['rating']
+            if not settings.get('min_rating',0)<=rating<=settings.get('max_rating',100000):
+                raise ServiceError('TOURNAMENT_RATING','Your rating is outside this tournament’s allowed range')
             self.knockout_eligible(profile,settings)
             stadiums=[settings['stadium']]
             tournament=str(settings['id'])

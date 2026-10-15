@@ -30,6 +30,10 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
+STATIC_PAGES = ("browser.html", "admin.html", "moderation.html", "tournaments.html",
+                "admin.css", "admin.js", "moderation.js", "tournaments.js")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def json_response(self, response):
         if response.get('ok') is False:
@@ -63,9 +67,9 @@ class Handler(SimpleHTTPRequestHandler):
             route = '/bin/*'
         elif route.startswith('/resources/'):
             route = '/resources/*'
-        elif route not in ('/', '/admin.html', '/browser.html', '/__mock_trace', '/crossdomain.xml',
+        elif route.lstrip('/') not in STATIC_PAGES and route not in ('/', '/__mock_trace', '/crossdomain.xml',
                             '/api/hello', '/api/command', '/api/poll', '/api/replay', '/api/community',
-                            '/api/account', '/api/telemetry', '/api/metrics', '/api/client', '/api/health'):
+                            '/api/account', '/api/telemetry', '/api/metrics', '/api/admin', '/api/client', '/api/health'):
             route = '/unknown'
         try:
             handler()
@@ -92,6 +96,7 @@ class Handler(SimpleHTTPRequestHandler):
                   "/api/poll": self.server.service.poll, "/api/replay": self.replay,
                   "/api/community": self.server.service.community,
                   "/api/metrics": self.server.service.metrics,
+                  "/api/admin": self.server.service.admin,
                   "/api/telemetry": self.server.service.telemetry,
                   "/api/account": lambda body: self.server.service.account(body, self.client_address[0])}
         if route not in routes:
@@ -166,13 +171,13 @@ class Handler(SimpleHTTPRequestHandler):
         if route == "/":
             self.path = "/browser.html"
             route = "/browser.html"
-        if route not in ("/browser.html", "/admin.html") and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
+        if route.lstrip("/") not in STATIC_PAGES and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
             self.send_error(404)
             return
         resolved = Path(self.translate_path(unquote(route))).resolve()
         root = Path(self.directory).resolve()
         allowed = [root / name for name in ("bin", "assets", "resources", "vendor/ruffle")]
-        if resolved not in (root / "browser.html", root / "admin.html") and not any(resolved.is_relative_to(directory) for directory in allowed):
+        if resolved not in tuple(root / name for name in STATIC_PAGES) and not any(resolved.is_relative_to(directory) for directory in allowed):
             self.send_error(404)
             return
         return super().send_head()

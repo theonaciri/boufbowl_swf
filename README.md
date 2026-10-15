@@ -354,3 +354,7 @@ only their effects. Regeneration was verified across six real turns and a restar
 [Browser playback options](docs/browser-play.md) explain how to launch the included
 self-hosted Ruffle prototype, its startup compatibility fixes, and the gameplay
 checks still required.
+
+### Administrator pages
+
+Use `/admin.html`, `/moderation.html`, and `/tournaments.html` for statistics, live chat moderation, and tournament scheduling. See [the administrator console guide](docs/admin-console.md) for roles, conversation filters, suspensions, recurring events, rules, and prizes.

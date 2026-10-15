@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="admin.css" />
+    <title>Boufbowl · Moderation</title>
+  </head>
+  <body data-console="moderation">
+    <section id="console-login" class="panel login-panel">
+      <span class="eyebrow">Restricted access</span>
+      <h2>Sign in to the admin console</h2>
+      <p>Use your administrator account or an existing session.</p>
+      <form id="console-account">
+        <label class="field"
+          >Username<input
+            id="console-username"
+            autocomplete="username"
+            value="KrissKrass"
+            required /></label
+        ><label class="field"
+          >Password<input
+            id="console-password"
+            type="password"
+            autocomplete="current-password"
+            required /></label
+        ><button>Sign in</button>
+      </form>
+      <details style="margin-top: 18px">
+        <summary>Use an existing session</summary>
+        <form id="console-device">
+          <label class="field"
+            >Administrator session<input
+              id="console-session"
+              type="password"
+              required
+              autocomplete="off" /></label
+          ><button>Connect</button>
+        </form>
+      </details>
+    </section>
+    <p id="console-error" class="status" role="status" aria-live="polite"></p>
+    <main id="console-main" hidden>
+      <div class="page-heading">
+        <div>
+          <span class="eyebrow">Community & safety</span>
+          <h1>Moderation</h1>
+          <p>A live view of conversations across the pitch.</p>
+        </div>
+        <span id="live-state" class="live">Live · every 2 seconds</span>
+      </div>
+      <div id="moderation-stats" class="stats"></div>
+      <p id="page-status" class="status" role="status" aria-live="polite"></p>
+      <div class="workspace">
+        <div>
+          <section id="conversation-panel" class="panel">
+            <div class="panel-title">
+              <h2>Message stream</h2>
+              <button id="pause" class="secondary small">Pause feed</button>
+            </div>
+            <div class="filters">
+              <input
+                id="search"
+                aria-label="Search messages"
+                placeholder="Search messages…"
+              /><input
+                id="player-filter"
+                aria-label="Filter by player"
+                placeholder="Player name…"
+              /><select id="kind" aria-label="Channel filter">
+                <option value="">All channels</option>
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+                <option value="match">Match</option></select
+              ><select id="language" aria-label="Language filter">
+                <option value="">All languages</option>
+                <option value="en">English</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="es">Spanish</option>
+              </select>
+            </div>
+            <div id="conversation-focus" class="focus-bar" hidden>
+              <span id="focus-label"></span
+              ><button id="clear-focus" class="secondary small">
+                Clear focus ×
+              </button>
+            </div>
+            <p class="footer-note">
+              Select a private or match message for conversation context. Click
+              outside this panel or press Escape to clear focus. Newest messages
+              first.
+            </p>
+            <div id="feed" class="feed" aria-label="Chat messages"></div>
+            <button
+              id="older"
+              class="secondary"
+              style="width: 100%; margin-top: 15px"
+              hidden
+            >
+              Load older messages
+            </button>
+          </section>
+          <section class="panel">
+            <h2>Moderation history</h2>
+            <div class="scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Player</th>
+                    <th>Action</th>
+                    <th>Moderator</th>
+                    <th>Reason</th>
+                    <th>Until</th>
+                  </tr>
+                </thead>
+                <tbody id="audit"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+        <aside class="sidebar">
+          <section class="panel">
+            <span class="eyebrow">Player action</span>
+            <h2 style="margin-top: 8px">Suspend a player</h2>
+            <form id="suspension-form" class="stack">
+              <label class="field"
+                >Player<input
+                  id="suspend-player"
+                  list="players"
+                  placeholder="Select a player"
+                  required /><datalist id="players"></datalist></label
+              ><label class="field"
+                >Duration<select id="duration">
+                  <option value="86400">1 day</option>
+                  <option value="604800">7 days</option>
+                  <option value="0">Indefinitely · admins only</option>
+                </select></label
+              ><label class="field"
+                >Reason<textarea
+                  id="reason"
+                  rows="3"
+                  maxlength="500"
+                  required
+                  placeholder="Explain the reason for the suspension"
+                ></textarea></label
+              ><button class="danger">Review suspension</button>
+            </form>
+            <p class="footer-note">
+              Suspensions block sign-in and disconnect the player from
+              matchmaking. An active match is forfeited.
+            </p>
+          </section>
+          <section class="panel">
+            <h2>Message activity</h2>
+            <p>Messages per hour · last 24 hours</p>
+            <div
+              id="activity-chart"
+              class="chart"
+              role="img"
+              aria-label="Hourly message volume over the last 24 hours"
+            ></div>
+            <div class="chart-axis">
+              <span>24 hours ago</span><span>Now</span>
+            </div>
+          </section>
+          <section class="panel">
+            <h2>Active suspensions</h2>
+            <div id="sanctions"></div>
+          </section>
+          <section class="panel">
+            <h2>Recent player reports</h2>
+            <div id="reports"></div>
+          </section>
+        </aside>
+      </div>
+      <dialog id="suspend-dialog">
+        <span class="eyebrow">Review player action</span>
+        <h2>Confirm suspension</h2>
+        <p id="suspend-summary"></p>
+        <p id="suspend-reason"></p>
+        <p id="suspend-error" class="status" role="status"></p>
+        <div class="dialog-actions">
+          <button id="cancel-suspend" class="secondary">Cancel</button
+          ><button id="confirm-suspend" class="danger">Suspend player</button>
+        </div>
+      </dialog>
+    </main>
+    <script src="admin.js"></script>
+    <script src="moderation.js"></script>
+  </body>
+</html>

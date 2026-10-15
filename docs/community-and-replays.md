@@ -115,8 +115,8 @@ Mutation requests accept a stable `request_id`; retries return their saved recei
 and do not duplicate a message/report. The client supplies one. Game commands
 retain their existing mandatory request IDs. Messages are limited to 500 characters
 and one per second per sender; friend lists/requests are limited to 200 relations.
-The API never exposes another profile's sessions, account credentials or private
-conversations. Original protobuf chat reporting now stores a report and optionally
+The player-facing Community API never exposes another profile's sessions, account
+credentials or unrelated private conversations. Original protobuf chat reporting now stores a report and optionally
 acknowledges it. Administrator broadcasts and external authentication remain disabled.
 
 Review reports locally:
@@ -126,7 +126,7 @@ python3 -m backend.manage --database /path/backend.sqlite reports --limit 50
 ```
 
 Reports are stored for the server operator; submitting one does not imply an
-automatic ban or external delivery. There is no public administrator API.
+automatic ban or external delivery. The [administrator console](admin-console.md) provides authenticated moderator chat review and administrator tournament scheduling.
 
 ## Validation and remaining scope
 

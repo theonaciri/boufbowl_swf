@@ -132,6 +132,10 @@ class Store:
             CREATE TABLE IF NOT EXISTS seasons(id INTEGER PRIMARY KEY,settings_json TEXT NOT NULL,closed REAL);
             CREATE TABLE IF NOT EXISTS season_rankings(season_id INTEGER NOT NULL REFERENCES seasons(id),profile_id TEXT NOT NULL REFERENCES profiles(id),statistics_json TEXT NOT NULL,PRIMARY KEY(season_id,profile_id));
             CREATE TABLE IF NOT EXISTS tournament_rounds(tournament_id INTEGER NOT NULL REFERENCES tournaments(id),round INTEGER NOT NULL,phase TEXT NOT NULL,eligible_json TEXT NOT NULL,PRIMARY KEY(tournament_id,round));
+            CREATE TABLE IF NOT EXISTS admin_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS admin_events(id INTEGER PRIMARY KEY AUTOINCREMENT,actor TEXT NOT NULL REFERENCES profiles(id),action TEXT NOT NULL,details TEXT NOT NULL,created REAL NOT NULL);
+            CREATE INDEX IF NOT EXISTS chat_by_match ON chat_messages(match_id,id);
+            CREATE INDEX IF NOT EXISTS chat_by_pair ON chat_messages(sender,recipient,id);
             INSERT OR IGNORE INTO schema_versions VALUES(8);
         """)
         from backend.tracking import init_schema

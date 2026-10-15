@@ -23,6 +23,8 @@ class BrowserServerTests(unittest.TestCase):
             (root / "resources").mkdir()
             (root / "resources/config.json").write_text('{"3dActivated":"false","sound":{"enabled":"true"}}')
             (root / "browser.html").write_text("browser")
+            for name in ("admin.html", "moderation.html", "tournaments.html", "admin.css", "admin.js", "moderation.js", "tournaments.js"):
+                (root / name).write_text("console asset")
             (root / "vendor/ruffle/ruffle.js").write_text("player")
             (root / "vendor/ruffle/player.wasm").write_bytes(b"\0asm")
             (root / "private.txt").write_text("private")
@@ -52,7 +54,7 @@ class BrowserServerTests(unittest.TestCase):
                     self.assertEqual(response.headers["Cache-Control"], "no-store")
                 self.assertEqual(json.loads((root / "resources/config.json").read_text())["3dActivated"], "false")
                 for method in ("GET", "HEAD"):
-                    for route in ("/", "/browser.html", "/vendor/ruffle/ruffle.js", "/vendor/ruffle/player.wasm"):
+                    for route in ("/", "/browser.html", "/admin.html", "/moderation.html", "/tournaments.html", "/admin.css", "/admin.js", "/moderation.js", "/tournaments.js", "/vendor/ruffle/ruffle.js", "/vendor/ruffle/player.wasm"):
                         with self.subTest(method=method, route=route):
                             with urlopen(Request(origin + route, method=method)) as response:
                                 self.assertEqual(response.status, 200)
