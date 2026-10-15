@@ -1,5 +1,5 @@
 // @bun
-// ../boufbowl_server/src/hex.ts
+// ../../boufbowl_server/src/hex.ts
 var HEX_DIRECTIONS = [
   { q: 1, r: 0 },
   { q: 1, r: -1 },
@@ -47,7 +47,7 @@ function hexRound(h) {
   return { q, r };
 }
 
-// ../boufbowl_server/src/coordinates.ts
+// ../../boufbowl_server/src/coordinates.ts
 var SIMULATION_SCALE = 1e4;
 
 // backend/movement-risk.ts
@@ -127,7 +127,7 @@ function publishMovementTests(context) {
     } });
 }
 
-// ../boufbowl_server/src/rng.ts
+// ../../boufbowl_server/src/rng.ts
 import { createHash } from "crypto";
 
 class DeterministicRNG {
@@ -170,7 +170,7 @@ function canonicalJSON(value) {
   return "{" + Object.keys(object).filter((k) => object[k] !== undefined).sort().map((k) => JSON.stringify(k) + ":" + canonicalJSON(object[k])).join(",") + "}";
 }
 
-// ../boufbowl_server/src/constants.ts
+// ../../boufbowl_server/src/constants.ts
 var VERSION = {
   PROTOCOL: "1.0.0",
   SIMULATION: "2.5.0",
@@ -182,7 +182,7 @@ var SERVER_CONFIG = {
 };
 var GAME_STRUCTURE = Object.freeze({ TEAM_SIZE: 5, ELEMENT_SLOTS: 3 });
 
-// ../boufbowl_server/src/rules.ts
+// ../../boufbowl_server/src/rules.ts
 var EMPTY_ELEMENTS = {
   TERRE: 0,
   FEU: 0,
@@ -209,7 +209,7 @@ function canThrow(elements) {
   return elements.AIR >= 1;
 }
 function canPickup(cfg, elements) {
-  return cfg.actions.element_effects.feu.used_for_pickup ? elements.FEU >= 1 : true;
+  return cfg.actions.element_effects.feu.used_for_pickup ? elements.FEU >= 1 || cfg.actions.element_effects.air.used_for_pickup === true && elements.AIR >= 1 : true;
 }
 function canRevive(cfg, elements) {
   return elements.EAU >= cfg.combat.revive.required_eau_actions_to_get_up;
@@ -250,7 +250,7 @@ function dodgeSucceeds(contest) {
   return contest.defender_feu > contest.attacker_terre && contest.defender_agility >= contest.attacker_agility;
 }
 
-// ../boufbowl_server/src/simulator/movement.ts
+// ../../boufbowl_server/src/simulator/movement.ts
 var SCALE = SIMULATION_SCALE;
 var fixed = (p) => ({
   q: Math.round(p.q * SCALE),
@@ -296,7 +296,7 @@ function setupMovements(cfg, state, actions, _size) {
   for (const action of actions) {
     if (action.action_type !== "move" && action.action_type !== "follow")
       continue;
-    const e = state.entities.find((e2) => e2.id === action.entity_id);
+    const e = state.entities.find((e) => e.id === action.entity_id);
     const follow = action.action_type === "follow" ? action.params.follow_ball === true ? "ball" : action.params.target_entity_id : undefined;
     const target = follow === "ball" ? state.ball.position : follow !== undefined ? state.entities.find((other) => other.id === follow)?.position : action.params.target_position;
     if (!e || e.hp <= 0 || !target)
@@ -336,7 +336,7 @@ function stepMovements(state, table, size, cfg, tick, seed) {
   const offset = ids.length ? ((seed >>> 0) + tick) % ids.length : 0;
   for (const id of [...ids.slice(offset), ...ids.slice(0, offset)]) {
     const m = table.get(id);
-    const e = state.entities.find((e2) => e2.id === id);
+    const e = state.entities.find((e) => e.id === id);
     if (m.done || e.hp <= 0 || e.status.knocked_down || e.status.stunned)
       continue;
     if (m.pause > 0) {
@@ -395,7 +395,7 @@ function finalizePositions(state, table, _size) {
     state.ball.position = { ...holder.position };
 }
 
-// ../boufbowl_server/src/simulator/combat.ts
+// ../../boufbowl_server/src/simulator/combat.ts
 function resolveDuels(cfg, state, actions, rng, tick, dueledPairs) {
   const events = [];
   const elements = new Map(state.entities.map((e) => [e.id, e.elements]));
@@ -552,11 +552,11 @@ function duelEvents(outcome, tick) {
   return events;
 }
 
-// ../boufbowl_server/src/simulator/throwTarget.ts
+// ../../boufbowl_server/src/simulator/throwTarget.ts
 function receiverPositionAfter(cfg, receiver, movement, ticks) {
   if (!movement || movement.done || receiver.hp <= 0 || receiver.status.knocked_down || receiver.status.stunned)
     return fractional(receiver.precise_position ?? fixed(receiver.position));
-  let current = { ...movement.current }, next = movement.next, progress = movement.progress;
+  let current = { ...movement.current }, { next, progress } = movement;
   let remainingCells = movement.budget - movement.traveled;
   let distance = movement.speed * Math.max(0, ticks - movement.pause);
   while (distance > 0 && remainingCells > 0) {
@@ -592,19 +592,51 @@ function targetedThrow(cfg, start, receiver, movement) {
   throw new Error("Receiver projection exceeded its distance bound");
 }
 
-// ../boufbowl_server/src/simulator/ball.ts
+// ../../boufbowl_server/src/simulator/ball.ts
 var active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !e.power_locked;
 var point = (e) => e.precise_position ?? fixed(e.position);
 var clamp = (cfg, p) => Math.max(cfg.simulation.probability_min, Math.min(cfg.simulation.probability_max, p));
+var attemptBooks = new WeakMap;
+var actionLimited = (cfg) => cfg.ball.action_limited_attempts === true;
+function usedAttempts(state, id) {
+  let book = attemptBooks.get(state);
+  if (!book) {
+    book = new Map;
+    attemptBooks.set(state, book);
+  }
+  let used = book.get(id);
+  if (!used) {
+    used = { air: 0, fire: 0, lastTick: -1 };
+    book.set(id, used);
+  }
+  return used;
+}
+function remaining(state, e, kind) {
+  return Math.max(0, (kind === "air" ? e.elements.AIR : e.elements.FEU) - usedAttempts(state, e.id)[kind]);
+}
+function attempt(state, e, tick, kind) {
+  const used = usedAttempts(state, e.id);
+  if (used.lastTick === tick || remaining(state, e, kind) <= 0)
+    return false;
+  used[kind]++;
+  used.lastTick = tick;
+  return true;
+}
+function groundCandidate(cfg, state, e) {
+  return active(e) && withinRadius(point(e), fixed(state.ball.position), cfg.ball.pickup_range) && (remaining(state, e, "air") > 0 || remaining(state, e, "fire") > 0);
+}
+function hasPendingPickups(cfg, state) {
+  return actionLimited(cfg) && !state.ball.in_flight && state.ball.holder_entity_id === null && state.entities.some((e) => groundCandidate(cfg, state, e));
+}
 function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movements) {
   const events = [], flights = [];
   for (const action of actions) {
     if (action.action_type !== "throw" || consumed.has(action.entity_id) || tick < cfg.simulation.throw_delay_ticks)
       continue;
-    const e = state.entities.find((e2) => e2.id === action.entity_id);
+    const e = state.entities.find((e) => e.id === action.entity_id);
     if (!e || !active(e) || state.ball.holder_entity_id !== e.id || !canThrow(e.elements))
       continue;
-    const targetEntity = state.entities.find((e2) => e2.id === action.params.target_entity_id);
+    const targetEntity = state.entities.find((e) => e.id === action.params.target_entity_id);
     const start = fractional(point(e));
     const predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
     const target = predicted?.target ?? action.params.target_position;
@@ -666,10 +698,11 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
     type: "ball_move",
     params: { position: fractional(pos), height: height / SCALE }
   });
-  if (elapsed > 0 && height <= Math.round(cfg.ball.intercept_height_threshold * SCALE) && f.success) {
+  if (elapsed > 0 && height <= Math.round(cfg.ball.intercept_height_threshold * SCALE) && (f.success || actionLimited(cfg))) {
     const thrower = state.entities.find((e) => e.id === f.thrower);
-    const reachable = state.entities.filter((e) => active(e) && e.id !== f.thrower && withinRadius(point(e), pos, e.team_id === thrower.team_id ? cfg.ball.catch_radius_cells : cfg.ball.intercept_radius_cells)).sort((a, b) => distanceSquared(point(a), pos) - distanceSquared(point(b), pos) || a.id - b.id);
-    if (onBlockedReception && (cfg.ball.reception_requires_air ?? true)) {
+    const limited = actionLimited(cfg);
+    const reachable = state.entities.filter((e) => active(e) && e.id !== f.thrower && (!limited || e.id === f.targetEntityId || e.team_id !== thrower.team_id) && withinRadius(point(e), pos, (limited ? e.id === f.targetEntityId : e.team_id === thrower.team_id) ? cfg.ball.catch_radius_cells : cfg.ball.intercept_radius_cells)).sort((a, b) => distanceSquared(point(a), pos) - distanceSquared(point(b), pos) || a.id - b.id);
+    if (!limited && onBlockedReception && (cfg.ball.reception_requires_air ?? true)) {
       const teams = new Set(reachable.map((e) => e.team_id));
       for (const team of teams) {
         const teammates = reachable.filter((e) => e.team_id === team);
@@ -677,10 +710,16 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
           onBlockedReception(teammates[0].id);
       }
     }
-    const candidates = reachable.filter((e) => (!(cfg.ball.reception_requires_air ?? true) || e.elements.AIR >= 1) && !f.attempted.includes(e.id));
+    const candidates = reachable.filter((e) => limited ? e.id === f.targetEntityId ? f.success && remaining(state, e, "air") > 0 : remaining(state, e, "fire") > 0 : (!(cfg.ball.reception_requires_air ?? true) || e.elements.AIR >= 1) && !f.attempted.includes(e.id));
     for (const e of candidates) {
+      const intended = e.id === f.targetEntityId;
+      const kind = intended ? "air" : "fire";
+      if (limited && !attempt(state, e, tick, kind))
+        continue;
       f.attempted.push(e.id);
-      const chance = clamp(cfg, cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
+      const base = cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat;
+      const bonus = intended ? e.elements.AIR * cfg.simulation.catch_air : e.elements.FEU * cfg.simulation.catch_feu;
+      const chance = clamp(cfg, limited ? base + bonus : base + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
       if (rng.chance(chance)) {
         e.status.carrying_ball = true;
         state.ball.holder_entity_id = e.id;
@@ -690,7 +729,7 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
           tick,
           type: "catch",
           actor: e.id,
-          params: { position: { ...e.position }, catch_chance: chance }
+          params: { position: { ...e.position }, catch_chance: chance, ...limited ? { interception: !intended, attempt: usedAttempts(state, e.id)[kind], action: kind } : {} }
         });
         return events;
       }
@@ -698,7 +737,7 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
         tick,
         type: "catch_fail",
         actor: e.id,
-        params: { catch_chance: chance }
+        params: { catch_chance: chance, ...limited ? { interception: !intended, attempt: usedAttempts(state, e.id)[kind], action: kind } : {} }
       });
     }
   }
@@ -713,18 +752,43 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
   }
   return events;
 }
-function resolvePickups(cfg, state, tick, onBlockedPickup) {
+function resolvePickups(cfg, state, tick, onBlockedPickup, rng) {
   if (state.ball.in_flight || state.ball.holder_entity_id !== null)
     return [];
-  const candidates = state.entities.filter((e2) => {
-    if (!active(e2) || !withinRadius(point(e2), fixed(state.ball.position), cfg.ball.pickup_range))
+  const candidates = state.entities.filter((e) => {
+    if (!active(e) || !withinRadius(point(e), fixed(state.ball.position), cfg.ball.pickup_range))
       return false;
-    if (!canPickup(cfg, e2.elements)) {
-      onBlockedPickup?.(e2.id);
+    if (!canPickup(cfg, e.elements)) {
+      onBlockedPickup?.(e.id);
       return false;
     }
     return true;
   }).sort((a, b) => distanceSquared(point(a), fixed(state.ball.position)) - distanceSquared(point(b), fixed(state.ball.position)) || a.id - b.id);
+  if (actionLimited(cfg)) {
+    const events = [];
+    for (const e of candidates) {
+      const kind = remaining(state, e, "fire") > 0 ? "fire" : "air";
+      if (!attempt(state, e, tick, kind))
+        continue;
+      const chance = clamp(cfg, cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat + e.elements.AIR * cfg.simulation.catch_air + e.elements.FEU * cfg.simulation.catch_feu);
+      if (!rng)
+        throw new Error("Pickup attempts require the turn RNG");
+      const success = rng.chance(chance);
+      events.push({
+        tick,
+        type: success ? "pickup" : "pickup_fail",
+        actor: e.id,
+        params: { position: { ...e.position }, pickup_chance: chance, attempt: usedAttempts(state, e.id).air + usedAttempts(state, e.id).fire, action: kind }
+      });
+      if (success) {
+        e.status.carrying_ball = true;
+        state.ball.holder_entity_id = e.id;
+        state.ball.position = { ...e.position };
+        break;
+      }
+    }
+    return events;
+  }
   const e = candidates[0];
   if (!e)
     return [];
@@ -741,7 +805,7 @@ function resolvePickups(cfg, state, tick, onBlockedPickup) {
   ];
 }
 function resolveGoals(cfg, state, tick) {
-  const e = state.entities.find((e2) => e2.id === state.ball.holder_entity_id);
+  const e = state.entities.find((e) => e.id === state.ball.holder_entity_id);
   if (!e || !active(e))
     return [];
   const p = point(e), x = 2 * p.q + p.r;
@@ -764,7 +828,7 @@ function resolveGoals(cfg, state, tick) {
   return [];
 }
 
-// ../boufbowl_server/src/simulator/turnTick.ts
+// ../../boufbowl_server/src/simulator/turnTick.ts
 function executeTick(context, tick) {
   const { cfg, state, actions, rng, events, consumedThrows, flights } = context;
   state.tick = tick;
@@ -777,7 +841,7 @@ function executeTick(context, tick) {
   events.push(...thrown.events);
   flights.push(...thrown.flights);
   events.push(...resolveReceptions(cfg, state, rng, tick, flights, context.onBlockedReception));
-  events.push(...resolvePickups(cfg, state, tick, context.onBlockedPickup));
+  events.push(...resolvePickups(cfg, state, tick, context.onBlockedPickup, rng));
   const goals = resolveGoals(cfg, state, tick);
   events.push(...goals);
   if (goals.length > 0)
@@ -817,9 +881,9 @@ function movePlayers(context, tick) {
 }
 function fightPlayers(context, tick) {
   const { cfg, state, actions, rng, events, movements, dueledPairs } = context;
-  const duelEvents2 = resolveDuels(cfg, state, actions, rng, tick, dueledPairs);
-  events.push(...duelEvents2);
-  for (const ev of duelEvents2.filter((event) => event.type === "duel"))
+  const duelEvents = resolveDuels(cfg, state, actions, rng, tick, dueledPairs);
+  events.push(...duelEvents);
+  for (const ev of duelEvents.filter((event) => event.type === "duel"))
     for (const id of [ev.actor, ev.params.defender]) {
       const m = movements.get(id);
       if (m)
@@ -844,10 +908,10 @@ function hasPendingWork(context, tick, steps, pausedThisTick) {
     return inRange;
   });
   const pendingRevive = state.entities.some((e) => knockedAtStart.has(e.id) && e.hp > 0 && e.status.knocked_down && canRevive(cfg, e.elements) && tick < cfg.simulation.stand_up_ticks);
-  return pendingMove || pendingThrow || pendingRevive || state.ball.in_flight;
+  return pendingMove || pendingThrow || pendingRevive || state.ball.in_flight || hasPendingPickups(cfg, state);
 }
 
-// ../boufbowl_server/src/simulator/abilities.ts
+// ../../boufbowl_server/src/simulator/abilities.ts
 function resolveAbilities(cfg, state, actions, rng) {
   const activations = actions.filter((a) => a.action_type === "ability").map((action) => {
     const caster = state.entities.find((e) => e.id === action.entity_id);
@@ -927,7 +991,7 @@ function resolveAbilities(cfg, state, actions, rng) {
   return events;
 }
 
-// ../boufbowl_server/src/validator.ts
+// ../../boufbowl_server/src/validator.ts
 class OrderValidator {
   config;
   constructor(config) {
@@ -980,7 +1044,7 @@ class OrderValidator {
     for (const [index, a] of order.actions.entries()) {
       if (!a || !Number.isSafeInteger(a.entity_id) || !a.params || typeof a.params !== "object" || Array.isArray(a.params))
         return fail("Malformed action");
-      const e = state.entities.find((e2) => e2.id === a.entity_id && e2.team_id === team);
+      const e = state.entities.find((e) => e.id === a.entity_id && e.team_id === team);
       if (!e)
         return fail("Entity not owned by team");
       const elements = a.params.elements ?? EMPTY_ELEMENTS;
@@ -989,15 +1053,15 @@ class OrderValidator {
       const values = ["TERRE", "FEU", "AIR", "EAU"].map((k) => elements[k]);
       if (values.some((v) => !Number.isSafeInteger(v) || v < 0))
         return fail("Element budget exceeded or invalid");
-      if (values.reduce((a2, b) => a2 + b, 0) > this.config.general.actions_per_character)
+      if (values.reduce((a, b) => a + b, 0) > this.config.general.actions_per_character)
         warn("ELEMENT_BUDGET_EXCEEDED", index);
       const allocation = canonicalJSON(elements);
       if (allocations.has(e.id) && allocations.get(e.id) !== allocation)
         warn("CONFLICTING_ELEMENTS", index);
-      const key2 = `${e.id}:${a.action_type}`;
+      const key = `${e.id}:${a.action_type}`;
       if (a.action_type === "ability" && order.actions.some((other) => other !== a && other?.entity_id === e.id))
         warn("ABILITY_EXCLUSIVE", index);
-      if (seen.has(key2))
+      if (seen.has(key))
         warn("DUPLICATE_COMMAND", index);
       if (e.hp <= 0 && a.action_type !== "wait")
         warn("ENTITY_ELIMINATED", index);
@@ -1030,7 +1094,7 @@ class OrderValidator {
         case "throw":
           if (!canThrow(elements))
             warn("THROW_REQUIRES_AIR", index);
-          if (a.params.target_entity_id !== undefined && (!Number.isSafeInteger(a.params.target_entity_id) || !state.entities.some((e2) => e2.id === a.params.target_entity_id)))
+          if (a.params.target_entity_id !== undefined && (!Number.isSafeInteger(a.params.target_entity_id) || !state.entities.some((e) => e.id === a.params.target_entity_id)))
             warn("RECEIVER_INVALID", index);
           if (!target && a.params.target_entity_id === undefined)
             warn("THROW_TARGET_MISSING", index);
@@ -1043,7 +1107,7 @@ class OrderValidator {
       }
       if (!ignored.has(index)) {
         allocations.set(e.id, allocation);
-        seen.add(key2);
+        seen.add(key);
       }
     }
     const executable_order = structuredClone(order);
@@ -1068,7 +1132,7 @@ class OrderValidator {
   }
 }
 
-// ../boufbowl_server/src/simulator/engine.ts
+// ../../boufbowl_server/src/simulator/engine.ts
 function simulateTurn4(cfg, initialState, orderA, orderB, turnNumber, seed, onWarning, behavior = { version: VERSION.SIMULATION, throwResolver: resolveThrows }) {
   const state = structuredClone(initialState);
   state.entities.sort((a, b) => a.id - b.id);
@@ -1222,7 +1286,7 @@ function simulateTurn4(cfg, initialState, orderA, orderB, turnNumber, seed, onWa
   };
 }
 
-// ../boufbowl_server/src/ai.ts
+// ../../boufbowl_server/src/ai.ts
 var DEFAULT_AI = {
   default_personality: "balanced",
   default_level: "normal",
@@ -1267,7 +1331,7 @@ class OpponentAI {
     const enemyCarrier = enemies.find((e) => e.id === world.ball.holder_entity_id);
     const nearest = [...available].sort((a, b) => hexDistance(a.position, world.ball.position) - hexDistance(b.position, world.ball.position) || a.id - b.id);
     const defenders = [...available].sort((a, b) => hexDistance(a.position, enemyCarrier?.position ?? world.ball.position) - hexDistance(b.position, enemyCarrier?.position ?? world.ball.position) || a.id - b.id).slice(0, personality.aggression >= 25 ? 2 : 1);
-    const threat = (point2) => enemies.reduce((n, e) => n + Math.max(0, level.threat_radius + 1 - hexDistance(point2, e.position)) * (e.stats.strength + 5), 0);
+    const threat = (point) => enemies.reduce((n, e) => n + Math.max(0, level.threat_radius + 1 - hexDistance(point, e.position)) * (e.stats.strength + 5), 0);
     let receiver;
     if (ownCarrier && level.passes) {
       const allocation = { TERRE: 0, FEU: 1, AIR: 1, EAU: 1 };
@@ -1323,13 +1387,13 @@ class OpponentAI {
       const budget = Math.min(level.search_radius, Math.floor(maxMovementDistance(cfg, elements)));
       for (let dq = -budget;dq <= budget; dq++)
         for (let dr = -budget;dr <= budget; dr++) {
-          const point2 = { q: entity.position.q + dq, r: entity.position.r + dr };
-          if (hexDistance(entity.position, point2) > budget || !isInBounds(point2, cfg.pitch))
+          const point = { q: entity.position.q + dq, r: entity.position.r + dr };
+          if (hexDistance(entity.position, point) > budget || !isInBounds(point, cfg.pitch))
             continue;
-          const crowd = reserved.reduce((n, p) => n + Math.max(0, 3 - hexDistance(point2, p)), 0);
-          const score = -hexDistance(point2, target) * personality.progress - crowd * personality.spacing - (isCarrier ? Math.trunc(threat(point2) * personality.risk / 10) : 0) - hexDistance(entity.position, point2);
+          const crowd = reserved.reduce((n, p) => n + Math.max(0, 3 - hexDistance(point, p)), 0);
+          const score = -hexDistance(point, target) * personality.progress - crowd * personality.spacing - (isCarrier ? Math.trunc(threat(point) * personality.risk / 10) : 0) - hexDistance(entity.position, point);
           if (score > bestScore) {
-            best = point2;
+            best = point;
             bestScore = score;
           }
         }
@@ -1346,9 +1410,9 @@ class OpponentAI {
 function addCPUPower(cfg, world, order, level) {
   if (level === "beginner" || !Object.values(cfg.abilities ?? {}).some((r) => r.target))
     return order;
-  const active3 = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned;
-  const allies = world.entities.filter((e) => e.team_id === order.team_index && active3(e));
-  const enemies = world.entities.filter((e) => e.team_id !== order.team_index && active3(e));
+  const active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned;
+  const allies = world.entities.filter((e) => e.team_id === order.team_index && active(e));
+  const enemies = world.entities.filter((e) => e.team_id !== order.team_index && active(e));
   const receivers = new Set(order.actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id));
   const nearest = [...allies].sort((a, b) => hexDistance(a.position, world.ball.position) - hexDistance(b.position, world.ball.position) || a.id - b.id)[0];
   const movements = new Map(order.actions.filter((a) => ["move", "follow"].includes(a.action_type)).map((a) => [a.entity_id, a]));
@@ -1416,8 +1480,8 @@ import { createInterface } from "readline";
 var base = JSON.parse(readFileSync(new URL("./engine_base.json", import.meta.url), "utf8"));
 function merge(a, b) {
   const out = structuredClone(a);
-  for (const [key2, value] of Object.entries(b))
-    out[key2] = value && typeof value === "object" && !Array.isArray(value) ? merge(out[key2] ?? {}, value) : structuredClone(value);
+  for (const [key, value] of Object.entries(b))
+    out[key] = value && typeof value === "object" && !Array.isArray(value) ? merge(out[key] ?? {}, value) : structuredClone(value);
   return out;
 }
 if (process.env.BOUFBOWL_WORKER_HANDSHAKE === "1")
@@ -1450,6 +1514,8 @@ for await (const line of createInterface({ input: process.stdin })) {
     const warnings = [];
     const result = simulateTurn4(cfg, request.world, orders[0], orders[1], request.turn, request.seed, (warning) => warnings.push(warning.code === "RECEPTION_REQUIRES_FEU" ? { ...warning, code: "RECEPTION_REQUIRES_AIR" } : warning));
     result.simulation_version += "+client-ball-2";
+    if (cfg.ball.action_limited_attempts)
+      result.simulation_version += "+ball-attempts-1";
     if (Object.values(cfg.abilities ?? {}).some((r) => r.target))
       result.simulation_version += "+class-powers-1";
     if (cfg.movement.overextension?.enabled)

@@ -18,6 +18,7 @@ export function overlay(name: string, source: string): string {
     replace("entity_id: e.id,", "...((e as any).zobal_mask !== undefined ? {zobal_mask: (e as any).zobal_mask} : {}),\n    entity_id: e.id,");
   }
   if (name === "rules") {
+    replace("? elements.FEU >= 1\n    : true;", "? elements.FEU >= 1 || ((cfg.actions.element_effects.air as any).used_for_pickup === true && elements.AIR >= 1)\n    : true;");
     source = 'import {referenceDistance} from "boufbowl-movement-risk";\n' + source;
     replace("// max distance = base", `if ((cfg.movement as any).overextension !== undefined && (cfg as any).client_ranges)
     return referenceDistance(cfg,elements) * (cfg as any).client_ranges.max_distance_factor;
@@ -25,6 +26,9 @@ export function overlay(name: string, source: string): string {
   }
   if (name === "turnTick") {
     source = 'import {resolveMovementRisk} from "boufbowl-movement-risk";\n' + source;
+    replace("  resolvePickups,", "  resolvePickups,\n  hasPendingPickups,");
+    replace("resolvePickups(cfg, state, tick, context.onBlockedPickup)", "resolvePickups(cfg, state, tick, context.onBlockedPickup, rng)");
+    replace("return pendingMove || pendingThrow || pendingRevive || state.ball.in_flight;", "return pendingMove || pendingThrow || pendingRevive || state.ball.in_flight || hasPendingPickups(cfg,state);");
     replace("const steps = movePlayers(context, tick);", "const steps = movePlayers(context, tick);\n  resolveMovementRisk(context,tick);");
   }
   if (name === "movement") {

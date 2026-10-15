@@ -24,6 +24,21 @@ class GameplayFixTests(unittest.TestCase):
                    'actions':(actions or []) if t == 0 else []} for t in (0,1)]
         return self.engine.simulate(world, orders, 1, 12345, rules or self.rules, (False,False))['result']
 
+    def test_ball_pickup_covers_all_six_adjacent_cells_but_not_two_cells(self):
+        for fire, air in ((1,0),(0,1),(1,1),(0,0)):
+            for position in ((0,0),(1,0),(0,1),(-1,1),(-1,0),(0,-1),(1,-1),(2,0),(1,1)):
+                with self.subTest(position=position, fire=fire, air=air):
+                    world = deepcopy(self.baseline)
+                    actor = world["entities"][0]
+                    world["entities"] = [actor]
+                    actor["position"] = {"q": position[0], "r": position[1]}
+                    actor.pop("precise_position", None)
+                    actor["status"].update(carrying_ball=False, stunned=False, knocked_down=False)
+                    world["ball"] = {"position": {"q":0,"r":0}, "holder_entity_id":None, "in_flight":False}
+                    result = self.simulate(world, [{"entity_id":actor["id"], "action_type":"wait", "params":{"elements":{"TERRE":0,"FEU":fire,"AIR":air,"EAU":3-fire-air}}}])
+                    pickups = [e for e in result["events"] if e["type"] == "pickup"]
+                    self.assertEqual(bool(pickups), bool(fire or air) and max(abs(position[0]),abs(position[1]),abs(sum(position))) <= 1)
+
     def test_air_enables_reception_and_feu_alone_does_not(self):
         record = json.loads((ROOT/'tests/fixtures/interactions/reception-record.json').read_text())
         # Force probabilities to isolate eligibility from the random catch draw.

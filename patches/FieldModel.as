@@ -241,26 +241,16 @@ package com.ankamagames.boufbowl.client.match.strategic.model
       
       public function getPlacementZoneType(param1:HexPoint) : Number
       {
-         var _loc3_:Array = null;
-         var _loc4_:int = 0;
-         var _loc5_:HexPoint = null;
-         var _loc2_:IMapIterator = this._placementZones.getMapIterator();
-         loop0:
-         while(_loc2_.hasNext())
+         if(param1 == null) return -1;
+         var zones:IMapIterator = this._placementZones.getMapIterator();
+         while(zones.hasNext())
          {
-            _loc3_ = _loc2_.getNext();
-            _loc4_ = _loc2_.getKey();
-            var _loc6_:int = 0;
-            var _loc7_:* = _loc3_;
-            do
+            var cells:Array = zones.getNext();
+            var kind:int = zones.getKey();
+            for each(var cell:HexPoint in cells)
             {
-               for each(_loc5_ in _loc7_)
-               {
-               }
-               continue loop0;
+               if(param1.equals(cell)) return kind;
             }
-            while(!param1.equals(_loc5_));
-            return _loc4_;
          }
          return -1;
       }

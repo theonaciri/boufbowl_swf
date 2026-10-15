@@ -70,7 +70,7 @@ def limit_ball_cutscenes(scenario):
 def adapt_turn(record):
     initial, result = record["initial"], record["result"]
     events = result["events"]
-    allowed = {"ability", "move", "stand_up", "pickup", "dodge", "duel", "damage", "ko", "ball_drop",
+    allowed = {"ability", "move", "stand_up", "pickup", "pickup_fail", "dodge", "duel", "damage", "ko", "ball_drop",
                "throw", "ball_move", "catch", "catch_fail", "ball_land", "goal", "final_state", "fall", "movement_test"}
     unknown = {e["type"] for e in events} - allowed
     if unknown:
@@ -198,11 +198,12 @@ def adapt_turn(record):
                 ball_position = cell(params['position'])
         elif kind == "stand_up":
             entities[actor]["status"]["knocked_down"] = False
-        elif kind == "pickup":
-            interaction(11, start, 14, [participant(actor, has_ball=False)], maneuverTest=maneuver(),
+        elif kind in ("pickup", "pickup_fail"):
+            interaction(11, start, 14, [participant(actor, has_ball=False)], maneuverTest=maneuver(kind == "pickup"),
                         pickupDetails={"ballPosition": deepcopy(ball_position)})
-            holder = actor
-            ball_position = deepcopy(positions[actor])
+            if kind == "pickup":
+                holder = actor
+                ball_position = deepcopy(positions[actor])
         elif kind in ("duel", "dodge"):
             defender = params["defender"]
             damage, knocked = {}, set()
@@ -259,7 +260,7 @@ def adapt_turn(record):
             if kind == "catch":
                 origin = flight["origin"] if flight else deepcopy(ball_position)
                 same_team = flight and entities[flight["thrower"]]["team_id"] == entities[actor]["team_id"]
-                if same_team:
+                if not params.get("interception", not same_team):
                     entry = interaction(14, start, 15, [participant(actor, has_ball=False)], maneuverTest=maneuver(),
                                         receptionDetails={"ballOriginPosition": origin})
                 else:

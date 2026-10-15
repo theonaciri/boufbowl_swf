@@ -20,6 +20,35 @@ const clamp = (cfg: GameConfig, p: number) =>
     cfg.simulation.probability_min,
     Math.min(cfg.simulation.probability_max, p),
   );
+// Per-turn bookkeeping stays outside the persisted world/replay state.
+interface Attempts { air: number; fire: number; lastTick: number }
+const attemptBooks = new WeakMap<WorldState, Map<number, Attempts>>();
+const actionLimited = (cfg: GameConfig) => (cfg.ball as any).action_limited_attempts === true;
+function usedAttempts(state: WorldState, id: number): Attempts {
+  let book = attemptBooks.get(state);
+  if (!book) { book = new Map(); attemptBooks.set(state, book); }
+  let used = book.get(id);
+  if (!used) { used = {air: 0, fire: 0, lastTick: -1}; book.set(id, used); }
+  return used;
+}
+function remaining(state: WorldState, e: WorldState["entities"][number], kind: "air" | "fire"): number {
+  return Math.max(0, (kind === "air" ? e.elements.AIR : e.elements.FEU) - usedAttempts(state,e.id)[kind]);
+}
+function attempt(state: WorldState, e: WorldState["entities"][number], tick: number, kind: "air" | "fire"): boolean {
+  const used = usedAttempts(state,e.id);
+  if (used.lastTick === tick || remaining(state,e,kind) <= 0) return false;
+  used[kind]++; used.lastTick = tick;
+  return true;
+}
+function groundCandidate(cfg: GameConfig, state: WorldState, e: WorldState["entities"][number]): boolean {
+  return active(e) && withinRadius(point(e),fixed(state.ball.position),cfg.ball.pickup_range) &&
+    (remaining(state,e,"air") > 0 || remaining(state,e,"fire") > 0);
+}
+export function hasPendingPickups(cfg: GameConfig, state: WorldState): boolean {
+  return actionLimited(cfg) && !state.ball.in_flight && state.ball.holder_entity_id === null &&
+    state.entities.some(e => groundCandidate(cfg,state,e));
+}
+
 export function resolveThrows(
   cfg: GameConfig,
   state: WorldState,
@@ -139,18 +168,20 @@ export function resolveReceptions(
   if (
     elapsed > 0 &&
     height <= Math.round(cfg.ball.intercept_height_threshold * SCALE) &&
-    f.success
+    (f.success || actionLimited(cfg))
   ) {
     const thrower = state.entities.find((e) => e.id === f.thrower)!;
+    const limited = actionLimited(cfg);
     const reachable = state.entities
       .filter(
         (e) =>
           active(e) &&
           e.id !== f.thrower &&
+          (!limited || e.id === f.targetEntityId || e.team_id !== thrower.team_id) &&
           withinRadius(
             point(e),
             pos,
-            e.team_id === thrower.team_id
+            (limited ? e.id === f.targetEntityId : e.team_id === thrower.team_id)
               ? cfg.ball.catch_radius_cells
               : cfg.ball.intercept_radius_cells,
           ),
@@ -159,7 +190,7 @@ export function resolveReceptions(
         (a, b) =>
           distanceSquared(point(a), pos) - distanceSquared(point(b), pos) || a.id - b.id,
       );
-    if (onBlockedReception && ((cfg.ball as any).reception_requires_air ?? true)) {
+    if (!limited && onBlockedReception && ((cfg.ball as any).reception_requires_air ?? true)) {
       // Check the whole reachable team, including previous failed attempts:
       // a missed random catch is not an element assignment mistake.
       const teams = new Set(reachable.map((e) => e.team_id));
@@ -169,19 +200,19 @@ export function resolveReceptions(
           onBlockedReception(teammates[0]!.id);
       }
     }
-    const candidates = reachable.filter((e) =>
-      (!((cfg.ball as any).reception_requires_air ?? true) || e.elements.AIR >= 1) &&
-      !f.attempted.includes(e.id),
+    const candidates = reachable.filter((e) => limited
+      ? (e.id === f.targetEntityId ? f.success && remaining(state,e,"air") > 0 : remaining(state,e,"fire") > 0)
+      : (!((cfg.ball as any).reception_requires_air ?? true) || e.elements.AIR >= 1) && !f.attempted.includes(e.id),
     );
     for (const e of candidates) {
+      const intended = e.id === f.targetEntityId;
+      const kind = intended ? "air" : "fire";
+      if (limited && !attempt(state,e,tick,kind)) continue;
       f.attempted.push(e.id);
-      const chance = clamp(
-        cfg,
-        cfg.simulation.catch_base +
-          e.stats.precision * cfg.simulation.catch_stat +
-          e.elements.FEU * cfg.simulation.catch_feu +
-          e.elements.AIR * cfg.simulation.catch_air,
-      );
+      const base = cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat;
+      const bonus = intended ? e.elements.AIR * cfg.simulation.catch_air : e.elements.FEU * cfg.simulation.catch_feu;
+      const chance = clamp(cfg, limited ? base + bonus
+        : base + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
       if (rng.chance(chance)) {
         e.status.carrying_ball = true;
         state.ball.holder_entity_id = e.id;
@@ -191,7 +222,7 @@ export function resolveReceptions(
           tick,
           type: "catch",
           actor: e.id,
-          params: { position: { ...e.position }, catch_chance: chance },
+          params: { position: { ...e.position }, catch_chance: chance, ...(limited ? {interception: !intended, attempt: usedAttempts(state,e.id)[kind], action: kind} : {}) },
         });
         return events;
       }
@@ -199,7 +230,7 @@ export function resolveReceptions(
         tick,
         type: "catch_fail",
         actor: e.id,
-        params: { catch_chance: chance },
+        params: { catch_chance: chance, ...(limited ? {interception: !intended, attempt: usedAttempts(state,e.id)[kind], action: kind} : {}) },
       });
     }
   }
@@ -219,6 +250,7 @@ export function resolvePickups(
   state: WorldState,
   tick: number,
   onBlockedPickup?: (entityId: number) => void,
+  rng?: DeterministicRNG,
 ): Event[] {
   if (state.ball.in_flight || state.ball.holder_entity_id !== null) return [];
   const candidates = state.entities
@@ -236,6 +268,25 @@ export function resolvePickups(
         distanceSquared(point(a), fixed(state.ball.position)) -
           distanceSquared(point(b), fixed(state.ball.position)) || a.id - b.id,
     );
+  if (actionLimited(cfg)) {
+    const events: Event[] = [];
+    for (const e of candidates) {
+      // Use fire first on the ground, preserving air for an intended reception.
+      const kind = remaining(state,e,"fire") > 0 ? "fire" : "air";
+      if (!attempt(state,e,tick,kind)) continue;
+      const chance = clamp(cfg,cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat +
+        e.elements.AIR * cfg.simulation.catch_air + e.elements.FEU * cfg.simulation.catch_feu);
+      if (!rng) throw new Error("Pickup attempts require the turn RNG");
+      const success = rng.chance(chance);
+      events.push({tick, type: success ? "pickup" : "pickup_fail" as any, actor:e.id,
+        params:{position:{...e.position}, pickup_chance:chance, attempt:usedAttempts(state,e.id).air+usedAttempts(state,e.id).fire, action:kind}});
+      if (success) {
+        e.status.carrying_ball = true; state.ball.holder_entity_id = e.id;
+        state.ball.position = {...e.position}; break;
+      }
+    }
+    return events;
+  }
   const e = candidates[0];
   if (!e) return [];
   e.status.carrying_ball = true;

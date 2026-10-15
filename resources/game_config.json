@@ -259,19 +259,21 @@
             "used_for_reception": true
           },
           "air": {
+            "used_for_pickup": true,
             "range_modifier": 1
           }
         }
       },
       "ball": {
         "base_range": 7,
-        "pickup_range": 2.0,
+        "pickup_range": 1.0,
         "throw_speed_cells_per_sec": 8.0,
         "arc_height_cells": 2.5,
         "catch_radius_cells": 2.0,
         "intercept_radius_cells": 2.0,
         "intercept_height_threshold": 1.5,
         "reception_requires_air": true,
+        "action_limited_attempts": true,
         "goal_line_half_width": 12.5
       },
       "combat": {
@@ -310,7 +312,7 @@
         "catch_base": 0.35,
         "catch_stat": 0.03,
         "catch_feu": 0.1,
-        "catch_air": 0.05,
+        "catch_air": 0.1,
         "throw_base": 0.4,
         "throw_stat": 0.03,
         "distance_penalty": 0.02,

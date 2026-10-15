@@ -407,10 +407,12 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
         world = match["world"]
         ball = world["ball"]
         ball_state = {"status": 2, "holderId": str(ball["holder_entity_id"])} if ball["holder_entity_id"] is not None else {"status": 1, "position": grid(ball["position"])}
+        if match["phase"] == "placement" and match.get("restart_side") is not None:
+            ball_state = {"status": 4}
         return {"phaseInfos": {"phase": phase or (1 if match["phase"] in ("placement","introduction") else 2),
                                "remainingTime": max(0, int((match["deadline"] - time.time()) * 1000))},
                 "boufbowlerPositions": [{"id": str(e["id"]), "position": grid(e["position"])} for e in world["entities"] if e["hp"] > 0],
-                "boufballState": ball_state, "teamState": {"turn": match["turn"], "period": match["period"],
+                "boufballState": ball_state, "teamState": {**({"placementBoufballSide": match["restart_side"]} if match["phase"] == "placement" and match.get("restart_side") is not None else {}), "turn": match["turn"], "period": match["period"],
                  "leftSideScore": match["score"][0], "rightSideScore": match["score"][1],
                  "boufbowlerStates": [{"id": str(e["id"]), "status": 4 if e["hp"] <= 0 else 3 if e["status"]["knocked_down"] else 2 if e["status"]["stunned"] else 1,
                                        "currentHitPoints": e["hp"], "remainingClassOrderUses": e.get("ability_uses_remaining", 0)} for e in world["entities"]]}}
@@ -563,6 +565,13 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
             entity["position"] = all_positions[entity["id"]]
             if entity["class_name"] == "Zobal": entity["zobal_mask"] = previous_masks.get(str(entity["id"]), 1)
             entity["ability_uses_remaining"] = previous_uses.get(str(entity["id"]), match["rules"]["match"]["class_ability_uses"])
+        receiving_side = match.get("restart_side")
+        if receiving_side is not None:
+            center = next(z for z in self.match_information(match, receiving_side)["placementZone"] if z["type"] == 1)
+            receiver = next(e for e in match["world"]["entities"]
+                            if e["team_id"] == receiving_side - 1 and grid(e["position"]) in center["cell"])
+            receiver["status"]["carrying_ball"] = True
+            match["world"]["ball"].update(position=deepcopy(receiver["position"]), holder_entity_id=receiver["id"])
         match["phase"] = "orders"
         match["orders"] = {}
         match["deadline"] = time.time() + match["rules"]["match"]["planning_seconds"]
@@ -583,7 +592,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 self.end_match(match)
                 return
             match["period"] = (match["turn"] - 1) // match["rules"]["match"]["turns_per_period"] + 1
-            self.reset_round(match)
+            self.reset_round(match, side)
             self.store.save_match(match)
             return
         match["orders"][str(side)] = self.convert_orders(match, side, profile, payload["orders"])
@@ -706,14 +715,16 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
         period = (match["turn"] - 1) // match["rules"]["match"]["turns_per_period"] + 1
         if any(result["score"]) or period != match["period"]:
             match["period"] = period
-            self.reset_round(match)
+            receiving_side = 2 if result["score"][0] else 1 if result["score"][1] else None
+            self.reset_round(match, receiving_side)
         else:
             match["phase"] = "orders"
             match["orders"] = {}
             match["deadline"] = time.time() + match["rules"]["match"]["planning_seconds"]
             self.broadcast(match, "FIELD_STATE", self.field_state(match))
 
-    def reset_round(self, match):
+    def reset_round(self, match, receiving_side=None):
+        match["restart_side"] = receiving_side
         match["phase"] = "placement"
         match["placements"] = {}
         match["orders"] = {}

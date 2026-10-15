@@ -1119,6 +1119,9 @@
                     "air": {
                       "type": "object",
                       "properties": {
+                        "used_for_pickup": {
+                          "type": "boolean"
+                        },
                         "range_modifier": {
                           "type": "integer",
                           "minimum": 0
@@ -1173,6 +1176,9 @@
                 "intercept_height_threshold": {
                   "type": "number",
                   "exclusiveMinimum": 0
+                },
+                "action_limited_attempts": {
+                  "type": "boolean"
                 },
                 "reception_requires_air": {
                   "type": "boolean"

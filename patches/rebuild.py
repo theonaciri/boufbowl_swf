@@ -19,6 +19,7 @@ original = args.original or root.parent / "swf_sources/boufbowl_client/bin/boufb
 config = load_config(args.config)
 config_source = args.config.read_bytes()
 classes = [
+    "com.ankamagames.boufbowl.client.match.strategic.controller.PlacementDragNDropCommand",
     "com.ankamagames.xgaming.audio.controller.AbstractTracksController",
     "com.ankamagames.xgaming.audio.controller.ConcurrentTracksManager",
     "com.ankamagames.boufbowl.ui.components.tooltip.Tooltip",

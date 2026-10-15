@@ -44,6 +44,7 @@ for await (const line of createInterface({ input: process.stdin })) {
       warning => warnings.push(warning.code === "RECEPTION_REQUIRES_FEU"
         ? { ...warning, code: "RECEPTION_REQUIRES_AIR" } : warning));
     result.simulation_version += "+client-ball-2";
+    if (cfg.ball.action_limited_attempts) result.simulation_version += "+ball-attempts-1";
     if (Object.values(cfg.abilities ?? {}).some((r: any) => r.target)) result.simulation_version += "+class-powers-1";
     if (cfg.movement.overextension?.enabled) result.simulation_version += "+movement-risk-1";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + "\n");

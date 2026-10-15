@@ -53,6 +53,61 @@ class BackendTests(unittest.TestCase):
         self.protocol(self.alice, "PLACEMENT", {"turn": 1, "boufbowlerPositions": positions})
         return match
 
+    def test_goal_restart_gives_ball_to_conceding_teams_center_player(self):
+        for scoring_team in (0, 1):
+            for period in (1, 2):
+                with self.subTest(scoring_team=scoring_team, period=period):
+                    match = self.start() if not self.service.store.active_match(self.identity(self.alice)) else self.service.store.active_match(self.identity(self.alice))
+                    match["period"] = period
+                    receiving_side = 2 - scoring_team
+                    self.service.reset_round(match, receiving_side)
+                    state = self.service.field_state(match)
+                    self.assertEqual(state["teamState"]["placementBoufballSide"], receiving_side)
+                    self.assertEqual(state["boufballState"], {"status": 4})
+                    self.service.codec.envelope("FIELD_STATE", state)
+                    zones = self.service.match_information(match, receiving_side)["placementZone"]
+                    roster = match["rosters"][receiving_side - 1]["characters"][:5]
+                    # Swap the first two characters: possession follows the center zone.
+                    roster = [roster[1], roster[0], *roster[2:]]
+                    match["placements"][str(receiving_side)] = [{"id": p["id"], "position": z["defaultCell"]} for p, z in zip(roster, zones)]
+                    self.service.finish_placement(match)
+                    ball = match["world"]["ball"]
+                    holder = next(e for e in match["world"]["entities"] if e["id"] == ball["holder_entity_id"])
+                    self.assertEqual(holder["team_id"], receiving_side - 1)
+                    self.assertEqual(holder["id"], int(roster[0]["id"]))
+                    self.assertTrue(holder["status"]["carrying_ball"])
+                    self.assertEqual(ball["position"], holder["position"])
+                    self.assertNotEqual(ball["position"], {"q": 0, "r": 0})
+                    self.assertNotIn("placementBoufballSide", self.service.field_state(match)["teamState"])
+                    self.assertEqual(sum(e["status"]["carrying_ball"] for e in match["world"]["entities"]), 1)
+                    self.service.store.save_match(match)
+
+    def test_advance_assigns_restart_to_the_team_that_conceded(self):
+        match = self.start()
+        for scoring_team in (0,1):
+            match["turn"] = 1
+            score = [0,0]
+            score[scoring_team] = 1
+            match["pending"] = {"final_world_state":deepcopy(match["world"]), "score":score}
+            self.service.advance(match)
+            self.assertEqual(match["phase"], "placement")
+            self.assertEqual(match["restart_side"], 2 - scoring_team)
+
+    def test_conceded_touchdown_also_returns_possession_to_conceding_team(self):
+        self.start()
+        self.protocol(self.alice, "ORDERS", {"turn":1, "orders":[], "concedeTouchdown":True})
+        match = self.service.store.active_match(self.identity(self.alice))
+        self.assertEqual(match["score"], [0,1])
+        self.assertEqual(match["restart_side"], 1)
+        self.assertEqual(match["phase"], "placement")
+
+    def test_halftime_without_goal_keeps_neutral_ball(self):
+        match = self.start()
+        self.service.reset_round(match)
+        self.service.finish_placement(match)
+        self.assertIsNone(match["world"]["ball"]["holder_entity_id"])
+        self.assertNotIn("placementBoufballSide", self.service.field_state(match)["teamState"])
+
     def test_club_customization_is_owned_and_survives_restart(self):
         club = initial_club()
         club["clubName"] = "Persistent club"
