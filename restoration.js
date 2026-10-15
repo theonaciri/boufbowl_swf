@@ -551,6 +551,13 @@
         `Inventaire du ${new Date(data.inventory_date + "T12:00:00Z").toLocaleDateString("fr-FR")} · Fichiers retrouvés, remplacements provisoires et fidélité à vérifier sont distingués.`;
       $("restoration-overview").replaceChildren(
         metric(
+          summary.assets_found,
+          summary.assets_expected,
+          "Total des ressources retrouvées",
+          data.asset_groups.map((g) => `${g.label} : ${g.found} / ${g.expected}`).join(" · ") +
+            ". Périmètre recensé des ateliers, ressources manquantes comprises ; une ressource retrouvée peut rester à améliorer.",
+        ),
+        metric(
           summary.bodies_found,
           summary.bodies_expected,
           "Corps animés classiques retrouvés",

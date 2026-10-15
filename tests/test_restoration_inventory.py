@@ -11,6 +11,9 @@ class RestorationInventoryTests(unittest.TestCase):
         recovered={c['id'] for c in data['characters'] if c['body_available'] and not c['hero']}
         self.assertEqual(recovered,{'cra-1','cra-2','eniripsa-2','enutrof-2','iop-1'})
         self.assertEqual(data['summary']['geometry_found'],1)
+        self.assertEqual(data['summary']['assets_found'],sum(g['found'] for g in data['asset_groups']))
+        self.assertEqual(data['summary']['assets_expected'],sum(g['expected'] for g in data['asset_groups']))
+        self.assertEqual(next(g['expected'] for g in data['asset_groups'] if g['label'].startswith('Corps animés')),46)
         self.assertEqual({t['file'] for s in data['stadiums'] for t in s['tracks'] if t['restored_low_quality']},
                          {f'music/music_resolution_loop_{i:02d}.mp3' for i in range(1,4)})
         self.assertTrue(all(s['surface_available'] for s in data['stadiums']))

@@ -164,6 +164,11 @@ ne sont pas présentées comme des décors 3D originaux.
 
 La sélection des stades détaille les fichiers de tactique, de résolution et
 d’ambiance. Un fichier manquant n’est jamais proposé à la lecture.
+Le bilan global des ressources additionne les illustrations (trois poses par
+personnage), les corps animés classiques et spéciaux, les fonds tactiques, les
+décors 3D originaux et l’audio. Chaque famille affiche son numérateur et son
+dénominateur ; les ressources manquantes sont incluses. Ce bilan porte sur le
+périmètre recensé des ateliers, pas sur un nombre inconnu de fichiers perdus.
 Le compteur audio global inclut les musiques présentes et manquantes, dédupliquées
 entre les stades. Les trois boucles de résolution sont indiquées « Restauré,
 qualité basse » ; elles restent à améliorer. Le studio hors musique

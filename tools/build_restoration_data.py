@@ -59,10 +59,18 @@ def audit(root=ROOT):
             'original_geometry_available':key=='FARMSTEAD' and exists(art['template']),
             'model_path':'assets/models/stadiums/'+cfg['path'],'tracks':tracks})
     fx=[a for a in audio_files if a['category']!='music']
+    asset_groups = [
+        {'label':'Illustrations', 'found':sum(len(c['poses']) for c in characters), 'expected':3*len(characters)},
+        {'label':'Corps animés, légendes comprises', 'found':sum(c['body_available'] for c in characters), 'expected':len(characters)},
+        {'label':'Fonds tactiques', 'found':sum(s['surface_available'] for s in stadiums), 'expected':len(stadiums)},
+        {'label':'Décors 3D originaux', 'found':sum(s['original_geometry_available'] for s in stadiums), 'expected':len(stadiums)},
+        {'label':'Audio, musiques comprises', 'found':sum(a['available'] for a in audio_files), 'expected':len(audio_files)},
+    ]
     return {'version':1,'inventory_date':datetime.now(timezone.utc).date().isoformat(),
         'scope':'Présence des fichiers référencés par les configurations et le client, complétée par les fichiers du dépôt. Un fichier retrouvé ne certifie ni sa fidélité ni son bon fonctionnement en jeu.',
-        'characters':characters,'stadiums':stadiums,'audio':fx,
-        'summary':{'bodies_found':sum(c['body_available'] for c in characters if not c['hero']),
+        'characters':characters,'stadiums':stadiums,'audio':fx,'asset_groups':asset_groups,
+        'summary':{'assets_found':sum(g['found'] for g in asset_groups),'assets_expected':sum(g['expected'] for g in asset_groups),
+            'bodies_found':sum(c['body_available'] for c in characters if not c['hero']),
             'bodies_expected':28,'geometry_found':sum(s['original_geometry_available'] for s in stadiums),
             'geometry_expected':len(stadiums),'audio_found':sum(a['available'] for a in audio_files),'audio_expected':len(audio_files)}}
 
