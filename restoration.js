@@ -292,7 +292,9 @@
       title.append(
         el(
           "small",
-          track.available ? "Fichier retrouvé" : "Fichier à retrouver",
+          track.restored_low_quality
+            ? "Restauré, qualité basse"
+            : track.available ? "Fichier retrouvé" : "Fichier à retrouver",
         ),
       );
     row.append(copy);
@@ -482,7 +484,9 @@
     $("restoration-now-playing").textContent =
       `${audioName(track)} · ${role || groups[track.category] || "Archive"}`;
     $("restoration-audio-status").textContent =
-      "Chargement du fichier original…";
+      activeTrack.restored_low_quality
+        ? "Chargement de la restauration, qualité basse…"
+        : "Chargement du fichier retrouvé…";
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx && !audioContext) {
@@ -503,7 +507,9 @@
   }
   audio.addEventListener("playing", () => {
     $("restoration-audio-status").textContent =
-      "Lecture du fichier retrouvé. Son authenticité reste à comparer aux archives.";
+      activeTrack?.restored_low_quality
+        ? "Restauré, qualité basse. Une meilleure source reste recherchée."
+        : "Lecture du fichier retrouvé. Son authenticité reste à comparer aux archives.";
     syncAudioButtons();
     drawWave();
   });
@@ -559,8 +565,8 @@
         metric(
           summary.audio_found,
           summary.audio_expected,
-          "Fichiers audio hors musique retrouvés",
-          "Références connues + fichiers présents. Le périmètre ne prétend pas couvrir toutes les archives d’origine.",
+          "Fichiers audio retrouvés, musiques comprises",
+          "Musiques manquantes incluses dans le total, chaque fichier compté une seule fois. Une restauration de qualité basse reste à améliorer.",
         ),
       );
       $("pick-classes").onclick = () => setGroup("classes");

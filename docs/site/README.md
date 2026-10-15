@@ -152,7 +152,10 @@ seule la géométrie originale de Cania est disponible. Les variantes de texture
 ne sont pas présentées comme des décors 3D originaux.
 
 La sélection des stades détaille les fichiers de tactique, de résolution et
-d’ambiance. Un fichier manquant n’est jamais proposé à la lecture. Le studio
+d’ambiance. Un fichier manquant n’est jamais proposé à la lecture.
+Le compteur audio global inclut les musiques présentes et manquantes, dédupliquées
+entre les stades. Les trois boucles de résolution sont indiquées « Restauré,
+qualité basse » ; elles restent à améliorer. Le studio hors musique
 permet de rechercher et filtrer les bruitages, ambiances et voix. Les deux
 ateliers partagent un lecteur unique et un oscillogramme des données audio
 réelles ; aucun son ne démarre sans action. L’animation respecte la réduction

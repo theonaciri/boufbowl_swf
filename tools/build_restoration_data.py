@@ -11,6 +11,7 @@ CLASSES = ['Crâ','Ecaflip','Eniripsa','Enutrof','Féca','Iop','Osamodas','Panda
 SLUGS = ['cra','ecaflip','eniripsa','enutrof','feca','iop','osamodas','pandawa','roublard','sacrieur','sadida','sram','xelor','zobal']
 STADIUM_NAMES = {'FARMSTEAD':'Cania','BRAKMAR':'Brâkmar','BONTA':'Bonta','BEACH':'La Plage','FRIGOST':'Frigost','KARA':'Kara','FOREST':'La Forêt','BALLOTIN':'Saint-Ballotin','PIXEL':'Pixel'}
 HEROES = [(501,10,1),(502,9,2),(503,10,2),(504,12,1),(505,6,1),(506,11,2),(507,2,2),(508,1,2),(509,4,1),(510,3,2),(511,7,1),(512,3,1),(513,13,1),(514,8,1),(515,5,1),(516,12,1),(517,11,1),(518,14,1)]
+LOW_QUALITY_RESTORATIONS = {f'music/music_resolution_loop_{i:02d}.mp3' for i in range(1,4)}
 # Names of heroes beyond the first recovered team are read from the original catalog.
 
 def audit(root=ROOT):
@@ -30,7 +31,8 @@ def audit(root=ROOT):
     actual={p.relative_to(root/'assets/sounds').as_posix() for p in (root/'assets/sounds').rglob('*.mp3')}
     def audio(path):
         return {'path':'assets/sounds/'+path,'file':path,'available':exists('assets/sounds/'+path),'referenced':path in refs,
-                'category':path.split('/')[0],'aliases':[k for k,v in sounds.items() if v==path]}
+                'category':path.split('/')[0],'aliases':[k for k,v in sounds.items() if v==path],
+                'restored_low_quality':path in LOW_QUALITY_RESTORATIONS and exists('assets/sounds/'+path)}
     audio_files=[audio(p) for p in sorted(refs|actual) if not Path(p).is_absolute() and '..' not in Path(p).parts]
     def character(identity,cls,gender,hero=0,name=None):
         skin=hero or cls*10+gender;body='assets/sprites/skins/'+str(skin)+'.swl'
@@ -62,7 +64,7 @@ def audit(root=ROOT):
         'characters':characters,'stadiums':stadiums,'audio':fx,
         'summary':{'bodies_found':sum(c['body_available'] for c in characters if not c['hero']),
             'bodies_expected':28,'geometry_found':sum(s['original_geometry_available'] for s in stadiums),
-            'geometry_expected':len(stadiums),'audio_found':sum(a['available'] for a in fx),'audio_expected':len(fx)}}
+            'geometry_expected':len(stadiums),'audio_found':sum(a['available'] for a in audio_files),'audio_expected':len(audio_files)}}
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check',action='store_true');args=parser.parse_args()

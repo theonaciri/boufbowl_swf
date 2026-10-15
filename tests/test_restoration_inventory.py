@@ -11,6 +11,8 @@ class RestorationInventoryTests(unittest.TestCase):
         recovered={c['id'] for c in data['characters'] if c['body_available'] and not c['hero']}
         self.assertEqual(recovered,{'cra-1','cra-2','eniripsa-2','enutrof-2','iop-1'})
         self.assertEqual(data['summary']['geometry_found'],1)
+        self.assertEqual({t['file'] for s in data['stadiums'] for t in s['tracks'] if t['restored_low_quality']},
+                         {f'music/music_resolution_loop_{i:02d}.mp3' for i in range(1,4)})
         self.assertTrue(all(s['surface_available'] for s in data['stadiums']))
         self.assertTrue(all(not s['original_geometry_available'] for s in data['stadiums'] if s['id']!='FARMSTEAD'))
         self.assertEqual(next(c['name'] for c in data['characters'] if c['hero']==511),'Kabrok')
@@ -27,11 +29,14 @@ class RestorationInventoryTests(unittest.TestCase):
             write('resources/offline_characters.json',{'special_characters':[]})
             write('assets/sounds/interface/click.mp3','sound')
             write('assets/sounds/tuto/voice.mp3','voice')
+            write('assets/sounds/music/one.mp3','music')
             write('assets/grass.png','image')
             write('assets/model.dae','geometry')
             data=audit(root);audio=data['audio']
             self.assertEqual(len(audio),3)
-            self.assertEqual(data['summary']['audio_found'],2)
+            self.assertEqual(data['summary']['audio_found'],3)
+            self.assertEqual(data['summary']['audio_expected'],4)
+            self.assertEqual(len(audio),3)  # The FX workshop keeps its own scope.
             click=next(a for a in audio if a['file']=='interface/click.mp3')
             self.assertEqual(click['aliases'],['one','alias'])
             self.assertFalse(next(a for a in audio if a['file']=='interactions/missing.mp3')['available'])
