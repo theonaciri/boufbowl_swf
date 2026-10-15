@@ -22,9 +22,7 @@
     </div>
     <header class="site-header">
       <a class="wordmark" href="#" aria-label="Boufbowl, accueil"
-        ><span class="brand-ball" aria-hidden="true">B</span>BOUF<span
-          >BOWL</span
-        ><sup>LE RETOUR</sup></a
+        ><img class="site-logo" src="assets/site/logo.webp" alt="Boufbowl" width="630" height="232" /></a
       ><button
         id="menu-toggle"
         class="menu-toggle"
@@ -429,13 +427,11 @@
                     <div class="body-preview">
                       <span class="workshop-label">SUR LE TERRAIN</span>
                       <div class="body-preview-stage">
-                        <img
-                          src="assets/site/restoration/cra-field-reference.webp"
-                          alt="Exemple du corps animé Crâ retrouvé dans le client"
-                          width="200"
-                          height="280"
-                          loading="lazy"
-                        /><span>RÉFÉRENCE : CRÂ</span>
+                        <div id="character-field-reference" class="field-reference" hidden>
+                          <img id="character-field-image" alt="" />
+                        </div>
+                        <p id="character-field-missing" hidden>Référence visuelle à retrouver</p>
+                        <span id="character-field-label">RÉFÉRENCE DE CLASSE</span>
                       </div>
                       <strong id="character-body-state"
                         >Corps d’origine retrouvé</strong
@@ -1035,7 +1031,7 @@
       </section>
     </main>
     <footer class="site-footer">
-      <a class="wordmark" href="#">BOUF<span>BOWL</span></a>
+      <a class="wordmark" href="#"><img class="site-logo" src="assets/site/logo.webp" alt="Boufbowl" width="630" height="232" /></a>
       <p>RESSUSCITÉ PAR DES FANS.<br />PAS PAR UN ENIRIPSA. ENFIN, ON CROIT.</p>
       <div>
         <a href="legal.html">Informations juridiques</a

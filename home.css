@@ -38,6 +38,12 @@
 }
 body {
   margin: 0;
+  background: #fff url("assets/site/splash.webp") center top / cover fixed no-repeat;
+}
+.site-logo {
+  display: block;
+  width: clamp(120px, 16vw, 200px);
+  height: auto;
 }
 button,
 a,
@@ -255,6 +261,7 @@ em {
   padding: 0 0 63px;
 }
 .hero-copy {
+  background: #ffffffcf;
   padding: 65px 0 55px 9.6%;
   position: relative;
   z-index: 2;
@@ -645,7 +652,7 @@ em {
   max-width: 360px;
 }
 .locker-section {
-  background: #e6e8d8;
+  background: #ffffffcf;
   border-block: 1px solid #d1d5c4;
   padding-bottom: 70px;
 }

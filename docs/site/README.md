@@ -141,8 +141,15 @@ La sélection de classe, de genre, de pose et de légende ne modifie aucune équ
 sur le serveur. Le nom saisi est un surnom local, non enregistré. Le bouton OK
 ouvre un bilan et permet de préparer une proposition d’aide contextualisée.
 La grille des états distingue dessins, corps animés et fidélité des couleurs.
-La petite image de terrain est explicitement une référence Crâ, pas une preuve
-que le corps d’une autre classe a été restauré.
+La petite image de terrain utilise les trois planches fournies par le projet :
+Iop, Osamodas, Sacrieur, Sadida, Pandawa, Crâ, Eniripsa, Ecaflip, Sram, Féca,
+Xélor et Enutrof, en versions féminine et masculine. Le cadrage et le miroir
+horizontal sont appliqués dans le navigateur, sans retoucher les images sources.
+Roublard et Zobal affichent une référence manquante. Les légendes montrent une
+référence de leur classe, explicitement identifiée. Ces références visuelles ne
+prouvent pas que les pièces animées des corps ont été restaurées.
+Le logo `assets/site/logo.webp` et le fond `assets/site/splash.webp` sont également
+ceux fournis par le projet, sans génération d’image.
 
 L’inventaire se régénère avec :
 

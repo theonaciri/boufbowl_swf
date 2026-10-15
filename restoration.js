@@ -36,6 +36,41 @@
     winner: "Victoire",
     versus: "Face-à-face",
   };
+  // Original sheets supplied by the project owner: female, then male, per class.
+  // Coordinates crop the sheets in the browser; the original bitmaps stay intact.
+  const fieldReferences = [
+    [6, 1, [[300, 45, 155, 305], [450, 0, 145, 350]]],
+    [7, 1, [[615, 45, 115, 305], [730, 60, 115, 290]]],
+    [10, 1, [[295, 360, 165, 335], [460, 390, 130, 305]]],
+    [11, 1, [[600, 390, 125, 305], [725, 365, 130, 330]]],
+    [8, 2, [[350, 50, 115, 300], [465, 50, 105, 300]]],
+    [1, 2, [[565, 0, 130, 350], [700, 35, 125, 315]]],
+    [3, 2, [[345, 390, 115, 305], [460, 380, 115, 315]]],
+    [2, 2, [[575, 360, 130, 335], [710, 390, 110, 305]]],
+    [12, 3, [[300, 10, 175, 340], [475, 65, 95, 285]]],
+    [5, 3, [[580, 15, 115, 335], [695, 15, 130, 335]]],
+    [13, 3, [[350, 385, 130, 310], [480, 390, 100, 305]]],
+    [4, 3, [[575, 365, 130, 330], [705, 390, 125, 305]]],
+  ];
+  function renderFieldReference(c, sex) {
+    const reference = fieldReferences.find(([id]) => id === c.class_id);
+    const frame = $("character-field-reference");
+    frame.hidden = !reference;
+    $("character-field-missing").hidden = !!reference;
+    $("character-field-label").textContent = reference
+      ? `RÉFÉRENCE : ${c.class_name} · ${sex}${c.hero ? " (CLASSE)" : ""}`
+      : `${c.class_name} · ${sex} : RÉFÉRENCE MANQUANTE`;
+    if (!reference) return;
+    const [, sheet, crops] = reference;
+    const [x, y, width, height] = crops[c.gender === 2 ? 0 : 1];
+    const img = $("character-field-image");
+    frame.style.aspectRatio = `${width} / ${height}`;
+    img.src = `assets/site/restoration/field-classes-${sheet}.webp`;
+    img.alt = `Référence visuelle ${c.class_name}, ${sex.toLowerCase()}, orientée vers la gauche${c.hero ? " ; référence de sa classe, pas du personnage spécial" : ""}`;
+    img.style.width = `${1163 / width * 100}%`;
+    img.style.left = `${-x / width * 100}%`;
+    img.style.top = `${-y / height * 100}%`;
+  }
   const metric = (found, total, label, note) => {
     const box = el("div", null, "restoration-metric");
     box.append(el("strong", `${found} / ${total}`), el("span", label));
@@ -120,6 +155,7 @@
     const c = selected(),
       sex = c.gender === 1 ? "Homme" : "Femme",
       portrait = c.poses[state.pose] || c.poses.default;
+    renderFieldReference(c, sex);
     $("character-class-name").textContent = c.name;
     $("character-variant").textContent = c.hero
       ? `${c.class_name} · personnage spécial`

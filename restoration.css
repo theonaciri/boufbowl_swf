@@ -484,6 +484,26 @@
   height: 100%;
   object-fit: contain;
 }
+.field-reference {
+  height: calc(100% - 24px);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  transform: scaleX(-1);
+  mix-blend-mode: multiply;
+}
+.body-preview-stage .field-reference img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  display: block;
+}
+#character-field-missing {
+  padding: 35px 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #876033;
+}
 .body-preview-stage > span {
   position: absolute;
   bottom: 0;
