@@ -40,14 +40,12 @@ def inject_server(source, config, android=False, server_url=None):
     source = source.replace("createToolbar();", "createToolbar();\n         " + hook, 1)
     start=source.index('      private static function createToolbar()')
     end=source.index('      private static function addButton(',start)
-    quit_action='Object(getDefinitionByName("flash.desktop.NativeApplication")).nativeApplication.exit();' if android else 'fscommand("quit");'
+    quit_button='addButton("Quit",0,50,function():void { Object(getDefinitionByName("flash.desktop.NativeApplication")).nativeApplication.exit(); });' if android else ''
     source=source[:start]+"""      private static function createToolbar() : void
       {
-         toolbar=new Sprite();toolbar.graphics.beginFill(0xfffce8,.95);
-         toolbar.graphics.drawRect(0,0,182,28);toolbar.graphics.endFill();
-         addButton("Home",4,55,function():void { serverClosePanel();showHome(); });
-         addButton("Quit",66,50,function():void { """+quit_action+""" });
-         addButton("Server",123,55,function():void { serverConnectionPanel(); });
+         toolbar=new Sprite();
+         """+quit_button+"""
+         addButton("Server","""+str(58 if android else 0)+""",55,function():void { serverConnectionPanel(); });
          Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);
          serverLayoutToolbar();
          Stage(app.contextInjector.getInstance(Stage)).addEventListener(Event.RESIZE,function(event:Event):void { serverLayoutToolbar(); });

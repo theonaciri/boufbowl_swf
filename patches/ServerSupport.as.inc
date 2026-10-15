@@ -838,7 +838,7 @@
       }
       private static function serverLayoutToolbar() : void
       {
-         toolbar.x=Math.max(0,Stage(app.contextInjector.getInstance(Stage)).stageWidth-toolbar.width-80);
+         toolbar.x=Math.max(0,(Stage(app.contextInjector.getInstance(Stage)).stageWidth-toolbar.width)/2);
       }
 
       public static function serverPlayerInformation(nickname:String) : void
