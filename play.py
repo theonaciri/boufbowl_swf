@@ -99,7 +99,8 @@ def main():
             mock = "1" if args.mode == "mock" else "0"
             from urllib.parse import urlencode
             parameters = {"lang": args.lang, "tuto": tutorial, "mock": mock,
-                          "server": "1" if args.mode == "server" else "0"}
+                          "server": "1" if args.mode == "server" else "0",
+                          "clientPlatform": "linux", "clientRuntime": "flash", "clientOS": "Linux"}
             if language_override:
                 parameters["languageOverride"]="1"
             if args.profile:

@@ -134,6 +134,8 @@ class Store:
             CREATE TABLE IF NOT EXISTS tournament_rounds(tournament_id INTEGER NOT NULL REFERENCES tournaments(id),round INTEGER NOT NULL,phase TEXT NOT NULL,eligible_json TEXT NOT NULL,PRIMARY KEY(tournament_id,round));
             INSERT OR IGNORE INTO schema_versions VALUES(8);
         """)
+        from backend.tracking import init_schema
+        init_schema(self.db)
 
     @contextmanager
     def transaction(self):

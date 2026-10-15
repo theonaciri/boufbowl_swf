@@ -14,6 +14,7 @@ from tools.game_config import apply_resources, load_config
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rebuild-worker", action="store_true", help="Recompile the worker from sibling server source")
+    parser.add_argument("--archive-only", action="store_true", help="Build the portable archive without Debian packaging tools")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     config = load_config()
@@ -34,7 +35,7 @@ def main():
     apply_resources(bundle / "resources", config)
     (bundle / "backend/runtime").mkdir(exist_ok=True)
     shutil.copy2(bun, bundle / "backend/runtime/bun")
-    for name in ("play.py", "play.sh", "README.md"):
+    for name in ("play.py", "play.sh", "README.md", "admin.html"):
         shutil.copy2(root / name, bundle / name)
     (bundle / "README.txt").write_text(
         "Boufbowl Offline for Linux\n\n"
@@ -48,6 +49,10 @@ def main():
     archive = build / "BoufbowlOffline-linux.tar.gz"
     with tarfile.open(archive, "w:gz") as output:
         output.add(bundle, arcname=bundle.name)
+
+    if args.archive_only:
+        print("Built", archive)
+        return
 
     package = build / "deb"
     if package.exists():

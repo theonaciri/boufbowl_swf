@@ -11,6 +11,7 @@ import queue
 
 from backend.engine import Engine
 from backend.storage import ServiceError, Store
+from backend.tracking import Tracking, metrics_report
 from tools.flash_protocol import Codec, ProtocolError
 from tools.game_config import CLASSES, STADIUMS, load_config, merge, resolve_stadium
 from tools.movement_adapter import grid
@@ -36,11 +37,13 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
     def __init__(self, path, config=None, engine=None):
         self.config = deepcopy(config or load_config())
         self.store = Store(path)
+        self.tracking = Tracking(self.store)
         self.resolution_lock = threading.Lock()
         self.codec = Codec()
         self.chat_codec = Codec(ROOT / "protocol/chat_contract.json", "ChatMessage")
         try:
             self.engine = engine or Engine()
+            self.tracking.engine = self.engine
         except BaseException:
             self.store.close()
             raise
@@ -77,6 +80,8 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                     self.tick_match(match)
             for row in self.store.db.execute("SELECT * FROM challenges WHERE status='pending' AND expires<=?", (time.time(),)).fetchall():
                 self.cancel_offer(row)
+        self.tracking.sample()
+        self.tracking.flush()
 
     def packet(self, name, payload, channel="LOBBY"):
         return {"channel": channel, "type": name, "hex": self.codec.envelope(name, payload).hex()}
@@ -194,7 +199,8 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                     self.emit(profile, "RESOLUTION_SCENARIO", match["scenario"], "MATCH")
             elif self.spectator_match(profile):
                 self.restore_spectating(profile, self.spectator_match(profile))
-            return {"ok": True, "poll_wait_ms": 20000, **self.channel_state(profile), "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None, "session": token, "cursor": cursor, "profile": self.public_profile(profile),
+            self.tracking.activity(profile, body, login=True)
+            return {"ok": True, "poll_wait_ms": 20000, "telemetry": True, **self.channel_state(profile), "spectating": str(self.spectator_match(profile)["id"]) if self.spectator_match(profile) else None, "session": token, "cursor": cursor, "profile": self.public_profile(profile),
                     "auth_mode": self.store.session_kind(token), "matchmaking": self.matchmaking_status(profile),
                     "abilities": client_abilities((match or self.spectator_match(profile))["rules"] if (match or self.spectator_match(profile)) else self.config["rules"]),
                     "zobal_masks": self.match_masks(match or self.spectator_match(profile)),
@@ -216,6 +222,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
     def command(self, body):
         with self.store.transaction():
             profile = self.store.authenticate(body.get("session"))
+            self.tracking.activity(profile, body)
             request_id = body.get("request_id")
             if not isinstance(request_id, str) or not 1 <= len(request_id) <= 100:
                 raise ServiceError("REQUEST_ID", "A stable command request ID is required")
@@ -529,6 +536,9 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
         self.resolution_worker.join(timeout=35)
         with self.resolution_lock:
             self.engine.close()
+            if not self.store.closed:
+                self.tracking.sample()
+                self.tracking.flush(force=True)
             self.store.close()
 
     def place(self, profile, payload):
@@ -713,11 +723,15 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 self.run_resolution(snapshot)
 
     def run_resolution(self, snapshot):
+        simulation_started = time.perf_counter()
+        simulation_observed = False
         try:
             initial = snapshot["world"]
             result = self.engine.simulate(initial, [snapshot["orders"].get("1"), snapshot["orders"].get("2")],
                                           snapshot["turn"], snapshot["turn_seeds"][str(snapshot["turn"])],
                                           snapshot["rules"], [p is None for p in snapshot["profiles"]])
+            self.tracking.observe("simulation", "turn", (time.perf_counter() - simulation_started) * 1000)
+            simulation_observed = True
             record = {"format_version": 1, "initial": initial, "orders": result["orders"], "result": result["result"],
                       "rules": snapshot["rules"], "rules_version": snapshot["rules_version"],
                       "seed_policy": snapshot["seed_policy"], "warnings": result["warnings"],
@@ -738,7 +752,10 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 match["deadline"] = time.time() + 300
                 self.broadcast(match, "RESOLUTION_SCENARIO", scenario)
                 self.store.save_match(match)
-        except Exception:
+        except Exception as error:
+            if not simulation_observed:
+                self.tracking.observe("simulation", "turn", (time.perf_counter() - simulation_started) * 1000, error=True)
+            self.tracking.error("server", getattr(error, "code", "SIMULATION_ERROR"), str(error))
             logging.exception("Turn simulation failed; keeping inputs for retry")
             with self.store.transaction():
                 match = self.store.match(snapshot["id"])
@@ -852,6 +869,7 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                 raise ServiceError("SERVICE_STOPPING", "Server is shutting down")
             profile = self.store.authenticate(body.get("session"))
             self.poll_heartbeat(profile)
+            self.tracking.activity(profile, body)
             with self.store.watch(profile) as condition:
                 while True:
                     if self.stopping.is_set():
@@ -884,6 +902,23 @@ class Service(TournamentRounds, Economy, Progression, Moderation, Tournaments, S
                     self.leave_queue(profile)
                 else:
                     self.store.db.execute("UPDATE matchmaking_queue SET heartbeat=? WHERE profile_id=?", (now, profile))
+
+    def metrics(self, body):
+        with self.store.lock:
+            profile = self.store.authenticate(body.get('session'))
+            if self.role(profile) != 'admin':
+                raise ServiceError('TRACKING_FORBIDDEN', 'Server administrator access required')
+            self.tracking.sample()
+            self.tracking.flush(force=True)
+            result = metrics_report(self.store, body.get('days', 30))
+            result['resources'] = self.tracking.resources()
+            return result
+
+    def telemetry(self, body):
+        with self.store.transaction():
+            profile = self.store.authenticate(body.get('session'))
+            self.tracking.activity(profile, body)
+            return self.tracking.telemetry(profile, body)
 
     def poll_once(self, body):
         return self.poll({**body, "wait_ms": 0})

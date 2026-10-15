@@ -8,6 +8,8 @@ import hashlib
 import os
 import ssl
 import ipaddress
+import time
+import traceback
 from pathlib import Path
 import sys
 from urllib.parse import urlsplit, unquote
@@ -30,6 +32,8 @@ class BackendHTTPServer(ThreadingHTTPServer):
 
 class Handler(SimpleHTTPRequestHandler):
     def json_response(self, response):
+        if response.get('ok') is False:
+            self._tracking_error = response.get('code', 'REQUEST_ERROR')
         payload = json.dumps(response).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
@@ -41,11 +45,54 @@ class Handler(SimpleHTTPRequestHandler):
         except (BrokenPipeError,ConnectionResetError):
             pass  # A client can cancel its request before the response is ready.
 
+    def send_response(self, code, message=None):
+        self._tracking_status = code
+        super().send_response(code, message)
+
+    def measured(self, method, handler):
+        started = time.perf_counter()
+        self._tracking_status = 500
+        self._tracking_error = None
+        self._tracking_detail = None
+        route = urlsplit(self.path).path
+        if route.startswith('/assets/'):
+            route = '/assets/*'
+        elif route.startswith('/vendor/'):
+            route = '/vendor/*'
+        elif route.startswith('/bin/'):
+            route = '/bin/*'
+        elif route.startswith('/resources/'):
+            route = '/resources/*'
+        elif route not in ('/', '/admin.html', '/browser.html', '/__mock_trace', '/crossdomain.xml',
+                            '/api/hello', '/api/command', '/api/poll', '/api/replay', '/api/community',
+                            '/api/account', '/api/telemetry', '/api/metrics', '/api/client', '/api/health'):
+            route = '/unknown'
+        try:
+            handler()
+        except Exception as error:
+            self._tracking_error = 'INTERNAL_ERROR'
+            self._tracking_detail = (str(error), traceback.format_exc())
+            raise
+        finally:
+            service = getattr(self.server, 'service', None)
+            tracker = getattr(service, 'tracking', None)
+            if tracker is not None:
+                failed = self._tracking_status >= 400 or self._tracking_error is not None
+                tracker.observe('http', method + ' ' + route, (time.perf_counter() - started) * 1000, failed)
+                if failed:
+                    message, stack = self._tracking_detail or (method + ' ' + route, '')
+                    tracker.error('server', self._tracking_error or 'HTTP_' + str(self._tracking_status), message, stack)
+
     def do_POST(self):
+        self.measured('POST', self.handle_post)
+
+    def handle_post(self):
         route = urlsplit(self.path).path
         routes = {"/api/hello": self.server.service.hello, "/api/command": self.server.service.command,
                   "/api/poll": self.server.service.poll, "/api/replay": self.replay,
                   "/api/community": self.server.service.community,
+                  "/api/metrics": self.server.service.metrics,
+                  "/api/telemetry": self.server.service.telemetry,
                   "/api/account": lambda body: self.server.service.account(body, self.client_address[0])}
         if route not in routes:
             self.send_error(404)
@@ -75,6 +122,12 @@ class Handler(SimpleHTTPRequestHandler):
             return {"ok": True, "replay": export_replay(service, int(body["match"]), bool(body.get("verify")), profile)}
 
     def do_GET(self):
+        self.measured('GET', self.handle_get)
+
+    def do_HEAD(self):
+        self.measured('HEAD', super().do_HEAD)
+
+    def handle_get(self):
         route = urlsplit(self.path).path
         if route == "/api/client":
             client = Path(self.directory) / "bin/boufbowl-client-1.9.6.swf"
@@ -113,13 +166,13 @@ class Handler(SimpleHTTPRequestHandler):
         if route == "/":
             self.path = "/browser.html"
             route = "/browser.html"
-        if route != "/browser.html" and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
+        if route not in ("/browser.html", "/admin.html") and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
             self.send_error(404)
             return
         resolved = Path(self.translate_path(unquote(route))).resolve()
         root = Path(self.directory).resolve()
         allowed = [root / name for name in ("bin", "assets", "resources", "vendor/ruffle")]
-        if resolved != root / "browser.html" and not any(resolved.is_relative_to(directory) for directory in allowed):
+        if resolved not in (root / "browser.html", root / "admin.html") and not any(resolved.is_relative_to(directory) for directory in allowed):
             self.send_error(404)
             return
         return super().send_head()

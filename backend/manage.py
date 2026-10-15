@@ -1,10 +1,13 @@
 """Local database backup, recorded replay export/verification and report review."""
-import argparse,json
+import argparse,json,sqlite3
+from urllib.parse import quote
+from contextlib import closing
 from pathlib import Path
 from backend.server import default_database
 from backend.service import Service
 from backend.storage import Store
 from backend.replay import export_replay
+from backend.tracking import backfill, metrics_report
 
 
 def main():
@@ -15,7 +18,24 @@ def main():
     replay=sub.add_parser('replay'); replay.add_argument('match',type=int); replay.add_argument('output',type=Path); replay.add_argument('--verify',action='store_true')
     reports=sub.add_parser('reports'); reports.add_argument('--limit',type=int,default=50)
     role=sub.add_parser('role');role.add_argument('nickname');role.add_argument('role',choices=('player','moderator','admin'))
+    stats=sub.add_parser('stats',help='Usage, history, online players and diagnostics (JSON)')
+    stats.add_argument('--days',type=int,default=30)
     args=parser.parse_args()
+    if args.operation=='stats':
+        if not 1<=args.days<=365:parser.error('Choose between one and 365 days')
+        if not args.database.is_file():parser.error('Database does not exist; start the server first')
+        # A statistics read must never trigger the old development reset policy.
+        with closing(sqlite3.connect('file:'+quote(str(args.database.resolve()))+'?mode=ro',uri=True)) as check:
+            exists=check.execute("SELECT 1 FROM sqlite_master WHERE name='schema_versions'").fetchone()
+            version=check.execute('SELECT MAX(version) FROM schema_versions').fetchone()[0] if exists else None
+        if version!=8:parser.error('Statistics require schema 8; this database was left unchanged')
+        store=Store(args.database)
+        try:
+            with store.transaction():backfill(store)
+            with store.lock:result=metrics_report(store,args.days)
+            print(json.dumps(result,indent=2))
+        finally:store.close()
+        return
     if args.operation=='role':
         store=Store(args.database)
         try:

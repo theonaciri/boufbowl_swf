@@ -126,6 +126,7 @@ class Community:
     def community(self, body):
         with self.store.transaction():
             profile = self.store.authenticate(body.get('session'))
+            self.tracking.activity(profile, body)
             self.touch(profile)
             action = body.get('action','overview'); result = {}
             receipt = body.get('request_id') if action in ('friend','spectate','stop_spectating','channels','message','report','moderate','buy') else None

@@ -43,6 +43,7 @@
       {
          serverTrace(text);
          if(!showToast) return;
+         if(text.indexOf("Logged as ") != 0)serverRecordTelemetry({kind:"error",code:"CLIENT_STATUS",message:text});
          if(serverLabel == null)
          {
             serverLabel = new TextField();
@@ -88,6 +89,7 @@
             chat.clearMessages(); chat.clear();
          }
          serverGeneration++;
+         serverInitTracking();
          serverAccountBusy = false;
          serverActive = true;serverConnecting=true;serverRole="player";
          clearTimeout(serverPollTimer);clearTimeout(serverSendTimer);
@@ -171,6 +173,7 @@
 
       private static function serverMetadata(response:Object) : void
       {
+         if(response.hasOwnProperty("telemetry"))serverTelemetryEnabled=response.telemetry === true;
          if(response.hasOwnProperty("poll_wait_ms"))serverPollWait=uint(Math.min(20000,Math.max(0,Number(response.poll_wait_ms))));
          if(response.hasOwnProperty("spectating")) serverSpectating = response.spectating;
          if(response.subscriptions != null) serverSubscriptions=response.subscriptions;
@@ -206,7 +209,10 @@
 
       private static function serverRequest(route:String, body:Object, complete:Function) : void
       {
+         body.client_id=serverClientId;
+         if(route == "hello" || route == "account")body.client=serverClientInfo();
          var generation:uint=serverGeneration;
+         var requestStarted:int=getTimer();
          var requestBase:String=serverBase;
          var loader:URLLoader=new URLLoader();
          var done:Boolean=false;
@@ -227,6 +233,17 @@
                   if(ok) { body.session=serverSession;serverRequest(route,body,complete); }
                   else complete(response);
                });return;
+            }
+            if(route != "telemetry" && route != "metrics") {
+               if(response.retryable && serverConnectionLostAt < 0)serverConnectionLostAt=getTimer();
+               else if(response.ok && serverConnectionLostAt >= 0) {
+                  serverRecordTelemetry({kind:"reconnect",downtime_ms:Math.max(0,getTimer()-serverConnectionLostAt)});
+                  serverConnectionLostAt=-1;
+               }
+            }
+            if(response.ok && route != "poll" && route != "telemetry" && route != "metrics" && getTimer()-serverLastLatencyReport >= 30000) {
+               serverLastLatencyReport=getTimer();
+               serverRecordTelemetry({kind:"latency",route:route,elapsed_ms:Math.max(0,getTimer()-requestStarted)});
             }
             complete(response);
          };
@@ -602,6 +619,7 @@
          serverAction(serverPanel,"Leagues / seasons",460,140,250,function():void { serverProgressionPanel(); });
          serverAction(serverPanel,"News",20,185,180,function():void { serverNewsPanel(); });
          if(serverRole == "moderator" || serverRole == "admin") serverAction(serverPanel,"Moderation",220,185,220,function():void { serverModerationPanel(); });
+         if(serverRole == "admin" && serverTelemetryEnabled)serverAction(serverPanel,"Server statistics",460,185,250,function():void { serverStatsPanel(); });
       }
 
       private static function serverCommunityRequest(body:Object, complete:Function) : void

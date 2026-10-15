@@ -36,7 +36,9 @@
           backgroundExecutionMode: "none",
           parameters: {
             lang: "fr", tuto: "0", mock: "0", server: "1", scene3d: "1",
-            backend: location.origin
+            backend: location.origin, clientPlatform: "browser", clientRuntime: "ruffle",
+            clientOS: navigator.userAgentData?.platform || navigator.platform || "",
+            clientBrowser: (() => { for(const [token,name] of [["Edg","Edge"],["OPR","Opera"],["Firefox","Firefox"],["Chrome","Chrome"],["Version","Safari"]]) { const match=navigator.userAgent.match(new RegExp(token+"/([\\d.]+)"));if(match)return name+" "+match[1]; }return "unknown"; })()
           }
         });
         status.hidden = true;

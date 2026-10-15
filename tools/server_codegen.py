@@ -9,7 +9,9 @@ ROOT = Path(__file__).resolve().parent.parent
 def inject_server(source, config, android=False):
     imports = "   import flash.net.SharedObject;\n   import flash.net.URLRequestMethod;\n"
     source = source.replace("   public class StartUpApplicationCommand", imports + "\n   public class StartUpApplicationCommand", 1)
-    helper = (ROOT / "patches/ServerSupport.as.inc").read_text() + "\n" + (ROOT / "patches/FrontendFeatures.as.inc").read_text()
+    helper = (ROOT / "patches/ServerSupport.as.inc").read_text() + "\n" + (ROOT / "patches/ServerTracking.as.inc").read_text() + "\n" + (ROOT / "patches/FrontendFeatures.as.inc").read_text()
+    helper = helper.replace("@CLIENT_PLATFORM@", json.dumps("android" if android else "unknown"))
+    helper = helper.replace("@CLIENT_RUNTIME@", json.dumps("air" if android else "flash"))
     helper=helper.replace("@LOCAL_UI@",json.dumps(json.loads((ROOT/'resources/local_ui.json').read_text()),ensure_ascii=True))
     palettes=json.loads((ROOT/'resources/palettes.json').read_text())
     previews={}

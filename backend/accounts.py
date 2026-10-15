@@ -90,6 +90,6 @@ class Accounts:
                     except ServiceError: pass
                 self.store.db.execute('DELETE FROM auth_attempts WHERE bucket=?',(bucket,))
         if error: raise error
-        result=self.hello({'session':token})
+        result=self.hello({'session':token,'client_id':body.get('client_id'),'client':body.get('client')})
         if recovery_code: result['recovery_code']=recovery_code
         return result
