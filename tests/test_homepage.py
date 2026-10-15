@@ -21,6 +21,12 @@ class HomepageTests(unittest.TestCase):
             data=site_manifest(root)
             self.assertEqual(data['downloads']['android']['url'],'/downloads/BoufbowlOffline.apk')
             self.assertEqual(data['downloads']['android']['size'],3)
+            (root/'windows/build').mkdir(parents=True)
+            (root/'windows/build/Boufbowl-windows.zip').write_bytes(b'windows')
+            data=site_manifest(root)
+            self.assertEqual(data['downloads']['windows']['url'],'/downloads/Boufbowl-windows.zip')
+            self.assertEqual(data['downloads']['windows']['size'],7)
+            self.assertEqual(data['downloads']['windows']['description'],'Windows · sans Wine ni Python')
             (root/'resources').mkdir()
             (root/'resources/site.json').write_text(json.dumps({'contact_url':'javascript:alert(1)',
                 'desktop_download_url':'https://example.com/game.tar.gz'}))
@@ -37,6 +43,8 @@ class HomepageTests(unittest.TestCase):
             for name in STATIC_PAGES: (root/name).write_text(name)
             (root/'android/build').mkdir(parents=True)
             (root/'android/build/BoufbowlOffline.apk').write_bytes(b'build')
+            (root/'windows/build').mkdir(parents=True)
+            (root/'windows/build/Boufbowl-windows.zip').write_bytes(b'windows')
             (root/'private.txt').write_text('secret')
             class QuietHandler(Handler):
                 def log_message(self,*args):pass
@@ -53,6 +61,9 @@ class HomepageTests(unittest.TestCase):
                     with urlopen(Request(origin+'/downloads/BoufbowlOffline.apk',method=method)) as response:
                         self.assertEqual(response.status,200)
                         if method=='GET':self.assertEqual(response.read(),b'build')
+                    with urlopen(Request(origin+'/downloads/Boufbowl-windows.zip',method=method)) as response:
+                        self.assertEqual(response.headers['Content-Length'],'7')
+                        if method=='GET':self.assertEqual(response.read(),b'windows')
                 with urlopen(origin+'/api/site') as response:self.assertTrue(json.load(response)['ok'])
                 for route in ('/downloads/private.txt','/downloads/../private.txt','/android/build/BoufbowlOffline.apk'):
                     with self.assertRaises(HTTPError) as error:urlopen(origin+route)

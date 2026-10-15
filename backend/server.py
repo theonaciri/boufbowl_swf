@@ -30,7 +30,7 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
-STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
+STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
                 "admin.css", "admin.js", "moderation.js", "tournaments.js",
                 "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
@@ -38,7 +38,8 @@ STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "browser.html"
 
 DOWNLOAD_FILES = {
     '/downloads/BoufbowlOffline.apk': ('android/build/BoufbowlOffline.apk', 'android'),
-    '/downloads/BoufbowlOffline-linux.tar.gz': ('linux/build/BoufbowlOffline-linux.tar.gz', 'desktop'),
+    '/downloads/Boufbowl-linux.tar.gz': ('linux/build/Boufbowl-linux.tar.gz', 'desktop'),
+    '/downloads/Boufbowl-windows.zip': ('windows/build/Boufbowl-windows.zip', 'windows'),
 }
 
 
@@ -64,13 +65,14 @@ def site_manifest(root):
     downloads = {}
     for route, (relative, platform) in DOWNLOAD_FILES.items():
         path = download_path(root, relative)
-        external = public_url(('android' if platform == 'android' else 'desktop') + '_download_url')
+        external = public_url(platform + '_download_url')
         downloads[platform] = {
             'url': external or (route if path else None),
             'local': bool(path and not external),
             'size': path.stat().st_size if path and not external else None,
             'description': ('APK · Android 6+ · ARM64' if platform == 'android' else
-                            'Desktop · client Flash' if external else 'Linux x86-64 · Python 3 + Wine requis'),
+                            'Windows · sans Wine ni Python' if platform == 'windows' else
+                            'Desktop · client Flash' if external else 'Linux x86-64 · Wine requis · sans Python'),
         }
     return {'ok': True, 'downloads': downloads, 'contact_url': public_url('contact_url'),
             'tot_quote_source_url': public_url('tot_quote_source_url')}

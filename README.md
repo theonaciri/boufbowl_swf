@@ -368,5 +368,9 @@ Les projets de politique de confidentialité, CGU, mentions légales, notice sur
 The website root serves the French fan-game homepage. Play at `/play.html`;
 `/browser.html` redirects there. See [homepage assets, configuration and build distribution](docs/site/README.md).
 Configure Discord, external download links and the future source for the Tot quote in `resources/site.json`.
-Local Android and Linux artifacts are discovered automatically by `/api/site` and distributed under `/downloads/`.
-Use `--server-url https://YOUR_SERVER` with either native build script to target the shared game server.
+Android, Windows and Linux player artifacts are discovered automatically by `/api/site` and distributed under `/downloads/`.
+Build the remote-only desktop player downloads with `python3 -m tools.build_player_downloads --server-url https://YOUR_SERVER`.
+These archives contain the Flash player and a launcher that loads the game and resources from the shared server;
+players need no Python or local backend. Windows runs directly; Linux requires Wine with 32-bit support.
+The larger `linux/build.py` offline/development bundle remains available for developers but is not the website's player download.
+Use `--server-url https://YOUR_SERVER` with the Android build script to target the shared game server.

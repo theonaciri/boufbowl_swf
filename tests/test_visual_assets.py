@@ -8,6 +8,17 @@ from tools.visual_assets import NS, palettes, palette_translations, palette_item
 
 
 class VisualAssetTests(unittest.TestCase):
+    def test_toolbar_navigation_matches_the_platform(self):
+        for android in (False, True):
+            path = 'android/patches/StartUpApplicationCommand.as' if android else 'patches/StartUpApplicationCommand.as'
+            source = startup_source((ROOT / path).read_text(), load_config(), android)
+            toolbar = source.split('private static function createToolbar()', 1)[1].split('private static function addButton(', 1)[0]
+            self.assertNotIn('addButton("Home"', toolbar)
+            self.assertNotIn('toolbar.graphics', toolbar)
+            self.assertEqual('addButton("Quit"' in toolbar, android)
+            self.assertIn('addButton("Server"', toolbar)
+            self.assertIn('(Stage(app.contextInjector.getInstance(Stage)).stageWidth-toolbar.width)/2', source)
+
     def test_both_platforms_include_all_palette_choices(self):
         data=palettes()
         for filename in ('patches/StartUpApplicationCommand.as','android/patches/StartUpApplicationCommand.as'):

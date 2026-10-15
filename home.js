@@ -554,14 +554,19 @@
       for (const [key, id] of [
         ["android", "android"],
         ["desktop", "desktop"],
+        ["windows", "windows"],
       ]) {
         const item = data.downloads?.[key],
           url = item?.url && safeURL(item.url);
-        if (!url) continue;
         const link = $("download-" + id);
+        if (!url) {
+          link.removeAttribute("href");
+          link.setAttribute("aria-disabled", "true");
+          link.textContent = "BUILD INDISPONIBLE";
+          $(id + "-status").textContent = "INDISPONIBLE";
+          continue;
+        }
         link.href = url;
-        link.textContent =
-          key === "android" ? "TÉLÉCHARGER L’APK ↗" : "TÉLÉCHARGER LE CLIENT ↗";
         if (item.local) link.setAttribute("download", "");
         else {
           link.target = "_blank";
@@ -570,7 +575,7 @@
         $(id + "-status").textContent = "BUILD DISPONIBLE";
         $(id + "-detail").textContent =
           item.description +
-          (item.size ? " · " + Math.round(item.size / 1048576) + " Mo" : "");
+          (item.size ? " · " + (item.size / 1048576).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " Mo" : "");
       }
       const contact = data.contact_url && safeURL(data.contact_url);
       if (contact) {
