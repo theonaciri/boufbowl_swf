@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
+from tools.visual_assets import palette_item_source
 
 
 def run(command, *, env=None, timeout=600):
@@ -96,9 +97,13 @@ def main():
         package = re.search(r"\bpackage\s+([\w.]+)", text).group(1)
         replacements.extend([package + "." + source.stem, source])
     with tempfile.TemporaryDirectory(prefix=".configured-patches-", dir=build) as temporary:
+        palette = Path(temporary) / "BoufbowlerPaletteItem.as"
+        palette.write_text(palette_item_source((root / "patches/BoufbowlerPaletteItem.as").read_text()))
         startup = Path(temporary) / "StartUpApplicationCommand.as"
         startup.write_text(startup_source((android / "patches/StartUpApplicationCommand.as").read_text(), game_config, android=True, server_url=args.server_url))
         for index in range(0, len(replacements), 2):
+            if replacements[index].endswith(".BoufbowlerPaletteItem"):
+                replacements[index + 1] = palette
             if replacements[index].endswith(".StartUpApplicationCommand"):
                 replacements[index + 1] = startup
         flashvars = Path(temporary) / "FlashVarsManager.as"

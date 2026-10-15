@@ -17,103 +17,43 @@
     },
     {
       "id": 2,
-      "colors": [
-        "556274",
-        "b9d4dd",
-        "eee6d5",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["556274", "b9d4dd", "eee6d5", "ffffff", "000000"]
     },
     {
       "id": 3,
-      "colors": [
-        "25324d",
-        "a589d3",
-        "e8b353",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["25324d", "a589d3", "e8b353", "ffffff", "000000"]
     },
     {
       "id": 4,
-      "colors": [
-        "41181d",
-        "d12d37",
-        "ee8b28",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["41181d", "d12d37", "ee8b28", "ffffff", "000000"]
     },
     {
       "id": 5,
-      "colors": [
-        "77424f",
-        "eb7caf",
-        "f8d7e6",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["77424f", "eb7caf", "f8d7e6", "ffffff", "000000"]
     },
     {
       "id": 6,
-      "colors": [
-        "426731",
-        "9fb55e",
-        "eadca0",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["426731", "9fb55e", "eadca0", "ffffff", "000000"]
     },
     {
       "id": 7,
-      "colors": [
-        "204f81",
-        "6fcbe6",
-        "f4e9bb",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["204f81", "6fcbe6", "f4e9bb", "ffffff", "000000"]
     },
     {
       "id": 8,
-      "colors": [
-        "597e9d",
-        "bce7f0",
-        "ffffff",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["597e9d", "bce7f0", "ffffff", "ffffff", "000000"]
     },
     {
       "id": 9,
-      "colors": [
-        "673a74",
-        "bd75cc",
-        "ffe095",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["673a74", "bd75cc", "ffe095", "ffffff", "000000"]
     },
     {
       "id": 10,
-      "colors": [
-        "226b46",
-        "bd343c",
-        "f5dba5",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["226b46", "bd343c", "f5dba5", "ffffff", "000000"]
     },
     {
       "id": 11,
-      "colors": [
-        "943e68",
-        "f1a9c1",
-        "fbe4dd",
-        "ffffff",
-        "000000"
-      ]
+      "colors": ["943e68", "f1a9c1", "fbe4dd", "ffffff", "000000"]
     }
   ],
   "character_colors": {
@@ -164,17 +104,8 @@
     {
       "id": 101,
       "name": "Pastel",
-      "hair": [
-        "ead3ac",
-        "eeafc7",
-        "a7d2e5",
-        "b8abdc"
-      ],
-      "eyes": [
-        "669933",
-        "4477bb",
-        "793e94"
-      ],
+      "hair": ["ead3ac", "eeafc7", "a7d2e5", "b8abdc"],
+      "eyes": ["669933", "4477bb", "793e94"],
       "skin": [
         "ffd5ad",
         "d89a6b",
@@ -191,18 +122,8 @@
     {
       "id": 102,
       "name": "Vivid",
-      "hair": [
-        "c73b36",
-        "ff9800",
-        "245540",
-        "673990",
-        "ee78a0"
-      ],
-      "eyes": [
-        "247d76",
-        "e05571",
-        "e6c450"
-      ],
+      "hair": ["c73b36", "ff9800", "245540", "673990", "ee78a0"],
+      "eyes": ["247d76", "e05571", "e6c450"],
       "skin": [
         "ffd5ad",
         "d89a6b",
@@ -219,20 +140,8 @@
     {
       "id": 103,
       "name": "Natural",
-      "hair": [
-        "000000",
-        "5f381e",
-        "793c25",
-        "f5dd90",
-        "b8b9c4",
-        "ffffff"
-      ],
-      "eyes": [
-        "000000",
-        "553321",
-        "669933",
-        "4477bb"
-      ],
+      "hair": ["000000", "5f381e", "793c25", "f5dd90", "b8b9c4", "ffffff"],
+      "eyes": ["000000", "553321", "669933", "4477bb"],
       "skin": [
         "ffd5ad",
         "d89a6b",
@@ -245,6 +154,1652 @@
         "f2c1aa",
         "b86d50"
       ]
+    }
+  ],
+  "class_palettes": [
+    {
+      "id": 1,
+      "class_id": 1,
+      "class": "Cra",
+      "style": "Wakfu",
+      "source": "characters2.webp",
+      "hair": [
+        "f5e78c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "7c8335",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "eccb8e",
+        "f5c072",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "f5e78c",
+          "eyes": "7c8335",
+          "skin": "eccb8e"
+        },
+        "female": {
+          "hair": "f5e78c",
+          "eyes": "7c8335",
+          "skin": "f5c072"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "class_id": 2,
+      "class": "Ecaflip",
+      "style": "Wakfu",
+      "source": "characters2.webp",
+      "hair": [
+        "734d31",
+        "b18b5d",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "734d31",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "734d31",
+          "eyes": "d6a64a",
+          "skin": "734d31"
+        },
+        "female": {
+          "hair": "b18b5d",
+          "eyes": "d6a64a",
+          "skin": "734d31"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "class_id": 3,
+      "class": "Eniripsa",
+      "style": "Wakfu",
+      "source": "characters2.webp",
+      "hair": [
+        "4f4131",
+        "fef1c5",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "7b4b20",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "bf7747",
+        "d38b5a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "4f4131",
+          "eyes": "7b4b20",
+          "skin": "bf7747"
+        },
+        "female": {
+          "hair": "fef1c5",
+          "eyes": "43362a",
+          "skin": "d38b5a"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "class_id": 4,
+      "class": "Enutrof",
+      "style": "Wakfu",
+      "source": "characters3.webp",
+      "hair": [
+        "ffffd4",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "6696a0",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "f3aa63",
+        "e8ad68",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "ffffd4",
+          "eyes": "6696a0",
+          "skin": "f3aa63"
+        },
+        "female": {
+          "hair": "ffffd4",
+          "eyes": "6696a0",
+          "skin": "e8ad68"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "class_id": 5,
+      "class": "Feca",
+      "style": "Wakfu",
+      "source": "characters3.webp",
+      "hair": [
+        "85b0a4",
+        "76f0dc",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "76f0dc",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "f9edd1",
+        "f3deac",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "85b0a4",
+          "eyes": "76f0dc",
+          "skin": "f9edd1"
+        },
+        "female": {
+          "hair": "76f0dc",
+          "eyes": "76f0dc",
+          "skin": "f3deac"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "class_id": 6,
+      "class": "Iop",
+      "style": "Wakfu",
+      "source": "characters.webp",
+      "hair": [
+        "ff9901",
+        "ff7200",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "f6c578",
+        "fbbea3",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "ff9901",
+          "eyes": "ffffff",
+          "skin": "f6c578"
+        },
+        "female": {
+          "hair": "ff9901",
+          "eyes": "ffffff",
+          "skin": "fbbea3"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "class_id": 7,
+      "class": "Osamodas",
+      "style": "Wakfu",
+      "source": "characters.webp",
+      "hair": [
+        "27424e",
+        "fcfcee",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "f0ca85",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "60859b",
+        "606e79",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "27424e",
+          "eyes": "f0ca85",
+          "skin": "60859b"
+        },
+        "female": {
+          "hair": "fcfcee",
+          "eyes": "f0ca85",
+          "skin": "606e79"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "class_id": 8,
+      "class": "Pandawa",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#12",
+      "hair": [
+        "1f211f",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "1c211a",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "ecdcc4",
+        "fcf4dc",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "1f211f",
+          "eyes": "1c211a",
+          "skin": "ecdcc4"
+        },
+        "female": {
+          "hair": "1f211f",
+          "eyes": "1c211a",
+          "skin": "fcf4dc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "class_id": 9,
+      "class": "Roublard",
+      "style": "Wakfu",
+      "source": null,
+      "hair": ["1c1c14", "f0e4c8", "5c4c38", "d8c8a8", "8c6c40"],
+      "eyes": ["3c2410", "2c2c2c", "6c4c2c"],
+      "skin": ["c89858", "e0b888", "a87840", "f0d0a8"],
+      "reference_status": "pending"
+    },
+    {
+      "id": 10,
+      "class_id": 10,
+      "class": "Sacrieur",
+      "style": "Wakfu",
+      "source": "characters.webp",
+      "hair": [
+        "ffffff",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fcfcee",
+        "fabca1",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "ffffff",
+          "eyes": "ffffff",
+          "skin": "fabca1"
+        },
+        "female": {
+          "hair": "ffffff",
+          "eyes": "ffffff",
+          "skin": "fabca1"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "class_id": 11,
+      "class": "Sadida",
+      "style": "Wakfu",
+      "source": "characters.webp",
+      "hair": [
+        "b9cb0c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "7b1515",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "bf7747",
+        "9b6034",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "b9cb0c",
+          "eyes": "43362a",
+          "skin": "bf7747"
+        },
+        "female": {
+          "hair": "b9cb0c",
+          "eyes": "43362a",
+          "skin": "9b6034"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "class_id": 12,
+      "class": "Sram",
+      "style": "Wakfu",
+      "source": "characters3.webp",
+      "hair": [
+        "8daea5",
+        "fcfcee",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "000000",
+        "6497a3",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "8daea5",
+        "e6d8af",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "8daea5",
+          "eyes": "000000",
+          "skin": "8daea5"
+        },
+        "female": {
+          "hair": "fcfcee",
+          "eyes": "6497a3",
+          "skin": "e6d8af"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "class_id": 13,
+      "class": "Xelor",
+      "style": "Wakfu",
+      "source": "characters3.webp",
+      "hair": [
+        "9fabc4",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "dee2d7",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "9fabc4",
+          "eyes": "ffffff",
+          "skin": "dee2d7"
+        },
+        "female": {
+          "hair": "9fabc4",
+          "eyes": "ffffff",
+          "skin": "dee2d7"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "class_id": 14,
+      "class": "Zobal",
+      "style": "Wakfu",
+      "source": null,
+      "hair": ["1c3434", "2c4c4c", "f4ecd8", "143c3c", "c89858"],
+      "eyes": ["e49c3c", "3c2410", "2c2c2c"],
+      "skin": ["9c6c24", "c89858", "7c5420", "e0b878"],
+      "reference_status": "pending"
+    },
+    {
+      "id": 201,
+      "class_id": 1,
+      "class": "Cra",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#9",
+      "hair": [
+        "fc8c2c",
+        "fca41c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "5b8737",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fbd482",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "fc8c2c",
+          "eyes": "5b8737",
+          "skin": "fbd482"
+        },
+        "female": {
+          "hair": "fca41c",
+          "eyes": "5b8737",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 202,
+      "class_id": 2,
+      "class": "Ecaflip",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#6",
+      "hair": [
+        "fcf4dc",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "527842",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fcf4dc",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "fcf4dc",
+          "eyes": "527842",
+          "skin": "fcf4dc"
+        },
+        "female": {
+          "hair": "fcf4dc",
+          "eyes": "527842",
+          "skin": "fcf4dc"
+        }
+      }
+    },
+    {
+      "id": 203,
+      "class_id": 3,
+      "class": "Eniripsa",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#7",
+      "hair": [
+        "6c4c2c",
+        "fcf4bc",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "50361f",
+        "62849a",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fbd482",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "6c4c2c",
+          "eyes": "50361f",
+          "skin": "fbd482"
+        },
+        "female": {
+          "hair": "fcf4bc",
+          "eyes": "62849a",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 204,
+      "class_id": 4,
+      "class": "Enutrof",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#3",
+      "hair": [
+        "fcf4c4",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "5b7d9a",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "f4bc5c",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "fcf4c4",
+          "eyes": "5b7d9a",
+          "skin": "f4bc5c"
+        },
+        "female": {
+          "hair": "fcf4c4",
+          "eyes": "5b7d9a",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 205,
+      "class_id": 5,
+      "class": "Feca",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#1",
+      "hair": [
+        "6c4c2c",
+        "5c341c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "4f3140",
+        "795c9c",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fbd482",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "6c4c2c",
+          "eyes": "4f3140",
+          "skin": "fbd482"
+        },
+        "female": {
+          "hair": "5c341c",
+          "eyes": "795c9c",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 206,
+      "class_id": 6,
+      "class": "Iop",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#8",
+      "hair": [
+        "fc942c",
+        "fc9c3c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fbd482",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "fc942c",
+          "eyes": "ffffff",
+          "skin": "fbd482"
+        },
+        "female": {
+          "hair": "fc9c3c",
+          "eyes": "ffffff",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 207,
+      "class_id": 7,
+      "class": "Osamodas",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#2",
+      "hair": [
+        "fcfccc",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "c43b2b",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "f4bc64",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "fcfccc",
+          "eyes": "c43b2b",
+          "skin": "f4bc64"
+        },
+        "female": {
+          "hair": "fcfccc",
+          "eyes": "c43b2b",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 208,
+      "class_id": 8,
+      "class": "Pandawa",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#12",
+      "hair": [
+        "1f211f",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "1c211a",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "ecdcc4",
+        "fcf4dc",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "1f211f",
+          "eyes": "1c211a",
+          "skin": "ecdcc4"
+        },
+        "female": {
+          "hair": "1f211f",
+          "eyes": "1c211a",
+          "skin": "fcf4dc"
+        }
+      }
+    },
+    {
+      "id": 209,
+      "class_id": 9,
+      "class": "Roublard",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#13",
+      "hair": [
+        "171b1b",
+        "148d94",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "593a23",
+        "804f25",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "9c6c24",
+        "c69350",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "171b1b",
+          "eyes": "593a23",
+          "skin": "9c6c24"
+        },
+        "female": {
+          "hair": "148d94",
+          "eyes": "804f25",
+          "skin": "c69350"
+        }
+      }
+    },
+    {
+      "id": 210,
+      "class_id": 10,
+      "class": "Sacrieur",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#11",
+      "hair": [
+        "fca41c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "6e8525",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fbd482",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "fca41c",
+          "eyes": "6e8525",
+          "skin": "fbd482"
+        },
+        "female": {
+          "hair": "fca41c",
+          "eyes": "6e8525",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 211,
+      "class_id": 11,
+      "class": "Sadida",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#10",
+      "hair": [
+        "7c9404",
+        "849404",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "333a12",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "7c9404",
+        "8d623e",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "7c9404",
+          "eyes": "333a12",
+          "skin": "7c9404"
+        },
+        "female": {
+          "hair": "849404",
+          "eyes": "333a12",
+          "skin": "8d623e"
+        }
+      }
+    },
+    {
+      "id": 212,
+      "class_id": 12,
+      "class": "Sram",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#4",
+      "hair": [
+        "4c6c8c",
+        "f5e7ba",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "b9c443",
+        "5f873e",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "fcf4dc",
+        "fbc46a",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "4c6c8c",
+          "eyes": "b9c443",
+          "skin": "fcf4dc"
+        },
+        "female": {
+          "hair": "f5e7ba",
+          "eyes": "5f873e",
+          "skin": "fbc46a"
+        }
+      }
+    },
+    {
+      "id": 213,
+      "class_id": 13,
+      "class": "Xelor",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#5",
+      "hair": [
+        "ac9c7c",
+        "44747c",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "ffffff",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "b4a484",
+        "fcfcd4",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "ac9c7c",
+          "eyes": "ffffff",
+          "skin": "b4a484"
+        },
+        "female": {
+          "hair": "44747c",
+          "eyes": "ffffff",
+          "skin": "fcfcd4"
+        }
+      }
+    },
+    {
+      "id": 214,
+      "class_id": 14,
+      "class": "Zobal",
+      "style": "Dofus",
+      "source": "Character_Faces.webp#14",
+      "hair": [
+        "e8e4d9",
+        "ee5369",
+        "f7e9c2",
+        "e6b45c",
+        "a8693b",
+        "5b3d2e",
+        "252b35",
+        "b8c5d7",
+        "65b9ac",
+        "486ea1",
+        "925cad",
+        "d5849e"
+      ],
+      "eyes": [
+        "d9343f",
+        "43362a",
+        "789744",
+        "4985ba",
+        "41958c",
+        "a781c2",
+        "d6a64a"
+      ],
+      "skin": [
+        "a56d41",
+        "f3d5ab",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "defaults": {
+        "male": {
+          "hair": "e8e4d9",
+          "eyes": "d9343f",
+          "skin": "a56d41"
+        },
+        "female": {
+          "hair": "ee5369",
+          "eyes": "d9343f",
+          "skin": "f3d5ab"
+        }
+      }
+    }
+  ],
+  "hero_palettes": [
+    {
+      "id": 15,
+      "unique_character": 501,
+      "name": "Kriss Krass",
+      "source": "Kriss supplied reference",
+      "hair": [
+        "ecddca",
+        "c9baa7",
+        "fff4df",
+        "8d7d70",
+        "5d464c",
+        "a86675",
+        "6a8f8c"
+      ],
+      "eyes": ["c02d37", "8d202c", "ec6970", "a780b7", "538c88", "d2b15e"],
+      "skin": ["a57c5c", "9d785e", "825d45", "bf9978", "d8b695", "604434"]
+    },
+    {
+      "id": 17,
+      "unique_character": 503,
+      "name": "Maud",
+      "source": "Maud reference",
+      "hair": ["222e2e", "151d1f", "3e5153", "526973", "433447", "8e5a42"],
+      "eyes": ["899a9b", "b9c8c8", "5b838a", "476676", "453629"],
+      "skin": ["cc9755", "ba854a", "dfb476", "a97440", "edc995"]
+    },
+    {
+      "id": 18,
+      "unique_character": 504,
+      "name": "The Masked Gobbowler",
+      "source": "The Masked Gobbowler reference",
+      "hair": ["fffee7", "daccaf", "e8e2d4", "b9c8d5", "7c8d9c", "3a3338"],
+      "eyes": ["d4080d", "a90404", "f25237", "dd9c28", "8b58a3"],
+      "skin": ["3f321f", "5b452c", "786041", "9b7a51", "2d2823"]
+    },
+    {
+      "id": 19,
+      "unique_character": 505,
+      "name": "Goultard the Barbarian",
+      "source": "Goultard supplied reference",
+      "hair": [
+        "fd8203",
+        "c45a05",
+        "ffa846",
+        "ffd083",
+        "b54326",
+        "347d9b",
+        "76549c"
+      ],
+      "eyes": ["ffffff", "f4e7b7", "d7ac43", "a14c2d", "6fa9bd", "a68cbd"],
+      "skin": ["ecb141", "c18a2c", "f5ca73", "ffe0a2", "996724", "b98152"]
+    },
+    {
+      "id": 20,
+      "unique_character": 506,
+      "name": "Amalia Sheran Sharm",
+      "source": "Amalia reference",
+      "hair": ["81980c", "a4b724", "5b7818", "c2cb58", "40754c", "b86b37"],
+      "eyes": ["633c24", "814c25", "758b33", "bf9149", "4b7570"],
+      "skin": ["9f5621", "894a21", "b87338", "ce9459", "75411f"]
+    },
+    {
+      "id": 21,
+      "unique_character": 507,
+      "name": "Miranda",
+      "source": "Miranda supplied reference",
+      "hair": [
+        "3b3422",
+        "110f0a",
+        "685c3c",
+        "8a7650",
+        "6a7160",
+        "647a85",
+        "80608f"
+      ],
+      "eyes": ["c4a55c", "a7873c", "d7c290", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["746545", "544932", "948158", "342d1f", "a8956d"]
+    },
+    {
+      "id": 22,
+      "unique_character": 508,
+      "name": "Evangelyne",
+      "source": "Evangelyne supplied reference",
+      "hair": [
+        "f3df87",
+        "edcf4b",
+        "f9f0c8",
+        "cba65d",
+        "8d6a42",
+        "739c92",
+        "a27daa"
+      ],
+      "eyes": ["719817", "49630f", "9fd620", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ffd087", "ffbc54", "ffe4ba", "ffa821", "fff4e3"]
+    },
+    {
+      "id": 23,
+      "unique_character": 509,
+      "name": "Ruel Stroud",
+      "source": "Ruel Stroud supplied reference",
+      "hair": [
+        "f5f4dc",
+        "e6e4a8",
+        "fafaef",
+        "d9d4b4",
+        "a49b7d",
+        "6b887c",
+        "9981a3"
+      ],
+      "eyes": ["4b4934", "27261b", "757251", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["f5c783", "f1b254", "f9dcb2", "ed9c25", "fcedd8"]
+    },
+    {
+      "id": 24,
+      "unique_character": 510,
+      "name": "Shoshanne",
+      "source": "Shoshanne supplied reference",
+      "hair": [
+        "cc5740",
+        "9f3e2b",
+        "db8978",
+        "ef8b61",
+        "893d35",
+        "77a29a",
+        "5c7e9e"
+      ],
+      "eyes": ["50371e", "23180d", "845b31", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["bb6836", "93522b", "ce8356", "6c3c1f", "d79a76"]
+    },
+    {
+      "id": 25,
+      "unique_character": 511,
+      "name": "Kabrok",
+      "source": "Kabrok supplied reference",
+      "hair": [
+        "18292d",
+        "090f11",
+        "31535c",
+        "0c1011",
+        "52696e",
+        "f1e7b3",
+        "97765a"
+      ],
+      "eyes": ["e1d69b", "d3c36c", "f1edd2", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["243a40", "121c1f", "365861", "090f10", "456f7b"]
+    },
+    {
+      "id": 26,
+      "unique_character": 512,
+      "name": "Brumen Tinctorias",
+      "source": "Brumen Tinctorias supplied reference",
+      "hair": [
+        "9e5500",
+        "5c3100",
+        "e57b00",
+        "cf8629",
+        "572d00",
+        "547c82",
+        "78729b"
+      ],
+      "eyes": ["858579", "65655c", "a7a79e", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ddddc8", "cacaa8", "f0f0e8", "b6b689", "f7f7f2"]
+    },
+    {
+      "id": 27,
+      "unique_character": 513,
+      "name": "Count Harebourg",
+      "source": "Count Harebourg supplied reference",
+      "hair": [
+        "fffaf0",
+        "ffe4ae",
+        "fff8eb",
+        "bdbbad",
+        "8b8268",
+        "5c8c92",
+        "485d6f"
+      ],
+      "eyes": ["bceeff", "7fdeff", "ebfaff", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ffc1ab", "ff9b78", "ffe7de", "ff7645", "fff0eb"],
+      "reference_note": "White hair, pale skin and icy eyes; alternate swatches also reflect the olive and teal costumes."
+    },
+    {
+      "id": 28,
+      "unique_character": 514,
+      "name": "Pan Diego",
+      "source": "Pan Diego supplied reference",
+      "hair": [
+        "f5edd2",
+        "e9d79c",
+        "fbf8ee",
+        "cec49f",
+        "6f6750",
+        "36777d",
+        "af7746"
+      ],
+      "eyes": ["332b1c", "100e09", "615235", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ece3bf", "e0d298", "f8f4e6", "d5c170", "faf8ef"]
+    },
+    {
+      "id": 34,
+      "unique_character": 515,
+      "name": "Ironman",
+      "source": "Ironman supplied reference",
+      "hair": [
+        "a80503",
+        "670302",
+        "ee0704",
+        "e44b34",
+        "6e1717",
+        "ffcb00",
+        "31969e"
+      ],
+      "eyes": ["74c7dc", "43b3d0", "addeea", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ffcb00", "cca200", "ffd533", "997a00", "ffde5c"]
+    },
+    {
+      "id": 35,
+      "unique_character": 516,
+      "name": "Jack Chaferton",
+      "source": "Jack Chaferton supplied reference",
+      "hair": [
+        "f3f3f3",
+        "d2d2d2",
+        "f5f5f5",
+        "b0b0b0",
+        "555555",
+        "7d9da8",
+        "b5a48a"
+      ],
+      "eyes": ["333333", "141414", "575757", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["bcbcbc", "a3a3a3", "d6d6d6", "898989", "eaeaea"],
+      "reference_note": "Monochrome reference; neutral defaults, optional colored customization swatches."
+    },
+    {
+      "id": 36,
+      "unique_character": 517,
+      "name": "Armand",
+      "source": "Armand supplied reference",
+      "hair": [
+        "95a31b",
+        "616a12",
+        "c9dc2a",
+        "bdc74a",
+        "627311",
+        "865ca0",
+        "a97c42"
+      ],
+      "eyes": [
+        "413526",
+        "1a160f",
+        "6e5a40",
+        "b8dce4",
+        "a884bd",
+        "c99c4e",
+        "ed59f5"
+      ],
+      "skin": ["8a5532", "653e24", "af6c40", "3f2717", "c28156"],
+      "reference_note": "Olive hair and brown body skin; magenta eye option reflects the powered reference."
+    },
+    {
+      "id": 37,
+      "unique_character": 518,
+      "name": "Skunk",
+      "source": "Skunk supplied reference",
+      "hair": [
+        "ee7d29",
+        "c55d10",
+        "f3a56b",
+        "ffb664",
+        "b54b20",
+        "488751",
+        "9c529c"
+      ],
+      "eyes": ["9b76b1", "7d5595", "bca3cb", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["f3d2b1", "ecb885", "faebdd", "e59f59", "fcf5ed"]
     }
   ]
 }

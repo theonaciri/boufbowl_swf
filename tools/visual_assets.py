@@ -17,6 +17,8 @@ def palettes():
     groups=[p['colors'] for p in value['club_palettes']]
     groups.extend(value['character_colors'].values())
     groups.extend(p[k] for p in value['character_palettes'] for k in ('hair','eyes','skin'))
+    for key in ('class_palettes','hero_palettes'):
+        groups.extend(p[k] for p in value.get(key,[]) for k in ('hair','eyes','skin'))
     for colors in groups:
         if not colors or len(colors)>16 or any(not isinstance(c,str) or not re.fullmatch('[0-9a-fA-F]{6}',c) for c in colors):
             raise ValueError('Palette colors must be lists of 1–16 six-digit RGB hex values')
@@ -24,11 +26,43 @@ def palettes():
         ids=[p['id'] for p in value[key]]
         if any(not isinstance(i,int) or i<=0 for i in ids) or len(ids)!=len(set(ids)):
             raise ValueError('Palette IDs must be positive and unique')
+    characters=value['character_palettes']+value.get('class_palettes',[])+value.get('hero_palettes',[])
+    ids=[p['id'] for p in characters]
+    if any(type(i) is not int or i<=0 for i in ids) or len(ids)!=len(set(ids)):
+        raise ValueError('Character palette IDs must be positive and unique across all groups')
+    for entry in value.get('class_palettes',[]):
+        if type(entry['class_id']) is not int or not 1<=entry['class_id']<=14:
+            raise ValueError('Class palettes require a class_id from 1 to 14')
+        if 'defaults' in entry:
+            for gender in ('male','female'):
+                for kind in ('hair','eyes','skin'):
+                    color=entry['defaults'].get(gender,{}).get(kind)
+                    if color not in entry[kind]:
+                        raise ValueError('Gender defaults must be colors present in their palette')
+    for entry in value.get('hero_palettes',[]):
+        if type(entry['unique_character']) is not int or not 501<=entry['unique_character']<=518:
+            raise ValueError('Hero palettes require a known unique_character')
     return value
 
 
 def color_array(colors):
     return '['+','.join('Color3.fromRgbUInt(0x'+c+')' for c in colors)+']'
+
+
+def palette_item_source(source):
+    """Compile explicit gender defaults into the shared Flash/AIR palette model."""
+    settings=palettes()
+    for method,kind in (('Hair','hair'),('Eye','eyes'),('Skin','skin')):
+        lines=[]
+        for entry in settings.get('class_palettes',[]):
+            if 'defaults' not in entry: continue
+            male=entry[kind].index(entry['defaults']['male'][kind])
+            female=entry[kind].index(entry['defaults']['female'][kind])
+            lines.append(f'         if(this.id == {entry["id"]}) return param2 == Gender.FEMALE ? {female} : {male};')
+        pattern=r'(public function getDefault'+method+r'ColorId\(param1:int, param2:int\) : int\s*\{)'
+        source,count=re.subn(pattern,lambda m:m[1]+'\n'+'\n'.join(lines),source,count=1)
+        if count!=1: raise ValueError('Missing palette default method: '+method)
+    return source
 
 
 def palette_source(source):
@@ -45,9 +79,34 @@ def palette_source(source):
     source,count=re.subn(r'clubPalettes.addItem\(1,new ClubPaletteItem\(1,0,1,colors,colors,colors\)\);','\n         '.join(clubs),source,count=1)
     if count!=1: raise ValueError('Missing club palette seed')
     extra=[]
+    # Replace the shared defaults before adding optional styles. LinkedMap order
+    # makes the first palette for each class its default in the editor.
+    for key,field in (('class_palettes','class_id'),('hero_palettes','unique_character')):
+        for entry in settings.get(key,[]):
+            cls=entry[field] if field=='class_id' else 0
+            hero=entry[field] if field=='unique_character' else 0
+            extra.append(f"palettes.addItem({entry['id']},new BoufbowlerPaletteItem(1,0,{entry['id']},{cls},{hero},{color_array(entry['hair'])},{color_array(entry['eyes'])},{color_array(entry['skin'])}));")
     for entry in settings['character_palettes']:
         extra.append(f"palettes.addItem({entry['id']},new BoufbowlerPaletteItem(1,0,{entry['id']},0,0,{color_array(entry['hair'])},{color_array(entry['eyes'])},{color_array(entry['skin'])}));")
     source=source.replace('premium.updateCustomisationAssetsLists(', '\n         '.join(extra)+'\n         premium.updateCustomisationAssetsLists(',1)
+    # Seeded rosters must use the same gender defaults as the customization UI.
+    rewritten=[]
+    for line in source.splitlines():
+        if 'new ClubBoufbowlerModel(' in line and 'hair[0],skin[0],eyes[0]' in line:
+            if 'hero[0]' in line:
+                palette,gender='hero[3]','hero[2]'
+            elif 'galleryRoster' in line:
+                palette,gender='i+1','1'
+            else:
+                palette,gender='cls','1+i%2'
+            item=f'BoufbowlerPaletteItem(palettes.getItem({palette}))'
+            colors=','.join(f'{item}.getColor(BoufbowlerPaletteItem.{kind}_COLOR,{item}.getDefault{method}ColorId(0,{gender}))'
+                            for kind,method in (('HAIR','Hair'),('SKIN','Skin'),('EYE','Eye')))
+            if palette=='hero[3]':
+                colors=colors.replace('ColorId(0,','ColorId(hero[0],')
+            line=line.replace('hair[0],skin[0],eyes[0]',colors)
+        rewritten.append(line)
+    source='\n'.join(rewritten)+'\n'
     return source
 
 
@@ -60,6 +119,8 @@ def palette_translations(text):
     for entries in value.values():
         for palette in palettes()['character_palettes']:
             entries[str(palette['id'])]=palette['name']
+        for palette in palettes().get('class_palettes',[]):
+            entries[str(palette['id'])]=palette['class']+' ('+palette['style']+')'
     return text[:start]+json.dumps(value,ensure_ascii=False,indent=4)+text[start+length:]
 
 

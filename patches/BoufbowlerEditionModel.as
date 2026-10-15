@@ -306,6 +306,7 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
       {
          var _loc3_:BoufbowlerPaletteItem = null;
          this._applicablePalettes = new LinkedMap();
+         // Include every style for this class; the first remains its default.
          var _loc2_:IIterator = this._availablePalettes.getIterator();
          while(_loc2_.hasNext())
          {
@@ -313,7 +314,6 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
             if(this.isDefaultForUniqueCharacter(this._currentUniqueCharacter,_loc3_) || this.isDefaultForClass(this._currentBoufbowlerClass,this._currentUniqueCharacter,_loc3_))
             {
                this._applicablePalettes.addItem(_loc3_.id,_loc3_);
-               break;
             }
          }
          _loc2_ = this._availablePalettes.getIterator();
@@ -365,20 +365,11 @@ package com.ankamagames.boufbowl.client.premiumservice.boufbowlercustomisation.m
          else
          {
             _loc2_ = this._currentPalette.getColorIndex(BoufbowlerPaletteItem.HAIR_COLOR,this._currentHairColor);
-            if(_loc2_ != -1)
-            {
-               this._currentHairColorId = _loc2_;
-            }
+            this._currentHairColorId = _loc2_ != -1 ? _loc2_ : this._currentPalette.getDefaultHairColorId(this._currentUniqueCharacter,this._currentGender);
             _loc3_ = this._currentPalette.getColorIndex(BoufbowlerPaletteItem.EYE_COLOR,this._currentEyeColor);
-            if(_loc3_ != -1)
-            {
-               this._currentEyeColorId = _loc3_;
-            }
+            this._currentEyeColorId = _loc3_ != -1 ? _loc3_ : this._currentPalette.getDefaultEyeColorId(this._currentUniqueCharacter,this._currentGender);
             _loc4_ = this._currentPalette.getColorIndex(BoufbowlerPaletteItem.SKIN_COLOR,this._currentSkinColor);
-            if(_loc4_ != -1)
-            {
-               this._currentSkinColorId = _loc4_;
-            }
+            this._currentSkinColorId = _loc4_ != -1 ? _loc4_ : this._currentPalette.getDefaultSkinColorId(this._currentUniqueCharacter,this._currentGender);
          }
       }
       

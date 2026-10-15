@@ -8,6 +8,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
+from tools.visual_assets import palette_item_source
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--ffdec", type=Path, required=True, help="Path to ffdec.jar")
@@ -19,6 +20,7 @@ original = args.original or root.parent / "swf_sources/boufbowl_client/bin/boufb
 config = load_config(args.config)
 config_source = args.config.read_bytes()
 classes = [
+    "com.ankamagames.boufbowl.client.premiumservice.common.model.item.BoufbowlerPaletteItem",
     "com.ankamagames.boufbowl.client.match.strategic.controller.PlacementDragNDropCommand",
     "com.ankamagames.xgaming.audio.controller.AbstractTracksController",
     "com.ankamagames.xgaming.audio.controller.ConcurrentTracksManager",
@@ -82,6 +84,9 @@ replacements = []
 for cls in classes:
     replacements.extend([cls, str(root / "patches" / (cls.rsplit(".", 1)[-1] + ".as"))])
 with tempfile.TemporaryDirectory(prefix=".tutorial-build-", dir=root / "bin") as tmp:
+    palette = Path(tmp) / "BoufbowlerPaletteItem.as"
+    palette.write_text(palette_item_source((root / "patches/BoufbowlerPaletteItem.as").read_text()))
+    replacements[2*classes.index("com.ankamagames.boufbowl.client.premiumservice.common.model.item.BoufbowlerPaletteItem")+1] = str(palette)
     startup = Path(tmp) / "StartUpApplicationCommand.as"
     startup.write_text(startup_source((root / "patches/StartUpApplicationCommand.as").read_text(), config))
     replacements[2*classes.index("com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand")+1] = str(startup)
