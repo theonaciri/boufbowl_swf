@@ -34,8 +34,10 @@
 
       public static function serverMode() : Boolean { return serverActive; }
 
-      private static function serverStatus(text:String) : void
+      private static function serverStatus(text:String, showToast:Boolean = false) : void
       {
+         serverTrace(text);
+         if(!showToast) return;
          if(serverLabel == null)
          {
             serverLabel = new TextField();
@@ -117,7 +119,7 @@
                   serverSession=null;helloBody.session=null;serverRequest("hello",helloBody,connected);return;
                }
                serverActive=false;serverConnecting=false;serverSession=null;serverQueue=[];
-               serverStatus(serverCaption(response.code == "SESSION_INVALID" && serverAuthMode == "account" ? "Account session expired. Sign in from Club / Account." : "Connection failed")+": "+response.error);
+               serverStatus(serverCaption(response.code == "SESSION_INVALID" && serverAuthMode == "account" ? "Account session expired. Sign in from Club / Account." : "Connection failed")+": "+response.error,true);
                if(complete != null)complete(false);return;
             }
             serverSession = String(response.session);serverConnecting=false;
@@ -130,7 +132,7 @@
             else if(explicitLocal) delete connection.data.url;
             connection.flush();
             serverMetadata(response);
-            serverStatus("Connected as " + response.profile.nickname);
+            serverStatus("Logged as " + response.profile.nickname,true);
             serverPump();
             serverPoll();
             if(complete != null)complete(true);
@@ -142,7 +144,7 @@
          if(serverAuthMode != "device") {
             serverTrace("Account session requires login");
             serverActive=false;serverSession=null;serverQueue=[];serverConnecting=false;
-            serverStatus(serverCaption("Account session expired. Sign in from Club / Account."));
+            serverStatus(serverCaption("Account session expired. Sign in from Club / Account."),true);
             if(complete != null)complete(false);return;
          }
          if(complete != null)serverReconnectWaiters.push(complete);
@@ -230,7 +232,7 @@
          },6000);
          var onComplete:Function=function(event:Event):void {
             try { finish(com.adobe.serialization.json.JSON.decode(String(loader.data))); }
-            catch(error:Error) { serverStatus("Server response error: " + error.toString()); serverTrace("ERROR " + error.toString()); }
+            catch(error:Error) { serverStatus("Server response error: " + error.toString(),true); serverTrace("ERROR " + error.toString()); }
          };
          loader.addEventListener(Event.COMPLETE,onComplete);
          loader.addEventListener(IOErrorEvent.IO_ERROR,function(event:IOErrorEvent):void { finish({ok:false,retryable:true,error:event.text}); });
@@ -256,10 +258,10 @@
          body.session = serverSession;
          serverRequest("command",body,function(response:Object):void {
             serverSending = false;
-            if(response.retryable) { serverStatus("Connection interrupted; retrying command"); setTimeout(serverPump,1500); return; }
+            if(response.retryable) { serverStatus("Connection interrupted; retrying command",true); setTimeout(serverPump,1500); return; }
             serverQueue.shift();
             if(response.ok) serverMetadata(response);
-            else { if(body.request_class == "MatchRequestMessage") { MatchCreationModel(app.contextInjector.getInstance(MatchCreationModel)).matchRequestRunning=false;app.hideMessageBox(); } serverStatus("Request failed: " + response.error); serverTrace("ERROR " + response.error); }
+            else { if(body.request_class == "MatchRequestMessage") { MatchCreationModel(app.contextInjector.getInstance(MatchCreationModel)).matchRequestRunning=false;app.hideMessageBox(); } serverStatus("Request failed: " + response.error,true); serverTrace("ERROR " + response.error); }
             serverPump();
          });
       }
@@ -280,10 +282,10 @@
                }
             }
             else {
-               serverStatus("Connection interrupted: " + response.error);
+               serverStatus("Connection interrupted: " + response.error,true);
                if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID") {
                   serverGeneration++;serverQueue=[];serverSending=false;stopMock();showHome();serverCurrentMatch=null;
-                  serverStatus(response.error);return;
+                  serverStatus(response.error,true);return;
                }
             }
             serverPollTimer = setTimeout(serverPoll,response.ok ? 0 : 250);
@@ -293,7 +295,7 @@
       private static function serverPacket(packet:Object) : void
       {
          if(packet.round_states != null) serverTournamentRounds=packet.round_states;
-         if(packet.channel == "COMMUNITY") { if(packet.type == "MODERATED") { serverStatus(packet.verb + ": " + packet.reason); if(packet.verb == "kick" || packet.verb == "ban") { stopMock();showHome(); } } if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
+         if(packet.channel == "COMMUNITY") { if(packet.type == "MODERATED") { serverStatus(packet.verb + ": " + packet.reason,true); if(packet.verb == "kick" || packet.verb == "ban") { stopMock();showHome(); } } if(packet.type == "SPECTATING_STOPPED") { serverSpectating=null; serverStatus("Stopped spectating"); showHome(); } return; }
          if(mockActive && packet.channel == "MATCH") return;
          if(packet.type == "RESOLUTION_SCENARIO") { app.hideMessageBox(); serverStatus("Loading turn animation"); }
          if(packet.type == "MATCH_INFORMATION") { serverClosePanel(); setMatchToolbar(true); }
@@ -474,6 +476,7 @@
          var label:TextField = serverText(button,title,5,5,width-10);
          var format:TextFormat=label.defaultTextFormat;format.font="Copperplate Gothic Bold";format.bold=false;format.size=12;format.align="center";format.color=0x657e30;
          label.defaultTextFormat=format;label.text=serverCaption(title);label.mouseEnabled=false;
+         if(flash.system.Capabilities.playerType == "PlugIn") label.setTextFormat(format);
          while(label.textWidth>width-14 && Number(format.size)>9) { format.size=Number(format.size)-1;label.setTextFormat(format); }
          button.addEventListener(MouseEvent.MOUSE_OVER,function(event:MouseEvent):void { skin.selected=true;label.textColor=0x3e5c1e; });
          button.addEventListener(MouseEvent.MOUSE_OUT,function(event:MouseEvent):void { skin.selected=false;label.textColor=0x657e30; });
@@ -484,8 +487,8 @@
 
       private static function serverAccountPanel() : void
       {
-         if(serverBase == null) { serverStatus("Connect to a server first"); return; }
-         if(serverCurrentMatch != null) { serverStatus("Finish or surrender your match before changing accounts"); return; }
+         if(serverBase == null) { serverStatus("Connect to a server first",true); return; }
+         if(serverCurrentMatch != null) { serverStatus("Finish or surrender your match before changing accounts",true); return; }
          serverDialog("Account: " + (serverAuthMode == "account" ? serverAccountUsername : "anonymous device"),330);
          serverText(serverPanel,"Username",20,55,130);
          var username:TextField = serverInput(serverPanel,serverAccountUsername != null ? serverAccountUsername : "",170,55,550);
@@ -521,7 +524,7 @@
          serverRequest("account",{action:action,username:username.text,password:password.text,new_password:replacement.text,
              recovery_code:recovery != null ? recovery.text : null,session:serverSession,nickname:serverProfileName,clubs:clubs},function(response:Object):void {
             serverAccountBusy = false;
-            if(!response.ok) { serverStatus(response.error); return; }
+            if(!response.ok) { serverStatus(response.error,true); return; }
             password.text=""; replacement.text="";
                if(action == "logout") { delete serverStorage.data.accountSession; serverUseDevice(); return; }
             serverSession = String(response.session);
@@ -558,18 +561,18 @@
       private static function serverCommunityRequest(body:Object, complete:Function) : void
       {
          if(serverConnecting || serverReconnecting) { setTimeout(function():void { serverCommunityRequest(body,complete); },100);return; }
-         if(!serverActive || serverSession == null) { serverStatus(serverCaption("Connect to a server first"));return; }
+         if(!serverActive || serverSession == null) { serverStatus(serverCaption("Connect to a server first"),true);return; }
          body.session = serverSession;
          body.request_id=String(getTimer()) + "-" + String(Math.random());
          serverRequest("community",body,function(response:Object):void {
-            if(!response.ok) { serverStatus("Community: " + response.error); return; }
+            if(!response.ok) { serverStatus("Community: " + response.error,true); return; }
             serverMetadata(response); complete(response);
          });
       }
 
       private static function serverCommunityPanel(tab:String, offset:int = 0, selected:String = "", before:Number = 0) : void
       {
-         if(serverSession == null) { serverStatus("Connect first"); return; }
+         if(serverSession == null) { serverStatus("Connect first",true); return; }
          serverDialog("Community: " + tab,430); serverPanel.y=95;
          var panel:Sprite=serverPanel;
          var tabs:Array=["Friends","Rankings","History","Watch","Messages","Channels"];
@@ -671,12 +674,12 @@
             serverAction(panel,"Watch replay",20,350,180,function():void { serverLoadReplay(choice.text,false); });
             serverAction(panel,"Save replay",220,350,180,function():void { serverLoadReplay(choice.text,true); });
             serverAction(panel,"Open replay file",420,350,180,function():void {
-               if(serverCurrentMatch != null || serverSpectating != null) { serverStatus("Leave the match before opening a replay"); return; }
+               if(serverCurrentMatch != null || serverSpectating != null) { serverStatus("Leave the match before opening a replay",true); return; }
                serverReplayFile=new flash.net.FileReference();
                serverReplayFile.addEventListener(Event.SELECT,function(event:Event):void { serverReplayFile.load(); });
                serverReplayFile.addEventListener(Event.COMPLETE,function(event:Event):void {
                   try { serverStartReplay(com.adobe.serialization.json.JSON.decode(serverReplayFile.data.toString())); }
-                  catch(error:Error) { serverStatus("Invalid replay: " + error.message); }
+                  catch(error:Error) { serverStatus("Invalid replay: " + error.message,true); }
                });
                serverReplayFile.browse([new flash.net.FileFilter("Boufbowl replay (*.json)","*.json")]);
             });
@@ -724,9 +727,9 @@
 
       private static function serverLoadReplay(matchId:String, save:Boolean) : void
       {
-         if(!save && (serverCurrentMatch != null || serverSpectating != null)) { serverStatus("Leave your current match before watching a replay"); return; }
+         if(!save && (serverCurrentMatch != null || serverSpectating != null)) { serverStatus("Leave your current match before watching a replay",true); return; }
          serverRequest("replay",{session:serverSession,match:matchId},function(data:Object):void {
-            if(!data.ok) { serverStatus("Replay: " + data.error); return; }
+            if(!data.ok) { serverStatus("Replay: " + data.error,true); return; }
             if(save)
             {
                serverDialog("Replay ready to save",140);

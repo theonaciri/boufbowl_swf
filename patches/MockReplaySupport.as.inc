@@ -48,27 +48,30 @@
          if(mockLabel != null && mockLabel.parent != null) mockLabel.parent.removeChild(mockLabel);
       }
 
-      private static function mockStatus(text:String) : void
+      private static function mockStatus(text:String, showToast:Boolean = false) : void
       {
-         if(mockLabel == null)
+         if(showToast)
          {
-            mockLabel = new TextField();
-            mockLabel.defaultTextFormat = new TextFormat("Verdana",11,0x463d2b);
-            mockLabel.background = true;
-            mockLabel.backgroundColor = 0xfffce8;
-            mockLabel.embedFonts=true;mockLabel.border=true;mockLabel.borderColor=0xb4a570;
-            mockLabel.x = 10;
-            mockLabel.y = 570;
-            mockLabel.width = 512;
-            mockLabel.height = 24;
-            mockLabel.mouseEnabled = false;
+            if(mockLabel == null)
+            {
+               mockLabel = new TextField();
+               mockLabel.defaultTextFormat = new TextFormat("Verdana",11,0x463d2b);
+               mockLabel.background = true;
+               mockLabel.backgroundColor = 0xfffce8;
+               mockLabel.embedFonts=true;mockLabel.border=true;mockLabel.borderColor=0xb4a570;
+               mockLabel.x = 10;
+               mockLabel.y = 570;
+               mockLabel.width = 512;
+               mockLabel.height = 24;
+               mockLabel.mouseEnabled = false;
+            }
+            mockLabel.width = Math.min(512,Stage(app.contextInjector.getInstance(Stage)).stageWidth / 2);
+            mockLabel.wordWrap=true;
+            mockLabel.text = "Replay: " + text;
+            mockLabel.height=Math.min(72,mockLabel.textHeight+6);
+            mockLabel.y=594-mockLabel.height;
+            Stage(app.contextInjector.getInstance(Stage)).addChild(mockLabel);
          }
-         mockLabel.width = Math.min(512,Stage(app.contextInjector.getInstance(Stage)).stageWidth / 2);
-         mockLabel.wordWrap=true;
-         mockLabel.text = "Replay: " + text;
-         mockLabel.height=Math.min(72,mockLabel.textHeight+6);
-         mockLabel.y=594-mockLabel.height;
-         Stage(app.contextInjector.getInstance(Stage)).addChild(mockLabel);
          if(@TRACE_URL@ != "")
          {
             var traceLoader:URLLoader = new URLLoader();
@@ -87,7 +90,7 @@
       {
          clearTimeout(mockTimer);
          clearTimeout(mockTimeout);
-         mockStatus("ERROR: " + text);
+         mockStatus("ERROR: " + text,true);
          mockActive = false;
       }
 

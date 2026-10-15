@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run Boufbowl offline menus and tutorial with Adobe Flash Player and Wine."""
 import argparse
+import hashlib
 import json
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -105,6 +106,10 @@ def main():
                 parameters["profile"] = args.profile
             if args.server_url:
                 parameters["backend"] = args.server_url.rstrip("/")
+            elif args.mode == "server":
+                # A remembered remote server must not replace this launch's backend.
+                parameters["backend"] = f"http://127.0.0.1:{port}"
+            parameters["v"] = hashlib.sha256((root / "bin/boufbowl-client-1.9.6.swf").read_bytes()).hexdigest()
             url = f"http://127.0.0.1:{port}/bin/boufbowl-client-1.9.6.swf?{urlencode(parameters)}"
             language_label=args.lang if language_override else "saved language or " + args.lang
             print(f"Starting Boufbowl {args.mode} ({language_label}). Logs: {logs}", flush=True)

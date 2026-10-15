@@ -32,6 +32,15 @@
          return text;
       }
       private static function serverFrame(parent:Sprite,x:int,y:int,width:int,height:int):void {
+         if(flash.system.Capabilities.playerType == "PlugIn") {
+            // The native skin relies on scale9Grid. Draw its flat popup frame
+            // directly in the browser to avoid stretched corners and tile seams.
+            var frame:Sprite=new Sprite();frame.mouseEnabled=false;frame.mouseChildren=false;
+            frame.graphics.lineStyle(1,0xb1ae86);frame.graphics.beginFill(0xffffe8);
+            frame.graphics.drawRoundRect(x,y,width,height,8);frame.graphics.endFill();
+            frame.filters=[new flash.filters.DropShadowFilter(2,90,0,.25,8,8,1,2)];
+            parent.addChild(frame);return;
+         }
          var template:com.ankamagames.boufbowl.client.components.MessageBoxResizableTextUI=new com.ankamagames.boufbowl.client.components.MessageBoxResizableTextUI();
          var skin:flash.display.MovieClip=template.textBackgroundInstance;
          template.removeChild(skin);skin.width=width;skin.height=height;skin.x=x;skin.y=y;
@@ -41,7 +50,9 @@
       private static function serverHeading(parent:Sprite,title:String,x:int,y:int,width:int):TextField {
          var field:TextField=serverText(parent,title,x,y,width);
          var format:TextFormat=field.defaultTextFormat;format.font="Copperplate Gothic Bold";format.bold=false;format.size=17;format.color=0x738c38;
-         field.defaultTextFormat=format;field.text=serverCaption(title);field.height=32;return field;
+         field.defaultTextFormat=format;field.text=serverCaption(title);
+         if(flash.system.Capabilities.playerType == "PlugIn") field.setTextFormat(format);
+         field.height=32;return field;
       }
       private static function serverRows(parent:Sprite,x:int,y:int,width:int,height:int,step:int):void {
          var rows:Sprite=new Sprite();rows.x=x;rows.y=y;rows.mouseEnabled=false;rows.mouseChildren=false;

@@ -351,5 +351,6 @@ the two previously unmapped heart backgrounds. See [visual assets](docs/visual-a
 The top Accueil/Quitter/Club toolbar appears outside matches only. Power numbers
 show actual nonzero bonuses/maluses instead of +0, and power descriptions contain
 only their effects. Regeneration was verified across six real turns and a restart.
-[Browser playback options](docs/browser-play.md) explain a self-hosted Ruffle
-prototype and the compatibility checks still required.
+[Browser playback options](docs/browser-play.md) explain how to launch the included
+self-hosted Ruffle prototype, its startup compatibility fixes, and the gameplay
+checks still required.

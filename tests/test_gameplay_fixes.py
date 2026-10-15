@@ -104,6 +104,10 @@ class GameplayFixTests(unittest.TestCase):
             self.assertEqual({(-x-y,y) for x,y in cells}, {(c['x'],c['y']) for c in lz['cell']})
         self.assertEqual(len(right[1]['cell']),48)
         self.assertEqual(len(right[3]['cell']),40)
+        # The yellow back-right region includes the upper outer strip, above
+        # the cyan back-left region; its small inner extension is also legal.
+        yellow = {(p['x'] + p['y']//2, p['y']) for p in right[2]['cell']}
+        self.assertTrue({(c,r) for c in range(8,12) for r in range(1,11)} <= yellow)
         self.assertEqual(placement_zones(1,2),right)
         self.assertEqual(placement_zones(2,2),left)
         self.assertTrue(all(c['y']>0 for c in right[1]['cell']))

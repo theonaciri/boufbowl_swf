@@ -19,6 +19,20 @@ original = args.original or root.parent / "swf_sources/boufbowl_client/bin/boufb
 config = load_config(args.config)
 config_source = args.config.read_bytes()
 classes = [
+    "com.ankamagames.xgaming.audio.controller.AbstractTracksController",
+    "com.ankamagames.xgaming.audio.controller.ConcurrentTracksManager",
+    "com.ankamagames.boufbowl.ui.components.tooltip.Tooltip",
+    "com.ankamagames.xgaming.ui.components.Slider",
+    "com.ankamagames.boufbowl.client.ui.SliderTrack",
+    "away3d.core.session.AbstractSession",
+    "com.ankamagames.boufbowl.client.chat.ChatContextPart",
+    "com.ankamagames.boufbowl.client.chat.view.ChatMediator",
+    "com.ankamagames.boufbowl.ui.components.chat.ChannelButton",
+    "org.swiftsuspenders.injectionpoints.ConstructorInjectionPoint",
+    "com.ankamagames.jerakine.types.Uri",
+    "com.ankamagames.jerakine.resources.adapters.impl.SwlAdapter",
+    "com.ankamagames.xgaming.ui.components.FlashInstanceContainer",
+    "com.ankamagames.boufbowl.resolution.display.camera.BoufbowlCamera",
     "com.ankamagames.boufbowl.client.match.controller.StopSpectatingCommand",
     "com.ankamagames.boufbowl.protocol.ClassOrderTarget",
     "com.ankamagames.boufbowl.client.match.resolution.interactions.ClassOrderBuffFunction",

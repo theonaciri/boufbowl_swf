@@ -9,6 +9,8 @@ package com.ankamagames.boufbowl.client.match.resolution.controller
    import com.ankamagames.boufbowl.config.IBoufbowlConfig;
    import com.ankamagames.boufbowl.protocol.ClassOrderInformation;
    import flash.events.Event;
+   import flash.system.Capabilities;
+   import com.ankamagames.xgaming.utils.flashvars.FlashVarsManager;
    import org.robotlegs.mvcs.Command;
    
    public class ComputeResolutionCommand extends Command
@@ -30,6 +32,11 @@ package com.ankamagames.boufbowl.client.match.resolution.controller
       
       override public function execute() : void
       {
+         // The browser launcher explicitly requests animation. Do not let an
+         // old menu-mode config or a hidden options checkbox silently skip it.
+         if(Capabilities.playerType == "PlugIn" &&
+            FlashVarsManager(injector.getInstance(FlashVarsManager)).getValue("scene3d") == "1")
+            this._config.activate3DScene = true;
          StartUpApplicationCommand.filterBallCutscenes(this._match.resolutionMessage);
          var _loc1_:ClassOrderInformation = null;
          var _loc2_:IBoufbowlerInMatchModel = null;

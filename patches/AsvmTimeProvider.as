@@ -1,6 +1,7 @@
 package com.ankamagames.boufbowl.resolution.display.script.runner
 {
    import flash.utils.getTimer;
+   import flash.system.Capabilities;
    public class AsvmTimeProvider implements ITimeProvider
    {
       public static var replayMultiplier:Number = 1;
@@ -10,7 +11,11 @@ package com.ankamagames.boufbowl.resolution.display.script.runner
       public function AsvmTimeProvider() { super(); }
       private static function now() : int {
          var wall:int=getTimer();
-         virtualTime += Math.max(0,wall-lastWall)*(replayPaused ? 0 : replayMultiplier);
+         var elapsed:int=Math.max(0,wall-lastWall);
+         // Do not fast-forward an entire scene after a hidden tab, resource
+         // upload or a slow browser frame. Native Flash keeps its wall clock.
+         if(Capabilities.playerType == "PlugIn") elapsed=Math.min(100,elapsed);
+         virtualTime += elapsed*(replayPaused ? 0 : replayMultiplier);
          lastWall=wall;return int(virtualTime);
       }
       public static function configure(multiplier:Number,paused:Boolean) : void {

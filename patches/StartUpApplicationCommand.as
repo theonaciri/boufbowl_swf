@@ -73,6 +73,8 @@ package com.ankamagames.boufbowl.client.application.controller
          {
          app = injector.getInstance(ApplicationContext);
          vars = injector.getInstance(FlashVarsManager);
+         if(vars.getValue("scene3d") == "1")
+            IBoufbowlConfig(injector.getInstance(IBoufbowlConfig)).activate3DScene = true;
          seedData();
          if(vars.getValue(FlashVars.TUTORIAL) == "1")
             displayer().displayTutorial();

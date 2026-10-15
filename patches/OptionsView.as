@@ -1,6 +1,8 @@
 package com.ankamagames.boufbowl.client.options.view
 {
    import as3.collections.iterators.IMapIterator;
+   import com.ankamagames.boufbowl.client.ui.Slider;
+   import com.ankamagames.xgaming.audio.controller.AbstractTracksController;
    import com.ankamagames.boufbowl.client.application.IColorScheme;
    import com.ankamagames.boufbowl.client.application.sound.event.InterfaceSoundEvent;
    import com.ankamagames.boufbowl.client.application.sound.event.InterfaceSoundEvents;
@@ -20,6 +22,9 @@ package com.ankamagames.boufbowl.client.options.view
    public class OptionsView extends OptionsUI
    {
       
+      private var _volumeRow:Sprite;
+      private var _fxVolume:Slider;
+      private var _musicVolume:Slider;
       private var _languageRow:Sprite;
       private var _languageButton:Sprite;
       private var _languageValue:TextField;
@@ -47,6 +52,8 @@ package com.ankamagames.boufbowl.client.options.view
       
       public function show() : void
       {
+         this._fxVolume.value = AbstractTracksController.fxVolume;
+         this._musicVolume.value = AbstractTracksController.musicVolume;
          this.updateLanguageChoice();
          this.layoutOptions();
          soundCheckbox.selected = this._config.soundEnabled;
@@ -70,6 +77,7 @@ package com.ankamagames.boufbowl.client.options.view
          this.initUI();
          this.initTexts();
          this.initLanguageChoice();
+         this.initVolumeSliders();
       }
       
       private function initUI() : void
@@ -111,6 +119,34 @@ package com.ankamagames.boufbowl.client.options.view
          field.text=text; field.x=x; field.y=y; field.width=width; field.height=22;
          field.selectable=false; field.mouseEnabled=false; parent.addChild(field);
          return field;
+      }
+
+      private function initVolumeSliders() : void
+      {
+         this._volumeRow = new Sprite();
+         addChild(this._volumeRow);
+         var labels:Object = {fr:["Volume des effets", "Volume de la musique"],en:["FX volume", "Music volume"],de:["Effektlautstärke", "Musiklautstärke"],es:["Volumen de efectos", "Volumen de música"]};
+         var text:Array = labels[this._translator.language] || labels.en;
+         this._fxVolume = this.createVolumeSlider(String(text[0]),0,"fxVolume");
+         this._musicVolume = this.createVolumeSlider(String(text[1]),35,"musicVolume");
+      }
+
+      private function createVolumeSlider(label:String, rowY:Number, sliderName:String) : Slider
+      {
+         this.languageText(this._volumeRow,label,0,rowY+2,185);
+         var slider:Slider = new Slider();
+         slider.name = sliderName;
+         slider.x = soundMasterVolume.x;
+         slider.y = rowY + 10;
+         slider.width = soundMasterVolume.width;
+         slider.thumbColor = this._colorScheme.checkboxBoxColor;
+         this._volumeRow.addChild(slider);
+         return slider;
+      }
+
+      public function saveAudioVolumes() : void
+      {
+         AbstractTracksController.saveCategoryVolumes(this._fxVolume.value,this._musicVolume.value);
       }
 
       private function initLanguageChoice() : void
@@ -184,8 +220,15 @@ package com.ankamagames.boufbowl.client.options.view
             {
                _loc4_.y = _loc5_;
                _loc5_ += _loc4_.height;
+               if(_loc4_ == soundContainer)
+               {
+                  this._volumeRow.x = soundContainer.x;
+                  this._volumeRow.y = _loc5_;
+                  _loc5_ += 75;
+               }
             }
          }
+         this._volumeRow.visible = soundContainer.visible;
          this._languageRow.x=soundContainer.x;
          this._languageRow.y=_loc5_+5;
          _loc5_+=75;

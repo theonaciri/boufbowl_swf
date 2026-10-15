@@ -54,6 +54,7 @@ package com.ankamagames.boufbowl.client.options.view
       private function closeButtonClickHandler(param1:MouseEvent) : void
       {
          this._view.saveLanguage();
+         this._view.saveAudioVolumes();
          var _loc2_:OptionsDescriptor = new OptionsDescriptor(this._view.soundCheckbox.selected,this._view.soundMasterVolume.value,this._view.chronoCheckbox.selected,this._view.scene3dCheckbox.selected,this._view.statsCheckbox.selected,this._view.serverHost,parseInt(this._view.serverPort));
          dispatch(new InterfaceSoundEvent(InterfaceSoundEvents.OPTIONS_CLOSE_BUTTON_CLICKED));
          dispatchToModules(new SetOptionsEvent(_loc2_));

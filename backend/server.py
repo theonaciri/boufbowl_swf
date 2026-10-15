@@ -4,6 +4,7 @@ import argparse
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
+import hashlib
 import os
 import ssl
 import ipaddress
@@ -70,6 +71,23 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         route = urlsplit(self.path).path
+        if route == "/api/client":
+            client = Path(self.directory) / "bin/boufbowl-client-1.9.6.swf"
+            digest = hashlib.sha256(client.read_bytes()).hexdigest()
+            self.json_response({"url": "/bin/boufbowl-client-1.9.6.swf?v=" + digest})
+            return
+        if route == "/__mock_trace":
+            # The shipped client emits optional launcher diagnostics here.
+            self.send_response(204)
+            self.end_headers()
+            return
+        if route == "/resources/config.json":
+            # Standalone server clients need the same resolution scene override
+            # as play.py's server mode. The on-disk default is for menu mode.
+            config = json.loads((Path(self.directory) / "resources/config.json").read_text())
+            config["3dActivated"] = "true"
+            self.json_response(config)
+            return
         if route == "/api/health":
             self.json_response({"ok": True, "service": "boufbowl-offline", "protocol": "1.9.6", "schema_version": 8,
                                 "rules_version": self.server.service.config["rules_version"]})
@@ -82,15 +100,24 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
-        if not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/")):
+        super().do_GET()
+
+    def send_head(self):
+        # Apply the static-file allowlist to both GET and HEAD requests.
+        route = urlsplit(self.path).path
+        if route == "/":
+            self.path = "/browser.html"
+            route = "/browser.html"
+        if route != "/browser.html" and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
             self.send_error(404)
             return
         resolved = Path(self.translate_path(unquote(route))).resolve()
-        allowed = [Path(self.directory).resolve() / name for name in ("bin", "assets", "resources")]
-        if not any(resolved.is_relative_to(directory) for directory in allowed):
+        root = Path(self.directory).resolve()
+        allowed = [root / name for name in ("bin", "assets", "resources", "vendor/ruffle")]
+        if resolved != root / "browser.html" and not any(resolved.is_relative_to(directory) for directory in allowed):
             self.send_error(404)
             return
-        super().do_GET()
+        return super().send_head()
 
 
 def main():
