@@ -30,7 +30,7 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
-STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
+STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
                 "admin.css", "admin.js", "moderation.js", "tournaments.js",
                 "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")

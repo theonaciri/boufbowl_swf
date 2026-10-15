@@ -39,8 +39,8 @@ Le certificat Android est conservé hors du dépôt dans le cache des outils.
 
 ## Interactions et accessibilité
 
-Les trois onglets des vestiaires changent les captures et leurs descriptions ;
-les flèches gauche/droite et les touches Début/Fin naviguent entre les onglets.
+Les ateliers des vestiaires changent de classe, de variante et de pose, puis
+détaillent les ressources visuelles et sonores retrouvées (voir ci-dessous).
 Le bouton de mêlée produit une onomatopée, sans lecture sonore automatique.
 Les annonces textuelles utilisent une région accessible. Les fenêtres de vidéo
 et de bénévolat sont des dialogues natifs avec fermeture par Échap ; la vidéo
@@ -49,7 +49,7 @@ pas un formulaire qui transmet des données au serveur.
 
 Le menu mobile expose son état. Les révélations au défilement et les animations
 respectent `prefers-reduced-motion`, et une commande en pied de page les suspend.
-Le contenu est visible sans JavaScript. Les polices sont locales, avec leurs
+Le contenu est visible sans JavaScript. Les polices Barlow sont locales, avec leurs
 licences OFL. La page n’ajoute aucun cookie ou identifiant de suivi.
 
 ## Visuels et provenance
@@ -111,3 +111,53 @@ avec QEMU et les bibliothèques amd64 de compilation croisée. Le chemin de l’
 AAPT2 a été fourni à Gradle via `JAVA_TOOL_OPTIONS` et la propriété
 `org.gradle.project.android.aapt2FromMavenOverride`. Ces dépendances restent hors
 du dépôt ; l’APK distribué demeure une application Android ARM64 native AIR.
+
+## Ateliers de restauration en HTML
+
+`restoration.js` et `restoration.css` recréent le vestiaire, le sélecteur des
+stades et un studio d’écoute, sans charger Ruffle. La capture de référence fournie
+par le porteur du projet est conservée en WebP et peut être affichée en comparaison.
+Les 14 icônes de classes et le petit aperçu Crâ sont découpés dans cette capture.
+Les illustrations transparentes des 28 variantes classiques et des 18 légendes
+sont exportées depuis `cutscene-boufbowler-repository.swf`, avec les classes et
+la colorisation du client original, via `IllustrationViewFactory`. Les trois
+poses sont vestiaire, victoire et face-à-face : 138 images au total. Les outils
+et SWF temporaires de capture ne sont pas distribués. Les polices de l’atelier
+sont celles intégrées au client, avec leurs métadonnées d’origine ; les polices
+Barlow du reste de la page conservent leurs licences OFL.
+
+La sélection de classe, de genre, de pose et de légende ne modifie aucune équipe
+sur le serveur. Le nom saisi est un surnom local, non enregistré. Le bouton OK
+ouvre un bilan et permet de préparer une proposition d’aide contextualisée.
+La grille des états distingue dessins, corps animés et fidélité des couleurs.
+La petite image de terrain est explicitement une référence Crâ, pas une preuve
+que le corps d’une autre classe a été restauré.
+
+L’inventaire se régénère avec :
+
+```sh
+python3 -m tools.build_restoration_data
+python3 -m tools.build_restoration_data --check
+python3 -m unittest tests.test_restoration_inventory -v
+```
+
+Il lit les skins, les configurations des stades, le manifeste sonore et les
+références MP3 du client compilé. Il déduplique les alias, ajoute les fichiers
+présents hors références et exclut les chemins sortant du dépôt. Le périmètre
+est explicite : une présence sur disque ne prouve ni l’exhaustivité de l’archive,
+ni la fidélité d’une restitution. L’heure/date du bilan n’est pas un pourcentage
+éditorial de progression. Les couleurs restent à vérifier ; seuls cinq corps
+classiques sont retrouvés. Les surfaces 2D des neuf terrains existent, tandis que
+seule la géométrie originale de Cania est disponible. Les variantes de textures
+ne sont pas présentées comme des décors 3D originaux.
+
+La sélection des stades détaille les fichiers de tactique, de résolution et
+d’ambiance. Un fichier manquant n’est jamais proposé à la lecture. Le studio
+permet de rechercher et filtrer les bruitages, ambiances et voix. Les deux
+ateliers partagent un lecteur unique et un oscillogramme des données audio
+réelles ; aucun son ne démarre sans action. L’animation respecte la réduction
+des mouvements et la commande générale de pause des animations.
+
+Les téléchargements Desktop et Android sont mis en avant. La version Web est
+identifiée comme expérimentale, lente, buguée et instable avec Ruffle. Un appel
+à bénévoles dédié permet de proposer de l’aide sur la compatibilité Web.
