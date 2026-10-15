@@ -210,6 +210,11 @@
   transform: translateY(2px);
   box-shadow: 0 1px 0 #9da582;
 }
+#character-html,
+.stadium-workbench,
+.sound-workbench {
+  background: #ffffffcf;
+}
 .character-workbench {
   display: grid;
   grid-template-columns: 24% 36% 40%;
