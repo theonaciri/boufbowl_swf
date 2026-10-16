@@ -1,5 +1,21 @@
          // Temporary export callback, injected only into a separate capture SWF.
          var siteIllustration:flash.display.DisplayObject;
+         var siteSprites:as3.collections.ArrayList;
+         var siteCharacterKey:String="";
+         var siteCharacterInitializations:uint=0;
+         flash.external.ExternalInterface.addCallback("siteCharacterInitializations",function():uint{return siteCharacterInitializations;});
+         var siteRequest:String="";
+         var siteSkin:String="";
+         var siteFrames:uint=0;
+         var siteStage:Stage=Stage(app.contextInjector.getInstance(Stage));
+         siteStage.addEventListener(flash.events.Event.EXIT_FRAME,function(event:flash.events.Event):void {
+            if(siteIllustration!=null && siteIllustration.stage!=null)siteFrames++;
+         });
+         flash.external.ExternalInterface.addCallback("siteStatus",function():String {
+            if(siteDomain==null || siteActionDomain==null || siteIllustration==null)return "LOADING";
+            var clip:flash.display.MovieClip=Object(siteIllustration).cig_1 as flash.display.MovieClip;
+            return siteRequest+"|"+siteFrames+"|"+(clip==null ? "" : clip.currentLabel)+"|"+(clip==null ? "" : flash.utils.getQualifiedClassName(clip));
+         });
          var siteDomain:flash.system.ApplicationDomain;
          var siteActionDomain:flash.system.ApplicationDomain;
          var siteLoader:flash.display.Loader=new flash.display.Loader();
@@ -13,7 +29,7 @@
             siteActionDomain=siteActionLoader.contentLoaderInfo.applicationDomain;
          });
          siteActionLoader.load(new flash.net.URLRequest("../assets/artworks/cutscene-illustration.swf"),new flash.system.LoaderContext(false,new flash.system.ApplicationDomain(flash.system.ApplicationDomain.currentDomain)));
-         flash.external.ExternalInterface.addCallback("siteRender",function(cls:int,gender:int,hero:int,pose:String,hair:uint,skin:uint,eyes:uint):String {
+         flash.external.ExternalInterface.addCallback("siteRender",function(cls:int,gender:int,hero:int,pose:String,hair:uint,skin:uint,eyes:uint,request:String):String {
             try {
                if(siteDomain==null || siteActionDomain==null)return "LOADING";
                if(siteIllustration!=null && siteIllustration.parent!=null)siteIllustration.parent.removeChild(siteIllustration);
@@ -28,6 +44,9 @@
                   group.name="cig_1";group.transform.matrix=old.transform.matrix;
                   illustration.removeChild(old);Object(illustration).cig_1=group;illustration.addChild(group);
                }
+               var characterKey:String=cls+":"+gender+":"+hero+":"+hair+":"+skin+":"+eyes;
+               if(siteCharacterKey!=characterKey) {
+               siteCharacterInitializations++;
                var colors:as3.collections.Map=new as3.collections.Map();
                colors.addItem(1,Color3.fromRgbUInt(hair));
                colors.addItem(2,Color3.fromRgbUInt(eyes));
@@ -36,9 +55,12 @@
                colors.addItem(5,Color3.fromRgbUInt(0x3578cf));
                var sprites:as3.collections.ArrayList=new as3.collections.ArrayList();
                sprites.addItem(new com.ankamagames.boufbowl.client.club.view.ClubIllustrationBoufbowlerSprite(cls,gender,hero,colors));
-               illustration.initFrom(sprites,null);
+               siteSprites=sprites;siteCharacterKey=characterKey;
+               }
+               illustration.initFrom(siteSprites,null);
                var st:Stage=Stage(app.contextInjector.getInstance(Stage));
-               for(var i:int=0;i<st.numChildren;i++)st.getChildAt(i).visible=false;
+               while(st.numChildren>0)st.removeChildAt(st.numChildren-1);
+               siteRequest=request;siteSkin="cg_"+(hero!=0 ? hero : cls*10+gender);siteFrames=0;
                st.addChild(illustration);siteIllustration=illustration;
                return "READY";
             }catch(e:Error){return "ERROR: "+e.toString();}
@@ -68,5 +90,6 @@
             siteIllustration.scaleX=siteIllustration.scaleY=500/Math.max(1,bounds.height);
             siteIllustration.x=512-(bounds.x+bounds.width/2)*siteIllustration.scaleX;
             siteIllustration.y=35-bounds.y*siteIllustration.scaleY;
+            siteFrames=0;
             return bounds.toString();
          });

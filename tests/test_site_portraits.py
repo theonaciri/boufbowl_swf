@@ -47,3 +47,40 @@ class SitePortraitTests(unittest.TestCase):
                 self.assertEqual({e['pose'] for e in exports}, set(POSES))
                 # The old Jack exports reused the same bitmap for two actions.
                 self.assertEqual(len({e['sha256'] for e in exports}), len(POSES))
+
+    def test_cache_only_invalidates_changed_character_colors_or_renderer(self):
+        from copy import deepcopy
+        from tools.site_portraits import render_fingerprint
+        settings=json.loads((ROOT/'resources/palettes.json').read_text())
+        characters=json.loads((ROOT/'assets/site/restoration/inventory.json').read_text())['characters']
+        baseline=export_plan(characters,settings)
+        changed=deepcopy(settings)
+        palette=changed['class_palettes'][0]
+        palette.setdefault('defaults',{}).setdefault('male',{})['hair']='123456'
+        updated=export_plan(characters,changed)
+        inputs={'tools/site_portrait_capture.js':'renderer-one'}
+        affected=[]
+        for before,after in zip(baseline,updated):
+            if render_fingerprint(before,inputs)!=render_fingerprint(after,inputs):affected.append(before)
+        self.assertEqual(len(affected),len(POSES))
+        self.assertTrue(all(t['cls']==palette['class_id'] and t['gender']==1 and not t['hero'] for t in affected))
+        self.assertNotEqual(render_fingerprint(baseline[0],inputs),render_fingerprint(baseline[0],{'tools/site_portrait_capture.js':'renderer-two'}))
+
+    def test_cache_rejects_missing_legacy_or_modified_images(self):
+        import hashlib
+        from pathlib import Path
+        import tempfile
+        from tools.site_portraits import render_fingerprint, reusable
+        task={'id':'example','pose':'default'}
+        inputs={'renderer':'one'}
+        original=ROOT/'assets/site/restoration/cra-1-default.webp'
+        with tempfile.TemporaryDirectory() as temporary:
+            path=Path(temporary)/'portrait.webp'
+            entry={**task,'render_fingerprint':render_fingerprint(task,inputs),'sha256':hashlib.sha256(original.read_bytes()).hexdigest()}
+            self.assertFalse(reusable(task,entry,path,inputs))
+            path.write_bytes(original.read_bytes())
+            self.assertTrue(reusable(task,entry,path,inputs))
+            legacy=dict(entry);legacy.pop('render_fingerprint')
+            self.assertFalse(reusable(task,legacy,path,inputs))
+            path.write_bytes(b'broken image')
+            self.assertFalse(reusable(task,entry,path,inputs))

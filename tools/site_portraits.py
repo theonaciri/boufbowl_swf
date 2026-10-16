@@ -102,9 +102,33 @@ def export_plan(characters, settings):
             for pose, (_, symbol) in POSES.items():
                 tasks.append({'id': c['id'] + '-' + pose,
                               'character': c['id'], 'cls': c['class_id'], 'gender': c['gender'],
-                              'hero': c['hero'], 'style': style, 'palette': p['id'],
+                              'hero': c['hero'], 'style': style, 'palette': p['id'], 'native_group': GROUPS.get(pose,symbol),
                               'colors': colors, 'pose': pose, 'symbol': 'action:'+symbol if pose.startswith('action-') else 'alternate' if pose == 'alternate' else symbol})
     return tasks
+
+
+def renderer_inputs(root=ROOT):
+    root=Path(root)
+    files=['tools/site_portrait_capture.as.inc','tools/site_portrait_capture.js',
+           'patches/StartUpApplicationCommand.as','tools/game_config.py','tools/visual_assets.py',
+           'bin/boufbowl-client-1.9.6.swf','resources/game_config.json','vendor/ruffle/ruffle.js','assets/artworks/cutscene-boufbowler-repository.swf',
+           'assets/artworks/cutscene-illustration.swf']
+    files += [p.relative_to(root).as_posix() for p in sorted((root/'vendor/ruffle').glob('*.wasm'))]
+    return {p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in files}
+
+
+def render_fingerprint(task, inputs):
+    relevant={k:v for k,v in inputs.items() if task['pose'].startswith('action-') or not k.endswith('cutscene-illustration.swf')}
+    return hashlib.sha256(json.dumps({'task':task,'inputs':relevant,'height':1080,'quality':92},sort_keys=True).encode()).hexdigest()
+
+
+def reusable(task, entry, path, inputs):
+    try:
+        return (entry.get('render_fingerprint')==render_fingerprint(task,inputs)
+                and all(entry.get(k)==v for k,v in task.items()) and webp_size(path)[1]==1080
+                and entry.get('sha256')==hashlib.sha256(Path(path).read_bytes()).hexdigest())
+    except (OSError, ValueError, struct.error):
+        return False
 
 
 def webp_size(path):
@@ -132,22 +156,31 @@ def manifest(root=ROOT):
     characters = json.loads((root/'assets/site/restoration/inventory.json').read_text())['characters']
     audit_native_poses(characters, root)
     settings = json.loads((root/'resources/palettes.json').read_text())
+    previous_path=root/'assets/site/restoration/portraits.json'
+    previous={e['id']:e for e in json.loads(previous_path.read_text()).get('exports',[])} if previous_path.exists() else {}
+    cache_path=root/'.local/website/portrait-cache.json'
+    cache=json.loads(cache_path.read_text()) if cache_path.exists() else {}
     exports = []
     for task in export_plan(characters, settings):
         path = 'assets/site/restoration/' + task['id'] + '.webp'
         width, height = webp_size(root/path)
         if height != 1080:
             raise ValueError('Portrait not exported at double resolution: ' + path)
+        digest=hashlib.sha256((root/path).read_bytes()).hexdigest()
+        prior=cache.get(task['id'],{})
+        if prior.get('sha256')!=digest:prior=previous.get(task['id'],{})
         exports.append({**task, 'path': path, 'width': width, 'height': height,
-                        'sha256': hashlib.sha256((root/path).read_bytes()).hexdigest()})
+                        'render_fingerprint':prior.get('render_fingerprint') if prior.get('sha256')==digest else None,
+                        'sha256':digest})
     data = {
         'version': 1, 'source': 'assets/artworks/cutscene-boufbowler-repository.swf',
         'source_sha256': hashlib.sha256((root/'assets/artworks/cutscene-boufbowler-repository.swf').read_bytes()).hexdigest(),
         'action_source': 'assets/artworks/cutscene-illustration.swf',
         'action_source_sha256': hashlib.sha256((root/'assets/artworks/cutscene-illustration.swf').read_bytes()).hexdigest(),
         'palettes_sha256': hashlib.sha256((root/'resources/palettes.json').read_bytes()).hexdigest(),
+        'renderer_inputs':renderer_inputs(root),
         'render': {'character_height': 1000, 'canvas_height': 1080, 'previous_canvas_height': 540,
-                   'transparent': True, 'team_color': '3578cf'},
+                   'transparent': True, 'team_color': '3578cf', 'encoder': 'chromium-webp', 'quality': 0.92},
         'poses': [{'id': key, 'label': value[0], 'symbol': value[1], 'native_group': GROUPS.get(key,value[1])}
                   for key, value in POSES.items()],
         'exports': exports,

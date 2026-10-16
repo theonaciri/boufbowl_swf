@@ -27,18 +27,34 @@ export async function createPortraitPlayer(mount, captureSWF) {
 
 export async function capturePortrait(player, task) {
   const api = player.ruffle();
-  let ready;
-  for (let attempt = 0; attempt < 40; attempt++) {
-    ready = api.callExternalInterface("siteRender", task.cls, task.gender, task.hero, task.symbol,
-      parseInt(task.colors.hair, 16), parseInt(task.colors.skin, 16), parseInt(task.colors.eyes, 16));
-    if (ready === "READY") break;
-    if (ready !== "LOADING") throw Error(ready);
-    await wait(200);
+  api.resume();
+  const request = task.id + ":" + crypto.randomUUID();
+  const deadline = performance.now() + 60000;
+  async function until(check, message) {
+    while (performance.now() < deadline) {
+      try { if (check()) return; } catch (error) {
+        if (String(error).includes("ERROR:")) throw error;
+      }
+      await wait(20);
+    }
+    throw Error(message + ": " + task.id);
   }
-  if (ready !== "READY") throw Error("Original illustration libraries did not load");
-  await wait(160);
+  await until(() => {
+    const ready = api.callExternalInterface("siteRender", task.cls, task.gender, task.hero, task.symbol,
+      parseInt(task.colors.hair, 16), parseInt(task.colors.skin, 16), parseInt(task.colors.eyes, 16), request);
+    if (String(ready).startsWith("ERROR:")) throw Error(ready);
+    return ready === "READY";
+  }, "Original illustration libraries did not load");
+  const expectedLabel = "cg_" + (task.hero || task.cls * 10 + task.gender);
+  const rendered = (frames) => {
+    const status = String(api.callExternalInterface("siteStatus")).split("|");
+    return status[0] === request && Number(status[1]) >= frames && status[2] === expectedLabel && status[3]?.split("::").pop() === task.native_group;
+  };
+  await until(() => rendered(1), "Requested native character frame did not initialize");
   const bounds = api.callExternalInterface("sitePreview");
-  await wait(90);
+  await until(() => rendered(2), "Requested pose did not finish rendering");
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
   const match = bounds.match(/w=([\d.]+), h=([\d.]+)/);
   if (!match) throw Error("Missing native pose bounds: " + bounds);
   const logicalWidth = Number(match[1]) * 500 / Number(match[2]);
@@ -47,25 +63,37 @@ export async function capturePortrait(player, task) {
   output.height = 1080;
   const source = player.shadowRoot.querySelector("canvas");
   const sourceScale = source.height / 600;
-  if (logicalWidth + 40 > source.width / sourceScale) {
-    // Some cinematic effects extend beyond the stage; export them without clipping.
+  async function webp() {
+    const blob = await new Promise((resolve) => output.toBlob(resolve, "image/webp", 0.92));
+    if (!blob || blob.type !== "image/webp") throw Error("WebP encoding unavailable");
+    return {id: task.id, blob, width: output.width, height: output.height};
+  }
+  async function nativeFallback() {
+    api.suspend();
     const png = api.callExternalInterface("sitePNG");
     if (!png || png.startsWith("ERROR")) throw Error(png);
-    return { id: task.id, png, width: output.width, height: output.height };
+    const bytes = Uint8Array.from(atob(png), (c) => c.charCodeAt(0));
+    const bitmap = await createImageBitmap(new Blob([bytes], {type: "image/png"}));
+    output.width = bitmap.width; output.height = bitmap.height;
+    output.getContext("2d").drawImage(bitmap, 0, 0);
+    bitmap.close();
+    const pixels = output.getContext("2d").getImageData(0, 0, output.width, output.height).data;
+    let visible = 0;
+    for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) visible++;
+    if (visible < 1000) throw Error("Empty native bitmap: " + task.id);
+    return webp();
   }
+  if (logicalWidth + 40 > source.width / sourceScale) return nativeFallback();
   const context = output.getContext("2d");
   context.drawImage(source,
     (512 - logicalWidth / 2 - 20) * sourceScale, 15 * sourceScale,
     output.width / 2 * sourceScale, 540 * sourceScale,
     0, 0, output.width, output.height);
+  // The next pose resumes the isolated player. Encoding and HTTP uploads need no game frames.
+  api.suspend();
   const pixels = context.getImageData(0, 0, output.width, output.height).data;
   let visiblePixels = 0;
   for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) visiblePixels++;
-  if (visiblePixels < 1000) {
-    const png = api.callExternalInterface("sitePNG");
-    if (!png || png.startsWith("ERROR")) throw Error("Empty native portrait: " + task.id);
-    return { id: task.id, png, width: output.width, height: output.height };
-  }
-  return { id: task.id, png: output.toDataURL("image/png").split(",")[1],
-    width: output.width, height: output.height };
+  if (visiblePixels < 1000) return nativeFallback();
+  return webp();
 }

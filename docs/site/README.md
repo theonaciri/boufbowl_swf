@@ -222,7 +222,7 @@ Aucun service de génération d’images n’est utilisé : Ruffle rend les 18 p
 natives de chaque personnage, dans ses couleurs par défaut, sur fond transparent
 à 1080 px (personnage de 1000 px de haut).
 
-Prérequis : Python 3, Java 17, FFDec 26.3.0, FFmpeg avec libwebp, Bun et le
+Prérequis : Python 3, Java 17, FFDec 26.3.0, Bun et le
 Chromium Playwright. Depuis la racine du dépôt :
 
 ```sh
@@ -248,8 +248,11 @@ Pour réparer les exports d’un personnage sans reconstruire les autres :
 python3 -m tools.build_website --ffdec /chemin/ffdec.jar --force --character hero-513
 ```
 
-L’option `--character` est répétable. Les exports restent séquentiels dans un
-seul lecteur de rendu, afin de ne pas capturer l’état d’un autre personnage.
+L’option `--character` est répétable. Chaque personnage forme un lot ; ses poses
+sont traitées séquentiellement dans un lecteur isolé. `--jobs 1`, `--jobs 2`,
+`--jobs 3` ou `--jobs 4` choisit le nombre de lecteurs indépendants. Le réglage
+par défaut est **1**, le plus rapide lors du comparatif sur ce serveur à quatre
+cœurs avec rendu graphique logiciel.
 Ajouter `--pose default` limite la réparation aux aperçus du sélecteur ; cette
 option est également répétable pour exporter plusieurs poses précises.
 
@@ -286,10 +289,81 @@ Un ajout ou une suppression de ressource rend le contrôle périmé jusqu’au b
 suivant. La progression affichée décrit les fichiers retrouvés dans le périmètre
 recensé ; elle ne mesure pas une validation de fidélité au jeu original.
 
-Mesures sur ce serveur (16 octobre 2026) : un build à jour, inventaire et livraison
-compris, prend environ **1 à 2 secondes**. Le rendu forcé des **108 poses** des six
-légendes a pris **5 min 05 s**. À cadence identique, un export complet des **828
-portraits** représente environ **39 minutes** : c’est une estimation, sensible au
-CPU et au navigateur, et non une mesure d’un build complet. L’installation initiale
-des outils et de Chromium n’est pas comprise. Chaque exécution affiche ses durées
-réelles par étape et les enregistre dans le rapport de build.
+Chaque exécution affiche ses durées par étape, la mémoire maximale du navigateur
+lorsqu’elle est mesurable sous Linux, puis une ligne finale `Total execution time`.
+Le rapport complet se trouve dans `.local/website/build-report.json`. Les durées
+mesurées du nouveau moteur et du build complet sont détaillées ci-dessous.
+
+### Rendu optimisé et cache
+
+Chaque lecteur charge les bibliothèques une seule fois. L’ActionScript prépare
+les couleurs et le modèle du personnage une seule fois pour ses 18 poses. Il
+retire l’interface du jeu du lecteur de capture. Avant chaque image, le build
+vérifie un identifiant de requête unique, le label du personnage et la classe du
+groupe d’animation natif, puis attend les cycles d’affichage nécessaires. Les
+pauses arbitraires de 160/90 ms et l’attente initiale de trois secondes ont disparu.
+
+Le navigateur encode directement les WebP transparents en qualité 0,92. Il envoie
+les octets binaires au serveur de build : ni PNG/base64 sur le chemin normal, ni
+sous-processus FFmpeg pour chaque image. Le lecteur est suspendu pendant
+l’encodage et l’envoi, puis reprend pour la pose suivante. Le repli BitmapData/PNG
+natif reste disponible pour une pose débordant de la scène ou un tampon GPU vide ;
+son résultat est ensuite encodé en WebP dans le navigateur et vérifié.
+
+La réutilisation est désormais fondée sur une empreinte **par portrait** : demande
+exacte (pose, groupe, personnage et couleurs), sources Flash nécessaires, client,
+configuration et code du rendu, version locale de Ruffle, dimensions et qualité.
+Une modification du défaut de couleur d’un personnage invalide ses 18 poses ;
+modifier une couleur inutilisée ne déclenche aucun export. Reconstruire le client
+SWF ou changer le moteur invalide tous les portraits concernés. Le manifeste
+vérifie aussi les dimensions et le SHA-256 du WebP existant. Les anciens exports
+sans empreinte de rendu sont reconstruits une fois.
+
+Le SWF de capture compilé est conservé sous `.local/website/capture/` et réutilisé
+si ses sources et le compilateur sont identiques, y compris avec `--force`.
+Chaque image terminée est enregistrée dans `.local/website/portrait-cache.json`.
+Après interruption, relancer **sans `--force`** reprend uniquement les images
+manquantes ou périmées. Si une source change pendant le build, celui-ci demande
+une nouvelle exécution au lieu de valider des métadonnées incohérentes.
+
+Pour comparer les réglages sur une autre machine :
+
+```sh
+python3 -m tools.benchmark_website --ffdec /chemin/ffdec.jar --java /chemin/java --bun /chemin/bun
+```
+
+Ce test force les mêmes 24 poses de six personnages avec un, deux et trois lecteurs,
+contrôle la résolution et la réutilisation du modèle, et produit
+`.local/website/benchmark-report.json`. Les configurations sont testées l’une après
+l’autre ; elles ne doivent pas être lancées simultanément dans le même checkout.
+Le nombre de lecteurs le plus rapide dépend de la machine et de son moteur graphique.
+
+Mesures sur ce serveur à quatre cœurs (rendu logiciel, 16 octobre 2026), temps du
+rendu incluant l’initialisation des lecteurs, hors compilation FFDec et livraison :
+
+| Lecteurs | 24 poses | RSS cumulée du navigateur (pic) |
+| --- | --- | --- |
+| 1 | 21,93 s | 1 551 Mio |
+| 2 | 27,48 s | 2 535 Mio |
+| 3 | 38,66 s | 3 590 Mio |
+
+Sur un autre échantillon identique de 18 poses, les optimisations d’encodage et de
+suspension font passer le rendu d’un lecteur de **46,30 s à 22,58 s**. Trois
+portraits de référence comparés entre les encodeurs ont une similarité SSIM
+supérieure à 0,9997 et les mêmes dimensions. Les effets animés peuvent varier
+légèrement entre captures ; le label du personnage et le groupe de pose doivent
+rester strictement ceux demandés.
+
+Les mesures et empreintes des sources sont conservées dans
+`docs/site/portrait-benchmark.json`.
+
+Le passage forcé complet des **828 portraits** a ensuite pris **10 min 27,35 s**,
+inventaire et livraison compris, avec un lecteur et le SWF de capture compilé
+déjà en cache. Le rendu seul a pris 624,69 s et la RSS cumulée du navigateur a
+atteint 2 001 Mio. Les 46 modèles de personnages ont été initialisés une fois
+chacun pour leurs 18 poses. Une première compilation du SWF ajoute son propre
+coût ; l’installation des outils n’est pas comprise.
+
+Le build suivant a réutilisé les **828 images**, avec **0 réexport**, et a pris
+**1.85 s**, inventaire et livraison compris. Le contrôle fonctionne
+aussi sans le cache local de portraits, à partir du manifeste livré.
