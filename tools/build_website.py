@@ -15,7 +15,7 @@ import time
 from tools.site_delivery import delivery, write_json
 from tools.build_legal_pages import outputs as legal_outputs
 from backend.server import site_manifest
-from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size, renderer_inputs, render_fingerprint, reusable
+from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size, renderer_inputs, render_fingerprint, reusable, capture_source
 from tools.game_config import load_config, startup_source
 from tools.build_restoration_data import audit
 from tools.site_grid_icons import build as build_grid_icons
@@ -85,7 +85,7 @@ def main():
             marker = 'createToolbar();'
             if marker not in source:
                 raise RuntimeError('Capture injection point is missing')
-            source = source.replace(marker, marker+'\n'+(ROOT/'tools/site_portrait_capture.as.inc').read_text(), 1)
+            source = source.replace(marker, marker+'\n'+capture_source(ROOT), 1)
             startup = temporary/'StartUpApplicationCommand.as'
             startup.write_text(source)
             capture = temporary/'capture.swf'

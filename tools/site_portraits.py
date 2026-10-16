@@ -8,6 +8,7 @@ import re
 import zlib
 
 ROOT = Path(__file__).resolve().parent.parent
+TEAM_COLOR_OVERRIDES = {508: '000000'}  # Evangelyne's black team kit, website exports only.
 POSES = {
     'default': ('Vestiaire', 'BoufbowlerIllustrationDefaultPosing'),
     'winner': ('Victoire', 'BoufbowlerIllustrationWinnerPosing'),
@@ -103,8 +104,22 @@ def export_plan(characters, settings):
                 tasks.append({'id': c['id'] + '-' + pose,
                               'character': c['id'], 'cls': c['class_id'], 'gender': c['gender'],
                               'hero': c['hero'], 'style': style, 'palette': p['id'], 'native_group': GROUPS.get(pose,symbol),
-                              'colors': colors, 'pose': pose, 'symbol': 'action:'+symbol if pose.startswith('action-') else 'alternate' if pose == 'alternate' else symbol})
+                              'colors': colors, **({'team_color': TEAM_COLOR_OVERRIDES[c['hero']]} if c['hero'] in TEAM_COLOR_OVERRIDES else {}), 'pose': pose, 'symbol': 'action:'+symbol if pose.startswith('action-') else 'alternate' if pose == 'alternate' else symbol})
     return tasks
+
+
+
+def capture_source(root=ROOT):
+    source = (Path(root)/'tools/site_portrait_capture.as.inc').read_text()
+    color = '0x3578cf'
+    for hero, override in TEAM_COLOR_OVERRIDES.items():
+        color = f'hero=={hero} ? 0x{override} : ({color})'
+    original = 'Color3.fromRgbUInt(0x3578cf)'
+    if source.count(original) != 2:
+        raise ValueError('Team color injection points changed; review the export override')
+    # Other characters retain exactly the same renderer and color. Only override
+    # tasks gain a team_color field, invalidating their existing cached exports.
+    return source.replace(original, f'Color3.fromRgbUInt({color})')
 
 
 def renderer_inputs(root=ROOT):
@@ -180,7 +195,7 @@ def manifest(root=ROOT):
         'palettes_sha256': hashlib.sha256((root/'resources/palettes.json').read_bytes()).hexdigest(),
         'renderer_inputs':renderer_inputs(root),
         'render': {'character_height': 1000, 'canvas_height': 1080, 'previous_canvas_height': 540,
-                   'transparent': True, 'team_color': '3578cf', 'encoder': 'chromium-webp', 'quality': 0.92},
+                   'transparent': True, 'team_color': '3578cf', 'team_color_overrides': {str(k):v for k,v in TEAM_COLOR_OVERRIDES.items()}, 'encoder': 'chromium-webp', 'quality': 0.92},
         'poses': [{'id': key, 'label': value[0], 'symbol': value[1], 'native_group': GROUPS.get(key,value[1])}
                   for key, value in POSES.items()],
         'exports': exports,

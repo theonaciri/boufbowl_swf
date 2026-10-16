@@ -236,7 +236,8 @@ python3 -m tools.build_website --check
 `--bun` acceptent aussi un chemin. Le premier build exporte tous les portraits et les 46 icônes cubiques originales
 du client (28 variantes de classes et 18 légendes). Les icônes PNG transparentes
 sont exportées à ×4 depuis les frames nommées `id_*` de `BoufbowlerCubeSprite`,
-dans `assets/site/restoration/grid-icons/`, sans recoloration. Elles servent au
+dans `assets/site/restoration/grid-icons/`, sans recoloration. Les portraits conservent la tenue bleue par défaut, avec
+une exception d’export pour Evangelyne (508), dont la tenue est noire (`000000`). Elles servent au
 sélecteur de personnages et aux raccourcis du vestiaire. Elles sont ignorées par
 Git ; leur manifeste local vérifie la source et les empreintes des exports.
 Les suivants réutilisent les fichiers dont les couleurs, sources, dimensions et
