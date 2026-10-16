@@ -59,22 +59,64 @@
     [13, 3, [[350, 385, 130, 310], [480, 390, 100, 305]]],
     [4, 3, [[575, 365, 130, 330], [705, 390, 125, 305]]],
   ];
+  // Individual in-game references supplied by the project owner. These are
+  // source screenshots, not generated portraits or restored puppet assets.
+  const characterFieldReferences = {
+    "hero-501": [
+        "assets/site/restoration/field-references/hero-501.png",
+        143,
+        320
+    ],
+    "hero-509": [
+        "assets/site/restoration/field-references/hero-509.png",
+        143,
+        320
+    ],
+    "hero-511": [
+        "assets/site/restoration/field-references/hero-511.png",
+        145,
+        282
+    ],
+    "roublard-2": [
+        "assets/site/restoration/field-references/roublard-2.png",
+        162,
+        304
+    ],
+    "hero-516": [
+        "assets/site/restoration/field-references/hero-516.png",
+        162,
+        304
+    ]
+};
   function renderFieldReference(c, sex) {
+    const individual = characterFieldReferences[c.id];
     const reference = fieldReferences.find(([id]) => id === c.class_id);
+    const available = !!(individual || reference);
     const frame = $("character-field-reference");
-    frame.hidden = !reference;
-    $("character-field-missing").hidden = !!reference;
-    $("character-field-label").textContent = reference
-      ? `RÉFÉRENCE : ${c.class_name} · ${sex}${c.hero ? " (CLASSE)" : ""}`
-      : `${c.class_name} · ${sex} : RÉFÉRENCE MANQUANTE`;
-    if (!reference) return;
-    const [, sheet, crops] = reference;
-    const [x, y, width, height] = crops[c.gender === 2 ? 0 : 1];
+    frame.hidden = !available;
+    $("character-field-missing").hidden = available;
+    $("character-field-label").textContent = individual
+      ? `RÉFÉRENCE : ${c.name} · ${sex}`
+      : reference
+        ? `RÉFÉRENCE : ${c.class_name} · ${sex}${c.hero ? " (CLASSE)" : ""}`
+        : `${c.class_name} · ${sex} : RÉFÉRENCE MANQUANTE`;
+    if (!available) return;
+    let path, sourceWidth, x, y, width, height;
+    if (individual) {
+      [path, width, height] = individual;
+      sourceWidth = width;
+      x = y = 0;
+    } else {
+      const [, sheet, crops] = reference;
+      [x, y, width, height] = crops[c.gender === 2 ? 0 : 1];
+      path = `assets/site/restoration/field-classes-${sheet}.webp`;
+      sourceWidth = 1163;
+    }
     const img = $("character-field-image");
     frame.style.aspectRatio = `${width} / ${height}`;
-    img.src = `assets/site/restoration/field-classes-${sheet}.webp`;
-    img.alt = `Référence visuelle ${c.class_name}, ${sex.toLowerCase()}, orientée vers la gauche${c.hero ? " ; référence de sa classe, pas du personnage spécial" : ""}`;
-    img.style.width = `${1163 / width * 100}%`;
+    img.src = path;
+    img.alt = `Référence visuelle ${individual ? c.name : c.class_name}, ${sex.toLowerCase()}, orientée vers la gauche${c.hero && !individual ? " ; référence de sa classe, pas du personnage spécial" : ""}`;
+    img.style.width = `${sourceWidth / width * 100}%`;
     img.style.left = `${-x / width * 100}%`;
     img.style.top = `${-y / height * 100}%`;
   }
