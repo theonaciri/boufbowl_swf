@@ -82,3 +82,9 @@ Le service utilise notamment le hachage des secrets d’authentification et le c
 ## 9. Stockage local et modifications
 
 La [notice relative aux cookies et au stockage local](cookies.md) décrit les sessions, préférences et identifiants conservés sur votre appareil. Les modifications importantes de cette politique sont portées à votre connaissance par [] ; les versions antérieures peuvent être obtenues auprès de [].
+
+## 11. Contributions à la restauration des assets
+
+Si vous proposez un fichier, nous traitons le fichier transmis, son nom attendu, son empreinte SHA-256, sa taille, sa date de réception et le résultat des contrôles de sécurité. Aucun compte ni contact n’est demandé pour cet envoi. Pour limiter les abus, l’adresse du pair réseau est transformée en empreinte HMAC avec un secret propre au serveur ; le module de contributions ne la conserve pas en clair. Les journaux d’infrastructure mentionnés plus haut peuvent avoir un traitement distinct.
+
+Les propositions restent privées et accessibles aux seuls administrateurs autorisés, avec les décisions de revue et leur auteur. Les fichiers invalides ou détectés par l’antivirus sont supprimés ; les fichiers non approuvés expirent après quatorze jours, les fichiers rejetés sont supprimés immédiatement et l’empreinte réseau des contributions est effacée après trente jours. Un fichier approuvé reste conservé pour son intégration au projet jusqu’à son intégration ou son rejet, dans la limite de stockage du service. Son approbation ne publie pas automatiquement le fichier. Finalité : restauration du jeu et prévention des abus ; base légale à préciser par l’exploitant : []. Pour exercer vos droits ou demander le retrait d’une proposition, utilisez le contact indiqué dans cette politique et la référence de réception.

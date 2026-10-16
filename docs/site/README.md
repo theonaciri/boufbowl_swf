@@ -367,3 +367,6 @@ coût ; l’installation des outils n’est pas comprise.
 Le build suivant a réutilisé les **828 images**, avec **0 réexport**, et a pris
 **1.85 s**, inventaire et livraison compris. Le contrôle fonctionne
 aussi sans le cache local de portraits, à partir du manifeste livré.
+
+Les propositions publiques de ressources et leur revue sont documentées dans
+[CONTRIBUTIONS.md](CONTRIBUTIONS.md).

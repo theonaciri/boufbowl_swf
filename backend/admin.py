@@ -18,7 +18,14 @@ class Admin:
             actor = self.store.authenticate(body.get('session'))
             self.require_moderator(actor)
             action = body.get('action', 'messages')
-            if action == 'messages':
+            if action in ('assets','asset_decision'):
+                if self.role(actor)!='admin':raise ServiceError('ADMIN_FORBIDDEN','Administrator role required')
+                manager=getattr(self,'asset_contributions',None)
+                if manager is None:raise ServiceError('ASSET_UNAVAILABLE','Asset review is not configured')
+                if action=='asset_decision':
+                    result=manager.decision(body.get('id'),body.get('decision'),actor)
+                else:result=manager.listing(body.get('state',''))
+            elif action == 'messages':
                 result = self.admin_messages(body)
             elif action == 'moderation':
                 result = self.moderation_data(actor)

@@ -140,3 +140,44 @@ class AdminTests(unittest.TestCase):
             self.service.finalize_tournament(row)
         wallet=self.service.store.profile(self.identity(self.alice))['statistics']['tournament_wallet']
         self.assertEqual(wallet,{'coins':250,'glory':50,'influence':10})
+
+    def test_asset_review_requires_administrator_and_upload_routes_reject_origin_and_filename(self):
+        from functools import partial
+        from http.server import ThreadingHTTPServer
+        from threading import Thread
+        from urllib.request import Request,urlopen
+        from urllib.error import HTTPError
+        import tempfile
+        from backend.server import Handler
+        from backend.asset_contributions import AssetContributions,catalog
+        from tools.game_config import ROOT
+        with tempfile.TemporaryDirectory() as folder:
+            manager=AssetContributions(ROOT,folder,scanner=lambda *_:'test',start=False)
+            self.service.asset_contributions=manager
+            server=ThreadingHTTPServer(('127.0.0.1',0),partial(Handler,directory=str(ROOT)))
+            server.service=self.service
+            thread=Thread(target=server.serve_forever,daemon=True);thread.start()
+            def post(route,body=None,headers=None,data=None):
+                request=Request(f'http://127.0.0.1:{server.server_port}'+route,data=data if data is not None else json.dumps(body).encode(),headers={'X-Requested-With':'BoufbowlAssets','Content-Type':'application/json',**(headers or {})})
+                try:
+                    with urlopen(request) as response:return response.status,json.load(response)
+                except HTTPError as error:
+                    with error:return error.code,json.load(error)
+            try:
+                with self.assertRaises(ServiceError):self.api('assets')
+                self.grant(self.alice,'moderator')
+                with self.assertRaises(ServiceError):self.api('assets')
+                response,_=post('/api/asset-preview',{'session':self.alice['session'],'id':'a'*32})
+                self.assertEqual(response,403)
+                self.grant(self.alice,'admin')
+                self.assertTrue(self.api('assets')['ok'])
+                item=next(iter(catalog(ROOT).values()))
+                response,_=post('/api/asset-token',{'asset':item['id'],'consent':True},{'Origin':'https://untrusted.example'})
+                self.assertEqual(response,403)
+                response,nonce=post('/api/asset-token',{'asset':item['id'],'consent':True})
+                self.assertEqual(response,200)
+                response,_=post('/api/asset-upload',headers={'X-Asset-Id':item['id'],'X-Asset-Token':nonce['token'],'X-Asset-Name':'../'+item['name']},data=b'wrong')
+                self.assertEqual(response,400)
+                self.assertEqual(manager.db.execute('SELECT COUNT(*) FROM submissions').fetchone()[0],0)
+            finally:
+                server.shutdown();server.server_close();thread.join();manager.close()

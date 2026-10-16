@@ -9,6 +9,7 @@ import os
 import ssl
 import ipaddress
 import time
+import queue
 import traceback
 from pathlib import Path
 import sys
@@ -17,6 +18,7 @@ from urllib.parse import urlsplit, unquote
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from backend.service import Service
 from backend.storage import ServiceError
+from backend.asset_contributions import AssetContributions
 from tools.flash_protocol import ProtocolError
 from tools.game_config import DEFAULT_CONFIG, ROOT, load_config
 
@@ -31,7 +33,7 @@ class BackendHTTPServer(ThreadingHTTPServer):
 
 
 STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
-                "admin.css", "admin.js", "moderation.js", "tournaments.js",
+                "admin.css", "admin.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js", "contributions.js", "contributions.css",
                 "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
 
@@ -136,6 +138,8 @@ class Handler(SimpleHTTPRequestHandler):
 
     def handle_post(self):
         route = urlsplit(self.path).path
+        if route in ('/api/asset-token','/api/asset-upload','/api/asset-preview','/api/asset-download'):
+            return self.asset_post(route)
         routes = {"/api/hello": self.server.service.hello, "/api/command": self.server.service.command,
                   "/api/poll": self.server.service.poll, "/api/replay": self.replay,
                   "/api/community": self.server.service.community,
@@ -163,6 +167,60 @@ class Handler(SimpleHTTPRequestHandler):
             response = {"ok": False, "code": "REQUEST_INVALID", "error": str(error)}
         self.json_response(response)
 
+    def asset_post(self,route):
+        manager=getattr(self.server.service,'asset_contributions',None)
+        identity=None
+        try:
+            if not manager:raise ServiceError('ASSET_UNAVAILABLE','Contributions indisponibles.')
+            if self.headers.get('Transfer-Encoding') or len(self.headers.get_all('Content-Length',[]))!=1:
+                raise ServiceError('BODY_SIZE','Longueur fixe unique obligatoire.')
+            origin=self.headers.get('Origin')
+            if origin:
+                parsed=urlsplit(origin)
+                if parsed.netloc!=self.headers.get('Host') or parsed.scheme not in ('http','https'):
+                    raise ServiceError('ASSET_ORIGIN','Origine non autorisée.')
+            if self.headers.get('X-Requested-With')!='BoufbowlAssets':
+                raise ServiceError('ASSET_ORIGIN','En-tête de contribution obligatoire.')
+            length=int(self.headers['Content-Length'])
+            ip=self.client_address[0]
+            if os.environ.get('BOUFBOWL_TRUST_CF')=='1' and ipaddress.ip_address(ip).is_loopback:
+                forwarded=self.headers.get('CF-Connecting-IP')
+                if forwarded:ip=str(ipaddress.ip_address(forwarded))
+            if route=='/api/asset-upload':
+                identity,path=manager.reserve(self.headers.get('X-Asset-Id'),self.headers.get('X-Asset-Token'),self.headers.get('X-Asset-Name',''),length,ip)
+                remaining=length;started=time.monotonic();self.connection.settimeout(10)
+                with path.open('xb') as output:
+                    while remaining:
+                        if time.monotonic()-started>120:raise ServiceError('ASSET_TIMEOUT','Envoi trop lent.')
+                        chunk=self.rfile.read1(min(65536,remaining))
+                        if not chunk:raise ServiceError('ASSET_INCOMPLETE','Envoi incomplet.')
+                        output.write(chunk);remaining-=len(chunk)
+                manager.finish(identity,path)
+                self.json_response({'ok':True,'id':identity,'state':'queued','message':'Fichier reçu en quarantaine. Aucun remplacement automatique.'})
+                return
+            if not 0<length<=8192:raise ServiceError('BODY_SIZE','Requête trop grande.')
+            self.connection.settimeout(10)
+            body=json.loads(self.rfile.read(length))
+            if not isinstance(body,dict):raise ServiceError('ASSET_INVALID','Objet attendu.')
+            if route=='/api/asset-token':
+                self.json_response(manager.token(body.get('asset'),ip,body.get('consent')));return
+            with self.server.service.store.transaction():
+                actor=self.server.service.store.authenticate(body.get('session'))
+                if self.server.service.role(actor)!='admin':raise ServiceError('ADMIN_FORBIDDEN','Administrateur requis.')
+            data,mime=(manager.preview(body.get('id'),body.get('index',0)) if route=='/api/asset-preview' else manager.original(body.get('id')))
+            self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
+            self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff')
+            self.send_header('Content-Security-Policy',"sandbox; default-src 'none'")
+            if route=='/api/asset-download':self.send_header('Content-Disposition','attachment; filename="asset.bin"')
+            self.end_headers();self.wfile.write(data)
+        except (ServiceError,ValueError,OSError,TimeoutError,queue.Full) as error:
+            if identity:manager.abort(identity)
+            code=getattr(error,'code','ASSET_INVALID')
+            payload=json.dumps({'ok':False,'code':code,'error':str(error)}).encode()
+            self.send_response(429 if code=='ASSET_LIMIT' else 403 if code in ('ADMIN_FORBIDDEN','ASSET_ORIGIN','ASSET_TOKEN') else 400)
+            self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store');self.send_header('Content-Length',str(len(payload)))
+            self.end_headers();self.wfile.write(payload)
+
     def replay(self, body):
         from backend.replay import export_replay
         service = self.server.service
@@ -178,6 +236,10 @@ class Handler(SimpleHTTPRequestHandler):
 
     def handle_get(self):
         route = urlsplit(self.path).path
+        if route == '/api/asset-catalog':
+            from backend.asset_contributions import catalog
+            self.json_response({'ok':True,'assets':list(catalog(Path(self.directory)).values())})
+            return
         if route == "/api/site":
             self.json_response(site_manifest(Path(self.directory).resolve()))
             return
@@ -256,6 +318,7 @@ def main():
     service = Service(args.database, load_config(args.config))
     server = BackendHTTPServer((args.host, args.port), partial(Handler, directory=str(ROOT)))
     server.service = service
+    service.asset_contributions=AssetContributions(ROOT,args.database.parent/"asset-contributions")
     if args.tls_cert:
         context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(args.tls_cert,args.tls_key)
@@ -267,6 +330,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        service.asset_contributions.close()
         service.stop()
         server.server_close()
         service.close()

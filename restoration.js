@@ -193,6 +193,11 @@
     $("character-body-note").textContent = c.body_available
       ? `Le fichier ${c.body_path.split("/").pop()} est présent. La fidélité des mouvements reste à tester.`
       : "Le jeu utilise un corps Crâ de secours. Avoir l’illustration ne signifie pas avoir les pièces du pantin animé.";
+    document.querySelector('#character-upload')?.remove();
+    if (!c.body_available && window.AssetContributions) {
+      const button=AssetContributions.button(c.body_path);button.id='character-upload';
+      $('character-body-note').after(button);
+    }
     const source = $("character-body-source");
     source.hidden = !c.body_available;
     if (c.body_available) source.href = c.body_path;
@@ -344,6 +349,7 @@
             : track.available ? "Fichier retrouvé" : "Fichier à retrouver",
         ),
       );
+    if ((!track.available || track.restored_low_quality) && window.AssetContributions) copy.append(AssetContributions.button(track.path));
     row.append(copy);
     return row;
   }
@@ -380,6 +386,7 @@
       );
       status.append(line);
     }
+    if (!s.original_geometry_available && window.AssetContributions) status.append(AssetContributions.button(s.model_path));
     $("stadium-honesty").textContent = s.original_geometry_available
       ? "Le modèle de Cania est retrouvé. Les textures, les animations et les détails restent à comparer à des archives du jeu."
       : "Le fond 2D et sa surface sont retrouvés. En 3D, le jeu réutilise encore la géométrie et les décors de Cania : le décor propre à ce stade reste à restaurer.";
