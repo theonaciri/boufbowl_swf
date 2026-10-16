@@ -83,3 +83,10 @@ module : elles sont pseudonymisées avec un HMAC et un secret propre au serveur.
 Contrôles : `python3 -m unittest tests.test_asset_contributions tests.test_admin`.
 Le test ClamAV réel utilise la signature inoffensive EICAR dans un dossier
 provisoire ; les autres tests utilisent un scanner simulé pour isoler les règles.
+
+Le vestiaire affiche les associations issues des chemins de l’inventaire :
+classe et sexe, légende, stades utilisant une géométrie, texture ou musique.
+Les sons de pouvoirs sont associés par les affectations explicites de
+`ClassOrderBuffFunction.as`. Les ressources partagées affichent tous leurs
+stades ; sans référence connue, aucune association n’est inventée. Ces libellés
+sont également pris en compte par la recherche et la fenêtre d’envoi.

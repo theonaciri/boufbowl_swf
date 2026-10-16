@@ -22,7 +22,7 @@
   const ready=fetch('api/asset-catalog',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{items=data.assets||[];render();}).catch(()=>{document.querySelector('#asset-catalog-status').textContent='Les envois nécessitent le serveur de jeu. Réessayez plus tard.';});
   async function open(path){await ready;selected=items.find(a=>a.path===path);if(!selected){status.textContent='Cette ressource ne reçoit pas de contribution actuellement.';dialog.showModal();return;}
     form.reset();submit.disabled=false;progress.hidden=true;status.textContent='';input.accept=selected.extension;
-    expected.textContent=`Nom exact : ${selected.name} · ${selected.extension} · ${(selected.max_bytes/1048576).toLocaleString('fr-FR')} Mo maximum. ${selected.path}`;
+    expected.textContent=`${selected.related_to?.length?selected.related_to.map(r=>r.label).join(' · ')+' — ':''}Nom exact : ${selected.name} · ${selected.extension} · ${(selected.max_bytes/1048576).toLocaleString('fr-FR')} Mo maximum. ${selected.path}`;
     dialog.showModal();input.focus();}
   window.AssetContributions={button(path){const b=el('button','Proposer ce fichier ↥');b.type='button';b.className='asset-upload-button';b.onclick=()=>open(path);return b;}};
   form.onsubmit=async event=>{event.preventDefault();const file=input.files[0];if(!selected||!file)return;
@@ -38,9 +38,10 @@
     }catch(error){status.textContent=error.message;}finally{xhr=null;submit.disabled=false;cancel.hidden=true;}};
   const section=el('section');section.id='asset-contributions';section.className='section asset-contributions';
   section.append(el('span','RECONSTITUONS LES ARCHIVES'),el('h2','Le vestiaire des pièces manquantes.'),el('p','Un original dort dans vos archives ? Proposez le fichier exact ci-dessous. Les propositions sont isolées, contrôlées puis examinées ; aucune publication automatique.'));
-  const search=el('input');search.type='search';search.placeholder='Rechercher un nom, un format ou un dossier';search.setAttribute('aria-label','Rechercher une ressource à restaurer');
+  const search=el('input');search.type='search';search.placeholder='Rechercher une classe, une légende, un stade ou un fichier';search.setAttribute('aria-label','Rechercher une ressource à restaurer');
   const count=el('p');count.id='asset-catalog-status';count.setAttribute('role','status');const list=el('div');list.className='asset-contribution-list';
   section.append(search,count,list);document.querySelector('#telecharger').before(section);search.oninput=render;
-  function render(){const query=search.value.trim().toLowerCase();const rows=items.filter(a=>(a.path+' '+a.group).toLowerCase().includes(query));count.textContent=`${rows.length} ressource(s) manquante(s), remplacée(s) ou de qualité réduite.`;list.replaceChildren();
-    for(const a of rows){const row=el('div');row.className='asset-contribution-row';const copy=el('div');copy.append(el('strong',a.name),el('small',a.path),el('span',a.status==='restored_low_quality'?'Restauré, qualité basse':a.status==='substitute'?'Original remplacé':'Fichier manquant'));row.append(copy,window.AssetContributions.button(a.path));list.append(row);}}
+  const fold=value=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  function render(){const query=fold(search.value.trim());const rows=items.filter(a=>fold(a.path+' '+a.group+' '+(a.related_to||[]).map(r=>r.label).join(' ')).includes(query));count.textContent=`${rows.length} ressource(s) manquante(s), remplacée(s) ou de qualité réduite.`;list.replaceChildren();
+    for(const a of rows){const row=el('div');row.className='asset-contribution-row';const copy=el('div');const context=el('span',(a.related_to||[]).map(r=>r.label).join(' · ')||'Aucune association renseignée');context.className='asset-context';copy.append(el('strong',a.name),context,el('small',a.path),el('span',a.status==='restored_low_quality'?'Restauré, qualité basse':a.status==='substitute'?'Original remplacé':'Fichier manquant'));row.append(copy,window.AssetContributions.button(a.path));list.append(row);}}
 })();

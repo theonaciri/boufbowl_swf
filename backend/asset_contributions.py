@@ -32,10 +32,42 @@ def fail(message,code='ASSET_INVALID'):
     raise ServiceError(code,message)
 
 
+def asset_context(data,root):
+    """Use explicit inventory/config references, never guess ownership from filenames."""
+    from tools.site_portraits import POSES
+    related={}
+    def link(path,kind,identity,label):
+        if not path:return
+        entry={'kind':kind,'id':identity,'label':label}
+        values=related.setdefault(path,[])
+        if entry not in values:values.append(entry)
+    for character in data.get('characters',[]):
+        hero=bool(character.get('hero'));kind='legend' if hero else 'class'
+        label=('Légende : '+character['name']+' · '+character['class_name'] if hero else 'Classe : '+character['class_name']+' '+('M' if character['gender']==1 else 'F'))
+        link(character['body_path'],kind,character['id'],label)
+        for pose in POSES:link(f"assets/site/restoration/{character['id']}-{pose}.webp",kind,character['id'],label)
+    sound_source=Path(root)/'patches/ClassOrderBuffFunction.as'
+    if sound_source.is_file():
+        from tools.build_restoration_data import SLUGS, CLASSES
+        classes={slug.upper():(str(i+1),name) for i,(slug,name) in enumerate(zip(SLUGS,CLASSES))}
+        for symbol,path in re.findall(r'case\s+BoufbowlerClass\.([A-Z_]+):\s*_loc2_\s*=\s*"([^"]+\.mp3)"',sound_source.read_text()):
+            if symbol in classes:
+                identity,label=classes[symbol];link('assets/sounds/'+path,'class',identity,'Classe : '+label)
+    config_path=Path(root)/'resources/stadiums.json'
+    configs=json.loads(config_path.read_text()).get('stadiums',{}) if config_path.is_file() else {}
+    for stadium in data.get('stadiums',[]):
+        paths=[stadium.get('image'),stadium.get('model_path'),*[t['path'] for t in stadium.get('tracks',[])]]
+        crowd=configs.get(stadium['id'],{}).get('publicHappySound')
+        if crowd:paths.append('assets/sounds/'+crowd)
+        for path in paths:link(path,'stadium',stadium['id'],'Stade : '+stadium['name'])
+    return related
+
+
 def catalog(root):
     result={}
     inventory=Path(root)/'assets/site/restoration/inventory.json'
     data=json.loads(inventory.read_text()) if inventory.is_file() else audit(root)
+    contexts=asset_context(data,root)
     for item in data['asset_status']:
         path=item['path']
         if not path or item['status']=='found' or Path(path).suffix not in FORMATS:continue
@@ -43,7 +75,7 @@ def catalog(root):
         if relative.is_absolute() or '..' in relative.parts or relative.parts[0]!='assets':continue
         identity=hashlib.sha256(path.encode()).hexdigest()[:24]
         mime,limit=FORMATS[relative.suffix]
-        result[identity]={**item,'id':identity,'name':relative.name,'extension':relative.suffix,'mime':mime,'max_bytes':limit}
+        result[identity]={**item,'id':identity,'name':relative.name,'extension':relative.suffix,'mime':mime,'max_bytes':limit,'related_to':contexts.get(path,[])}
     return result
 
 

@@ -114,6 +114,26 @@ class AssetContributionTests(unittest.TestCase):
         with self.assertRaises(ServiceError):self.manager.validate(model,folder,'assets/models/stadiums/test/model.dae')
 
 
+class AssetContextTests(unittest.TestCase):
+    def test_catalog_uses_character_and_stadium_links_including_shared_audio(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);folder=root/'assets/site/restoration';folder.mkdir(parents=True)
+            paths=['assets/sprites/skins/62.swl','assets/sprites/skins/518.swl','assets/models/stadiums/beach.dae','assets/sounds/music/shared.mp3','assets/sounds/interface/unknown.mp3','assets/sounds/interactions/no-class-name.mp3']
+            data={'asset_status':[{'path':p,'status':'missing','group':'test'} for p in paths],
+                'characters':[{'id':'iop-2','hero':0,'class_name':'Iop','name':'Iop','gender':2,'body_path':paths[0]},
+                              {'id':'hero-518','hero':518,'class_name':'Zobal','name':'Skunk','gender':1,'body_path':paths[1]}],
+                'stadiums':[{'id':'BEACH','name':'La Plage','model_path':paths[2],'tracks':[{'path':paths[3]}]},
+                            {'id':'BONTA','name':'Bonta','tracks':[{'path':paths[3]}]}]}
+            (root/'patches').mkdir();(root/'patches/ClassOrderBuffFunction.as').write_text('case BoufbowlerClass.IOP: _loc2_ = "interactions/no-class-name.mp3";')
+            (folder/'inventory.json').write_text(json.dumps(data));items={e['path']:e for e in catalog(root).values()}
+            self.assertEqual(items[paths[0]]['related_to'][0]['label'],'Classe : Iop F')
+            self.assertEqual(items[paths[1]]['related_to'][0]['label'],'Légende : Skunk · Zobal')
+            self.assertEqual(items[paths[2]]['related_to'][0]['label'],'Stade : La Plage')
+            self.assertEqual([e['id'] for e in items[paths[3]]['related_to']],['BEACH','BONTA'])
+            self.assertEqual(items[paths[4]]['related_to'],[])
+            self.assertEqual(items[paths[5]]['related_to'][0]['label'],'Classe : Iop')
+
+
 @unittest.skipUnless(shutil.which('clamscan') and Path('/var/lib/clamav/daily.cvd').exists(),'ClamAV definitions required')
 class RealAntivirusTests(unittest.TestCase):
     def test_eicar_is_blocked_inside_networkless_sandbox(self):
