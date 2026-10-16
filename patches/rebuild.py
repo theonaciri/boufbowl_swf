@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the game SWF from an original archive or the versioned client."""
+"""Rebuild the game SWF from the preserved base client or an explicit archive."""
 import argparse
 from pathlib import Path
 import subprocess
@@ -12,14 +12,13 @@ from tools.visual_assets import palette_item_source
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--ffdec", type=Path, required=True, help="Path to ffdec.jar")
-parser.add_argument("--original", type=Path, help="Optional untouched original SWF; otherwise use the archive or versioned client")
+parser.add_argument("--original", type=Path, help="Source SWF override (default: bin/base/boufbowl-client-1.9.6.swf)")
 parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
-archive = root.parent / "swf_sources/boufbowl_client/bin/boufbowl-client-1.9.6.swf"
-original = args.original or (archive if archive.is_file() else root / "bin/boufbowl-client-1.9.6.swf")
+original = args.original or root / "bin/base/boufbowl-client-1.9.6.swf"
 if not original.is_file():
-    parser.error("Client source missing; restore bin/boufbowl-client-1.9.6.swf or pass --original")
+    parser.error("Client source missing; restore bin/base/boufbowl-client-1.9.6.swf or pass --original")
 print("Rebuilding from", original, flush=True)
 config = load_config(args.config)
 config_source = args.config.read_bytes()

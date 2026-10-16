@@ -14,9 +14,12 @@
 .gradle/
 local.properties
 
-# Keep the runnable game client; exclude capture SWFs and player executables.
+# Keep the build base and runnable client; exclude other binaries and captures.
 /bin/*
 !/bin/boufbowl-client-1.9.6.swf
+!/bin/base/
+/bin/base/*
+!/bin/base/boufbowl-client-1.9.6.swf
 
 # Local screenshots and recordings
 /evidence/

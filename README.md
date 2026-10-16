@@ -4,7 +4,8 @@
 
 The repository includes the runnable game client (`bin/boufbowl-client-1.9.6.swf`)
 and simulation worker (`backend/build/engine.js` and `engine_base.json`). The
-main client stays tracked; temporary capture SWFs, standalone players and
+main client and build base (`bin/base/boufbowl-client-1.9.6.swf`) stay tracked;
+temporary capture SWFs, standalone players and
 downloadable packages are generated or supplied locally and excluded from Git.
 For desktop play, supply the standalone Flash player at
 `bin/flashplayer_32_sa.exe`. The Python server runs directly
@@ -167,11 +168,14 @@ Linux backend. Reinstall the new Linux package when using the desktop shortcut.
 
 ## Build the client and packages
 
-Run commands from `boufbowl_swf`. Keep the untouched original 1.9.6 SWF and the
-readable `patches/` sources: rebuilding applies patches to the supplied original,
-or to the versioned client when no external archive is available; it does not
-require another full decompile. Build outputs are not automatically launched
-or installed.
+Run commands from `boufbowl_swf`. The preserved build input is
+`bin/base/boufbowl-client-1.9.6.swf`; the runnable output is
+`bin/boufbowl-client-1.9.6.swf`. Both retain the original filename and are tracked.
+The current base is the local patched client preserved before the latest rebuild;
+it is not an untouched historical archive. The build applies the readable
+`patches/` sources to this stable base without overwriting it. Pass `--original`
+to use a different source archive. No full decompile is required. Build outputs
+are not automatically launched or installed.
 
 | Changed files | Required action |
 | --- | --- |
@@ -189,9 +193,7 @@ Install JDK 17 and obtain JPEXS FFDec 26.3.0. Set these paths to your own files:
 ```sh
 sudo apt-get install openjdk-17-jdk
 python3 -m tools.game_config
-python3 patches/rebuild.py \
-  --ffdec /path/to/ffdec.jar \
-  --original /path/to/untouched/boufbowl-client-1.9.6.swf
+python3 patches/rebuild.py --ffdec /path/to/ffdec.jar
 ./play.sh --mode server
 ```
 
