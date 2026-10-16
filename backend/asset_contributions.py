@@ -54,10 +54,10 @@ def catalog(root):
                 name=element['name']
                 if element['kind']!='illustration' or not re.fullmatch(r'[A-Za-z0-9_]+',name):continue
                 path=f'assets/sprites/restoration-elements/{skin}/{name}.swf'
-                if (Path(root)/path).is_file():continue
+                if (Path(root)/path).is_file() and element.get('target_status') not in ('restored_low_quality','restored_unreviewed'):continue
                 identity=hashlib.sha256(path.encode()).hexdigest()[:24]
                 result[identity]={'id':identity,'path':path,'name':name+'.swf','extension':'.swf','mime':FORMATS['.swf'][0],
-                    'max_bytes':FORMATS['.swf'][1],'status':'missing','group':'character-elements','character':character['id'],
+                    'max_bytes':FORMATS['.swf'][1],'status':element.get('target_status','missing'),'group':'character-elements','character':character['id'],
                     'element':name,'available':False,'template_source':element['source']}
     return result
 
@@ -274,7 +274,8 @@ class AssetContributions:
         if converted.returncode:fail('Prévisualisation isolée impossible.')
         return {'kind':kind,'duration':duration if kind=='audio' else None,'codec':streams[0]['codec_name']}
 
-    def flash_thumbnails(self,path,output,sprites):
+    @staticmethod
+    def flash_thumbnails(path,output,sprites):
         cache=Path.home()/'.cache/boufbowl-flash-tools'
         jar=Path(os.environ.get('FFDEC_JAR',cache/'ffdec-26.3.0/ffdec.jar'))
         homes=list((cache/'jdk-17').glob('jdk-*'))

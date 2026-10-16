@@ -114,3 +114,30 @@ manquante. Leur adaptation et leur assemblage restent manuels ; les statistiques
 du corps complet ne changent pas après une proposition de pièce. Les archives
 SWL complètes restent proposables par leur bouton distinct. Les mêmes quotas,
 analyses et permissions s’appliquent aux deux parcours.
+
+## Aperçus originaux et qualité des reconstructions
+
+Le build exporte chaque symbole existant depuis **sa propre archive** en WebP
+transparent. La clé de cache contient le chemin de l’archive et le nom du symbole :
+`cheveux_d` du Iop ne réutilise donc jamais l’export du Crâ. Les originaux restent
+dans leurs archives SWL/SWF ; le WebP est un aperçu dérivé téléchargeable, sans
+exécution Flash. Les exports par source sont mis en cache avec empreintes ;
+les conversions indépendantes utilisent quatre workers. Les images restent hors Git.
+
+Les grands indicateurs distinguent l’original retrouvé, la reconstruction de bonne
+qualité, la reconstruction de qualité basse et la pièce manquante. Une illustration
+originale peut coexister avec une pièce d’animation manquante : les deux états sont
+présentés séparément. Aucun original n’est qualifié de reconstruction.
+
+Après intégration manuelle d’une pièce au chemin de travail, son niveau peut être
+consigné dans `resources/asset-restorations.json` :
+
+```json
+{"assets":{"assets/sprites/restoration-elements/21/cheveux.swf":{"quality":"good"}}}
+```
+
+`good` et `low` sont les évaluations humaines admises. Sans évaluation, le statut
+est « restauré, à vérifier ». Une entrée sans fichier reste manquante. Le build
+génère l’aperçu de la reconstruction en isolation, sans ActionScript ; les versions
+de qualité basse ou non évaluées peuvent recevoir une meilleure proposition.
+L’approbation d’un envoi en quarantaine ne vaut ni intégration ni évaluation de qualité.

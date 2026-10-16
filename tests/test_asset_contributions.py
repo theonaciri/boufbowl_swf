@@ -41,6 +41,10 @@ class AssetContributionTests(unittest.TestCase):
             try:
                 from backend.asset_contributions import catalog as actual
                 items=list(actual(root).values())
+                installed=root/items[0]['path'];installed.parent.mkdir(parents=True);installed.write_bytes(b'installed')
+                self.assertFalse(actual(root))
+                data=json.loads((folder/'characters.json').read_text());data['characters']['missing'][0]['target_status']='restored_low_quality';(folder/'characters.json').write_text(json.dumps(data))
+                self.assertEqual(next(iter(actual(root).values()))['status'],'restored_low_quality')
             finally:self.mock.start()
             self.assertEqual(len(items),1);self.assertEqual(items[0]['name'],'tete_neutre.swf')
             self.assertEqual(items[0]['character'],'missing');self.assertEqual(items[0]['group'],'character-elements')

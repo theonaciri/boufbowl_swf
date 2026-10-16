@@ -76,7 +76,7 @@ def is_common(name,users):
         r'(?:_(?:[234][bB]?|[dfgFmM]|[DG]|\d+))*',part,re.I))
 
 
-def build(characters,root=ROOT,check=False):
+def build(characters,root=ROOT,check=False,jar=None,java=None,force=False):
     root=Path(root);entries=defaultdict(list)
     for relative in ('assets/artworks/cutscene-boufbowler-repository.swf','assets/artworks/cutscene-illustration.swf'):
         names,sprites=inspect(root/relative);members=memberships(names,sprites);users=defaultdict(set)
@@ -98,6 +98,10 @@ def build(characters,root=ROOT,check=False):
             names=body_names[character['id']]
             entries[character['id']][0:0]=[{'name':name,'source':character['body_path'],'kind':'body','common':is_common(name,body_users[name])} for name in names.values()]
     result={'characters':dict(entries),'notice':'Appartenance extraite des images cg_<identité> et des dépendances de symboles ; illustrations et corps animés sont des sources distinctes.'}
+    from tools.export_character_previews import export
+    result=export(root,result,jar=jar,java=java,check=check,force=force)
+    from tools.character_asset_status import annotate
+    result=annotate(result,characters,root,check=check)
     output=root/'assets/site/restoration/elements/characters.json'
     if check:
         if not output.is_file() or json.loads(output.read_text())!=result:raise ValueError('Character-specific element catalog is stale')
