@@ -350,8 +350,8 @@
             : track.available ? "Fichier retrouvé" : "Fichier à retrouver",
         ),
       );
-    if ((!track.available || track.restored_low_quality) && window.AssetContributions) copy.append(AssetContributions.button(track.path));
     row.append(copy);
+    if ((!track.available || track.restored_low_quality) && window.AssetContributions) row.append(AssetContributions.button(track.path));
     return row;
   }
   function renderStadium() {
