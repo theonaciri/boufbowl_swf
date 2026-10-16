@@ -130,10 +130,36 @@ stades et un studio d’écoute, sans charger Ruffle. La capture de référence 
 par le porteur du projet est conservée en WebP et peut être affichée en comparaison.
 Les 14 icônes de classes et le petit aperçu Crâ sont découpés dans cette capture.
 Les illustrations transparentes des 28 variantes classiques et des 18 légendes
-sont exportées depuis `cutscene-boufbowler-repository.swf`, avec les classes et
-la colorisation du client original, via `IllustrationViewFactory`. Les trois
-poses sont vestiaire, victoire et face-à-face : 138 images au total. Les outils
-et SWF temporaires de capture ne sont pas distribués. Les polices de l’atelier
+sont réexportées dans les couleurs par défaut actuelles du client : première
+palette de chaque classe, valeurs explicites par genre, palette dédiée des héros.
+Aucun sélecteur Dofus/Wakfu n’est affiché. Les huit poses du vestiaire proviennent
+de `cutscene-boufbowler-repository.swf` : les sept poses publiques et le groupe
+alternatif `boufbowler1_posing_11` (accroupi). Dix poses supplémentaires proviennent
+de `cutscene-illustration.swf` : lancer, plongeon, gros plan du ballon, acrobatie,
+rotation, déséquilibre, envol, reprise acrobatique, esquive et tacle glissé.
+Les libellés d’action décrivent visuellement les poses ; le manifeste conserve
+les noms exacts des symboles Flash.
+
+Chaque personnage dispose ainsi de 18 poses, soit 828 images. Le rendu utilise
+les groupes d’illustration et la colorisation natifs du client, sans génération
+d’image. Les vecteurs sont rendus au double de l’ancienne résolution : personnage
+de 1 000 px de haut sur un canevas transparent de 1 080 px, contre 540 px auparavant.
+Les ombres et effets qui font partie du dessin original sont conservés. Les WebP
+sont encodés en qualité 92. Le script de capture utilise un tampon WebGL conservé
+pour éviter les captures vides ; les très larges poses passent par l’encodeur PNG
+du client. Les SWF temporaires de capture ne sont pas distribués.
+Les emplacements de poses restent séparés même lorsque leur rendu est identique,
+comme pour deux poses de Jack Chaferton ; aucun dessin supplémentaire n’est inventé.
+
+`tools/site_portrait_capture.as.inc` contient les callbacks d’export, injectés
+uniquement dans un SWF distinct ; le client jouable n’est pas modifié.
+`tools/site_portrait_capture.js` crée le lecteur d’export avec son tampon WebGL
+conservé et restitue chaque PNG avec ses marges, sans dépendre du DPI de l’écran.
+`python3 -m tools.site_portraits --plan` décrit les poses et couleurs à exporter.
+`python3 -m tools.site_portraits` écrit `assets/site/restoration/portraits.json` ;
+`--check` vérifie les exports, les dimensions et les empreintes des sources et des
+palettes. Les URLs des images sont versionnées pour remplacer les anciens aperçus
+en cache. Les polices de l’atelier
 sont celles intégrées au client, avec leurs métadonnées d’origine ; les polices
 Barlow du reste de la page conservent leurs licences OFL.
 
@@ -171,7 +197,7 @@ ne sont pas présentées comme des décors 3D originaux.
 
 La sélection des stades détaille les fichiers de tactique, de résolution et
 d’ambiance. Un fichier manquant n’est jamais proposé à la lecture.
-Le bilan global des ressources additionne les illustrations (trois poses par
+Le bilan global des ressources additionne les illustrations (18 poses par
 personnage), les corps animés classiques et spéciaux, les fonds tactiques, les
 décors 3D originaux et l’audio. Chaque famille affiche son numérateur et son
 dénominateur ; les ressources manquantes sont incluses. Ce bilan porte sur le

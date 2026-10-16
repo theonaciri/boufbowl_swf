@@ -35,7 +35,14 @@
     default: "Vestiaire",
     winner: "Victoire",
     versus: "Face-à-face",
+    loser: "Défaite",
+    "winner-default": "Victoire par forfait",
+    "loser-default": "Défaite par forfait",
+    draw: "Match nul",
+    alternate: "Accroupi",
   };
+  const portraitURL = (path) => path && inventory?.portrait_revision
+    ? `${path}?v=${inventory.portrait_revision}-2x` : path;
   // Original sheets supplied by the project owner: female, then male, per class.
   // Coordinates crop the sheets in the browser; the original bitmaps stay intact.
   const fieldReferences = [
@@ -113,7 +120,7 @@
       );
       b.setAttribute("aria-pressed", String(c.id === state.id));
       const image = el("img");
-      image.src = c.hero ? c.poses.default || c.icon : c.icon;
+      image.src = c.hero ? portraitURL(c.poses.default) || c.icon : c.icon;
       image.alt = "";
       image.width = 80;
       image.height = 96;
@@ -154,25 +161,29 @@
   function renderCharacter() {
     const c = selected(),
       sex = c.gender === 1 ? "Homme" : "Femme",
-      portrait = c.poses[state.pose] || c.poses.default;
+      poses = c.poses,
+      portrait = poses[state.pose] || poses.default;
     renderFieldReference(c, sex);
     $("character-class-name").textContent = c.name;
     $("character-variant").textContent = c.hero
       ? `${c.class_name} · personnage spécial`
       : sex;
     if (portrait) {
-      $("character-portrait").src = portrait;
+      $("character-portrait").src = portraitURL(portrait);
       $("character-portrait").hidden = false;
     } else $("character-portrait").hidden = true;
     $("character-portrait").alt =
       `${c.name}, ${sex.toLowerCase()}, illustration originale : ${labels[state.pose]}`;
     $("portrait-credit").textContent = portrait
-      ? "ILLUSTRATION ORIGINALE · CLIENT FLASH"
+      ? "DESSIN ORIGINAL · COULEURS PAR DÉFAUT · EXPORT ×2"
       : "ILLUSTRATION CONSERVÉE DANS LE CLIENT · APERÇU À CAPTURER";
     for (const b of document.querySelectorAll("[data-pose]")) {
-      b.disabled = !c.poses[b.dataset.pose];
+      b.disabled = !poses[b.dataset.pose];
       b.setAttribute("aria-pressed", String(b.dataset.pose === state.pose));
     }
+    $("character-pose-select").value = state.pose;
+    for (const option of $("character-pose-select").options)
+      option.disabled = !poses[option.value];
     $("character-log").textContent =
       `Dossier ${c.name} · ${sex.toLowerCase()}. ${c.body_available ? "Pièces animées d’origine retrouvées." : "Corps propre à retrouver ; remplacement Crâ dans le jeu."}`;
     $("character-body-state").textContent = c.body_available
@@ -575,6 +586,12 @@
     })
     .then((data) => {
       inventory = data;
+      Object.assign(labels, data.pose_labels || {});
+      $("character-pose-select").replaceChildren(...Object.entries(labels).map(([id, label]) => {
+        const option = el("option", label);
+        option.value = id;
+        return option;
+      }));
       const summary = data.summary;
       for (const [gender, id] of [
         [1, "character-bodies-men"],
@@ -646,6 +663,10 @@
             renderCharacter();
           }),
       );
+      $("character-pose-select").onchange = (event) => {
+        state.pose = event.target.value;
+        renderCharacter();
+      };
       document.querySelectorAll("[data-facet]").forEach(
         (b) =>
           (b.onclick = () => {
@@ -671,7 +692,7 @@
         b.type = "button";
         b.setAttribute("aria-label", `Explorer ${c.name}`);
         const img = el("img");
-        img.src = c.poses.default || c.icon;
+        img.src = portraitURL(c.poses.default) || c.icon;
         img.alt = "";
         img.loading = "lazy";
         b.append(img);

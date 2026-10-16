@@ -11,7 +11,7 @@
     <title>Boufbowl — Le retour du sport. Et des bleus.</title>
     <link rel="icon" href="assets/site/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="home.css" />
-    <link rel="stylesheet" href="restoration.css" />
+    <link rel="stylesheet" href="restoration.css?v=poses-1080-18" />
     <link rel="preload" href="assets/site/cinematic-poster.webp" as="image" />
   </head>
   <body>
@@ -379,6 +379,9 @@
                     <span id="character-class-name">Crâ</span
                     ><strong id="character-variant">Homme</strong>
                   </div>
+                  <label class="pose-select-label" for="character-pose-select">Toutes les poses
+                    <select id="character-pose-select"><option value="default">Vestiaire</option></select>
+                  </label>
                   <div class="pose-picker" aria-label="Choisir une pose">
                     <button
                       data-pose="default"
@@ -399,10 +402,15 @@
                     >
                       ⚔<span>Face-à-face</span>
                     </button>
+                    <button data-pose="loser" aria-pressed="false" title="Défaite">↘<span>Défaite</span></button>
+                    <button data-pose="winner-default" aria-pressed="false" title="Victoire par forfait">✓<span>Victoire par forfait</span></button>
+                    <button data-pose="loser-default" aria-pressed="false" title="Défaite par forfait">×<span>Défaite par forfait</span></button>
+                    <button data-pose="draw" aria-pressed="false" title="Match nul">＝<span>Match nul</span></button>
+                    <button data-pose="alternate" aria-pressed="false" title="Pose accroupie">Ⅱ<span>Accroupi</span></button>
                   </div>
                   <img
                     id="character-portrait"
-                    src="assets/site/restoration/cra-1-default.webp"
+                    src="assets/site/restoration/cra-1-default.webp?v=b9c6d99f62ff1c17-2x"
                     alt="Illustration originale d’un Crâ"
                     width="500"
                     height="560"
@@ -1127,7 +1135,7 @@
       <p id="copy-status" role="status" aria-live="polite"></p>
     </dialog>
     <div id="brawl-announcer" aria-live="polite" class="sr-only"></div>
-    <script src="restoration.js" defer></script>
+    <script src="restoration.js?v=poses-1080-18" defer></script>
     <script src="home.js" defer></script>
   </body>
 </html>

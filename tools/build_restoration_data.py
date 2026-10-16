@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import re
 import zlib
+from tools.site_portraits import POSES
 
 ROOT = Path(__file__).resolve().parent.parent
 CLASSES = ['Crâ','Ecaflip','Eniripsa','Enutrof','Féca','Iop','Osamodas','Pandawa','Roublard','Sacrieur','Sadida','Sram','Xélor','Zobal']
@@ -16,6 +17,8 @@ LOW_QUALITY_RESTORATIONS = {f'music/music_resolution_loop_{i:02d}.mp3' for i in 
 
 def audit(root=ROOT):
     root=Path(root)
+    portrait_path=root/'assets/site/restoration/portraits.json'
+    portrait_manifest=json.loads(portrait_path.read_text()) if portrait_path.is_file() else {}
     exists=lambda p:(root/p).is_file() and (root/p).stat().st_size>0 and (root/p).resolve().is_relative_to(root.resolve())
     sounds=json.loads((root/'resources/sound.json').read_text())
     stadium_config=json.loads((root/'resources/stadiums.json').read_text())['stadiums']
@@ -36,7 +39,7 @@ def audit(root=ROOT):
     audio_files=[audio(p) for p in sorted(refs|actual) if not Path(p).is_absolute() and '..' not in Path(p).parts]
     def character(identity,cls,gender,hero=0,name=None):
         skin=hero or cls*10+gender;body='assets/sprites/skins/'+str(skin)+'.swl'
-        poses={pose:'assets/site/restoration/'+identity+'-'+pose+'.webp' for pose in ('default','winner','versus')}
+        poses={pose:'assets/site/restoration/'+identity+'-'+pose+'.webp' for pose in POSES}
         return {'id':identity,'class_id':cls,'class_name':CLASSES[cls-1],'name':name or CLASSES[cls-1],
             'gender':gender,'hero':hero,'icon':'assets/site/restoration/class-'+str(cls)+'.webp',
             'body_available':exists(body),'body_path':body,'poses':{k:v for k,v in poses.items() if exists(v)},
@@ -60,7 +63,7 @@ def audit(root=ROOT):
             'model_path':'assets/models/stadiums/'+cfg['path'],'tracks':tracks})
     fx=[a for a in audio_files if a['category']!='music']
     asset_groups = [
-        {'label':'Illustrations', 'found':sum(len(c['poses']) for c in characters), 'expected':3*len(characters)},
+        {'label':'Illustrations recensées', 'found':sum(len(c['poses']) for c in characters), 'expected':len(POSES)*len(characters)},
         {'label':'Corps animés, légendes comprises', 'found':sum(c['body_available'] for c in characters), 'expected':len(characters)},
         {'label':'Fonds tactiques', 'found':sum(s['surface_available'] for s in stadiums), 'expected':len(stadiums)},
         {'label':'Décors 3D originaux', 'found':sum(s['original_geometry_available'] for s in stadiums), 'expected':len(stadiums)},
@@ -69,6 +72,9 @@ def audit(root=ROOT):
     return {'version':1,'inventory_date':datetime.now(timezone.utc).date().isoformat(),
         'scope':'Présence des fichiers référencés par les configurations et le client, complétée par les fichiers du dépôt. Un fichier retrouvé ne certifie ni sa fidélité ni son bon fonctionnement en jeu.',
         'characters':characters,'stadiums':stadiums,'audio':fx,'asset_groups':asset_groups,
+        'portrait_revision':portrait_manifest.get('revision',''),
+        'portrait_export_count':len(portrait_manifest.get('exports',[])),
+        'pose_labels':{key:value[0] for key,value in POSES.items()},
         'summary':{'assets_found':sum(g['found'] for g in asset_groups),'assets_expected':sum(g['expected'] for g in asset_groups),
             'bodies_found':sum(c['body_available'] for c in characters if not c['hero']),
             'bodies_expected':28,'geometry_found':sum(s['original_geometry_available'] for s in stadiums),
