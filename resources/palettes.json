@@ -235,7 +235,7 @@
         "4985ba",
         "41958c",
         "a781c2",
-        "d6a64a"
+        "d0804b"
       ],
       "skin": [
         "734d31",
@@ -249,12 +249,12 @@
       "defaults": {
         "male": {
           "hair": "734d31",
-          "eyes": "d6a64a",
+          "eyes": "d0804b",
           "skin": "734d31"
         },
         "female": {
           "hair": "b18b5d",
-          "eyes": "d6a64a",
+          "eyes": "d0804b",
           "skin": "734d31"
         }
       }
@@ -488,7 +488,8 @@
       ],
       "eyes": [
         "f0ca85",
-        "43362a",
+        "0f3135",
+        "090304",
         "789744",
         "4985ba",
         "41958c",
@@ -508,12 +509,12 @@
       "defaults": {
         "male": {
           "hair": "27424e",
-          "eyes": "f0ca85",
+          "eyes": "0f3135",
           "skin": "60859b"
         },
         "female": {
           "hair": "fcfcee",
-          "eyes": "f0ca85",
+          "eyes": "090304",
           "skin": "606e79"
         }
       }
@@ -1617,9 +1618,9 @@
       "unique_character": 503,
       "name": "Maud",
       "source": "Maud reference",
-      "hair": ["222e2e", "151d1f", "3e5153", "526973", "433447", "8e5a42"],
-      "eyes": ["899a9b", "b9c8c8", "5b838a", "476676", "453629"],
-      "skin": ["cc9755", "ba854a", "dfb476", "a97440", "edc995"]
+      "hair": ["273131", "151d1f", "3e5153", "526973", "433447", "8e5a42"],
+      "eyes": ["a60d0e", "b9c8c8", "5b838a", "476676", "453629"],
+      "skin": ["ca9555", "ba854a", "dfb476", "a97440", "edc995"]
     },
     {
       "id": 18,
@@ -1662,7 +1663,7 @@
       "name": "Miranda",
       "source": "Miranda supplied reference",
       "hair": [
-        "3b3422",
+        "5b4f37",
         "110f0a",
         "685c3c",
         "8a7650",
@@ -1670,8 +1671,8 @@
         "647a85",
         "80608f"
       ],
-      "eyes": ["c4a55c", "a7873c", "d7c290", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["746545", "544932", "948158", "342d1f", "a8956d"]
+      "eyes": ["8d410f", "a7873c", "d7c290", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["9c7448", "734d31", "544932", "948158", "342d1f", "a8956d"]
     },
     {
       "id": 22,
@@ -1713,8 +1714,8 @@
       "name": "Shoshanne",
       "source": "Shoshanne supplied reference",
       "hair": [
-        "cc5740",
-        "9f3e2b",
+        "ff9369",
+        "ff7e69",
         "db8978",
         "ef8b61",
         "893d35",
@@ -1722,7 +1723,7 @@
         "5c7e9e"
       ],
       "eyes": ["50371e", "23180d", "845b31", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["bb6836", "93522b", "ce8356", "6c3c1f", "d79a76"]
+      "skin": ["da9954", "93522b", "ce8356", "6c3c1f", "d79a76"]
     },
     {
       "id": 25,
@@ -1739,7 +1740,7 @@
         "97765a"
       ],
       "eyes": ["e1d69b", "d3c36c", "f1edd2", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["243a40", "121c1f", "365861", "090f10", "456f7b"]
+      "skin": ["27596c", "121c1f", "365861", "090f10", "456f7b"]
     },
     {
       "id": 26,
@@ -1755,7 +1756,7 @@
         "547c82",
         "78729b"
       ],
-      "eyes": ["858579", "65655c", "a7a79e", "b8dce4", "a884bd", "c99c4e"],
+      "eyes": ["262222", "65655c", "a7a79e", "b8dce4", "a884bd", "c99c4e"],
       "skin": ["ddddc8", "cacaa8", "f0f0e8", "b6b689", "f7f7f2"]
     },
     {
@@ -1770,10 +1771,19 @@
         "bdbbad",
         "8b8268",
         "5c8c92",
-        "485d6f"
+        "485d6f",
+        "cc921a"
       ],
-      "eyes": ["bceeff", "7fdeff", "ebfaff", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["ffc1ab", "ff9b78", "ffe7de", "ff7645", "fff0eb"],
+      "eyes": [
+        "a884bd",
+        "9de8f0",
+        "bceeff",
+        "7fdeff",
+        "ebfaff",
+        "b8dce4",
+        "c99c4e"
+      ],
+      "skin": ["fff0eb", "ffc1ab", "ff9b78", "ffe7de", "ff7645"],
       "reference_note": "White hair, pale skin and icy eyes; alternate swatches also reflect the olive and teal costumes."
     },
     {
@@ -1790,8 +1800,8 @@
         "36777d",
         "af7746"
       ],
-      "eyes": ["332b1c", "100e09", "615235", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["ece3bf", "e0d298", "f8f4e6", "d5c170", "faf8ef"]
+      "eyes": ["c99c4e", "100e09", "615235", "b8dce4", "a884bd"],
+      "skin": ["1a1714", "e0d298", "f8f4e6", "d5c170", "faf8ef"]
     },
     {
       "id": 34,
