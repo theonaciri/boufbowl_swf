@@ -2,7 +2,7 @@
 (async () => {
  const el=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
  const section=el('section');section.id='character-element-editor';section.className='section character-element-editor';
- section.append(el('span','ATELIER DES PANTINS'),el('h2','Cinq originaux de référence. Une pièce à retrouver.'),el('p','Comparez les éléments des cinq personnages dont le corps original est retrouvé avec la pièce à restaurer. Les références montrent les formes originales, sans recoloration.'));
+ section.append(el('span','ATELIER DES PANTINS'),el('h2','Cinq originaux de référence. Une pièce à retrouver.'),el('p','Explorez uniquement les pièces utilisées par les pantins du jeu et comparez-les aux cinq corps originaux retrouvés. Les références montrent les formes originales, sans recoloration.'));
  const message=el('p','Ouverture du vestiaire…');message.setAttribute('role','status');section.append(message);
  document.querySelector('#asset-contributions').before(section);
  try {
@@ -20,7 +20,7 @@
   const panels=el('div');panels.className='element-panels';const left=el('article'),right=el('article');
   const referenceTitle=el('h3','Référence');left.append(referenceTitle);const image=el('img');image.className='element-reference';const referenceName=el('p');const download=el('a','Télécharger la référence WebP ↧');left.append(image,referenceName,download);
   const heading=el('div');heading.className='element-card-heading';const headingTitle=el('h3','Élément du personnage');headingTitle.title='Élément du personnage';const state=el('div');heading.append(headingTitle,state);right.append(heading);const ownImage=el('img');ownImage.className='element-reference character-own-preview';const ownDownload=el('a','Télécharger cet élément en WebP ↧');const sourceDownload=el('a','Télécharger l’archive originale ↧');sourceDownload.className='element-source-download';const bodyState=el('div');right.append(ownImage,ownDownload,sourceDownload);const target=el('h4'),description=el('p'),filename=el('code'),upload=el('div');
-  const targetHeading=el('div');targetHeading.className='element-card-heading';targetHeading.append(target,bodyState);const bodyNote=el('p');right.append(targetHeading,bodyNote,description,filename,el('p','Les symboles ci-dessous appartiennent au personnage sélectionné. Les illustrations retrouvées servent de gabarits pour reconstruire son corps manquant ; elles ne sont pas ses pièces d’animation d’origine. Les propositions SWF (8 Mio maximum) restent soumises à la revue.'),upload);
+  const targetHeading=el('div');targetHeading.className='element-card-heading';targetHeading.append(target,bodyState);const bodyNote=el('p');right.append(targetHeading,bodyNote,description,filename,el('p','Seules les bibliothèques de pantins sont présentées. Les pièces communes du corps et les pièces spécifiques retrouvées sont distinguées. Les illustrations plein écran et les animations assemblées sont exclues.'),upload);
   const archive=el('div');right.append(el('p','Vous avez retrouvé le corps complet ? Envoyez plutôt son archive SWL d’origine.'),archive);
   panels.append(left,right);section.append(toolbar,panels);
   const legend=el('div');legend.className='element-state-legend';for(const status of ['original','restored_good','restored_low_quality','missing'])legend.append(badge(status));section.append(legend);
@@ -32,7 +32,7 @@
    element.replaceChildren();
    for(const [label,shared] of [['Éléments propres au personnage',false],['Éléments communs',true]]){
     const group=el('optgroup');group.label=label;
-    for(const e of rows.filter(e=>e.common===shared)){const option=el('option',e.name+(e.kind==='body'?' · corps original':' · illustration'));option.value=key(e);group.append(option);}
+    for(const e of rows.filter(e=>e.common===shared)){const option=el('option',e.name+(e.scope==='shared'?' · corps commun':' · corps original'));option.value=key(e);group.append(option);}
     if(group.children.length)element.append(group);
    }
    if([...element.options].some(o=>o.value===old))element.value=old;render();
@@ -49,16 +49,13 @@
    sourceDownload.href=entry.source;sourceDownload.download=entry.source.split('/').pop();sourceDownload.hidden=false;
    const preview=entry.restored_image||(entry.image?entry.image+'?v='+entry.sha256.slice(0,16):null);
    if(preview){ownImage.src=preview;ownImage.alt=`${entry.name} — ${c.name} ${c.gender===1?'M':'F'}`;ownImage.hidden=false;ownDownload.href=preview;ownDownload.download=entry.name+'.webp';ownDownload.hidden=false;}
-   if(!c.body_available&&!entry.restored_image){bodyState.append(badge('missing'));bodyNote.textContent='Pièce d’animation manquante. L’aperçu ci-dessus montre l’illustration originale retrouvée, qui peut servir de gabarit.';bodyNote.hidden=false;}
-   message.textContent=`${element.options.length} symboles appartenant à ${c.name} ${c.gender===1?'M':'F'} · ${c.body_available?'corps original retrouvé':'inventaire du corps indisponible : gabarits tirés des illustrations retrouvées'}.`;
+   if(!c.body_available){bodyState.append(badge('missing'));bodyNote.textContent='Archive spécifique de ce personnage manquante. La pièce commune affichée est retrouvée ; elle ne prouve pas la présence des pièces propres à sa classe.';bodyNote.hidden=false;}
+   message.textContent=`${element.options.length} pièces de pantin disponibles pour ${c.name} ${c.gender===1?'M':'F'} · ${c.body_available?'corps original retrouvé':'pièces communes retrouvées ; inventaire spécifique inconnu car l’archive manque'}.`;
    image.hidden=!reference;download.hidden=!reference;
    if(reference){const url=reference.image+'?v='+reference.sha256.slice(0,16);image.src=url;image.alt=`${reference.name} — référence ${referenceLabel}`;referenceName.textContent=reference.name+(reference.name===entry.name?'':' · référence structurelle approximative, pas la pièce sélectionnée');download.href=url;download.download=referenceLabel.replaceAll(' ','-')+'-'+reference.name+'.webp';}
    else referenceName.textContent=`Aucun équivalent exporté pour ${referenceLabel} pour cet élément propre au personnage.`;
-   description.textContent=`${entry.restored_image?'Pièce d’animation reconstruite':entry.kind==='body'?'Pièce du corps original retrouvée':'Symbole d’illustration retrouvé'} : ${entry.name}`;filename.textContent=entry.name+'.swf';
-   if(!c.body_available&&entry.kind==='illustration'&&!entry.restored_image){
-    upload.append(el('p','Gabarit de reconstruction du corps : nom repris de l’illustration, à adapter avant assemblage.'));
-    const skin=c.body_path.split('/').pop().replace('.swl','');upload.append(AssetContributions.button(`assets/sprites/restoration-elements/${skin}/${entry.name}.swf`));
-   }else if(entry.target_status==='restored_low_quality'||entry.target_status==='restored_unreviewed'){const skin=c.body_path.split('/').pop().replace('.swl','');upload.append(AssetContributions.button(`assets/sprites/restoration-elements/${skin}/${entry.name}.swf`));}else upload.append(el('p',entry.restored_image?'Pièce reconstruite et évaluée : aucune proposition supplémentaire demandée.':'Original déjà retrouvé : aucun envoi de remplacement demandé pour cette pièce.'));
+   description.textContent=`${entry.restored_image?'Pièce d’animation reconstruite':entry.scope==='shared'?'Pièce commune du pantin retrouvée':'Pièce du corps original retrouvée'} : ${entry.name}`;filename.textContent=entry.name+'.swf';
+   upload.append(el('p',entry.scope==='shared'?'Pièce partagée déjà retrouvée : aucun remplacement demandé.':'Pièce originale du pantin déjà retrouvée : aucun remplacement demandé.'));
    if(!c.body_available)archive.append(AssetContributions.button(c.body_path));else archive.append(el('p','Archive du corps original déjà retrouvée.'));
   }
   character.onchange=()=>{if(referenceCharacters.some(c=>c.id===character.value))referenceCharacter.value=character.value;populate();};referenceCharacter.onchange=render;search.oninput=populate;element.onchange=render;

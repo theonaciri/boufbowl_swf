@@ -92,29 +92,25 @@ transparents. `tools.build_website` lance aussi cette étape ; les images sont
 générées et ignorées par Git. Une empreinte des sources et du script permet de
 réutiliser les exports. FFDec, Java et FFmpeg sont nécessaires au premier export.
 
-Le sélecteur d’éléments dépend du personnage choisi, et non du personnage de référence.
-`tools.character_element_catalog` suit les images `cg_<identité>` des deux
-bibliothèques d’illustrations, uniquement sous les poses `boufbowler[12]_posing…`, et leurs dépendances (placements, profondeurs,
-retraits et sous-symboles). Il ajoute les symboles du corps SWL original lorsque
-cette archive existe. Les repères `cg_…` des décors et de la foule sont exclus : ils ne désignent pas des pièces de personnages. Les éléments propres au personnage précèdent les parties anatomiques génériques réellement partagées par plusieurs classes.
-La réutilisation par une légende ne suffit pas : les accessoires, costumes, noms
-de classes/personnages et symboles non identifiés restent dans le premier groupe. Le catalogue couvre les 28 variantes de classes et
-les 18 légendes sans deviner l’appartenance à partir du nom des symboles.
+Le sélecteur contient uniquement les bibliothèques du pantin réellement chargé
+par `BoufbowlerSprite.buildEntity` : socle `skins/0.swl`, corps M/F `skins/1.swl`
+ou `skins/2.swl`, puis archive spécifique de classe. Les noms sont résolus dans
+cet ordre : une pièce spécifique remplace la pièce de même nom du socle.
+Les têtes Crâ du socle par défaut ne sont pas présentées comme des pièces
+originales des classes manquantes. Les conteneurs `Anim…` assemblés sont exclus.
 
-Les illustrations sont retrouvées mais ne constituent pas l’inventaire des corps
-animés absents. Pour ces corps, les symboles d’illustration peuvent servir de
-gabarits de reconstruction, avec leur nom exact et un chemin de travail
-`assets/sprites/restoration-elements/<skin>/<symbole>.swf`. Les originaux déjà
-retrouvés ne reçoivent pas de remplacement. À gauche, le choix « Référence » propose les cinq corps originaux retrouvés :
-Crâ M/F, Eniripsa F, Enutrof F et Iop M. Leurs propres exports sont utilisés, avec
-une mention en cas de correspondance approximative. Ce choix ne modifie jamais
-la liste d’éléments du personnage sélectionné.
+Les bibliothèques `assets/artworks/*.swf` sont entièrement exclues de cet atelier,
+même lorsqu’un nom ressemble à celui d’une partie du corps. Elles contiennent
+les illustrations plein écran, leurs variantes et leurs accessoires ; le nom
+ou la taille d’une image ne suffit pas à prouver son usage comme pièce de pantin.
+Les helpers d’analyse des poses restent utilisés par les contrôles d’archives,
+mais ne fournissent plus les entrées de cet atelier.
 
-Ces gabarits ne prouvent pas les noms des pièces de l’archive d’animation
-manquante. Leur adaptation et leur assemblage restent manuels ; les statistiques
-du corps complet ne changent pas après une proposition de pièce. Les archives
-SWL complètes restent proposables par leur bouton distinct. Les mêmes quotas,
-analyses et permissions s’appliquent aux deux parcours.
+Le choix « Référence » propose les cinq corps spécifiques retrouvés : Crâ M/F,
+Eniripsa F, Enutrof F et Iop M. Pour les autres personnages, le sélecteur présente
+les parties communes connues, avec une mention explicite que l’inventaire des
+pièces spécifiques est inconnu. Le bouton d’envoi de leur archive SWL reste
+proposé. Aucun nom de pièce manquante n’est inventé d’après les illustrations.
 
 ## Aperçus originaux et qualité des reconstructions
 
@@ -126,9 +122,8 @@ exécution Flash. Les exports par source sont mis en cache avec empreintes ;
 les conversions indépendantes utilisent quatre workers. Les images restent hors Git.
 
 Les grands indicateurs distinguent l’original retrouvé, la reconstruction de bonne
-qualité, la reconstruction de qualité basse et la pièce manquante. Une illustration
-originale peut coexister avec une pièce d’animation manquante : les deux états sont
-présentés séparément. Aucun original n’est qualifié de reconstruction.
+qualité, la reconstruction de qualité basse et la pièce manquante. Une pièce commune originale peut coexister avec une archive spécifique manquante :
+les deux états sont présentés séparément. Aucun original n’est qualifié de reconstruction.
 
 Après intégration manuelle d’une pièce au chemin de travail, son niveau peut être
 consigné dans `resources/asset-restorations.json` :

@@ -76,28 +76,34 @@ def is_common(name,users):
         r'(?:_(?:[234][bB]?|[dfgFmM]|[DG]|\d+))*',part,re.I))
 
 
+def puppet_entries(characters,root=ROOT):
+    """Only runtime skin libraries qualify, never illustration or pose libraries."""
+    root=Path(root);class_names={};users=defaultdict(set)
+    def parts(relative):
+        path=root/relative
+        if not path.is_file():return {}
+        names,_=inspect(path)
+        return {identity:name for identity,name in names.items() if not name.lower().startswith('anim')}
+    for character in characters:
+        names=parts(character['body_path']);class_names[character['id']]=names
+        for name in names.values():users[name].add(character['hero'] or character['class_id']*10+character['gender'])
+    specific={name for names in class_names.values() for name in names.values()}
+    base='assets/sprites/skins/0.swl'
+    # The default skin also embeds Cra placeholders; those are not common class originals.
+    base_names=[name for name in parts(base).values() if name not in specific]
+    result={}
+    for character in characters:
+        entries={name:{'name':name,'source':base,'kind':'body','scope':'shared','common':True} for name in base_names}
+        relative=f"assets/sprites/skins/{character['gender']}.swl"
+        for name in parts(relative).values():entries[name]={'name':name,'source':relative,'kind':'body','scope':'shared','common':True}
+        for name in class_names[character['id']].values():entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name])}
+        result[character['id']]=list(entries.values())
+    return result
+
+
 def build(characters,root=ROOT,check=False,jar=None,java=None,force=False):
-    root=Path(root);entries=defaultdict(list)
-    for relative in ('assets/artworks/cutscene-boufbowler-repository.swf','assets/artworks/cutscene-illustration.swf'):
-        names,sprites=inspect(root/relative);members=memberships(names,sprites);users=defaultdict(set)
-        for identity,values in members.items():
-            for name in values:users[name].add(identity)
-        for character in characters:
-            identity=character['hero'] or character['class_id']*10+character['gender']
-            for name in sorted(members.get(identity,())):
-                entries[character['id']].append({'name':name,'source':relative,'kind':'illustration','common':is_common(name,users[name])})
-    body_users=defaultdict(set);body_names={}
-    for character in characters:
-        path=root/character['body_path']
-        if path.is_file():
-            names,_=inspect(path);body_names[character['id']]=names
-            for name in names.values():body_users[name].add(character['hero'] or character['class_id']*10+character['gender'])
-    for character in characters:
-        path=root/character['body_path']
-        if path.is_file():
-            names=body_names[character['id']]
-            entries[character['id']][0:0]=[{'name':name,'source':character['body_path'],'kind':'body','common':is_common(name,body_users[name])} for name in names.values()]
-    result={'characters':dict(entries),'notice':'Appartenance extraite des images cg_<identité> et des dépendances de symboles ; illustrations et corps animés sont des sources distinctes.'}
+    root=Path(root)
+    result={'characters':puppet_entries(characters,root),'notice':'Pièces du pantin uniquement : bibliothèques skins/0, skins/<sexe> et skins/<classe> ; illustrations et animations assemblées exclues. Sans archive de classe, seules les pièces partagées retrouvées sont connues.'}
     from tools.export_character_previews import export
     result=export(root,result,jar=jar,java=java,check=check,force=force)
     from tools.character_asset_status import annotate

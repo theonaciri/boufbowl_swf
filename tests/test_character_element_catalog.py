@@ -1,13 +1,28 @@
 """Character membership follows native frame labels, not guessed class names."""
 import struct
 import unittest
-from tools.character_element_catalog import frames, inspect, memberships, is_common, ROOT
+from tools.character_element_catalog import frames, inspect, memberships, is_common, puppet_entries, ROOT
 
 
 def place(depth,identity):return (26,b'\x02'+struct.pack('<HH',depth,identity))
 
 
 class CharacterElementCatalogTests(unittest.TestCase):
+    def test_workshop_contains_runtime_puppet_parts_not_fullscreen_artwork(self):
+        from tools.build_restoration_data import audit
+        characters=audit()['characters'];entries=puppet_entries(characters)
+        for parts in entries.values():
+            self.assertTrue(parts)
+            for entry in parts:
+                self.assertTrue(entry['source'].startswith('assets/sprites/skins/'))
+                self.assertEqual(entry['kind'],'body')
+                self.assertNotEqual(entry['name'],'colorGray_4_poulet_corps')
+                self.assertFalse(entry['name'].lower().startswith('anim'))
+        hair=next(e for e in entries['iop-1'] if e['name']=='cheveux_d')
+        self.assertEqual(hair['source'],'assets/sprites/skins/61.swl')
+        self.assertTrue(any(e['scope']=='shared' for e in entries['iop-1']))
+        self.assertFalse(any(e['scope']=='class' for e in entries['ecaflip-1']))
+        self.assertFalse(any(e['source'] in ('assets/sprites/skins/11.swl','assets/sprites/skins/12.swl') for e in entries['ecaflip-1']))
     def test_named_class_and_costume_parts_are_not_generic_shared_elements(self):
         everyone={i*10+g for i in range(1,15) for g in (1,2)}|{501,517}
         for name in ('colorGray_4_Sadida_slip_canar','colorGray_4_poupee_sadida','colorGray_4_build06_bras2_ironman','colorGray_4_Ballotin_meuf_jupe','colorGray_4_symbole54543','cheveux_f','AnimStatique_d'):

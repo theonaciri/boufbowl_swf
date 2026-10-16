@@ -18,6 +18,7 @@ def annotate(catalog,characters,root,check=False):
         if character['body_available']:continue
         skin=Path(character['body_path']).stem
         for entry in entries:
+            if entry.get('scope')=='shared':continue
             relative=f"assets/sprites/restoration-elements/{skin}/{entry['name']}.swf";path=root/relative
             entry['target_status']='missing'
             if not path.is_file():continue
