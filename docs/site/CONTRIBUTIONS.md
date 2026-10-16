@@ -92,7 +92,7 @@ transparents. `tools.build_website` lance aussi cette étape ; les images sont
 générées et ignorées par Git. Une empreinte des sources et du script permet de
 réutiliser les exports. FFDec, Java et FFmpeg sont nécessaires au premier export.
 
-Le sélecteur d’éléments dépend du personnage choisi, et non de la référence Crâ.
+Le sélecteur d’éléments dépend du personnage choisi, et non du personnage de référence.
 `tools.character_element_catalog` suit les images `cg_<identité>` des deux
 bibliothèques d’illustrations, uniquement sous les poses `boufbowler[12]_posing…`, et leurs dépendances (placements, profondeurs,
 retraits et sous-symboles). Il ajoute les symboles du corps SWL original lorsque
@@ -105,9 +105,10 @@ Les illustrations sont retrouvées mais ne constituent pas l’inventaire des co
 animés absents. Pour ces corps, les symboles d’illustration peuvent servir de
 gabarits de reconstruction, avec leur nom exact et un chemin de travail
 `assets/sprites/restoration-elements/<skin>/<symbole>.swf`. Les originaux déjà
-retrouvés ne reçoivent pas de remplacement. Le Crâ à gauche reste une référence
-structurelle, marquée approximative en cas de correspondance indirecte ; son
-sexe ne modifie jamais la liste d’éléments du personnage sélectionné.
+retrouvés ne reçoivent pas de remplacement. À gauche, le choix « Référence » propose les cinq corps originaux retrouvés :
+Crâ M/F, Eniripsa F, Enutrof F et Iop M. Leurs propres exports sont utilisés, avec
+une mention en cas de correspondance approximative. Ce choix ne modifie jamais
+la liste d’éléments du personnage sélectionné.
 
 Ces gabarits ne prouvent pas les noms des pièces de l’archive d’animation
 manquante. Leur adaptation et leur assemblage restent manuels ; les statistiques
