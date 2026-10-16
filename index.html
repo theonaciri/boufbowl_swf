@@ -12,7 +12,7 @@
     <link rel="icon" href="assets/site/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="home.css" />
     <link rel="stylesheet" href="contributions.css?v=upload-align-1" />
-    <link rel="stylesheet" href="restoration.css?v=grid-icons-1" />
+    <link rel="stylesheet" href="restoration.css?v=all-pose-icons-1" />
     <link rel="preload" href="assets/site/cinematic-poster.webp" as="image" />
   </head>
   <body>
@@ -384,32 +384,7 @@
                   <label class="pose-select-label" for="character-pose-select">Toutes les poses
                     <select id="character-pose-select"><option value="default">Vestiaire</option></select>
                   </label>
-                  <div class="pose-picker" aria-label="Choisir une pose">
-                    <button
-                      data-pose="default"
-                      aria-pressed="true"
-                      title="Pose de vestiaire"
-                    >
-                      Ⅰ<span>Vestiaire</span></button
-                    ><button
-                      data-pose="winner"
-                      aria-pressed="false"
-                      title="Pose de victoire"
-                    >
-                      ★<span>Victoire</span></button
-                    ><button
-                      data-pose="versus"
-                      aria-pressed="false"
-                      title="Pose face-à-face"
-                    >
-                      ⚔<span>Face-à-face</span>
-                    </button>
-                    <button data-pose="loser" aria-pressed="false" title="Défaite">↘<span>Défaite</span></button>
-                    <button data-pose="winner-default" aria-pressed="false" title="Victoire par forfait">✓<span>Victoire par forfait</span></button>
-                    <button data-pose="loser-default" aria-pressed="false" title="Défaite par forfait">×<span>Défaite par forfait</span></button>
-                    <button data-pose="draw" aria-pressed="false" title="Match nul">＝<span>Match nul</span></button>
-                    <button data-pose="alternate" aria-pressed="false" title="Pose accroupie">Ⅱ<span>Accroupi</span></button>
-                  </div>
+                  <div class="pose-picker" role="group" aria-label="Choisir une pose"></div>
                   <img
                     id="character-portrait"
                     src="assets/site/restoration/cra-1-default.webp?v=b9c6d99f62ff1c17-2x"
@@ -1102,7 +1077,7 @@
     </dialog>
     <div id="brawl-announcer" aria-live="polite" class="sr-only"></div>
     <script src="contributions.js?v=upload-icon-1" defer></script>
-    <script src="restoration.js?v=body-swf-2" defer></script>
+    <script src="restoration.js?v=all-pose-icons-1" defer></script>
     <script src="home.js" defer></script>
   </body>
 </html>

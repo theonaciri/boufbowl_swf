@@ -557,6 +557,22 @@
         option.value = id;
         return option;
       }));
+      const poseIcons = {
+        default: 'Ⅰ', winner: '★', versus: '⚔', loser: '↘',
+        'winner-default': '✓', 'loser-default': '×', draw: '＝', alternate: 'Ⅱ',
+        'action-01': '➶', 'action-04': '⇘', 'action-05': '◉', 'action-06': '✧',
+        'action-07': '⟳', 'action-09': '〰', 'action-10': '⇧', 'action-13': '⤴',
+        'action-02': '↔', 'action-03': '⇥',
+      };
+      document.querySelector('.pose-picker').replaceChildren(...Object.entries(labels).map(([id, label]) => {
+        const button = el('button', poseIcons[id] || '◇');
+        button.type = 'button';
+        button.dataset.pose = id;
+        button.title = label;
+        button.setAttribute('aria-label', label);
+        button.setAttribute('aria-pressed', String(id === state.pose));
+        return button;
+      }));
       const summary = data.summary;
       for (const [gender, id] of [
         [1, "character-bodies-men"],

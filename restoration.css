@@ -353,12 +353,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 110px 0 45px;
+  padding: 110px 0 45px 100px;
 }
 .pose-select-label {
   position: absolute;
   top: 73px;
-  left: 65px;
+  left: 100px;
   right: 12px;
   display: flex;
   flex-wrap: wrap;
@@ -410,10 +410,10 @@
 .pose-picker {
   position: absolute;
   left: 8px;
-  top: 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  top: 110px;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 6px;
   z-index: 2;
 }
 .pose-picker button {
@@ -1284,7 +1284,7 @@
   }
   .character-artboard {
     min-height: 560px;
-    padding-left: 28px;
+    padding-left: 84px;
   }
   .character-artboard > img {
     max-height: 500px;
@@ -1673,4 +1673,9 @@
 .restoration-explorer noscript img {
   max-width: 100%;
   height: auto;
+}
+
+@media (max-width: 600px) {
+  .character-artboard { padding-left: 74px; }
+  .pose-select-label { left: 74px; }
 }
