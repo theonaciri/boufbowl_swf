@@ -24,7 +24,7 @@
     form.reset();submit.disabled=false;progress.hidden=true;status.textContent='';input.accept=selected.extension;
     expected.textContent=`${selected.related_to?.length?selected.related_to.map(r=>r.label).join(' · ')+' — ':''}Nom exact : ${selected.name} · ${selected.extension} · ${(selected.max_bytes/1048576).toLocaleString('fr-FR')} Mo maximum. ${selected.path}`;
     dialog.showModal();input.focus();}
-  window.AssetContributions={button(path){const b=el('button','Proposer ce fichier ↥');b.type='button';b.className='asset-upload-button';b.onclick=()=>open(path);return b;}};
+  window.AssetContributions={button(path){const b=el('button','↥');b.type='button';b.title='Proposer ce fichier';b.setAttribute('aria-label','Proposer ce fichier');b.className='asset-upload-button';b.onclick=()=>open(path);return b;}};
   form.onsubmit=async event=>{event.preventDefault();const file=input.files[0];if(!selected||!file)return;
     if(file.name!==selected.name){status.textContent=`Le fichier doit porter exactement le nom ${selected.name}.`;return;}
     if(!file.size||file.size>selected.max_bytes){status.textContent='Le fichier dépasse la limite indiquée ou est vide.';return;}
