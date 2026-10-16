@@ -2066,11 +2066,11 @@
     "es": "Partido de $1 contra $2"
   },
     "tournament_help_content" : {
-        "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
-        "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
-        "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
-        "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
-    },
+    "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
+    "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
+    "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
+    "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
+},
     "tournament_past_tournament_button" : {
         "fr" : "Historique",
         "en" : "History",
@@ -2144,11 +2144,11 @@
     }
 },
     "tournament_elimination_rule" : {
-        "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
-        "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
-        "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
-        "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
-    },
+    "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
+    "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
+    "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
+    "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
+},
     "tournament_multiple_registration_rule" :   {
         /* TODO : Pas utilisé */
         "fr" : "Si tu as été éliminé, tu peux te réinscrire à ce tournoi en payant à nouveau le prix d'entrée.",

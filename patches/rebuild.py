@@ -5,17 +5,32 @@ from pathlib import Path
 import subprocess
 import tempfile
 import sys
+import os
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--ffdec", type=Path, required=True, help="Path to ffdec.jar")
+parser.add_argument("--ffdec", type=Path, help="Path to ffdec.jar (defaults to FFDEC_JAR or the Boufbowl tool cache)")
 parser.add_argument("--original", type=Path, help="Source SWF override (default: bin/base/boufbowl-client-1.9.6.swf)")
 parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
+if args.ffdec is None:
+    candidates = []
+    if os.environ.get("FFDEC_JAR"):
+        candidates.append(Path(os.environ["FFDEC_JAR"]).expanduser())
+    cache_root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+    candidates.extend([
+        cache_root / "boufbowl-flash-tools/ffdec/ffdec.jar",
+        cache_root / "boufbowl-flash-tools/ffdec/ffdec-cli.jar",
+    ])
+    args.ffdec = next((path for path in candidates if path.is_file()), None)
+    if args.ffdec is None:
+        parser.error("FFDec JAR not found; pass --ffdec /path/to/ffdec.jar or set FFDEC_JAR")
+elif not args.ffdec.is_file():
+    parser.error(f"FFDec JAR not found: {args.ffdec}")
 original = args.original or root / "bin/base/boufbowl-client-1.9.6.swf"
 if not original.is_file():
     parser.error("Client source missing; restore bin/base/boufbowl-client-1.9.6.swf or pass --original")

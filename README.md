@@ -188,12 +188,14 @@ are not automatically launched or installed.
 
 ### Desktop Flash client
 
-Install JDK 17 and obtain JPEXS FFDec 26.3.0. Set these paths to your own files:
+Install JDK 17 and obtain JPEXS FFDec 26.3.0. The rebuild script finds FFDec
+in `~/.cache/boufbowl-flash-tools/ffdec/ffdec.jar` when it has already been
+downloaded there. Otherwise pass its path with `--ffdec`, or set `FFDEC_JAR`.
 
 ```sh
 sudo apt-get install openjdk-17-jdk
 python3 -m tools.game_config
-python3 patches/rebuild.py --ffdec /path/to/ffdec.jar
+python3 patches/rebuild.py
 ./play.sh --mode server
 ```
 
