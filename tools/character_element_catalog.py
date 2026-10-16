@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 import re
 import zlib
-import xml.etree.ElementTree as ET
 from tools.site_portraits import ROOT
 
 
@@ -77,6 +76,24 @@ def is_common(name,users):
         r'(?:_(?:[234][bB]?|[dfgFmM]|[DG]|\d+))*',part,re.I))
 
 
+def loading_profile(character,root=ROOT):
+    root=Path(root);patch=root/'patches/BoufbowlerSprite.as'
+    code=patch.read_text()
+    available=re.search(r'var available:Array = \[([^]]+)\]',code)
+    hero=re.search(r'var heroAvailable:Boolean = (true|false)',code)
+    if not available or not hero:raise ValueError('Audit the character loading policy before generating requirements')
+    supported={int(i.strip()) for i in available[1].split(',')}
+    requested=character['class_id']*10+character['gender']
+    fallback=(bool(character['hero']) and hero[1]=='false') or requested not in supported
+    rendered=character['gender']+10 if fallback else requested
+    skins=[0,character['gender'],rendered]
+    if character['hero'] and hero[1]=='true':skins.append(character['hero'])
+    paths=[f'assets/sprites/skins/{i}.swl' for i in skins]
+    return {'evidence':'patches/BoufbowlerSprite.as:buildEntity','runtime_archives':[{'path':p,'present':(root/p).is_file(),'replacement':fallback and p==paths[2]} for p in paths],
+            'fallback':fallback,'rendered_skin':rendered,'original_archive':character['body_path'],'original_present':(root/character['body_path']).is_file(),
+            'original_symbol_inventory_known':(root/character['body_path']).is_file(),'individual_symbol_requirements_known':False,'note':'Le client charge les archives entières. Un symbole contenu dans une archive n’est pas une dépendance individuelle prouvée du personnage.'}
+
+
 def puppet_entries(characters,root=ROOT):
     """Only runtime skin libraries qualify, never illustration or pose libraries."""
     root=Path(root);class_names={};users=defaultdict(set)
@@ -89,11 +106,6 @@ def puppet_entries(characters,root=ROOT):
         names=parts(character['body_path']);class_names[character['id']]=names
         for name in names.values():users[name].add(character['hero'] or character['class_id']*10+character['gender'])
     specific={name for names in class_names.values() for name in names.values()}
-    recovered=[set(names.values()) for names in class_names.values() if names]
-    index=root/'assets/sprites/bones/0.xml'
-    slots={r.attrib['name']+'_'+d for r in ET.parse(index).iter('resource') for d in r.attrib.get('directions','').split(',') if d} if index.is_file() else set()
-    contract=root/'resources/puppet-slots.json'
-    expected=sorted(set(json.loads(contract.read_text())['slots'])&slots) if contract.is_file() else sorted(set.intersection(*recovered)&slots) if recovered else []
     base='assets/sprites/skins/0.swl'
     # The default skin also embeds Cra placeholders; those are not common class originals.
     base_names=[name for name in parts(base).values() if name not in specific]
@@ -103,16 +115,16 @@ def puppet_entries(characters,root=ROOT):
         relative=f"assets/sprites/skins/{character['gender']}.swl"
         for name in parts(relative).values():entries[name]={'name':name,'source':relative,'kind':'body','scope':'shared','common':True}
         for name in class_names[character['id']].values():entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name])}
-        for name in expected:
-            if name not in class_names[character['id']].values():
-                entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name]),'status':'missing','evidence':'skeleton-and-recovered-class-skins','evidence_sources':5 if contract.is_file() else len(recovered)}
+        if not (root/character['body_path']).is_file():
+            archive=Path(character['body_path']).name
+            entries['archive:'+archive]={'name':archive,'source':character['body_path'],'kind':'archive','scope':'class','common':False,'status':'missing','evidence':'character-skin-archive','required_for_runtime':any(e['path']==character['body_path'] for e in loading_profile(character,root)['runtime_archives'])}
         result[character['id']]=list(entries.values())
     return result
 
 
 def build(characters,root=ROOT,check=False,jar=None,java=None,force=False):
     root=Path(root)
-    result={'characters':puppet_entries(characters,root),'notice':'Pièces du pantin uniquement. Les archives absentes sont complétées par les emplacements attendus référencés dans le squelette et communs aux archives retrouvées ; les accessoires spécifiques inconnus ne sont pas inventés.'}
+    result={'characters':puppet_entries(characters,root),'notice':'Archives de chargement tirées de buildEntity. Aucun nom de pièce originale manquante n’est extrapolé depuis une autre classe. Les symboles retrouvés sont un inventaire de bibliothèque, pas des dépendances individuelles prouvées.'}
     from tools.export_character_previews import export
     missing={identity:[e for e in entries if e.get('status')=='missing'] for identity,entries in result['characters'].items()}
     result['characters']={identity:[e for e in entries if e.get('status')!='missing'] for identity,entries in result['characters'].items()}
@@ -120,11 +132,12 @@ def build(characters,root=ROOT,check=False,jar=None,java=None,force=False):
     for identity,entries in missing.items():result['characters'][identity].extend(entries)
     from tools.character_asset_status import annotate
     result=annotate(result,characters,root,check=check)
+    result['loading']={c['id']:loading_profile(c,root) for c in characters}
     result['scans']={}
     for character in characters:
         entries=result['characters'][character['id']]
         missing=[e for e in entries if e.get('status')=='missing' and not e.get('restored_image')]
-        result['scans'][character['id']]={'name':character['name'],'gender':character['gender'],'archive':character['body_path'],'archive_present':(root/character['body_path']).is_file(),'expected_slots':len([e for e in entries if e['scope']=='class']),'missing':[{'name':e['name'],'source':e['source'],'evidence':e['evidence']} for e in missing],'restored':sum(bool(e.get('restored_image')) for e in entries),'quality_review':sum(e.get('target_status') in ('restored_low_quality','restored_unreviewed') for e in entries),'inventory_complete':(root/character['body_path']).is_file() and not missing}
+        result['scans'][character['id']]={'name':character['name'],'gender':character['gender'],'archive':character['body_path'],'archive_present':(root/character['body_path']).is_file(),'known_class_symbols':len([e for e in entries if e['scope']=='class' and e['kind']=='body']),'missing':[{'name':e['name'],'source':e['source'],'evidence':e['evidence'],'kind':e['kind']} for e in missing],'restored':sum(bool(e.get('restored_image')) for e in entries),'quality_review':sum(e.get('target_status') in ('restored_low_quality','restored_unreviewed') for e in entries),'inventory_complete':(root/character['body_path']).is_file() and not missing}
     output=root/'assets/site/restoration/elements/characters.json'
     if check:
         if not output.is_file() or json.loads(output.read_text())!=result:raise ValueError('Character-specific element catalog is stale')

@@ -1,8 +1,7 @@
 """Character membership follows native frame labels, not guessed class names."""
 import struct
 import unittest
-from unittest.mock import patch
-from tools.character_element_catalog import frames, inspect, memberships, is_common, puppet_entries, ROOT
+from tools.character_element_catalog import frames, inspect, memberships, is_common, puppet_entries, loading_profile, ROOT
 
 
 def place(depth,identity):return (26,b'\x02'+struct.pack('<HH',depth,identity))
@@ -16,7 +15,7 @@ class CharacterElementCatalogTests(unittest.TestCase):
             self.assertTrue(parts)
             for entry in parts:
                 self.assertTrue(entry['source'].startswith('assets/sprites/skins/'))
-                self.assertEqual(entry['kind'],'body')
+                self.assertIn(entry['kind'],('body','archive'))
                 self.assertNotEqual(entry['name'],'colorGray_4_poulet_corps')
                 self.assertFalse(entry['name'].lower().startswith('anim'))
         hair=next(e for e in entries['iop-1'] if e['name']=='cheveux_d')
@@ -27,25 +26,24 @@ class CharacterElementCatalogTests(unittest.TestCase):
         for character in characters:
             expected=[e for e in entries[character['id']] if e.get('status')=='missing']
             self.assertEqual(bool(expected),not character['body_available'])
-        iop_hair=next(e for e in entries['iop-2'] if e['name']=='cheveux_d')
-        self.assertEqual(iop_hair['status'],'missing');self.assertEqual(iop_hair['source'],'assets/sprites/skins/62.swl')
-        self.assertEqual(iop_hair['evidence_sources'],5)
-        self.assertFalse(any('aile' in e['name'] for e in missing))
-        self.assertFalse(any(e['source'] in ('assets/sprites/skins/11.swl','assets/sprites/skins/12.swl') for e in entries['ecaflip-1']))
-    def test_partial_character_archive_does_not_shrink_the_expected_contract(self):
+        self.assertFalse(any(e['name']=='natte_2b' for e in entries['ecaflip-1']))
+        missing_iop=[e for e in entries['iop-2'] if e.get('status')=='missing']
+        self.assertEqual([e['name'] for e in missing_iop],['62.swl'])
+        self.assertEqual(missing_iop[0]['kind'],'archive')
+        self.assertFalse(missing_iop[0]['required_for_runtime'])
+    def test_loading_requirements_follow_runtime_fallback_not_other_class_symbols(self):
         from tools.build_restoration_data import audit
-        original=inspect
-        def partial(path):
-            names,sprites=original(path)
-            if path.name=='61.swl':names={i:n for i,n in names.items() if n!='cheveux_d'}
-            return names,sprites
-        with patch('tools.character_element_catalog.inspect',side_effect=partial):
-            entries=puppet_entries(audit()['characters'])
-        hair=next(e for e in entries['iop-1'] if e['name']=='cheveux_d')
-        self.assertEqual(hair['status'],'missing')
-        self.assertEqual(hair['source'],'assets/sprites/skins/61.swl')
-        self.assertNotIn('image',hair)
-        self.assertEqual(len([e for e in entries['iop-2'] if e.get('status')=='missing']),93)
+        characters={c['id']:c for c in audit()['characters']}
+        ecaflip=loading_profile(characters['ecaflip-1'])
+        self.assertEqual([e['path'] for e in ecaflip['runtime_archives']],[f'assets/sprites/skins/{i}.swl' for i in (0,1,11)])
+        self.assertTrue(ecaflip['fallback']);self.assertFalse(ecaflip['original_symbol_inventory_known'])
+        self.assertFalse(ecaflip['individual_symbol_requirements_known'])
+        iop=loading_profile(characters['iop-1'])
+        self.assertFalse(iop['fallback']);self.assertEqual(iop['rendered_skin'],61)
+        for character in characters.values():
+            profile=loading_profile(character)
+            self.assertTrue(all(e['present'] for e in profile['runtime_archives']))
+            self.assertFalse(profile['individual_symbol_requirements_known'])
     def test_named_class_and_costume_parts_are_not_generic_shared_elements(self):
         everyone={i*10+g for i in range(1,15) for g in (1,2)}|{501,517}
         for name in ('colorGray_4_Sadida_slip_canar','colorGray_4_poupee_sadida','colorGray_4_build06_bras2_ironman','colorGray_4_Ballotin_meuf_jupe','colorGray_4_symbole54543','cheveux_f','AnimStatique_d'):

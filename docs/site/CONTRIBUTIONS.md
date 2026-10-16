@@ -107,21 +107,24 @@ Les helpers d’analyse des poses restent utilisés par les contrôles d’archi
 mais ne fournissent plus les entrées de cet atelier.
 
 Le choix « Référence » propose les cinq corps spécifiques retrouvés : Crâ M/F,
-Eniripsa F, Enutrof F et Iop M. Pour les autres personnages, le sélecteur présente les parties communes connues
-et les **emplacements attendus à restaurer**. Leur nom vient du contrat attesté dans `resources/puppet-slots.json`, établi
-à partir des cinq archives et du squelette `bones/0.xml` (93 emplacements).
-Le contrat est conservé avec ses preuves : une archive qui perd une pièce ne
-réduit donc pas la liste attendue. Chaque personnage est contrôlé séparément,
-y compris lorsque son archive est présente mais incomplète. Ces entrées sont marquées manquantes, sans image empruntée à une autre
-classe, et proposent un envoi SWF par nom exact. Le choix de référence fournit
-l’aperçu comparatif séparé.
+Eniripsa F, Enutrof F et Iop M. Pour les autres personnages, l’archive originale absente est listée, sans
+supposer ses symboles internes. La liste précédente de 93 emplacements génériques
+a été retirée : une intersection entre d’autres classes ne démontre pas ce que
+charge le personnage choisi. Le fichier `resources/puppet-slots.json` a été supprimé.
 
-Il s’agit du contrat du squelette, pas d’un inventaire exhaustif de l’archive
-absente : le dessin original et les accessoires supplémentaires restent inconnus.
-Les ailes, masques et autres particularités ne sont pas extrapolés depuis une
-illustration ou une autre classe. L’envoi de l’archive SWL complète reste proposé.
-Ces emplacements ne gonflent pas les statistiques globales des assets originaux
-recensés ; ils servent de liste de travail pour la reconstruction.
+Le rapport `loading` suit la politique `BoufbowlerSprite.buildEntity` du client
+actuel : socle 0, corps M/F, puis skin spécifique autorisé ou remplacement Crâ.
+Les légendes désactivées utilisent également ce remplacement. Les archives
+originales à restaurer sont distinguées des fichiers réellement chargés.
+Exemple : Écaflip M charge actuellement `0.swl`, `1.swl`, `11.swl` (Crâ M) ;
+`21.swl` est l’original absent, pas une requête de chargement actuelle.
+
+Une archive SWL charge ses symboles ensemble. Leur présence dans cette archive
+ne prouve pas une dépendance individuelle ni un usage par toutes les animations.
+Sans trace de demandes propre au personnage ou archive originale, aucune liste
+de pièces manquantes ne peut être affirmée. Les symboles existants restent
+consultables comme inventaire des bibliothèques retrouvées, pas comme besoins
+individuels garantis. Le bouton d’envoi conserve le nom exact de l’archive SWL.
 
 ## Aperçus originaux et qualité des reconstructions
 
@@ -149,9 +152,8 @@ génère l’aperçu de la reconstruction en isolation, sans ActionScript ; les 
 de qualité basse ou non évaluées peuvent recevoir une meilleure proposition.
 L’approbation d’un envoi en quarantaine ne vaut ni intégration ni évaluation de qualité.
 
-Le fichier généré `elements/characters.json` contient un rapport `scans` pour
-chaque personnage : archive attendue et présence, emplacements connus, noms
-manquants individuels, reconstructions présentes et évaluations à reprendre.
-L’atelier affiche ces lignes cliquables et propose le téléchargement du rapport
-complet. Un fichier restauré présent n’est plus compté comme manquant ; une
-proposition simplement approuvée en quarantaine reste hors de ce bilan.
+Le fichier généré `elements/characters.json` contient les rapports `loading`
+(archives effectivement utilisées et remplacement) et `scans` (archive originale
+présente/absente et symboles spécifiques retrouvés). Ces informations sont
+publiques et téléchargeables depuis l’atelier. Les titres des aperçus restent
+alignés et les indicateurs distinguent l’original, la reconstruction et l’absence.
