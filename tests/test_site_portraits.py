@@ -38,3 +38,12 @@ class SitePortraitTests(unittest.TestCase):
             self.assertEqual(portrait['height'], 2*data['render']['previous_canvas_height'])
             self.assertGreater(portrait['width'], 80)
             self.assertGreater((ROOT/portrait['path']).stat().st_size, 1024)
+
+    def test_special_characters_keep_all_eighteen_distinct_pose_exports(self):
+        data = manifest()
+        for hero in range(513, 519):
+            with self.subTest(hero=hero):
+                exports = [e for e in data['exports'] if e['hero'] == hero]
+                self.assertEqual({e['pose'] for e in exports}, set(POSES))
+                # The old Jack exports reused the same bitmap for two actions.
+                self.assertEqual(len({e['sha256'] for e in exports}), len(POSES))
