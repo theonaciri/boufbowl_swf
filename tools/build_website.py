@@ -12,13 +12,20 @@ import struct
 import subprocess
 import tempfile
 import threading
+import time
+from tools.site_delivery import delivery, write_json
+from tools.build_legal_pages import outputs as legal_outputs
+from backend.server import site_manifest
 from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size
 from tools.game_config import load_config, startup_source
 from tools.build_restoration_data import audit
 
 
 def main():
+    started = time.perf_counter()
+    timings = {}
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=ROOT/'.local/website/dist', help='Public website delivery directory')
     parser.add_argument('--ffdec', type=Path, default=os.environ.get('FFDEC_JAR'))
     parser.add_argument('--java', default=os.environ.get('JAVA', 'java'))
     parser.add_argument('--bun', default=os.environ.get('BUN', 'bun'))
@@ -53,8 +60,23 @@ def main():
     if args.check:
         if pending or manifest()!=old:
             raise SystemExit(f'{len(pending)} portraits require a website build')
-        print(f'Verified {len(tasks)} portraits at 1080 px')
+        inventory_path=directory/'inventory.json'
+        current_inventory=json.loads(inventory_path.read_text())
+        expected_inventory=audit()
+        expected_inventory['inventory_date']=current_inventory.get('inventory_date')
+        if current_inventory != expected_inventory:
+            raise SystemExit('Restoration status and completion statistics are stale')
+        for name, content in legal_outputs().items():
+            if (ROOT/name).read_text()!=content:
+                raise SystemExit('Legal page is stale: '+name)
+        snapshot=ROOT/'resources/site-manifest.json'
+        if not snapshot.is_file() or json.loads(snapshot.read_text())!=site_manifest(ROOT):
+            raise SystemExit('Download availability snapshot is stale')
+        report=delivery(ROOT,args.output,check=True)
+        print(f"Verified {len(tasks)} portraits, all restoration statistics and {report['file_count']} delivered files in {time.perf_counter()-started:.2f}s")
         return
+    timings['planning_seconds']=round(time.perf_counter()-started,3)
+    rendering_started=time.perf_counter()
     if pending:
         if not args.ffdec or not Path(args.ffdec).is_file():
             parser.error('Rendering needs --ffdec /path/to/ffdec.jar (or FFDEC_JAR)')
@@ -128,10 +150,27 @@ if(!response.ok)throw Error(await response.text());result.done++;
                 subprocess.run([args.bun,str(ROOT/'tools/website/render.mjs'),f'http://127.0.0.1:{server.server_port}{token}'],check=True,timeout=7200)
             finally:
                 server.shutdown();server.server_close();thread.join()
+    timings['rendering_seconds']=round(time.perf_counter()-rendering_started,3)
+    inventory_started=time.perf_counter()
     data=manifest()
     old_path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
-    (directory/'inventory.json').write_text(json.dumps(audit(),ensure_ascii=False,indent=2)+'\n')
-    print(f'Website ready: {len(tasks)} native portraits; {len(pending)} rendered.')
+    inventory=audit()
+    write_json(directory/'inventory.json',inventory)
+    for name, content in legal_outputs().items():
+        (ROOT/name).write_text(content)
+    write_json(ROOT/'resources/site-manifest.json',site_manifest(ROOT))
+    timings['inventory_seconds']=round(time.perf_counter()-inventory_started,3)
+    delivery_started=time.perf_counter()
+    report=delivery(ROOT,args.output)
+    timings['delivery_seconds']=round(time.perf_counter()-delivery_started,3)
+    timings['total_seconds']=round(time.perf_counter()-started,3)
+    write_json(ROOT/'.local/website/build-report.json',{
+        'timings':timings,'portraits_rendered':len(pending),'portraits_total':len(tasks),
+        'completion':inventory['summary'],'asset_groups':inventory['asset_groups'],
+        'delivery':{'directory':str(args.output.resolve()),'file_count':report['file_count'],'bytes':report['bytes']}})
+    print(f"Website ready: {len(tasks)} portraits; {len(pending)} rendered; {inventory['summary']['completion_percent']}% of catalogued assets found.")
+    print(f"Delivered {report['file_count']} files ({report['bytes']/1024/1024:.1f} MiB) to {args.output}")
+    print('Timing: '+', '.join(f'{key}={value:.3f}' for key,value in timings.items()))
 
 
 if __name__=='__main__':

@@ -63,3 +63,4 @@ Thumbs.db
 /assets/site/restoration/*-alternate.webp
 /assets/site/restoration/*-action-*.webp
 /tools/website/node_modules/
+/resources/site-manifest.json

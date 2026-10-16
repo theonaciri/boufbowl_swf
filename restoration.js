@@ -80,7 +80,7 @@
   }
   const metric = (found, total, label, note) => {
     const box = el("div", null, "restoration-metric");
-    box.append(el("strong", `${found} / ${total}`), el("span", label));
+    box.append(el("strong", `${found} / ${total}`), el("span", `${label} · ${total ? (100 * found / total).toLocaleString("fr-FR", {maximumFractionDigits: 1}) : 0} %`));
     const bar = el("progress");
     bar.max = total || 1;
     bar.value = found;
@@ -608,19 +608,19 @@
           summary.assets_expected,
           "Total des ressources retrouvées",
           data.asset_groups.map((g) => `${g.label} : ${g.found} / ${g.expected}`).join(" · ") +
-            ". Périmètre recensé des ateliers, ressources manquantes comprises ; une ressource retrouvée peut rester à améliorer.",
+            `. ${summary.assets_missing} ressources restent à retrouver. Périmètre recensé des ateliers ; une ressource retrouvée peut rester à améliorer.`,
         ),
         metric(
           summary.bodies_found,
           summary.bodies_expected,
           "Corps animés classiques retrouvés",
-          "Crâ H/F, Eniripsa F, Enutrof F et Iop H.",
+          data.characters.filter((c) => !c.hero && c.body_available).map((c) => `${c.name} ${c.gender === 1 ? "H" : "F"}`).join(", ") + ".",
         ),
         metric(
           summary.geometry_found,
           summary.geometry_expected,
           "Décors 3D originaux retrouvés",
-          "Les neuf fonds tactiques sont retrouvés ; les variantes 3D partagent encore le décor de Cania.",
+          `${data.stadiums.filter((s) => s.surface_available).length} / ${data.stadiums.length} fonds tactiques retrouvés ; les décors de substitution restent signalés.`,
         ),
         metric(
           summary.audio_found,

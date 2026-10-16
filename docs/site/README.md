@@ -148,8 +148,8 @@ Les ombres et effets qui font partie du dessin original sont conservés. Les Web
 sont encodés en qualité 92. Le script de capture utilise un tampon WebGL conservé
 pour éviter les captures vides ; les très larges poses passent par l’encodeur PNG
 du client. Les SWF temporaires de capture ne sont pas distribués.
-Les emplacements de poses restent séparés même lorsque leur rendu est identique,
-comme pour deux poses de Jack Chaferton ; aucun dessin supplémentaire n’est inventé.
+Chaque pose conserve le symbole et le dessin de la bibliothèque originale ;
+aucun dessin supplémentaire n’est inventé.
 
 `tools/site_portrait_capture.as.inc` contient les callbacks d’export, injectés
 uniquement dans un SWF distinct ; le client jouable n’est pas modifié.
@@ -252,3 +252,44 @@ L’option `--character` est répétable. Les exports restent séquentiels dans 
 seul lecteur de rendu, afin de ne pas capturer l’état d’un autre personnage.
 Ajouter `--pose default` limite la réparation aux aperçus du sélecteur ; cette
 option est également répétable pour exporter plusieurs poses précises.
+
+### Inventaire, livraison et durée du build
+
+`python3 -m tools.build_website` effectue maintenant toute la préparation publique :
+
+- vérification et export incrémental des portraits ;
+- nouveau relevé des illustrations, corps, surfaces, géométries et sons, avec
+  fichiers manquants, substitutions et restaurations audio de qualité basse ;
+- calcul des totaux, ressources manquantes et pourcentages par famille et au global ;
+- contrôle des médias, polices, images et clips utilisés par l’accueil ;
+- génération des pages juridiques et disponibilité/taille réelle des téléchargements ;
+- livraison de tous les fichiers publics dans `.local/website/dist`, avec
+  `delivery.json` (liste, tailles et SHA-256) et rapport chronométré dans
+  `.local/website/build-report.json`.
+
+`--output /chemin/hors-du-depot/site` choisit une autre destination. Dans le
+checkout, les destinations doivent rester sous `.local`. Le dossier est préparé
+avant de remplacer la livraison précédente. Les fichiers supprimés des sources
+ne restent pas dans la livraison. Les données privées, certificats, comptes,
+bases SQLite et outils de compilation ne sont pas copiés.
+
+Le dossier livré est un ensemble de fichiers publics à déployer sur le serveur
+Boufbowl existant, avec les médias et téléchargements. Il ne remplace pas le
+backend Python : les comptes et le jeu nécessitent toujours ses routes API.
+La page d’accueil, ses ateliers et ses téléchargements peuvent être prévisualisés
+sur un serveur statique grâce au manifeste public de repli. Aucun envoi ni
+redémarrage du serveur n’est effectué par le build.
+
+`--check` ne régénère rien : il contrôle les portraits, le relevé de restauration,
+les pages juridiques, les téléchargements et les empreintes de la livraison.
+Un ajout ou une suppression de ressource rend le contrôle périmé jusqu’au build
+suivant. La progression affichée décrit les fichiers retrouvés dans le périmètre
+recensé ; elle ne mesure pas une validation de fidélité au jeu original.
+
+Mesures sur ce serveur (16 octobre 2026) : un build à jour, inventaire et livraison
+compris, prend environ **1 à 2 secondes**. Le rendu forcé des **108 poses** des six
+légendes a pris **5 min 05 s**. À cadence identique, un export complet des **828
+portraits** représente environ **39 minutes** : c’est une estimation, sensible au
+CPU et au navigateur, et non une mesure d’un build complet. L’installation initiale
+des outils et de Chromium n’est pas comprise. Chaque exécution affiche ses durées
+réelles par étape et les enregistre dans le rapport de build.

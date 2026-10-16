@@ -550,6 +550,11 @@
       if (!r.ok) throw Error("Site configuration unavailable");
       return r.json();
     })
+    .catch(async () => {
+      const response = await fetch("resources/site-manifest.json", { cache: "no-store" });
+      if (!response.ok) throw Error("Site configuration unavailable");
+      return response.json();
+    })
     .then((data) => {
       for (const [key, id] of [
         ["android", "android"],

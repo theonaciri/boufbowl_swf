@@ -11,6 +11,12 @@ class RestorationInventoryTests(unittest.TestCase):
         recovered={c['id'] for c in data['characters'] if c['body_available'] and not c['hero']}
         self.assertEqual(recovered,{'cra-1','cra-2','eniripsa-2','enutrof-2','iop-1'})
         self.assertEqual(data['summary']['geometry_found'],1)
+        self.assertEqual(len(data['asset_status']),data['summary']['assets_expected'])
+        self.assertEqual(sum(a['available'] for a in data['asset_status']),data['summary']['assets_found'])
+        self.assertEqual(data['summary']['assets_missing'],data['summary']['assets_expected']-data['summary']['assets_found'])
+        self.assertEqual(data['summary']['audio_low_quality'],3)
+        self.assertEqual(sum(a['status']=='restored_low_quality' for a in data['asset_status']),3)
+        self.assertEqual(data['summary']['completion_percent'],round(100*data['summary']['assets_found']/data['summary']['assets_expected'],1))
         self.assertEqual(data['summary']['assets_found'],sum(g['found'] for g in data['asset_groups']))
         self.assertEqual(data['summary']['assets_expected'],sum(g['expected'] for g in data['asset_groups']))
         self.assertEqual(next(g['expected'] for g in data['asset_groups'] if g['label'].startswith('Corps animés')),46)
