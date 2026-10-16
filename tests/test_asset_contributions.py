@@ -33,7 +33,7 @@ class AssetContributionTests(unittest.TestCase):
     def test_element_catalog_targets_only_selected_character_and_missing_bodies(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary);folder=root/'assets/site/restoration/elements';folder.mkdir(parents=True)
-            (folder/'characters.json').write_text(json.dumps({'characters':{'missing':[{'name':'tete_neutre','kind':'illustration','source':'assets/artworks/source.swf'}],'other':[{'name':'cheveux','kind':'illustration','source':'assets/artworks/source.swf'}]}}))
+            (folder/'characters.json').write_text(json.dumps({'characters':{'missing':[{'name':'tete_neutre','kind':'body','scope':'class','status':'missing','source':'assets/sprites/skins/21.swl'}],'other':[{'name':'cheveux','kind':'body','scope':'class','status':'missing','source':'assets/sprites/skins/22.swl'}]}}))
             (folder.parent/'inventory.json').write_text(json.dumps({'asset_status':[], 'characters':[
                 {'id':'missing','body_available':False,'body_path':'assets/sprites/skins/21.swl','gender':1},
                 {'id':'original','body_available':True,'body_path':'assets/sprites/skins/11.swl','gender':1}]}))

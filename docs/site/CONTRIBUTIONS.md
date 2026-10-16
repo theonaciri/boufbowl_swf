@@ -107,10 +107,20 @@ Les helpers d’analyse des poses restent utilisés par les contrôles d’archi
 mais ne fournissent plus les entrées de cet atelier.
 
 Le choix « Référence » propose les cinq corps spécifiques retrouvés : Crâ M/F,
-Eniripsa F, Enutrof F et Iop M. Pour les autres personnages, le sélecteur présente
-les parties communes connues, avec une mention explicite que l’inventaire des
-pièces spécifiques est inconnu. Le bouton d’envoi de leur archive SWL reste
-proposé. Aucun nom de pièce manquante n’est inventé d’après les illustrations.
+Eniripsa F, Enutrof F et Iop M. Pour les autres personnages, le sélecteur présente les parties communes connues
+et les **emplacements attendus à restaurer**. Leur nom vient de l’intersection
+des symboles de toutes les archives de classe retrouvées avec les ressources et
+directions déclarées dans `bones/0.xml` (93 emplacements avec les cinq archives
+actuelles). Ces entrées sont marquées manquantes, sans image empruntée à une autre
+classe, et proposent un envoi SWF par nom exact. Le choix de référence fournit
+l’aperçu comparatif séparé.
+
+Il s’agit du contrat du squelette, pas d’un inventaire exhaustif de l’archive
+absente : le dessin original et les accessoires supplémentaires restent inconnus.
+Les ailes, masques et autres particularités ne sont pas extrapolés depuis une
+illustration ou une autre classe. L’envoi de l’archive SWL complète reste proposé.
+Ces emplacements ne gonflent pas les statistiques globales des assets originaux
+recensés ; ils servent de liste de travail pour la reconstruction.
 
 ## Aperçus originaux et qualité des reconstructions
 

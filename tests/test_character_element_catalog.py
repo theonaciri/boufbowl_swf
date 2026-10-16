@@ -21,7 +21,15 @@ class CharacterElementCatalogTests(unittest.TestCase):
         hair=next(e for e in entries['iop-1'] if e['name']=='cheveux_d')
         self.assertEqual(hair['source'],'assets/sprites/skins/61.swl')
         self.assertTrue(any(e['scope']=='shared' for e in entries['iop-1']))
-        self.assertFalse(any(e['scope']=='class' for e in entries['ecaflip-1']))
+        missing=[e for e in entries['ecaflip-1'] if e['scope']=='class']
+        self.assertTrue(missing);self.assertTrue(all(e['status']=='missing' and 'image' not in e for e in missing))
+        for character in characters:
+            expected=[e for e in entries[character['id']] if e.get('status')=='missing']
+            self.assertEqual(bool(expected),not character['body_available'])
+        iop_hair=next(e for e in entries['iop-2'] if e['name']=='cheveux_d')
+        self.assertEqual(iop_hair['status'],'missing');self.assertEqual(iop_hair['source'],'assets/sprites/skins/62.swl')
+        self.assertEqual(iop_hair['evidence_sources'],5)
+        self.assertFalse(any('aile' in e['name'] for e in missing))
         self.assertFalse(any(e['source'] in ('assets/sprites/skins/11.swl','assets/sprites/skins/12.swl') for e in entries['ecaflip-1']))
     def test_named_class_and_costume_parts_are_not_generic_shared_elements(self):
         everyone={i*10+g for i in range(1,15) for g in (1,2)}|{501,517}

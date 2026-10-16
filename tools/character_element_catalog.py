@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import zlib
+import xml.etree.ElementTree as ET
 from tools.site_portraits import ROOT
 
 
@@ -88,6 +89,10 @@ def puppet_entries(characters,root=ROOT):
         names=parts(character['body_path']);class_names[character['id']]=names
         for name in names.values():users[name].add(character['hero'] or character['class_id']*10+character['gender'])
     specific={name for names in class_names.values() for name in names.values()}
+    recovered=[set(names.values()) for names in class_names.values() if names]
+    index=root/'assets/sprites/bones/0.xml'
+    slots={r.attrib['name']+'_'+d for r in ET.parse(index).iter('resource') for d in r.attrib.get('directions','').split(',') if d} if index.is_file() else set()
+    expected=sorted(set.intersection(*recovered)&slots) if recovered else []
     base='assets/sprites/skins/0.swl'
     # The default skin also embeds Cra placeholders; those are not common class originals.
     base_names=[name for name in parts(base).values() if name not in specific]
@@ -97,15 +102,21 @@ def puppet_entries(characters,root=ROOT):
         relative=f"assets/sprites/skins/{character['gender']}.swl"
         for name in parts(relative).values():entries[name]={'name':name,'source':relative,'kind':'body','scope':'shared','common':True}
         for name in class_names[character['id']].values():entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name])}
+        if not class_names[character['id']]:
+            for name in expected:
+                entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name]),'status':'missing','evidence':'skeleton-and-recovered-class-skins','evidence_sources':len(recovered)}
         result[character['id']]=list(entries.values())
     return result
 
 
 def build(characters,root=ROOT,check=False,jar=None,java=None,force=False):
     root=Path(root)
-    result={'characters':puppet_entries(characters,root),'notice':'Pièces du pantin uniquement : bibliothèques skins/0, skins/<sexe> et skins/<classe> ; illustrations et animations assemblées exclues. Sans archive de classe, seules les pièces partagées retrouvées sont connues.'}
+    result={'characters':puppet_entries(characters,root),'notice':'Pièces du pantin uniquement. Les archives absentes sont complétées par les emplacements attendus référencés dans le squelette et communs aux archives retrouvées ; les accessoires spécifiques inconnus ne sont pas inventés.'}
     from tools.export_character_previews import export
+    missing={identity:[e for e in entries if e.get('status')=='missing'] for identity,entries in result['characters'].items()}
+    result['characters']={identity:[e for e in entries if e.get('status')!='missing'] for identity,entries in result['characters'].items()}
     result=export(root,result,jar=jar,java=java,check=check,force=force)
+    for identity,entries in missing.items():result['characters'][identity].extend(entries)
     from tools.character_asset_status import annotate
     result=annotate(result,characters,root,check=check)
     output=root/'assets/site/restoration/elements/characters.json'
