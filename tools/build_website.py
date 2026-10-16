@@ -174,4 +174,10 @@ if(!response.ok)throw Error(await response.text());result.done++;
 
 
 if __name__=='__main__':
-    main()
+    execution_started = time.perf_counter()
+    try:
+        main()
+    finally:
+        elapsed = time.perf_counter() - execution_started
+        minutes, seconds = divmod(elapsed, 60)
+        print(f'Total execution time: {int(minutes)} min {seconds:06.3f} s', flush=True)
