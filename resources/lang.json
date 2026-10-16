@@ -2065,77 +2065,143 @@
     "de": "Match: $1 gegen $2",
     "es": "Partido de $1 contra $2"
   },
-  "tournament_help_content": {
+    "tournament_help_content" : {
         "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
         "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
         "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
         "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
     },
+    "tournament_past_tournament_button" : {
+        "fr" : "Historique",
+        "en" : "History",
+        "de" : "History",
+        "es" : "Historial"
+    },
+    "tournament_running_tournament_button" : {
+        "fr" : "En cours",
+        "en" : "In progress",
+        "de" : "Im Gange",
+        "es" : "Actual"
+    },
+    "tournament_future_tournament_button" : {
+        "fr" : "Prochains",
+        "en" : "Upcoming",
+        "de" : "In Kürze",
+        "es" : "Próximos"
+    },
+   "tournament_tournament_type_enum" : {
+    "en": {
+        "1": "Local tournament",
+        "2": "Local tournament",
+        "3": "Local tournament",
+        "4": "Local tournament",
+        "5": "Local tournament",
+        "6": "Local tournament",
+        "7": "Local tournament",
+        "8": "Local tournament",
+        "9": "Local tournament",
+        "10": "Local tournament",
+        "11": "Local tournament"
+    },
     "fr": {
-      "1": "Tournoi local",
-      "2": "Tournoi local",
-      "3": "Tournoi local",
-      "4": "Tournoi local",
-      "5": "Tournoi local",
-      "6": "Tournoi local",
-      "7": "Tournoi local",
-      "8": "Tournoi local",
-      "9": "Tournoi local",
-      "10": "Tournoi local",
-      "11": "Tournoi local"
+        "1": "Tournoi local",
+        "2": "Tournoi local",
+        "3": "Tournoi local",
+        "4": "Tournoi local",
+        "5": "Tournoi local",
+        "6": "Tournoi local",
+        "7": "Tournoi local",
+        "8": "Tournoi local",
+        "9": "Tournoi local",
+        "10": "Tournoi local",
+        "11": "Tournoi local"
     },
     "de": {
-      "1": "Lokales Turnier",
-      "2": "Lokales Turnier",
-      "3": "Lokales Turnier",
-      "4": "Lokales Turnier",
-      "5": "Lokales Turnier",
-      "6": "Lokales Turnier",
-      "7": "Lokales Turnier",
-      "8": "Lokales Turnier",
-      "9": "Lokales Turnier",
-      "10": "Lokales Turnier",
-      "11": "Lokales Turnier"
+        "1": "Lokales Turnier",
+        "2": "Lokales Turnier",
+        "3": "Lokales Turnier",
+        "4": "Lokales Turnier",
+        "5": "Lokales Turnier",
+        "6": "Lokales Turnier",
+        "7": "Lokales Turnier",
+        "8": "Lokales Turnier",
+        "9": "Lokales Turnier",
+        "10": "Lokales Turnier",
+        "11": "Lokales Turnier"
     },
     "es": {
-      "1": "Torneo local",
-      "2": "Torneo local",
-      "3": "Torneo local",
-      "4": "Torneo local",
-      "5": "Torneo local",
-      "6": "Torneo local",
-      "7": "Torneo local",
-      "8": "Torneo local",
-      "9": "Torneo local",
-      "10": "Torneo local",
-      "11": "Torneo local"
+        "1": "Torneo local",
+        "2": "Torneo local",
+        "3": "Torneo local",
+        "4": "Torneo local",
+        "5": "Torneo local",
+        "6": "Torneo local",
+        "7": "Torneo local",
+        "8": "Torneo local",
+        "9": "Torneo local",
+        "10": "Torneo local",
+        "11": "Torneo local"
     }
-  },
-  "tournament_elimination_rule": {
+},
+    "tournament_elimination_rule" : {
         "en": "Free qualification: the top 4 players who complete a human tournament match enter the knockout rounds. Bracket opponents are fixed. Draws use qualification seed order; absent players can lose by walkover. Matches already started may finish after entry closes.",
         "fr": "Qualification gratuite : les 4 premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.",
         "de": "Kostenlose Qualifikation: Die besten 4 mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.",
         "es": "Clasificación gratuita: los 4 mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones."
     },
+    "tournament_multiple_registration_rule" :   {
+        /* TODO : Pas utilisé */
+        "fr" : "Si tu as été éliminé, tu peux te réinscrire à ce tournoi en payant à nouveau le prix d'entrée.",
+        "en" : "If you have been eliminated, you can re-register for this tournament by paying the registration fee again.",
+        "de" : "Beim Ausscheiden ist es möglich, noch einmal am Turnier teilzunehmen, indem man den Startpreis erneut entrichtet.",
+        "es" : "Si has sido eliminado, puedes volver a inscribirte en este torneo pagando otra vez la cuota de inscripción."
+    },
+    "tournament_qualifying_rule" :   {
+        /* TODO : Pas utilisé */
+        "fr" : "Ce tournoi sert de phase qualificative pour le $1",
+        "en" : "This tournament is the qualifying phase for the $1",
+        "de" : "Dieses Turnier dient als Qualifikationsrunde für das Turnier: $1",
+        "es" : "Este torneo sirve de fase eliminatoria para el $1"
+    },
+    "tournament_price_rule" : {
+        "fr" : "L'inscription à ce tournoi coûte $1 ticket(s) de tournoi.",
+        "en" : "Registration for this tournament costs $1 tournament ticket(s).",
+        "de" : "Die Anmeldung zu diesem Turnier kostet $1 Turnier-Ticket(s)",
+        "es" : "La inscripcion a este torneo cuesta $1 ticket(s) de torneo."
+    },
+    "tournament_eliminated" : {
+        /* TODO : Pas utilisé */
+        "fr" : "Tu as été éliminé de ce tournoi.",
+        "en" : "You have been eliminated from this tournament.",
+        "de" : "Ihr seid leider ausgeschieden",
+        "es" : "Has sido eliminado de este torneo."
+    },
+    "tournament_rewards_desc" : {
+    "en": {
+        "1": "20 G / 10 I / 10 C — local currency",
+        "2": "10 G / 10 I / 10 C — local currency",
+        "3": "0 G / 5 I / 10 C — local currency",
+        "4": "0 G / 0 I / 10 C — local currency"
+    },
     "fr": {
-      "1": "20 G / 10 I / 10 C — monnaie locale",
-      "2": "10 G / 10 I / 10 C — monnaie locale",
-      "3": "0 G / 5 I / 10 C — monnaie locale",
-      "4": "0 G / 0 I / 10 C — monnaie locale"
+        "1": "20 G / 10 I / 10 C — monnaie locale",
+        "2": "10 G / 10 I / 10 C — monnaie locale",
+        "3": "0 G / 5 I / 10 C — monnaie locale",
+        "4": "0 G / 0 I / 10 C — monnaie locale"
     },
     "de": {
-      "1": "20 G / 10 I / 10 C — lokale Währung",
-      "2": "10 G / 10 I / 10 C — lokale Währung",
-      "3": "0 G / 5 I / 10 C — lokale Währung",
-      "4": "0 G / 0 I / 10 C — lokale Währung"
+        "1": "20 G / 10 I / 10 C — lokale Währung",
+        "2": "10 G / 10 I / 10 C — lokale Währung",
+        "3": "0 G / 5 I / 10 C — lokale Währung",
+        "4": "0 G / 0 I / 10 C — lokale Währung"
     },
     "es": {
-      "1": "20 G / 10 I / 10 C — moneda local",
-      "2": "10 G / 10 I / 10 C — moneda local",
-      "3": "0 G / 5 I / 10 C — moneda local",
-      "4": "0 G / 0 I / 10 C — moneda local"
+        "1": "20 G / 10 I / 10 C — moneda local",
+        "2": "10 G / 10 I / 10 C — moneda local",
+        "3": "0 G / 5 I / 10 C — moneda local",
+        "4": "0 G / 0 I / 10 C — moneda local"
     }
-  },
+},
   "tournament_rewards_tooltip_title": {
     "fr": "Récompenses selon le classement :",
     "en": "Leaderboard rewards :<br /><br /> <br /> <br /> <br /> ",
@@ -4414,7 +4480,7 @@
     /* note pour les traducteurs : $1 = boufbowler*/
     "en": "$1 tries to receive the pass.",
     "de": "$1 versucht den Pass anzunehmen.",
-    "es": "$1 intenta recibir el pase.",
+    /* Variante espagnole : $1 intenta recibir el pase. */
     "es": "$1 intenta atrapar la jalabola."
   },
   "combat_log_interception_interaction": {
@@ -5131,85 +5197,5 @@
     "fr": "Attendre le prochain tour",
     "de": "Nächste Runde abwarten",
     "es": "Espera próxima ronda"
-},
-    "tournament_tournament_type_enum": {
-    "en": {
-        "1": "Local tournament",
-        "2": "Local tournament",
-        "3": "Local tournament",
-        "4": "Local tournament",
-        "5": "Local tournament",
-        "6": "Local tournament",
-        "7": "Local tournament",
-        "8": "Local tournament",
-        "9": "Local tournament",
-        "10": "Local tournament",
-        "11": "Local tournament"
-    },
-    "fr": {
-        "1": "Tournoi local",
-        "2": "Tournoi local",
-        "3": "Tournoi local",
-        "4": "Tournoi local",
-        "5": "Tournoi local",
-        "6": "Tournoi local",
-        "7": "Tournoi local",
-        "8": "Tournoi local",
-        "9": "Tournoi local",
-        "10": "Tournoi local",
-        "11": "Tournoi local"
-    },
-    "de": {
-        "1": "Lokales Turnier",
-        "2": "Lokales Turnier",
-        "3": "Lokales Turnier",
-        "4": "Lokales Turnier",
-        "5": "Lokales Turnier",
-        "6": "Lokales Turnier",
-        "7": "Lokales Turnier",
-        "8": "Lokales Turnier",
-        "9": "Lokales Turnier",
-        "10": "Lokales Turnier",
-        "11": "Lokales Turnier"
-    },
-    "es": {
-        "1": "Torneo local",
-        "2": "Torneo local",
-        "3": "Torneo local",
-        "4": "Torneo local",
-        "5": "Torneo local",
-        "6": "Torneo local",
-        "7": "Torneo local",
-        "8": "Torneo local",
-        "9": "Torneo local",
-        "10": "Torneo local",
-        "11": "Torneo local"
-    }
-},
-    "tournament_rewards_desc": {
-    "en": {
-        "1": "20 G / 10 I / 10 C — local currency",
-        "2": "10 G / 10 I / 10 C — local currency",
-        "3": "0 G / 5 I / 10 C — local currency",
-        "4": "0 G / 0 I / 10 C — local currency"
-    },
-    "fr": {
-        "1": "20 G / 10 I / 10 C — monnaie locale",
-        "2": "10 G / 10 I / 10 C — monnaie locale",
-        "3": "0 G / 5 I / 10 C — monnaie locale",
-        "4": "0 G / 0 I / 10 C — monnaie locale"
-    },
-    "de": {
-        "1": "20 G / 10 I / 10 C — lokale Währung",
-        "2": "10 G / 10 I / 10 C — lokale Währung",
-        "3": "0 G / 5 I / 10 C — lokale Währung",
-        "4": "0 G / 0 I / 10 C — lokale Währung"
-    },
-    "es": {
-        "1": "20 G / 10 I / 10 C — moneda local",
-        "2": "10 G / 10 I / 10 C — moneda local",
-        "3": "0 G / 5 I / 10 C — moneda local",
-        "4": "0 G / 0 I / 10 C — moneda local"
-    }
 }
 }

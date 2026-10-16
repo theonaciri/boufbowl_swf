@@ -162,13 +162,9 @@ def apply_resources(directory, config):
                 'fr':f'Qualification gratuite : les {top} premiers ayant terminé un match humain du tournoi accèdent aux tours éliminatoires. Adversaires fixés par le tableau. Un nul est départagé par le classement qualificatif ; absence : forfait possible. Les matchs commencés peuvent finir après la fermeture.',
                 'de':f'Kostenlose Qualifikation: Die besten {top} mit einem abgeschlossenen menschlichen Turnierspiel erreichen die K.-o.-Runden. Feste Gegner. Bei Unentschieden zählt die Qualifikation; Abwesenheit kann zum Ausscheiden führen. Begonnene Spiele dürfen nach Anmeldeschluss enden.',
                 'es':f'Clasificación gratuita: los {top} mejores que terminen un partido humano del torneo pasan a eliminatorias. Rivales fijos. Empates según clasificación; ausencia puede causar eliminación. Partidos iniciados pueden terminar tras cerrar inscripciones.'}
+        from tools.tournament_text import replace_translation_block, update_tournament_text
         for key in ("tournament_help_content", "tournament_elimination_rule"):
-            block = json.dumps(translations, ensure_ascii=False, indent=4).replace("\n", "\n    ")
-            pattern = r'("' + key + r'"\s*:\s*)\{.*?\n    \}'
-            text, count = re.subn(pattern, lambda match: match[1] + block, text, count=1, flags=re.S)
-            if count != 1:
-                raise ConfigError(f"Missing tournament translation block: {key}")
-        from tools.tournament_text import update_tournament_text
+            text = replace_translation_block(text, key, translations)
         lang_path.write_text(update_tournament_text(text))
     (directory / "game_config.json").write_text(json.dumps(config, indent=2) + "\n")
 

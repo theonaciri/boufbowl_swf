@@ -3,6 +3,30 @@ import json
 import re
 
 
+def replace_translation_block(text, key, value):
+    """Replace one complete object, regardless of indentation or nested braces."""
+    match = re.search(r'"' + re.escape(key) + r'"\s*:\s*\{', text)
+    if not match:
+        raise ValueError('Missing translation block: ' + key)
+    start = match.end() - 1
+    depth = 0
+    comments = []
+    tokens = r'"(?:\\.|[^"\\])*"|/\*[\s\S]*?\*/|//[^\n]*|[{}]'
+    for token in re.finditer(tokens, text[start:]):
+        if token[0].startswith(('/*', '//')):
+            comments.append(token[0])
+        if token[0] == '{':
+            depth += 1
+        elif token[0] == '}':
+            depth -= 1
+            if depth == 0:
+                block = json.dumps(value, ensure_ascii=False, indent=4)
+                if comments:
+                    block = '{\n' + '\n'.join(comments) + '\n' + block[2:]
+                return text[:start] + block + text[start + token.end():]
+    raise ValueError('Unclosed translation block: ' + key)
+
+
 def update_tournament_text(text):
     labels={'en':'Local tournament','fr':'Tournoi local','de':'Lokales Turnier','es':'Torneo local'}
     remaining={'en':'Ends in $1','fr':'Fin dans $1','de':'Endet in $1','es':'Termina en $1'}
