@@ -325,8 +325,9 @@
                   ↶ ANNULER LES CHOIX
                 </button>
                 <p>
-                  Un corps n’est pas une illustration. Les deux ont leur propre
-                  chantier.
+                  À restaurer : les pièces du corps en .swf qui composent les
+                  personnages sur le terrain — tête, bras, torse, jambes et
+                  accessoires. Elles sont assemblées en pantins animés dans le jeu.
                 </p>
                 <button
                   class="game-bevel"
@@ -422,19 +423,12 @@
                   </p>
                 </div>
                 <aside class="character-inspector">
-                  <div
-                    class="archive-terminal"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <strong>ARCHIVES DU VESTIAIRE</strong
-                    ><span id="character-log"
-                      >Sélectionnez une classe pour consulter son dossier.</span
-                    >
-                  </div>
                   <div class="inspector-columns">
                     <div class="body-preview">
-                      <span class="workshop-label">SUR LE TERRAIN</span>
+                      <span class="workshop-label">SUR LE TERRAIN · PIÈCES DU CORPS .SWF</span>
+                      <p class="workshop-small">Le chantier : retrouver ou recréer les pièces vectorielles
+                        .swf du personnage jouable. Les références ci-dessous montrent
+                        le corps à reconstituer ; les grandes illustrations sont déjà disponibles.</p>
                       <div class="body-preview-stage">
                         <div id="character-field-reference" class="field-reference" hidden>
                           <img id="character-field-image" alt="" />
@@ -451,7 +445,7 @@
                         class="workshop-source"
                         href="assets/sprites/skins/11.swl"
                         download
-                        >Télécharger les pièces (.swl) ↗</a
+                        >Télécharger l’archive du corps (.swl) ↗</a
                       >
                     </div>
                     <div class="asset-palette">
@@ -490,16 +484,6 @@
                         ><span><i class="key-review"></i>À vérifier</span>
                       </div>
                     </div>
-                  </div>
-                  <div class="character-dossier">
-                    <p id="character-dossier-note"></p>
-                    <button
-                      class="game-gong"
-                      id="character-ok"
-                      aria-label="Ouvrir le bilan de ce personnage"
-                    >
-                      OK
-                    </button>
                   </div>
                 </aside>
               </div>
@@ -712,28 +696,6 @@
               nous.</a
             >
           </p>
-          <dialog
-            id="character-dossier-dialog"
-            class="restoration-dossier-dialog"
-            aria-labelledby="character-dossier-title"
-          >
-            <button
-              data-close-dialog
-              class="dialog-close"
-              aria-label="Fermer le bilan"
-            >
-              ×</button
-            ><span class="eyebrow">DOSSIER DE RESTAURATION</span>
-            <h3 id="character-dossier-title">Bilan du personnage</h3>
-            <div id="character-dossier-content"></div>
-            <button
-              id="character-help"
-              class="button"
-              data-volunteer="Restauration des personnages"
-            >
-              JE PEUX AIDER ↗
-            </button>
-          </dialog>
           <noscript
             ><p>
               Activez JavaScript pour explorer les ressources. Le client
@@ -795,7 +757,9 @@
             </p>
             <p>
               Les autres ont retrouvé leurs illustrations plein écran dans
-              toutes leurs poses, mais pas encore toutes leurs pièces animées,
+              toutes leurs poses. Il reste à retrouver ou recréer leurs pièces
+              de corps en .swf (têtes, torses, bras, jambes, accessoires),
+              utilisées par les pantins animés sur le terrain, ainsi que leurs
               couleurs et textures.
             </p>
             <span class="card-foot">ON CHERCHE DES BRAS. LITTÉRALEMENT.</span>
@@ -969,8 +933,9 @@
             <div>
               <h3>LES MAINS DANS LES PIXELS</h3>
               <p>
-                Éléments de pantins Flash, corps, couleurs de classes et
-                textures 2D des terrains 3D.
+                Recréer les pièces vectorielles .swf des corps jouables : têtes,
+                torses, bras, jambes et accessoires. Restaurer les couleurs de
+                classes et les textures 2D des terrains 3D.
               </p>
             </div>
             <span>↗</span></button
@@ -1137,7 +1102,7 @@
     </dialog>
     <div id="brawl-announcer" aria-live="polite" class="sr-only"></div>
     <script src="contributions.js?v=upload-icon-1" defer></script>
-    <script src="restoration.js?v=upload-align-1" defer></script>
+    <script src="restoration.js?v=body-swf-2" defer></script>
     <script src="home.js" defer></script>
   </body>
 </html>

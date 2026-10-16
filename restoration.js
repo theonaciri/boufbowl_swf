@@ -185,15 +185,13 @@
     $("character-pose-select").value = state.pose;
     for (const option of $("character-pose-select").options)
       option.disabled = !poses[option.value];
-    $("character-log").textContent =
-      `Dossier ${c.name} · ${sex.toLowerCase()}. ${c.body_available ? "Pièces animées d’origine retrouvées." : "Corps propre à retrouver ; remplacement Crâ dans le jeu."}`;
     $("character-body-state").textContent = c.body_available
       ? "Corps d’origine retrouvé"
       : "Corps propre à retrouver";
     document.querySelector(".facet-body").classList.toggle("is-missing", !c.body_available);
     $("character-body-note").textContent = c.body_available
-      ? `Le fichier ${c.body_path.split("/").pop()} est présent. La fidélité des mouvements reste à tester.`
-      : "Le jeu utilise un corps Crâ de secours. Avoir l’illustration ne signifie pas avoir les pièces du pantin animé.";
+      ? `Les pièces vectorielles .swf du corps sont regroupées dans l’archive ${c.body_path.split("/").pop()}, retrouvée. La fidélité des mouvements reste à tester.`
+      : `À retrouver ou recréer : les pièces vectorielles .swf du corps de ${c.name} (${sex.toLowerCase()}) — tête, torse, bras, jambes et accessoires. Elles forment le pantin animé sur le terrain, regroupé dans une archive .swl. Pour l’instant, le jeu utilise un corps Crâ de secours.`;
     document.querySelector('#character-upload')?.remove();
     if (!c.body_available && window.AssetContributions) {
       const button=AssetContributions.button(c.body_path);button.id='character-upload';
@@ -202,8 +200,6 @@
     const source = $("character-body-source");
     source.hidden = !c.body_available;
     if (c.body_available) source.href = c.body_path;
-    $("character-dossier-note").textContent =
-      `${Object.keys(c.poses).length} poses consultables. ${c.body_available ? "Corps retrouvé." : "Corps de remplacement."} Couleurs à comparer aux archives.`;
     for (const b of document.querySelectorAll("[data-facet]"))
       b.setAttribute("aria-pressed", String(b.dataset.facet === state.facet));
     const facet =
@@ -214,7 +210,7 @@
               : "Pièces du corps : manquantes",
             c.body_available
               ? "Le jeu de pièces de ce personnage existe dans les fichiers récupérés. Il faut encore vérifier les animations en match."
-              : "Nous recherchons les éléments du pantin Flash : tête, torse, bras, jambes, accessoires et leurs variantes.",
+              : "À retrouver ou recréer en .swf : les pièces vectorielles du pantin Flash (tête, torse, bras, jambes, accessoires et variantes), utilisées pour animer le personnage sur le terrain et regroupées dans une archive .swl.",
           ]
         : state.facet === "colors"
           ? [
@@ -227,8 +223,6 @@
             ];
     $("character-facet-title").textContent = facet[0];
     $("character-facet-detail").textContent = facet[1];
-    $("character-help").dataset.volunteer =
-      `Restauration de ${c.name} (${sex.toLowerCase()}) — ${c.body_available ? "vérification des animations et des couleurs" : "recherche des pièces du corps animé et des couleurs"}`;
   }
   function resetCharacter() {
     state.id = "cra-1";
@@ -247,43 +241,6 @@
     if (list.length) state.id = list[0].id;
     renderPicker();
     renderCharacter();
-  }
-  function dossier() {
-    const c = selected(),
-      box = $("character-dossier-content");
-    box.replaceChildren();
-    $("character-dossier-title").textContent =
-      `${$("restoration-player-name").value.trim() || c.name} · dossier ${c.name}`;
-    for (const [name, value] of [
-      [
-        "Illustrations",
-        `${Object.keys(c.poses).length} poses consultables depuis les dessins originaux`,
-      ],
-      [
-        "Corps animé",
-        c.body_available
-          ? "Jeu de pièces retrouvé"
-          : "Corps Crâ de remplacement ; pièces propres manquantes",
-      ],
-      ["Couleurs", "Palettes jouables ; fidélité à confirmer"],
-      [
-        "Priorité",
-        c.body_available
-          ? "Comparer les mouvements et les couleurs avec des archives"
-          : "Retrouver ou restaurer les pièces du pantin Flash",
-      ],
-    ]) {
-      const row = el("p");
-      row.append(el("strong", name + " : "), document.createTextNode(value));
-      box.append(row);
-    }
-    if (c.body_available) {
-      const link = el("a", "Télécharger le fichier de pièces (.swl) ↗");
-      link.href = c.body_path;
-      link.download = "";
-      box.append(link);
-    }
-    $("character-dossier-dialog").showModal();
   }
   function audioName(track) {
     const name = track.file
@@ -688,10 +645,6 @@
         if (list.length)
           chooseCharacter(list[Math.floor(Math.random() * list.length)].id);
       };
-      $("character-ok").onclick = dossier;
-      $("character-help").addEventListener("click", () =>
-        $("character-dossier-dialog").close(),
-      );
       const roster = $("restoration-roster");
       for (const c of inventory.characters
         .filter((c) => !c.hero && c.gender === 1)
