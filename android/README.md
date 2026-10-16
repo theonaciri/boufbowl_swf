@@ -1,7 +1,7 @@
 # Boufbowl Offline for Android
 
 The APK packages the modified Flash client with the AIR Android runtime and all
-game assets. It runs the original ActionScript client without Wine. Assets are
+game assets; website-only media is excluded. It runs the original ActionScript client without Wine. Assets are
 local; persistent matches connect to the hosted server configured in
 `resources/site.json` (`server_url`). Packaging starts in server mode by default;
 `--server-url` explicitly overrides the hosted endpoint.
@@ -109,3 +109,8 @@ links it at `/downloads/BoufbowlOffline.apk`; no public GitHub release is requir
 Rebuild when the remote server URL changes. On ARM Linux build hosts, the Android
 SDK's host tools must be ARM-compatible; the upstream Linux command-line package
 may contain x86-64 `aapt`/`aapt2` binaries.
+
+On an ARM64 build host, Gradle may select an x86-64 AAPT2 executable. Configure
+`android.aapt2FromMavenOverride=/path/to/host-compatible/aapt2` in
+`~/.gradle/gradle.properties` to use a compatible executable or emulation wrapper.
+The AIR SDK and Gradle must both be able to run their Android packaging tools.

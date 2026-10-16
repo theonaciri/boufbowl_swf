@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the offline menu/tutorial SWF from the untouched archive."""
+"""Rebuild the game SWF from an original archive or the versioned client."""
 import argparse
 from pathlib import Path
 import subprocess
@@ -12,11 +12,15 @@ from tools.visual_assets import palette_item_source
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--ffdec", type=Path, required=True, help="Path to ffdec.jar")
-parser.add_argument("--original", type=Path, help="Path to the untouched original client SWF")
+parser.add_argument("--original", type=Path, help="Optional untouched original SWF; otherwise use the archive or versioned client")
 parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
-original = args.original or root.parent / "swf_sources/boufbowl_client/bin/boufbowl-client-1.9.6.swf"
+archive = root.parent / "swf_sources/boufbowl_client/bin/boufbowl-client-1.9.6.swf"
+original = args.original or (archive if archive.is_file() else root / "bin/boufbowl-client-1.9.6.swf")
+if not original.is_file():
+    parser.error("Client source missing; restore bin/boufbowl-client-1.9.6.swf or pass --original")
+print("Rebuilding from", original, flush=True)
 config = load_config(args.config)
 config_source = args.config.read_bytes()
 classes = [
@@ -97,7 +101,7 @@ with tempfile.TemporaryDirectory(prefix=".tutorial-build-", dir=root / "bin") as
     subprocess.run([
         "java", "-jar", str(args.ffdec.resolve()), "-replace", str(original), str(output),
         *replacements,
-    ], check=True, timeout=120)
+    ], check=True, timeout=600)
     if args.config.read_bytes() != config_source:
         raise RuntimeError("Configuration changed during compilation; rebuild with the updated file")
     output.replace(root / "bin" / output.name)

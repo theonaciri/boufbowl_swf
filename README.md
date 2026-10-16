@@ -2,11 +2,12 @@
 
 ## Run from a checkout on Ubuntu
 
-The repository includes the simulation worker (`backend/build/engine.js` and
-`engine_base.json`). Compiled Flash clients, players and downloadable packages
-are generated locally and excluded from Git and its history. Before running a
-fresh checkout, rebuild the client as described below and supply the standalone
-Flash player at `bin/flashplayer_32_sa.exe`. The Python server runs directly
+The repository includes the runnable game client (`bin/boufbowl-client-1.9.6.swf`)
+and simulation worker (`backend/build/engine.js` and `engine_base.json`). The
+main client stays tracked; temporary capture SWFs, standalone players and
+downloadable packages are generated or supplied locally and excluded from Git.
+For desktop play, supply the standalone Flash player at
+`bin/flashplayer_32_sa.exe`. The Python server runs directly
 from `backend/`; it has no pip dependencies.
 
 Install the runtime dependencies once:
@@ -118,14 +119,15 @@ HTTPS; see [accounts and matchmaking](docs/accounts-and-matchmaking.md).
    updating a client machine does not update a remote server.
 
 The SWF's filename and protocol version stay `1.9.6` across patches; they are not
-build revision indicators. Check the tracked simulation artifacts for local changes:
+build revision indicators. Check the tracked client and simulation artifacts for local changes:
 
 ```sh
-git diff HEAD --exit-code -- backend/build/engine.js backend/build/engine_base.json
+git diff HEAD --exit-code -- bin/boufbowl-client-1.9.6.swf backend/build/engine.js backend/build/engine_base.json
 ```
 
-No output and exit status 0 means the worker files match your checkout's commit.
-The generated SWF is ignored by Git; rebuild it after updating client patches. Updating `.as` patches alone does
+No output and exit status 0 means these files match your checkout's commit.
+The main SWF is tracked in Git; rebuild and commit it after updating client patches.
+Updating `.as` patches alone does
 not update the running Flash client: rebuild it as below, then close and reopen
 the game. Python source changes require a backend restart; simulation changes
 require rebuilding the worker and restarting the backend.
@@ -166,8 +168,9 @@ Linux backend. Reinstall the new Linux package when using the desktop shortcut.
 ## Build the client and packages
 
 Run commands from `boufbowl_swf`. Keep the untouched original 1.9.6 SWF and the
-readable `patches/` sources: rebuilding applies patches to the original; it does
-not require another full decompile. Build outputs are not automatically launched
+readable `patches/` sources: rebuilding applies patches to the supplied original,
+or to the versioned client when no external archive is available; it does not
+require another full decompile. Build outputs are not automatically launched
 or installed.
 
 | Changed files | Required action |

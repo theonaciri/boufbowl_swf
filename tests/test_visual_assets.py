@@ -82,9 +82,9 @@ class VisualAssetTests(unittest.TestCase):
 
     def test_reference_heroes_have_dedicated_default_palettes(self):
         heroes={p['unique_character']:p for p in palettes()['hero_palettes']}
-        for hero,palette,hair,skin in ((501,15,'ecddca','a57c5c'),
+        for hero,palette,hair,skin in ((501,15,'ecddca','8f7147'),
                                      (502,16,'192747','e7b98c'),
-                                     (503,17,'222e2e','cc9755'),
+                                     (503,17,'273131','ca9555'),
                                      (504,18,'fffee7','3f321f'),
                                      (505,19,'fd8203','ecb141'),
                                      (506,20,'81980c','9f5621')):
@@ -102,8 +102,8 @@ class VisualAssetTests(unittest.TestCase):
     def test_remaining_reference_heroes_have_shades_and_accent_choices(self):
         heroes={p['unique_character']:p for p in palettes()['hero_palettes']}
         ids=(21,22,23,24,25,26,27,28,34,35,36,37)
-        defaults=('3b3422','f3df87','f5f4dc','cc5740','18292d','9e5500',
-                  'fffaf0','f5edd2','a80503','f3f3f3','95a31b','ee7d29')
+        defaults=('5b4f37','f3df87','f5f4dc','ff9369','18292d','9e5500',
+                  '50a2a3','f5edd2','a80503','f3f3f3','95a31b','ee7d29')
         for hero,palette,hair in zip(range(507,519),ids,defaults):
             entry=heroes[hero]
             self.assertEqual(entry['id'],palette)

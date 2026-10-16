@@ -14,8 +14,9 @@
 .gradle/
 local.properties
 
-# Generated Flash clients, capture SWFs and binary player dependencies
-/bin/
+# Keep the runnable game client; exclude capture SWFs and player executables.
+/bin/*
+!/bin/boufbowl-client-1.9.6.swf
 
 # Local screenshots and recordings
 /evidence/

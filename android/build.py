@@ -49,7 +49,8 @@ def main():
         target = stage / name
         if target.exists():
             shutil.rmtree(target)
-        shutil.copytree(root / name, target)
+        # Website portraits and promotional media are not used by the game.
+        shutil.copytree(root / name, target, ignore=shutil.ignore_patterns("site") if name == "assets" else None)
     apply_resources(stage / "resources", game_config)
     # Android's VP6 decoder produces artifacts on these legacy FLV clips.
     # Cache H.264/AAC copies; all original media stays intact in the desktop tree.
@@ -111,7 +112,7 @@ def main():
         flashvars.write_text(flashvars_source((root / "patches/FlashVarsManager.as").read_text(), game_config))
         replacements.extend(["com.ankamagames.xgaming.utils.flashvars.FlashVarsManager", flashvars])
         run([java, "-jar", args.ffdec.resolve(), "-replace", root / "bin" / swf_name,
-             stage / "bin" / swf_name, *replacements], timeout=180)
+             stage / "bin" / swf_name, *replacements], timeout=600)
 
     if args.keystore:
         certificate = args.keystore.resolve()
