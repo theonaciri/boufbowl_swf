@@ -14,8 +14,8 @@
 .gradle/
 local.properties
 
-# Temporary SWF rebuild directories (keep the runnable SWFs in bin/)
-/bin/.tutorial-build-*/
+# Generated Flash clients, capture SWFs and binary player dependencies
+/bin/
 
 # Local screenshots and recordings
 /evidence/

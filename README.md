@@ -2,9 +2,11 @@
 
 ## Run from a checkout on Ubuntu
 
-A checkout includes the compiled Flash client (`bin/boufbowl-client-1.9.6.swf`)
-and simulation worker (`backend/build/engine.js` and `engine_base.json`). **You do
-not need to build to play an updated checkout.** The Python server runs directly
+The repository includes the simulation worker (`backend/build/engine.js` and
+`engine_base.json`). Compiled Flash clients, players and downloadable packages
+are generated locally and excluded from Git and its history. Before running a
+fresh checkout, rebuild the client as described below and supply the standalone
+Flash player at `bin/flashplayer_32_sa.exe`. The Python server runs directly
 from `backend/`; it has no pip dependencies.
 
 Install the runtime dependencies once:
@@ -116,14 +118,14 @@ HTTPS; see [accounts and matchmaking](docs/accounts-and-matchmaking.md).
    updating a client machine does not update a remote server.
 
 The SWF's filename and protocol version stay `1.9.6` across patches; they are not
-build revision indicators. Check the tracked compiled artifacts for local changes:
+build revision indicators. Check the tracked simulation artifacts for local changes:
 
 ```sh
-git diff HEAD --exit-code -- bin/boufbowl-client-1.9.6.swf backend/build/engine.js backend/build/engine_base.json
+git diff HEAD --exit-code -- backend/build/engine.js backend/build/engine_base.json
 ```
 
-No output and exit status 0 means those files match your checkout's commit. A
-locally rebuilt file may intentionally differ. Updating `.as` patches alone does
+No output and exit status 0 means the worker files match your checkout's commit.
+The generated SWF is ignored by Git; rebuild it after updating client patches. Updating `.as` patches alone does
 not update the running Flash client: rebuild it as below, then close and reopen
 the game. Python source changes require a backend restart; simulation changes
 require rebuilding the worker and restarting the backend.
