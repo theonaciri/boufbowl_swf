@@ -791,11 +791,62 @@
       "class_id": 14,
       "class": "Zobal",
       "style": "Wakfu",
-      "source": null,
-      "hair": ["1c3434", "2c4c4c", "f4ecd8", "143c3c", "c89858"],
-      "eyes": ["e49c3c", "3c2410", "2c2c2c"],
-      "skin": ["9c6c24", "c89858", "7c5420", "e0b878"],
-      "reference_status": "pending"
+      "source": "assets/site/restoration/zobal-wakfu-reference.png",
+      "hair": [
+        "e62539",
+        "a91842",
+        "791c55",
+        "a833ac",
+        "ee35aa",
+        "ff43dc",
+        "ff7436",
+        "ffd12e",
+        "c6f536",
+        "43e478",
+        "1ce5d1",
+        "2bc4ff",
+        "5264ff",
+        "9744f5",
+        "f3edda",
+        "292333"
+      ],
+      "eyes": [
+        "ffffff",
+        "b8b9b2",
+        "e7e2d4",
+        "d23855",
+        "e0b347",
+        "6fc26d",
+        "39c5bf",
+        "5197df",
+        "a784d5",
+        "ed76ba",
+        "241e30",
+        "10151b"
+      ],
+      "skin": [
+        "b6ab8c",
+        "f1cba4",
+        "ffe3c2",
+        "efc594",
+        "ce986a",
+        "a96f49",
+        "784c35",
+        "50372c"
+      ],
+      "reference_status": "supplied",
+      "defaults": {
+        "male": {
+          "hair": "e62539",
+          "eyes": "ffffff",
+          "skin": "b6ab8c"
+        },
+        "female": {
+          "hair": "e62539",
+          "eyes": "ffffff",
+          "skin": "b6ab8c"
+        }
+      }
     },
     {
       "id": 201,
@@ -1476,33 +1527,42 @@
       "class_id": 14,
       "class": "Zobal",
       "style": "Dofus",
-      "source": "Character_Faces.webp#14",
+      "source": "assets/site/restoration/zobal-dofus-reference.png",
       "hair": [
-        "e8e4d9",
-        "ee5369",
-        "f7e9c2",
-        "e6b45c",
-        "a8693b",
-        "5b3d2e",
-        "252b35",
-        "b8c5d7",
-        "65b9ac",
-        "486ea1",
-        "925cad",
-        "d5849e"
+        "b41642",
+        "d32952",
+        "7c173f",
+        "962a83",
+        "e53aa9",
+        "ff39ce",
+        "ff673c",
+        "ffbd37",
+        "e5f23b",
+        "50e56f",
+        "19d5cc",
+        "32b7ff",
+        "5961ef",
+        "8a3cff",
+        "f2e6d1",
+        "25232f"
       ],
       "eyes": [
-        "d9343f",
-        "43362a",
-        "789744",
-        "4985ba",
-        "41958c",
-        "a781c2",
-        "d6a64a"
+        "ffffff",
+        "b8b9b2",
+        "e7e2d4",
+        "d23855",
+        "e0b347",
+        "6fc26d",
+        "39c5bf",
+        "5197df",
+        "a784d5",
+        "ed76ba",
+        "241e30",
+        "10151b"
       ],
       "skin": [
-        "a56d41",
-        "f3d5ab",
+        "e5ae7a",
+        "f5b68a",
         "ffe3c2",
         "efc594",
         "ce986a",
@@ -1512,16 +1572,17 @@
       ],
       "defaults": {
         "male": {
-          "hair": "e8e4d9",
-          "eyes": "d9343f",
-          "skin": "a56d41"
+          "hair": "b41642",
+          "eyes": "ffffff",
+          "skin": "e5ae7a"
         },
         "female": {
-          "hair": "ee5369",
-          "eyes": "d9343f",
-          "skin": "f3d5ab"
+          "hair": "b41642",
+          "eyes": "ffffff",
+          "skin": "f5b68a"
         }
-      }
+      },
+      "reference_status": "supplied"
     }
   ],
   "hero_palettes": [

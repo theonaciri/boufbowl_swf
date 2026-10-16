@@ -67,7 +67,18 @@ class VisualAssetTests(unittest.TestCase):
         self.assertEqual(wakfu[3]['defaults']['female']['hair'],'fef1c5')
         self.assertEqual(wakfu[3]['defaults']['male']['hair'],'4f4131')
         self.assertEqual(wakfu[6]['defaults']['male']['eyes'],'ffffff')
-        for cls in (9,14): self.assertEqual(wakfu[cls]['reference_status'],'pending')
+        self.assertEqual(wakfu[9]['reference_status'],'pending')
+        self.assertEqual(wakfu[14]['reference_status'],'supplied')
+
+    def test_zobal_styles_have_reference_colors_and_complementary_choices(self):
+        zobals=[p for p in palettes()['class_palettes'] if p['class_id']==14]
+        self.assertEqual({p['style'] for p in zobals},{'Dofus','Wakfu'})
+        for entry in zobals:
+            self.assertTrue((ROOT/entry['source']).is_file())
+            self.assertEqual(len(entry['hair']),16)
+            self.assertTrue({'ffffff','b8b9b2','241e30','10151b'} <= set(entry['eyes']))
+            self.assertTrue({'efc594','a96f49','50372c'} <= set(entry['skin']))
+            self.assertEqual(entry['defaults']['male']['eyes'],'ffffff')
 
     def test_reference_heroes_have_dedicated_default_palettes(self):
         heroes={p['unique_character']:p for p in palettes()['hero_palettes']}
