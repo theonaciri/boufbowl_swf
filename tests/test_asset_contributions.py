@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import struct
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 import zlib
@@ -26,14 +27,40 @@ class AssetContributionTests(unittest.TestCase):
     def tearDown(self):self.mock.stop();self.manager.close();self.temp.cleanup()
     def receive(self,data=None):
         data=png() if data is None else data
-        token=self.manager.token('asset','127.0.0.1',True)['token']
+        token=self.manager.token('asset','127.0.0.1',True,'Discord : Testeur')['token']
         identity,path=self.manager.reserve('asset',token,'missing.png',len(data),'127.0.0.1');path.write_bytes(data);self.manager.finish(identity,path)
         return identity,path,token
     def state(self,identity):return self.manager.db.execute('SELECT state FROM submissions WHERE id=?',(identity,)).fetchone()[0]
+    def test_existing_review_database_migrates_without_losing_submissions(self):
+        identity,_,_=self.receive()
+        for table in ('tokens','submissions'):
+            self.manager.db.execute('ALTER TABLE '+table+' DROP COLUMN contact')
+        self.manager.close()
+        self.manager=AssetContributions(self.root,Path(self.temp.name)/'private',scanner=lambda *_:'test-signature',start=False)
+        row=self.manager.listing()['submissions'][0]
+        self.assertEqual(row['id'],identity)
+        self.assertEqual(row['contact'],'')
+        nonce=self.manager.token('asset','ip',True,'Discord : Après migration')
+        self.manager.reserve('asset',nonce['token'],'missing.png',20,'ip')
+
+    def test_contact_is_required_bound_to_upload_and_expires(self):
+        for contact in (None, '', '  ', 'ab', 'x'*201, 'Discord\nTesteur', {}, 123):
+            with self.subTest(contact=contact), self.assertRaises(ServiceError):
+                self.manager.token('asset','ip',True,contact)
+        nonce=self.manager.token('asset','ip',True,'  Discord : Testeur  ')
+        self.assertNotIn('contact',nonce)
+        identity,_=self.manager.reserve('asset',nonce['token'],'missing.png',20,'ip')
+        row=self.manager.listing()['submissions'][0]
+        self.assertEqual(row['contact'],'Discord : Testeur')
+        self.assertNotIn('ip',row)
+        self.manager.db.execute("UPDATE submissions SET state='published',created=? WHERE id=?",(time.time()-31*86400,identity))
+        self.manager.cleanup()
+        self.assertEqual(self.manager.listing()['submissions'][0]['contact'],'')
+
     def test_exact_name_nonce_size_replay_and_ip_binding(self):
         with self.assertRaises(ServiceError):self.manager.token('asset','ip',False)
         with self.assertRaises(ServiceError):self.manager.token({},'ip',True)
-        token=self.manager.token('asset','ip',True)['token']
+        token=self.manager.token('asset','ip',True,'Discord : Testeur')['token']
         for name,size,ip in [('../missing.png',20,'ip'),('MISSING.PNG',20,'ip'),('missing.png',2**30,'ip'),('missing.png',20,'other')]:
             with self.subTest(name=name,size=size,ip=ip),self.assertRaises(ServiceError):self.manager.reserve('asset',token,name,size,ip)
         identity,path=self.manager.reserve('asset',token,'missing.png',20,'ip')
@@ -95,7 +122,7 @@ class AssetContributionTests(unittest.TestCase):
         with self.assertRaises(ServiceError):self.manager.preview('../outside')
     def test_hourly_quota_and_hashed_network_identity(self):
         for _ in range(10):
-            token=self.manager.token('asset','127.0.0.1',True)['token']
+            token=self.manager.token('asset','127.0.0.1',True,'Discord : Testeur')['token']
             identity,_=self.manager.reserve('asset',token,'missing.png',10,'127.0.0.1');self.manager.abort(identity)
         with self.assertRaises(ServiceError) as error:self.receive()
         self.assertEqual(error.exception.code,'ASSET_LIMIT')

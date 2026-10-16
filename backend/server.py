@@ -203,7 +203,7 @@ class Handler(SimpleHTTPRequestHandler):
             body=json.loads(self.rfile.read(length))
             if not isinstance(body,dict):raise ServiceError('ASSET_INVALID','Objet attendu.')
             if route=='/api/asset-token':
-                self.json_response(manager.token(body.get('asset'),ip,body.get('consent')));return
+                self.json_response(manager.token(body.get('asset'),ip,body.get('consent'),body.get('contact')));return
             with self.server.service.store.transaction():
                 actor=self.server.service.store.authenticate(body.get('session'))
                 if self.server.service.role(actor)!='admin':raise ServiceError('ADMIN_FORBIDDEN','Administrateur requis.')

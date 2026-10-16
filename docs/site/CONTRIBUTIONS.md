@@ -62,7 +62,11 @@ comptes et sa version de schéma ne changent pas. Les décisions et leur auteur
 sont journalisés. Un fichier infecté ou invalide est supprimé ; une erreur
 technique de scan permet une nouvelle analyse. Un envoi en attente expire après
 quatorze jours, un rejet supprime immédiatement les octets. Les empreintes réseau
-des contributions sont effacées après trente jours. Un fichier approuvé reste
+des contributions et le contact du contributeur sont effacés après trente jours.
+Un contact de 3 à 200 caractères (pseudo Discord, e-mail ou autre moyen) est
+obligatoire, validé côté serveur et lié au jeton d’envoi. Il est visible uniquement
+par les administrateurs dans la revue ; les anciens envois restent consultables
+sans contact. La migration ajoute des colonnes à la seule base privée de revue. Un fichier approuvé reste
 privé jusqu’à son intégration ou son rejet, dans la limite du stockage.
 
 L’administrateur examine, approuve ou rejette. Approuver exige une analyse réussie

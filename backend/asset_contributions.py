@@ -32,6 +32,15 @@ def fail(message,code='ASSET_INVALID'):
     raise ServiceError(code,message)
 
 
+def contact_details(value):
+    if not isinstance(value,str) or any(ord(c)<32 or ord(c)==127 for c in value):
+        fail('Indiquez comment vous recontacter : pseudo Discord, e-mail ou autre moyen de contact.')
+    value=value.strip()
+    if not 3<=len(value)<=200:
+        fail('Le moyen de contact doit contenir entre 3 et 200 caractères.')
+    return value
+
+
 def asset_context(data,root):
     """Use explicit inventory/config references, never guess ownership from filenames."""
     from tools.site_portraits import POSES
@@ -111,6 +120,11 @@ class AssetContributions:
             state TEXT,size INTEGER,sha256 TEXT,scan_signature TEXT,scanned REAL,error TEXT,metadata TEXT,actor TEXT,reviewed REAL);
           CREATE TABLE IF NOT EXISTS decisions(id INTEGER PRIMARY KEY,submission TEXT,actor TEXT,action TEXT,created REAL);
         ''')
+        # Additive migration of the private review database only; never touch accounts.
+        for table in ('tokens','submissions'):
+            columns={row['name'] for row in self.db.execute('PRAGMA table_info('+table+')')}
+            if 'contact' not in columns:
+                self.db.execute("ALTER TABLE "+table+" ADD COLUMN contact TEXT NOT NULL DEFAULT ''")
         salt=self.db.execute("SELECT value FROM settings WHERE key='salt'").fetchone()
         self.salt=salt[0] if salt else secrets.token_hex(32)
         self.db.execute("INSERT OR IGNORE INTO settings VALUES('salt',?)",(self.salt,))
@@ -154,10 +168,11 @@ class AssetContributions:
         for row in self.db.execute("SELECT id FROM submissions WHERE created<? AND state NOT IN ('approved','published')",(now-14*86400,)).fetchall():
             shutil.rmtree(self.directory/row['id'],ignore_errors=True)
             self.db.execute('DELETE FROM decisions WHERE submission=?',(row['id'],));self.db.execute('DELETE FROM submissions WHERE id=?',(row['id'],))
-        self.db.execute("UPDATE submissions SET ip='' WHERE created<?",(now-30*86400,))
+        self.db.execute("UPDATE submissions SET ip='',contact='' WHERE created<?",(now-30*86400,))
 
-    def token(self,asset,ip,consent):
+    def token(self,asset,ip,consent,contact=None):
         if consent is not True:fail('Confirmez votre autorisation de transmettre ce fichier.')
+        contact=contact_details(contact)
         with self.lock:
             self.cleanup();items=catalog(self.root)
             if not isinstance(asset,str) or asset not in items:fail('Cette ressource ne reçoit pas de contribution.')
@@ -166,7 +181,7 @@ class AssetContributions:
             if self.db.execute('SELECT COUNT(*) FROM tokens WHERE ip=? AND created>?',(address,now-3600)).fetchone()[0]>=30:
                 fail('Trop de demandes. Réessayez dans une heure.','ASSET_LIMIT')
             token=secrets.token_urlsafe(32)
-            self.db.execute('INSERT INTO tokens(hash,ip,asset,created) VALUES(?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),address,asset,now))
+            self.db.execute('INSERT INTO tokens(hash,ip,asset,created,contact) VALUES(?,?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),address,asset,now,contact))
             return {'ok':True,'token':token,'asset':items[asset],'expires_in':600}
 
     def reserve(self,asset,token,name,size,ip):
@@ -176,6 +191,7 @@ class AssetContributions:
             if not isinstance(size,int) or not 0<size<=item['max_bytes']:fail('Taille du fichier hors limite.','ASSET_LIMIT')
             nonce=self.db.execute('SELECT * FROM tokens WHERE hash=?',(hashlib.sha256(str(token).encode()).hexdigest(),)).fetchone()
             if not nonce or nonce['used'] or nonce['created']<now-600 or nonce['asset']!=asset or nonce['ip']!=address:fail('Autorisation expirée. Rouvrez le formulaire.','ASSET_TOKEN')
+            contact=contact_details(nonce['contact'])
             rows=self.db.execute('SELECT created,state FROM submissions WHERE ip=? AND created>?',(address,now-86400)).fetchall()
             active=self.db.execute("SELECT COUNT(*) FROM submissions WHERE state IN ('receiving','queued','scanning')").fetchone()[0]
             if len(rows)>=30 or sum(r['created']>now-3600 for r in rows)>=10 or active>=8 or self.jobs.full():
@@ -187,8 +203,8 @@ class AssetContributions:
             if occupied+reserved+size+64*1024*1024>MAX_STORAGE:fail('Espace de quarantaine saturé.','ASSET_LIMIT')
             identity=secrets.token_hex(16);folder=self.directory/identity;folder.mkdir(mode=0o700)
             self.db.execute('UPDATE tokens SET used=1 WHERE hash=?',(nonce['hash'],))
-            self.db.execute('INSERT INTO submissions(id,asset,path,name,ip,created,state,size) VALUES(?,?,?,?,?,?,?,?)',
-                (identity,asset,item['path'],item['name'],address,now,'receiving',size))
+            self.db.execute('INSERT INTO submissions(id,asset,path,name,ip,created,state,size,contact) VALUES(?,?,?,?,?,?,?,?,?)',
+                (identity,asset,item['path'],item['name'],address,now,'receiving',size,contact))
             return identity,folder/('source'+item['extension'])
 
     def finish(self,identity,path):

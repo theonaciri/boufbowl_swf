@@ -8,14 +8,17 @@
   const title=el('h2','Une pièce retrouvée ?');const expected=el('p');
   const form=el('form');const label=el('label','Fichier original attendu');
   const input=el('input');input.type='file';input.required=true;label.append(input);
+  const contactLabel=el('label','Comment vous recontacter ? (obligatoire)');
+  const contact=el('input');contact.type='text';contact.name='contact';contact.required=true;contact.minLength=3;contact.maxLength=200;contact.autocomplete='off';contact.placeholder='Pseudo Discord, adresse e-mail ou autre moyen de contact';contact.className='asset-contact-input';
+  const contactNote=el('small','Visible uniquement par les administrateurs pour échanger sur votre proposition. Effacé après 30 jours.');contactNote.id='asset-contact-note';contact.setAttribute('aria-describedby',contactNote.id);contactLabel.append(contact,contactNote);
   const consent=el('input');consent.type='checkbox';consent.required=true;
   const agreement=el('label');agreement.className='asset-consent';agreement.append(consent,document.createTextNode(' Je suis autorisé à transmettre ce fichier pour la restauration du jeu et son examen.'));
   const submit=el('button','Envoyer en quarantaine');submit.type='submit';submit.className='button';
   const cancel=el('button','Annuler l’envoi');cancel.type='button';cancel.hidden=true;
   const progress=el('progress');progress.max=100;progress.value=0;progress.hidden=true;
-  const privacy=el('p','Pas de compte ni de coordonnées demandés. Le fichier est réservé aux administrateurs ; son format et son contenu sont contrôlés avant tout examen. Limites : 10 envois/heure, 30/jour, trois propositions en cours par ressource. Les fichiers en attente expirent après 14 jours.');
+  const privacy=el('p','Aucun compte nécessaire. Votre contact et le fichier sont réservés aux administrateurs ; son format et son contenu sont contrôlés avant tout examen. Limites : 10 envois/heure, 30/jour, trois propositions en cours par ressource. Les fichiers en attente expirent après 14 jours.');
   privacy.className='workshop-small';const policy=el('a','Confidentialité');policy.href='confidentialite.html';privacy.append(' ',policy);
-  form.append(label,agreement,submit,cancel,progress,status);dialog.append(close,title,expected,form,privacy);document.body.append(dialog);
+  form.append(label,contactLabel,agreement,submit,cancel,progress,status);dialog.append(close,title,expected,form,privacy);document.body.append(dialog);
   close.onclick=()=>{if(xhr)xhr.abort();dialog.close();};cancel.onclick=()=>xhr?.abort();
   dialog.addEventListener('cancel',()=>xhr?.abort());
   async function json(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'BoufbowlAssets'},body:JSON.stringify(body)});const data=await r.json();if(!data.ok)throw Error(data.error);return data;}
@@ -29,7 +32,7 @@
     if(file.name!==selected.name){status.textContent=`Le fichier doit porter exactement le nom ${selected.name}.`;return;}
     if(!file.size||file.size>selected.max_bytes){status.textContent='Le fichier dépasse la limite indiquée ou est vide.';return;}
     submit.disabled=true;status.textContent='Préparation de l’envoi…';
-    try{const auth=await json('api/asset-token',{asset:selected.id,consent:consent.checked});
+    try{const auth=await json('api/asset-token',{asset:selected.id,consent:consent.checked,contact:contact.value.trim()});
       await new Promise((resolve,reject)=>{xhr=new XMLHttpRequest();xhr.open('POST','api/asset-upload');xhr.timeout=125000;
         for(const [k,v] of Object.entries({'Content-Type':selected.mime,'X-Requested-With':'BoufbowlAssets','X-Asset-Id':selected.id,'X-Asset-Name':encodeURIComponent(file.name),'X-Asset-Token':auth.token}))xhr.setRequestHeader(k,v);
         progress.hidden=false;cancel.hidden=false;xhr.upload.onprogress=e=>{if(e.lengthComputable)progress.value=e.loaded/e.total*100;};
