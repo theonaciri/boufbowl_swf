@@ -83,3 +83,21 @@ module : elles sont pseudonymisées avec un HMAC et un secret propre au serveur.
 Contrôles : `python3 -m unittest tests.test_asset_contributions tests.test_admin`.
 Le test ClamAV réel utilise la signature inoffensive EICAR dans un dossier
 provisoire ; les autres tests utilisent un scanner simulé pour isoler les règles.
+
+## Atelier des éléments de personnages
+
+`python3 -m tools.build_character_elements` extrait les symboles Crâ M (11.swl)
+et F (12.swl), exporte leur première image statique puis produit des WebP
+transparents. `tools.build_website` lance aussi cette étape ; les images sont
+générées et ignorées par Git. Une empreinte des sources et du script permet de
+réutiliser les exports. FFDec, Java et FFmpeg sont nécessaires au premier export.
+
+Pour les corps absents uniquement, le catalogue accepte des propositions SWF
+nommées exactement comme le symbole de référence, par exemple `tete_neutre.swf`,
+au chemin de travail `assets/sprites/restoration-elements/<skin>/<symbole>.swf`.
+Ces chemins désignent des pièces proposées, pas les archives originales du jeu.
+Le nom de référence Crâ ne garantit pas qu’une autre classe possédait exactement
+la même pièce. L’intégration et l’assemblage restent manuels ; une pièce proposée
+ne transforme pas le statut du corps complet. Les archives SWL complètes restent
+proposables par leur bouton distinct. Les mêmes quotas, analyses et permissions
+s’appliquent aux deux parcours.

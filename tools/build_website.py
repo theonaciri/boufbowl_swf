@@ -54,6 +54,8 @@ def main():
         pending = [t for t in pending if t['character'] in args.character]
     if args.pose:
         pending = [t for t in pending if t['pose'] in args.pose]
+    from tools.build_character_elements import build as build_elements
+    build_elements(ROOT,jar=args.ffdec,java=None if args.java=='java' else args.java,force=args.force,check=args.check)
     if args.check:
         if all_pending or manifest()!=old:
             raise SystemExit(f'{len(all_pending)} portraits require a website build')

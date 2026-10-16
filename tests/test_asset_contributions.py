@@ -30,6 +30,20 @@ class AssetContributionTests(unittest.TestCase):
         identity,path=self.manager.reserve('asset',token,'missing.png',len(data),'127.0.0.1');path.write_bytes(data);self.manager.finish(identity,path)
         return identity,path,token
     def state(self,identity):return self.manager.db.execute('SELECT state FROM submissions WHERE id=?',(identity,)).fetchone()[0]
+    def test_element_catalog_targets_only_missing_bodies_and_matching_gender(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);folder=root/'assets/site/restoration/elements';folder.mkdir(parents=True)
+            (folder/'manifest.json').write_text(json.dumps({'elements':[{'name':'tete_neutre','gender':1},{'name':'cheveux','gender':2}]}))
+            (folder.parent/'inventory.json').write_text(json.dumps({'asset_status':[], 'characters':[
+                {'id':'missing','body_available':False,'body_path':'assets/sprites/skins/21.swl','gender':1},
+                {'id':'original','body_available':True,'body_path':'assets/sprites/skins/11.swl','gender':1}]}))
+            self.mock.stop()
+            try:
+                from backend.asset_contributions import catalog as actual
+                items=list(actual(root).values())
+            finally:self.mock.start()
+            self.assertEqual(len(items),1);self.assertEqual(items[0]['name'],'tete_neutre.swf')
+            self.assertEqual(items[0]['character'],'missing');self.assertEqual(items[0]['group'],'character-elements')
     def test_exact_name_nonce_size_replay_and_ip_binding(self):
         with self.assertRaises(ServiceError):self.manager.token('asset','ip',False)
         with self.assertRaises(ServiceError):self.manager.token({},'ip',True)
@@ -61,6 +75,15 @@ class AssetContributionTests(unittest.TestCase):
         self.assertEqual(self.state(identity),'published');self.assertFalse(path.exists())
         self.assertEqual(self.manager.db.execute("SELECT action FROM decisions ORDER BY id DESC LIMIT 1").fetchone()[0],'archive')
         with self.assertRaises(ServiceError):self.manager.original(identity)
+    def test_standalone_element_swf_has_static_main_frame_preview(self):
+        if not (Path.home()/'.cache/boufbowl-flash-tools/ffdec-26.3.0/ffdec.jar').is_file():self.skipTest('FFDec unavailable')
+        folder=Path(self.temp.name)/'standalone';folder.mkdir();path=folder/'source.swf'
+        bits='01100'+''.join(format(n,'012b') for n in (0,2000,0,2000));bits+='0'*(-len(bits)%8)
+        rect=int(bits,2).to_bytes(len(bits)//8,'big')
+        body=rect+b'\0\x18\x01\0'+struct.pack('<H',9*64+3)+b'\x55\x88\xaa'+b'\x40\0\0\0'
+        path.write_bytes(b'FWS\x09'+struct.pack('<I',len(body)+8)+body)
+        metadata=self.manager.validate(path,folder,'assets/sprites/restoration-elements/21/tete.swf')
+        self.assertEqual(metadata['thumbnails'],1);self.assertTrue((folder/'flash-0.png').read_bytes().startswith(b'\x89PNG'))
     def test_original_ankama_swl_static_preview(self):
         original=Path(__file__).resolve().parents[1]/'assets/sprites/skins/61.swl'
         if not original.exists():self.skipTest('Original skin unavailable')

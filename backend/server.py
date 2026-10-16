@@ -33,7 +33,7 @@ class BackendHTTPServer(ThreadingHTTPServer):
 
 
 STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
-                "admin.css", "admin.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js", "contributions.js", "contributions.css",
+                "admin.css", "admin.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js", "character-elements.js", "contributions.js", "contributions.css",
                 "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
 

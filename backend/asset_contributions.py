@@ -44,6 +44,22 @@ def catalog(root):
         identity=hashlib.sha256(path.encode()).hexdigest()[:24]
         mime,limit=FORMATS[relative.suffix]
         result[identity]={**item,'id':identity,'name':relative.name,'extension':relative.suffix,'mime':mime,'max_bytes':limit}
+    references=Path(root)/'assets/site/restoration/elements/manifest.json'
+    if references.is_file():
+        elements=json.loads(references.read_text()).get('elements',[])
+        for character in data['characters']:
+            if character['body_available']:continue
+            skin=Path(character['body_path']).stem
+            for element in elements:
+                if element['gender']!=character['gender']:continue
+                name=element['name']
+                if not re.fullmatch(r'[A-Za-z0-9_]+',name):continue
+                path=f'assets/sprites/restoration-elements/{skin}/{name}.swf'
+                if (Path(root)/path).is_file():continue
+                identity=hashlib.sha256(path.encode()).hexdigest()[:24]
+                result[identity]={'id':identity,'path':path,'name':name+'.swf','extension':'.swf','mime':FORMATS['.swf'][0],
+                    'max_bytes':FORMATS['.swf'][1],'status':'missing','group':'character-elements','character':character['id'],
+                    'element':name,'available':False}
     return result
 
 
@@ -260,7 +276,6 @@ class AssetContributions:
         return {'kind':kind,'duration':duration if kind=='audio' else None,'codec':streams[0]['codec_name']}
 
     def flash_thumbnails(self,path,output,sprites):
-        if not sprites:return 0
         cache=Path.home()/'.cache/boufbowl-flash-tools'
         jar=Path(os.environ.get('FFDEC_JAR',cache/'ffdec-26.3.0/ffdec.jar'))
         homes=list((cache/'jdk-17').glob('jdk-*'))
@@ -268,8 +283,9 @@ class AssetContributions:
         if not jar.is_file() or not (home/'bin/java').is_file():return 0
         try:
             result=sandbox(['/java/bin/java','-Xmx384m','-XX:CompressedClassSpaceSize=64m','-XX:ReservedCodeCacheSize=64m',
-                '-Djava.awt.headless=true','-jar','/tool/ffdec.jar','-select',','.join(f'{sprite}:1' for sprite in sprites),'-selectid',','.join(map(str,sprites)),
-                '-exportTimeout','15','-export','sprite','/output/flash','/work/input.swf'],path,output,
+                '-Djava.awt.headless=true','-jar','/tool/ffdec.jar','-select',','.join(f'{sprite}:1' for sprite in sprites) if sprites else '0:1',
+                *(['-selectid',','.join(map(str,sprites))] if sprites else []),
+                '-exportTimeout','15','-export','sprite' if sprites else 'frame','/output/flash','/work/input.swf'],path,output,
                 extra=[(jar.parent.resolve(),'/tool'),(home.resolve(),'/java'),(Path('/etc/fonts'),'/etc/fonts')],timeout=25,memory=2*1024**3,file_limit=4*1024**2)
             if result.returncode:return 0
             count=0
