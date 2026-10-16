@@ -20,7 +20,18 @@
   right.append(target,description,filename,el('p','Format attendu : SWF vectoriel, 8 Mio maximum. Le nom du symbole Crâ sert de repère de travail ; il ne prouve pas que cette pièce existait à l’identique pour cette classe. Les morceaux proposés doivent être adaptés et assemblés avant de restaurer le corps complet.'),upload);
   const archive=el('div');right.append(el('p','Vous avez retrouvé le corps complet ? Envoyez plutôt son archive SWL d’origine.'),archive);
   panels.append(left,right);section.append(toolbar,panels);
-  function populate(){const old=element.value;const query=search.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');element.replaceChildren();for(const e of references.elements.filter(e=>String(e.gender)===gender.value&&e.name.toLowerCase().includes(query))){const option=el('option',e.name);option.value=e.name;element.append(option);}if([...element.options].some(o=>o.value===old))element.value=old;render();}
+  function populate(){
+   const old=element.value;const query=search.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+   const rows=references.elements.filter(e=>String(e.gender)===gender.value&&e.name.toLowerCase().includes(query));
+   const common=e=>/^(?:tete_(?:expression|triste)|colorGray_2_pupille|AnimStatique)/i.test(e.name);
+   element.replaceChildren();
+   for(const [label,shared] of [['Éléments propres au personnage',false],['Éléments communs · expressions et animations',true]]){
+    const group=el('optgroup');group.label=label;
+    for(const e of rows.filter(e=>common(e)===shared)){const option=el('option',e.name);option.value=e.name;group.append(option);}
+    if(group.children.length)element.append(group);
+   }
+   if([...element.options].some(o=>o.value===old))element.value=old;render();
+  }
   function render(){const c=characters.find(c=>c.id===character.value);const reference=references.elements.find(e=>e.name===element.value&&String(e.gender)===gender.value);upload.replaceChildren();archive.replaceChildren();
    if(!reference){image.hidden=true;download.hidden=true;referenceName.textContent='';description.textContent='';filename.textContent='';message.textContent='Aucun élément ne correspond à cette recherche. Essayez le nom technique : tete, cheveux, bras…';return;}
    message.textContent=`${element.options.length} éléments de référence · corps original ${c.name} ${c.gender===1?'M':'F'} manquant. Les contributions par pièce ne comptent pas comme un corps restauré.`;
