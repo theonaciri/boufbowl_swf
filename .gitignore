@@ -53,3 +53,13 @@ Thumbs.db
 # Local server state and build-host runtime (not distribution artifacts)
 /.local/
 /runtime/
+
+# Native website portraits: python3 -m tools.build_website
+/assets/site/restoration/*-default.webp
+/assets/site/restoration/*-winner.webp
+/assets/site/restoration/*-versus.webp
+/assets/site/restoration/*-loser.webp
+/assets/site/restoration/*-draw.webp
+/assets/site/restoration/*-alternate.webp
+/assets/site/restoration/*-action-*.webp
+/tools/website/node_modules/

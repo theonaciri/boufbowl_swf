@@ -213,3 +213,31 @@ des mouvements et la commande générale de pause des animations.
 Les téléchargements Desktop et Android sont mis en avant. La version Web est
 identifiée comme expérimentale, lente, buguée et instable avec Ruffle. Un appel
 à bénévoles dédié permet de proposer de l’aide sur la compatibilité Web.
+
+### Build des portraits du site
+
+Les 828 portraits sont des sorties de build ignorées par Git. Les sources Flash,
+les palettes, les références fournies et les petits manifestes restent versionnés.
+Aucun service de génération d’images n’est utilisé : Ruffle rend les 18 poses
+natives de chaque personnage, dans ses couleurs par défaut, sur fond transparent
+à 1080 px (personnage de 1000 px de haut).
+
+Prérequis : Python 3, Java 17, FFDec 26.3.0, FFmpeg avec libwebp, Bun et le
+Chromium Playwright. Depuis la racine du dépôt :
+
+```sh
+bun install --cwd tools/website --frozen-lockfile
+(cd tools/website && bunx playwright install --with-deps chromium)
+python3 -m tools.build_website --ffdec /chemin/ffdec.jar
+python3 -m tools.build_website --check
+```
+
+`JAVA`, `BUN` et `FFDEC_JAR` permettent de choisir les outils ; `--java` et
+`--bun` acceptent aussi un chemin. Le premier build exporte tous les portraits.
+Les suivants réutilisent les fichiers dont les couleurs, sources, dimensions et
+empreintes correspondent au manifeste ; `--force` impose un nouvel export.
+Le build actualise ensuite `portraits.json` et `inventory.json`. Exécuter le build
+avant de publier le site ou de lancer les contrôles qui vérifient ses images.
+Le rendu utilise un SWF temporaire et un serveur HTTP local sur un port libre ;
+il ne lance aucun serveur de jeu et ne modifie ni le client ni la base de données.
+Les fichiers générés doivent être copiés sur l’hébergement avec le reste du site.
