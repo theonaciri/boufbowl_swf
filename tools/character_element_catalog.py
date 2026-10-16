@@ -53,13 +53,27 @@ def memberships(names,sprites):
         if identity in seen:return
         seen.add(identity)
         for child in descendants.get(identity,()):visit(child,seen)
-    for timeline in sprites.values():
+    for identity,timeline in sprites.items():
+        # Scenery/crowd color variants also use cg_ labels; only pose roots own character parts.
+        if not re.fullmatch(r'boufbowler[12]_posing_?\d+',names.get(identity,'')):continue
         for label,ids in frames(timeline):
             if not label or not re.fullmatch(r'cg_\d+',label):continue
             seen=set()
             for identity in ids:visit(identity,seen)
             result[int(label[3:])].update(names[i] for i in seen if i in names)
     return result
+
+
+def is_common(name,users):
+    """Sharing a dependency is not enough: only generic anatomical parts qualify."""
+    classes={identity//10 for identity in users if 10<=identity<500}
+    if len(classes)<2:return False
+    part=re.sub(r'^colorgray_\d+_','',name,flags=re.I)
+    part=re.sub(r'^build\d+_','',part,flags=re.I)
+    return bool(re.fullmatch(
+        r'(?:tete_(?:expression\d+|triste)|pupille\d*|bras\d*|avantbras[DG]?\d*|avt_bras|'
+        r'main[DG]?\d*|cou|collo\d*|braccio|epaule[DG]?\d*|torse|peau|jambe[DG]?\d*|jambes)'
+        r'(?:_(?:[234][bB]?|[dfgFmM]|[DG]|\d+))*',part,re.I))
 
 
 def build(characters,root=ROOT,check=False):
@@ -71,12 +85,18 @@ def build(characters,root=ROOT,check=False):
         for character in characters:
             identity=character['hero'] or character['class_id']*10+character['gender']
             for name in sorted(members.get(identity,())):
-                entries[character['id']].append({'name':name,'source':relative,'kind':'illustration','common':len({i if i>=500 else i//10 for i in users[name]})>1})
+                entries[character['id']].append({'name':name,'source':relative,'kind':'illustration','common':is_common(name,users[name])})
+    body_users=defaultdict(set);body_names={}
     for character in characters:
         path=root/character['body_path']
         if path.is_file():
-            names,_=inspect(path)
-            entries[character['id']][0:0]=[{'name':name,'source':character['body_path'],'kind':'body','common':bool(re.match(r'(?:tete_(?:expression|triste)|colorGray_2_pupille|AnimStatique)',name,re.I))} for name in names.values()]
+            names,_=inspect(path);body_names[character['id']]=names
+            for name in names.values():body_users[name].add(character['hero'] or character['class_id']*10+character['gender'])
+    for character in characters:
+        path=root/character['body_path']
+        if path.is_file():
+            names=body_names[character['id']]
+            entries[character['id']][0:0]=[{'name':name,'source':character['body_path'],'kind':'body','common':is_common(name,body_users[name])} for name in names.values()]
     result={'characters':dict(entries),'notice':'Appartenance extraite des images cg_<identité> et des dépendances de symboles ; illustrations et corps animés sont des sources distinctes.'}
     output=root/'assets/site/restoration/elements/characters.json'
     if check:

@@ -94,10 +94,11 @@ réutiliser les exports. FFDec, Java et FFmpeg sont nécessaires au premier expo
 
 Le sélecteur d’éléments dépend du personnage choisi, et non de la référence Crâ.
 `tools.character_element_catalog` suit les images `cg_<identité>` des deux
-bibliothèques d’illustrations et leurs dépendances (placements, profondeurs,
+bibliothèques d’illustrations, uniquement sous les poses `boufbowler[12]_posing…`, et leurs dépendances (placements, profondeurs,
 retraits et sous-symboles). Il ajoute les symboles du corps SWL original lorsque
-cette archive existe. Les éléments propres au personnage précèdent ceux utilisés
-par plusieurs personnages. Le catalogue couvre les 28 variantes de classes et
+cette archive existe. Les repères `cg_…` des décors et de la foule sont exclus : ils ne désignent pas des pièces de personnages. Les éléments propres au personnage précèdent les parties anatomiques génériques réellement partagées par plusieurs classes.
+La réutilisation par une légende ne suffit pas : les accessoires, costumes, noms
+de classes/personnages et symboles non identifiés restent dans le premier groupe. Le catalogue couvre les 28 variantes de classes et
 les 18 légendes sans deviner l’appartenance à partir du nom des symboles.
 
 Les illustrations sont retrouvées mais ne constituent pas l’inventaire des corps
