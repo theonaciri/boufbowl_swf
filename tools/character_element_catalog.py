@@ -92,7 +92,8 @@ def puppet_entries(characters,root=ROOT):
     recovered=[set(names.values()) for names in class_names.values() if names]
     index=root/'assets/sprites/bones/0.xml'
     slots={r.attrib['name']+'_'+d for r in ET.parse(index).iter('resource') for d in r.attrib.get('directions','').split(',') if d} if index.is_file() else set()
-    expected=sorted(set.intersection(*recovered)&slots) if recovered else []
+    contract=root/'resources/puppet-slots.json'
+    expected=sorted(set(json.loads(contract.read_text())['slots'])&slots) if contract.is_file() else sorted(set.intersection(*recovered)&slots) if recovered else []
     base='assets/sprites/skins/0.swl'
     # The default skin also embeds Cra placeholders; those are not common class originals.
     base_names=[name for name in parts(base).values() if name not in specific]
@@ -102,9 +103,9 @@ def puppet_entries(characters,root=ROOT):
         relative=f"assets/sprites/skins/{character['gender']}.swl"
         for name in parts(relative).values():entries[name]={'name':name,'source':relative,'kind':'body','scope':'shared','common':True}
         for name in class_names[character['id']].values():entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name])}
-        if not class_names[character['id']]:
-            for name in expected:
-                entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name]),'status':'missing','evidence':'skeleton-and-recovered-class-skins','evidence_sources':len(recovered)}
+        for name in expected:
+            if name not in class_names[character['id']].values():
+                entries[name]={'name':name,'source':character['body_path'],'kind':'body','scope':'class','common':is_common(name,users[name]),'status':'missing','evidence':'skeleton-and-recovered-class-skins','evidence_sources':5 if contract.is_file() else len(recovered)}
         result[character['id']]=list(entries.values())
     return result
 
@@ -119,6 +120,11 @@ def build(characters,root=ROOT,check=False,jar=None,java=None,force=False):
     for identity,entries in missing.items():result['characters'][identity].extend(entries)
     from tools.character_asset_status import annotate
     result=annotate(result,characters,root,check=check)
+    result['scans']={}
+    for character in characters:
+        entries=result['characters'][character['id']]
+        missing=[e for e in entries if e.get('status')=='missing' and not e.get('restored_image')]
+        result['scans'][character['id']]={'name':character['name'],'gender':character['gender'],'archive':character['body_path'],'archive_present':(root/character['body_path']).is_file(),'expected_slots':len([e for e in entries if e['scope']=='class']),'missing':[{'name':e['name'],'source':e['source'],'evidence':e['evidence']} for e in missing],'restored':sum(bool(e.get('restored_image')) for e in entries),'quality_review':sum(e.get('target_status') in ('restored_low_quality','restored_unreviewed') for e in entries),'inventory_complete':(root/character['body_path']).is_file() and not missing}
     output=root/'assets/site/restoration/elements/characters.json'
     if check:
         if not output.is_file() or json.loads(output.read_text())!=result:raise ValueError('Character-specific element catalog is stale')

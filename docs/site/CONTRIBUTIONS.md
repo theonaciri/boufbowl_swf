@@ -108,10 +108,11 @@ mais ne fournissent plus les entrées de cet atelier.
 
 Le choix « Référence » propose les cinq corps spécifiques retrouvés : Crâ M/F,
 Eniripsa F, Enutrof F et Iop M. Pour les autres personnages, le sélecteur présente les parties communes connues
-et les **emplacements attendus à restaurer**. Leur nom vient de l’intersection
-des symboles de toutes les archives de classe retrouvées avec les ressources et
-directions déclarées dans `bones/0.xml` (93 emplacements avec les cinq archives
-actuelles). Ces entrées sont marquées manquantes, sans image empruntée à une autre
+et les **emplacements attendus à restaurer**. Leur nom vient du contrat attesté dans `resources/puppet-slots.json`, établi
+à partir des cinq archives et du squelette `bones/0.xml` (93 emplacements).
+Le contrat est conservé avec ses preuves : une archive qui perd une pièce ne
+réduit donc pas la liste attendue. Chaque personnage est contrôlé séparément,
+y compris lorsque son archive est présente mais incomplète. Ces entrées sont marquées manquantes, sans image empruntée à une autre
 classe, et proposent un envoi SWF par nom exact. Le choix de référence fournit
 l’aperçu comparatif séparé.
 
@@ -147,3 +148,10 @@ est « restauré, à vérifier ». Une entrée sans fichier reste manquante. Le 
 génère l’aperçu de la reconstruction en isolation, sans ActionScript ; les versions
 de qualité basse ou non évaluées peuvent recevoir une meilleure proposition.
 L’approbation d’un envoi en quarantaine ne vaut ni intégration ni évaluation de qualité.
+
+Le fichier généré `elements/characters.json` contient un rapport `scans` pour
+chaque personnage : archive attendue et présence, emplacements connus, noms
+manquants individuels, reconstructions présentes et évaluations à reprendre.
+L’atelier affiche ces lignes cliquables et propose le téléchargement du rapport
+complet. Un fichier restauré présent n’est plus compté comme manquant ; une
+proposition simplement approuvée en quarantaine reste hors de ce bilan.

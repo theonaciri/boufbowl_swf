@@ -48,7 +48,6 @@ def catalog(root):
     if references.is_file():
         elements=json.loads(references.read_text()).get('characters',{})
         for character in data['characters']:
-            if character['body_available']:continue
             skin=Path(character['body_path']).stem
             for element in elements.get(character['id'],[]):
                 name=element['name']

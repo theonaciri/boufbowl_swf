@@ -15,10 +15,9 @@ def annotate(catalog,characters,root,check=False):
     generated={}
     for identity,entries in catalog['characters'].items():
         character=lookup[identity]
-        if character['body_available']:continue
         skin=Path(character['body_path']).stem
         for entry in entries:
-            if entry.get('scope')=='shared':continue
+            if entry.get('scope')=='shared' or entry.get('status')!='missing':continue
             relative=f"assets/sprites/restoration-elements/{skin}/{entry['name']}.swf";path=root/relative
             entry['target_status']='missing'
             if not path.is_file():continue
