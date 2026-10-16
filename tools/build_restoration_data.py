@@ -20,6 +20,8 @@ def homepage_assets(root):
     """Track supplied media and every literal homepage dependency, including missing ones."""
     root=Path(root)
     paths={'assets/site/restoration/class-'+str(i)+'.webp' for i in range(1,15)}
+    paths.update(f'assets/site/restoration/grid-icons/{skin}.png' for skin in
+                 [*(cls*10+gender for cls in range(1,15) for gender in (1,2)), *(h for h,_,_ in HEROES)])
     paths.update('assets/site/restoration/field-classes-'+str(i)+'.webp' for i in range(1,4))
     if not (root/'restoration.js').is_file():paths.clear()
     paths.update(p.relative_to(root).as_posix() for p in (root/'assets/site').rglob('*') if p.is_file() and p.suffix in ('.webp','.png','.svg','.mp4','.ttf','.woff','.woff2'))
@@ -58,7 +60,7 @@ def audit(root=ROOT):
         skin=hero or cls*10+gender;body='assets/sprites/skins/'+str(skin)+'.swl'
         poses={pose:'assets/site/restoration/'+identity+'-'+pose+'.webp' for pose in POSES}
         return {'id':identity,'class_id':cls,'class_name':CLASSES[cls-1],'name':name or CLASSES[cls-1],
-            'gender':gender,'hero':hero,'icon':'assets/site/restoration/class-'+str(cls)+'.webp',
+            'gender':gender,'hero':hero,'icon':'assets/site/restoration/grid-icons/'+str(skin)+'.png',
             'body_available':exists(body),'body_path':body,'poses':{k:v for k,v in poses.items() if exists(v)},
             'palette_status':'review','illustration_archive_available':exists('assets/artworks/cutscene-boufbowler-repository.swf')}
     characters=[character(f'{slug}-{gender}',i,gender) for i,slug in enumerate(SLUGS,1) for gender in (1,2)]

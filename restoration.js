@@ -118,12 +118,13 @@
         "aria-label",
         `${c.name}, ${c.gender === 1 ? "homme" : "femme"} : corps ${c.body_available ? "retrouvé" : "à retrouver"}`,
       );
+      b.title = `${c.name} · ${c.gender === 1 ? "H" : "F"}`;
       b.setAttribute("aria-pressed", String(c.id === state.id));
       const image = el("img");
-      image.src = c.hero ? portraitURL(c.poses.default) || c.icon : c.icon;
+      image.src = c.icon;
       image.alt = "";
-      image.width = 80;
-      image.height = 96;
+      image.width = 133;
+      image.height = 160;
       image.loading = "lazy";
       b.append(
         image,
@@ -699,7 +700,7 @@
         b.type = "button";
         b.setAttribute("aria-label", `Explorer ${c.name}`);
         const img = el("img");
-        img.src = portraitURL(c.poses.default) || c.icon;
+        img.src = c.icon;
         img.alt = "";
         img.loading = "lazy";
         b.append(img);

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from tools.site_delivery import PAGES, FRONTEND, delivery
-from tools.build_restoration_data import homepage_assets
+from tools.build_restoration_data import homepage_assets, HEROES
 
 
 class SiteDeliveryTests(unittest.TestCase):
@@ -21,6 +21,10 @@ class SiteDeliveryTests(unittest.TestCase):
                 path=root/f'assets/site/restoration/{prefix}{i}.webp'
                 path.parent.mkdir(parents=True,exist_ok=True)
                 path.write_bytes(b'fixture')
+        for skin in [*(cls*10+gender for cls in range(1,15) for gender in (1,2)), *(h for h,_,_ in HEROES)]:
+            path=root/f'assets/site/restoration/grid-icons/{skin}.png'
+            path.parent.mkdir(parents=True,exist_ok=True)
+            path.write_bytes(b'fixture')
         (root/'index.html').write_text('<img src="assets/site/logo.webp">')
 
     def test_delivery_download_sizes_integrity_and_private_file_exclusion(self):

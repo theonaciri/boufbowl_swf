@@ -18,6 +18,7 @@ from backend.server import site_manifest
 from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size, renderer_inputs, render_fingerprint, reusable
 from tools.game_config import load_config, startup_source
 from tools.build_restoration_data import audit
+from tools.site_grid_icons import build as build_grid_icons
 
 
 def main():
@@ -37,6 +38,7 @@ def main():
     directory = ROOT/'assets/site/restoration'
     settings = json.loads((ROOT/'resources/palettes.json').read_text())
     tasks = export_plan(audit()['characters'], settings)
+    build_grid_icons(ROOT, audit()['characters'], args.ffdec, args.java, args.force, args.check)
     old_path = directory/'portraits.json'
     old = json.loads(old_path.read_text()) if old_path.exists() else {}
     previous = {e['id']: e for e in old.get('exports', [])}
