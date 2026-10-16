@@ -72,6 +72,7 @@ class VisualAssetTests(unittest.TestCase):
     def test_reference_heroes_have_dedicated_default_palettes(self):
         heroes={p['unique_character']:p for p in palettes()['hero_palettes']}
         for hero,palette,hair,skin in ((501,15,'ecddca','a57c5c'),
+                                     (502,16,'192747','e7b98c'),
                                      (503,17,'222e2e','cc9755'),
                                      (504,18,'fffee7','3f321f'),
                                      (505,19,'fd8203','ecb141'),
@@ -80,6 +81,8 @@ class VisualAssetTests(unittest.TestCase):
             self.assertEqual(entry['id'],palette)
             self.assertEqual(entry['hair'][0],hair)
             self.assertEqual(entry['skin'][0],skin)
+            if hero == 502:
+                self.assertEqual(entry['eyes'], ['793e94'])
             for filename in ('patches/StartUpApplicationCommand.as','android/patches/StartUpApplicationCommand.as'):
                 source=startup_source((ROOT/filename).read_text(),load_config(),filename.startswith('android'))
                 self.assertRegex(source,rf'\[{hero},\s*\d+,\s*\d+,\s*{palette}\]')

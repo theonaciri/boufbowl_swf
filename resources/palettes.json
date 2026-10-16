@@ -1526,6 +1526,15 @@
   ],
   "hero_palettes": [
     {
+      "id": 16,
+      "unique_character": 502,
+      "name": "Pita Smisse",
+      "source": "Pita Smisse — supplied RGB colors",
+      "hair": ["192747"],
+      "eyes": ["793e94"],
+      "skin": ["e7b98c"]
+    },
+    {
       "id": 15,
       "unique_character": 501,
       "name": "Kriss Krass",
