@@ -92,12 +92,24 @@ transparents. `tools.build_website` lance aussi cette étape ; les images sont
 générées et ignorées par Git. Une empreinte des sources et du script permet de
 réutiliser les exports. FFDec, Java et FFmpeg sont nécessaires au premier export.
 
-Pour les corps absents uniquement, le catalogue accepte des propositions SWF
-nommées exactement comme le symbole de référence, par exemple `tete_neutre.swf`,
-au chemin de travail `assets/sprites/restoration-elements/<skin>/<symbole>.swf`.
-Ces chemins désignent des pièces proposées, pas les archives originales du jeu.
-Le nom de référence Crâ ne garantit pas qu’une autre classe possédait exactement
-la même pièce. L’intégration et l’assemblage restent manuels ; une pièce proposée
-ne transforme pas le statut du corps complet. Les archives SWL complètes restent
-proposables par leur bouton distinct. Les mêmes quotas, analyses et permissions
-s’appliquent aux deux parcours.
+Le sélecteur d’éléments dépend du personnage choisi, et non de la référence Crâ.
+`tools.character_element_catalog` suit les images `cg_<identité>` des deux
+bibliothèques d’illustrations et leurs dépendances (placements, profondeurs,
+retraits et sous-symboles). Il ajoute les symboles du corps SWL original lorsque
+cette archive existe. Les éléments propres au personnage précèdent ceux utilisés
+par plusieurs personnages. Le catalogue couvre les 28 variantes de classes et
+les 18 légendes sans deviner l’appartenance à partir du nom des symboles.
+
+Les illustrations sont retrouvées mais ne constituent pas l’inventaire des corps
+animés absents. Pour ces corps, les symboles d’illustration peuvent servir de
+gabarits de reconstruction, avec leur nom exact et un chemin de travail
+`assets/sprites/restoration-elements/<skin>/<symbole>.swf`. Les originaux déjà
+retrouvés ne reçoivent pas de remplacement. Le Crâ à gauche reste une référence
+structurelle, marquée approximative en cas de correspondance indirecte ; son
+sexe ne modifie jamais la liste d’éléments du personnage sélectionné.
+
+Ces gabarits ne prouvent pas les noms des pièces de l’archive d’animation
+manquante. Leur adaptation et leur assemblage restent manuels ; les statistiques
+du corps complet ne changent pas après une proposition de pièce. Les archives
+SWL complètes restent proposables par leur bouton distinct. Les mêmes quotas,
+analyses et permissions s’appliquent aux deux parcours.

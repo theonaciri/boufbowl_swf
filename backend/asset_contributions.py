@@ -44,22 +44,21 @@ def catalog(root):
         identity=hashlib.sha256(path.encode()).hexdigest()[:24]
         mime,limit=FORMATS[relative.suffix]
         result[identity]={**item,'id':identity,'name':relative.name,'extension':relative.suffix,'mime':mime,'max_bytes':limit}
-    references=Path(root)/'assets/site/restoration/elements/manifest.json'
+    references=Path(root)/'assets/site/restoration/elements/characters.json'
     if references.is_file():
-        elements=json.loads(references.read_text()).get('elements',[])
+        elements=json.loads(references.read_text()).get('characters',{})
         for character in data['characters']:
             if character['body_available']:continue
             skin=Path(character['body_path']).stem
-            for element in elements:
-                if element['gender']!=character['gender']:continue
+            for element in elements.get(character['id'],[]):
                 name=element['name']
-                if not re.fullmatch(r'[A-Za-z0-9_]+',name):continue
+                if element['kind']!='illustration' or not re.fullmatch(r'[A-Za-z0-9_]+',name):continue
                 path=f'assets/sprites/restoration-elements/{skin}/{name}.swf'
                 if (Path(root)/path).is_file():continue
                 identity=hashlib.sha256(path.encode()).hexdigest()[:24]
                 result[identity]={'id':identity,'path':path,'name':name+'.swf','extension':'.swf','mime':FORMATS['.swf'][0],
                     'max_bytes':FORMATS['.swf'][1],'status':'missing','group':'character-elements','character':character['id'],
-                    'element':name,'available':False}
+                    'element':name,'available':False,'template_source':element['source']}
     return result
 
 

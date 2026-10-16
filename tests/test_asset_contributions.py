@@ -30,10 +30,10 @@ class AssetContributionTests(unittest.TestCase):
         identity,path=self.manager.reserve('asset',token,'missing.png',len(data),'127.0.0.1');path.write_bytes(data);self.manager.finish(identity,path)
         return identity,path,token
     def state(self,identity):return self.manager.db.execute('SELECT state FROM submissions WHERE id=?',(identity,)).fetchone()[0]
-    def test_element_catalog_targets_only_missing_bodies_and_matching_gender(self):
+    def test_element_catalog_targets_only_selected_character_and_missing_bodies(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary);folder=root/'assets/site/restoration/elements';folder.mkdir(parents=True)
-            (folder/'manifest.json').write_text(json.dumps({'elements':[{'name':'tete_neutre','gender':1},{'name':'cheveux','gender':2}]}))
+            (folder/'characters.json').write_text(json.dumps({'characters':{'missing':[{'name':'tete_neutre','kind':'illustration','source':'assets/artworks/source.swf'}],'other':[{'name':'cheveux','kind':'illustration','source':'assets/artworks/source.swf'}]}}))
             (folder.parent/'inventory.json').write_text(json.dumps({'asset_status':[], 'characters':[
                 {'id':'missing','body_available':False,'body_path':'assets/sprites/skins/21.swl','gender':1},
                 {'id':'original','body_available':True,'body_path':'assets/sprites/skins/11.swl','gender':1}]}))
