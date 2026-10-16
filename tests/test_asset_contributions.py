@@ -79,8 +79,39 @@ class AssetContributionTests(unittest.TestCase):
         path.write_bytes(b'changed')
         with self.assertRaises(ServiceError):self.manager.original(identity)
         self.manager.decision(identity,'reject','administrator')
-        self.assertFalse(path.exists());self.assertEqual(self.state(identity),'rejected')
+        self.assertTrue(path.exists());self.assertEqual(self.state(identity),'rejected')
         with self.assertRaises(ServiceError):self.manager.preview(identity)
+    def test_rejected_bytes_expire_thirty_days_after_rejection_not_upload(self):
+        identity,path,_=self.receive()
+        now=time.time()
+        self.manager.db.execute('UPDATE submissions SET created=? WHERE id=?',(now-20*86400,identity))
+        with patch('backend.asset_contributions.time.time',return_value=now):
+            self.manager.decision(identity,'reject','administrator')
+            self.manager.cleanup()
+            self.assertTrue(path.exists())
+            self.assertEqual(self.manager.listing()['submissions'][0]['delete_after'],now+30*86400)
+            for operation in (lambda:self.manager.preview(identity),lambda:self.manager.original(identity),
+                              lambda:self.manager.decision(identity,'rescan','administrator'),
+                              lambda:self.manager.decision(identity,'reject','administrator')):
+                with self.assertRaises(ServiceError):operation()
+        with patch('backend.asset_contributions.time.time',return_value=now+30*86400-1):
+            self.manager.cleanup()
+            self.assertTrue(path.exists())
+        with patch('backend.asset_contributions.time.time',return_value=now+30*86400):
+            self.manager.cleanup()
+        self.assertFalse(path.parent.exists())
+        self.assertIsNone(self.manager.db.execute('SELECT id FROM submissions WHERE id=?',(identity,)).fetchone())
+        self.assertEqual(self.manager.db.execute('SELECT COUNT(*) FROM decisions WHERE submission=?',(identity,)).fetchone()[0],0)
+
+    def test_incomplete_upload_is_quarantined_for_thirty_days(self):
+        identity,path,_=self.receive()
+        self.manager.abort(identity)
+        self.assertTrue(path.exists())
+        reviewed=self.manager.db.execute('SELECT reviewed FROM submissions WHERE id=?',(identity,)).fetchone()[0]
+        with patch('backend.asset_contributions.time.time',return_value=reviewed+30*86400):
+            self.manager.cleanup()
+        self.assertFalse(path.parent.exists())
+
     def test_archive_removes_approved_bytes_and_preserves_decision(self):
         identity,path,_=self.receive();self.manager.process(identity)
         self.manager.decision(identity,'approve','administrator')

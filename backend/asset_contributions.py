@@ -26,6 +26,7 @@ FORMATS={'.mp3':('audio/mpeg',20*1024*1024),'.png':('image/png',8*1024*1024),
          '.webp':('image/webp',8*1024*1024),'.swl':('application/octet-stream',8*1024*1024),
          '.swf':('application/x-shockwave-flash',8*1024*1024),'.dae':('model/vnd.collada+xml',8*1024*1024)}
 MAX_STORAGE=512*1024*1024
+REJECTED_RETENTION=30*86400
 
 
 def fail(message,code='ASSET_INVALID'):
@@ -165,7 +166,7 @@ class AssetContributions:
     def cleanup(self):
         now=time.time()
         self.db.execute('DELETE FROM tokens WHERE created<?',(now-3600,))
-        for row in self.db.execute("SELECT id FROM submissions WHERE created<? AND state NOT IN ('approved','published')",(now-14*86400,)).fetchall():
+        for row in self.db.execute("SELECT id FROM submissions WHERE (state='rejected' AND COALESCE(reviewed,created)<=?) OR (created<? AND state NOT IN ('approved','published','rejected'))",(now-REJECTED_RETENTION,now-14*86400)).fetchall():
             shutil.rmtree(self.directory/row['id'],ignore_errors=True)
             self.db.execute('DELETE FROM decisions WHERE submission=?',(row['id'],));self.db.execute('DELETE FROM submissions WHERE id=?',(row['id'],))
         self.db.execute("UPDATE submissions SET ip='',contact='' WHERE created<?",(now-30*86400,))
@@ -215,8 +216,7 @@ class AssetContributions:
 
     def abort(self,identity):
         with self.lock:
-            self.db.execute("UPDATE submissions SET state='rejected',error='Envoi incomplet.' WHERE id=?",(identity,))
-            shutil.rmtree(self.directory/identity,ignore_errors=True)
+            self.db.execute("UPDATE submissions SET state='rejected',reviewed=?,error='Envoi incomplet.' WHERE id=?",(time.time(),identity))
 
     def validate(self,path,output,target):
         extension=path.suffix;data=path.read_bytes()
@@ -358,11 +358,11 @@ class AssetContributions:
     def run(self):
         last_cleanup=0
         while not self.stopping.is_set():
+            if time.monotonic()-last_cleanup>60:
+                with self.lock:self.cleanup()
+                last_cleanup=time.monotonic()
             try:identity=self.jobs.get(timeout=1)
             except queue.Empty:
-                if time.monotonic()-last_cleanup>60:
-                    with self.lock:self.cleanup()
-                    last_cleanup=time.monotonic()
                 continue
             self.process(identity);self.jobs.task_done()
 
@@ -373,7 +373,9 @@ class AssetContributions:
             rows=self.db.execute('SELECT * FROM submissions '+('WHERE state=? ' if state else '')+'ORDER BY created DESC LIMIT 100',([state] if state else [])).fetchall()
             result=[]
             for row in rows:
-                item=dict(row);item.pop('ip');item['metadata']=json.loads(item['metadata']) if item['metadata'] else None;result.append(item)
+                item=dict(row);item.pop('ip');item['metadata']=json.loads(item['metadata']) if item['metadata'] else None
+                item['delete_after']=(item['reviewed'] or item['created'])+REJECTED_RETENTION if item['state']=='rejected' else None
+                result.append(item)
             return {'submissions':result,'counts':dict(self.db.execute('SELECT state,COUNT(*) FROM submissions GROUP BY state').fetchall()),'limits':{'storage_bytes':MAX_STORAGE,'queue':8,'per_hour':10,'per_day':30}}
 
     def decision(self,identity,action,actor):
@@ -388,7 +390,8 @@ class AssetContributions:
             elif action=='reject':
                 if row['state'] in ('receiving','scanning'):fail('Attendez la fin du traitement en cours.')
                 if row['state']=='published':fail('Une ressource déployée ne se rejette pas rétroactivement.')
-                shutil.rmtree(folder,ignore_errors=True);state='rejected'
+                if row['state']=='rejected':fail('Cette contribution est déjà en quarantaine après rejet.')
+                state='rejected'
             elif action=='rescan':
                 if row['state'] not in ('pending','scan_error','approved') or not path.is_file():fail('Réanalyse impossible.')
                 if self.jobs.full():fail('File d’attente pleine.','ASSET_LIMIT')

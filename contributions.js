@@ -16,7 +16,7 @@
   const submit=el('button','Envoyer en quarantaine');submit.type='submit';submit.className='button';
   const cancel=el('button','Annuler l’envoi');cancel.type='button';cancel.hidden=true;
   const progress=el('progress');progress.max=100;progress.value=0;progress.hidden=true;
-  const privacy=el('p','Aucun compte nécessaire. Votre contact et le fichier sont réservés aux administrateurs ; son format et son contenu sont contrôlés avant tout examen. Limites : 10 envois/heure, 30/jour, trois propositions en cours par ressource. Les fichiers en attente expirent après 14 jours.');
+  const privacy=el('p','Aucun compte nécessaire. Votre contact et le fichier sont réservés aux administrateurs ; son format et son contenu sont contrôlés avant tout examen. Limites : 10 envois/heure, 30/jour, trois propositions en cours par ressource. Les fichiers en attente expirent après 14 jours ; les fichiers rejetés restent en quarantaine privée pendant 30 jours après le rejet, puis sont supprimés automatiquement.');
   privacy.className='workshop-small';const policy=el('a','Confidentialité');policy.href='confidentialite.html';privacy.append(' ',policy);
   form.append(label,contactLabel,agreement,submit,cancel,progress,status);dialog.append(close,title,expected,form,privacy);document.body.append(dialog);
   close.onclick=()=>{if(xhr)xhr.abort();dialog.close();};cancel.onclick=()=>xhr?.abort();

@@ -61,7 +61,13 @@ serveur, hors des chemins publics, avec leur propre base SQLite. La base des
 comptes et sa version de schéma ne changent pas. Les décisions et leur auteur
 sont journalisés. Un fichier infecté ou invalide est supprimé ; une erreur
 technique de scan permet une nouvelle analyse. Un envoi en attente expire après
-quatorze jours, un rejet supprime immédiatement les octets. Les empreintes réseau
+quatorze jours. Un rejet conserve les octets en quarantaine privée pendant
+trente jours à compter de la décision (ou de l’interruption d’envoi), puis
+supprime le dossier, la fiche et les décisions associées. Les rejets ne suivent
+pas l’expiration de quatorze jours. Les fichiers rejetés restent inaccessibles
+aux aperçus et téléchargements ; aucun nouveau rejet ne peut prolonger le délai.
+Le nettoyage tourne automatiquement dans le worker, même sans consultation
+de la page, et la revue affiche la date prévue de suppression. Les empreintes réseau
 des contributions et le contact du contributeur sont effacés après trente jours.
 Un contact de 3 à 200 caractères (pseudo Discord, e-mail ou autre moyen) est
 obligatoire, validé côté serveur et lié au jeton d’envoi. Il est visible uniquement
