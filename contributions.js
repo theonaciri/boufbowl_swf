@@ -24,7 +24,7 @@
     form.reset();submit.disabled=false;progress.hidden=true;status.textContent='';input.accept=selected.extension;
     expected.textContent=`Nom exact : ${selected.name} · ${selected.extension} · ${(selected.max_bytes/1048576).toLocaleString('fr-FR')} Mo maximum. ${selected.path}`;
     dialog.showModal();input.focus();}
-  window.AssetContributions={ready,button(path){const b=el('button','Proposer ce fichier ↥');b.type='button';b.className='asset-upload-button';b.onclick=()=>open(path);return b;}};
+  window.AssetContributions={button(path){const b=el('button','Proposer ce fichier ↥');b.type='button';b.className='asset-upload-button';b.onclick=()=>open(path);return b;}};
   form.onsubmit=async event=>{event.preventDefault();const file=input.files[0];if(!selected||!file)return;
     if(file.name!==selected.name){status.textContent=`Le fichier doit porter exactement le nom ${selected.name}.`;return;}
     if(!file.size||file.size>selected.max_bytes){status.textContent='Le fichier dépasse la limite indiquée ou est vide.';return;}
@@ -41,6 +41,6 @@
   const search=el('input');search.type='search';search.placeholder='Rechercher un nom, un format ou un dossier';search.setAttribute('aria-label','Rechercher une ressource à restaurer');
   const count=el('p');count.id='asset-catalog-status';count.setAttribute('role','status');const list=el('div');list.className='asset-contribution-list';
   section.append(search,count,list);document.querySelector('#telecharger').before(section);search.oninput=render;
-  function render(){const query=search.value.trim().toLowerCase();const rows=items.filter(a=>a.group!=='character-elements'&&(a.path+' '+a.group).toLowerCase().includes(query));count.textContent=`${rows.length} ressource(s) manquante(s), remplacée(s) ou de qualité réduite.`;list.replaceChildren();
+  function render(){const query=search.value.trim().toLowerCase();const rows=items.filter(a=>(a.path+' '+a.group).toLowerCase().includes(query));count.textContent=`${rows.length} ressource(s) manquante(s), remplacée(s) ou de qualité réduite.`;list.replaceChildren();
     for(const a of rows){const row=el('div');row.className='asset-contribution-row';const copy=el('div');copy.append(el('strong',a.name),el('small',a.path),el('span',a.status==='restored_low_quality'?'Restauré, qualité basse':a.status==='substitute'?'Original remplacé':'Fichier manquant'));row.append(copy,window.AssetContributions.button(a.path));list.append(row);}}
 })();

@@ -30,24 +30,6 @@ class AssetContributionTests(unittest.TestCase):
         identity,path=self.manager.reserve('asset',token,'missing.png',len(data),'127.0.0.1');path.write_bytes(data);self.manager.finish(identity,path)
         return identity,path,token
     def state(self,identity):return self.manager.db.execute('SELECT state FROM submissions WHERE id=?',(identity,)).fetchone()[0]
-    def test_element_catalog_targets_only_selected_character_and_missing_bodies(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root=Path(temporary);folder=root/'assets/site/restoration/elements';folder.mkdir(parents=True)
-            (folder/'characters.json').write_text(json.dumps({'characters':{'missing':[{'name':'tete_neutre','kind':'body','scope':'class','status':'missing','source':'assets/sprites/skins/21.swl'}],'other':[{'name':'cheveux','kind':'body','scope':'class','status':'missing','source':'assets/sprites/skins/22.swl'}]}}))
-            (folder.parent/'inventory.json').write_text(json.dumps({'asset_status':[], 'characters':[
-                {'id':'missing','body_available':False,'body_path':'assets/sprites/skins/21.swl','gender':1},
-                {'id':'original','body_available':True,'body_path':'assets/sprites/skins/11.swl','gender':1}]}))
-            self.mock.stop()
-            try:
-                from backend.asset_contributions import catalog as actual
-                items=list(actual(root).values())
-                installed=root/items[0]['path'];installed.parent.mkdir(parents=True);installed.write_bytes(b'installed')
-                self.assertFalse(actual(root))
-                data=json.loads((folder/'characters.json').read_text());data['characters']['missing'][0]['target_status']='restored_low_quality';(folder/'characters.json').write_text(json.dumps(data))
-                self.assertEqual(next(iter(actual(root).values()))['status'],'restored_low_quality')
-            finally:self.mock.start()
-            self.assertEqual(len(items),1);self.assertEqual(items[0]['name'],'tete_neutre.swf')
-            self.assertEqual(items[0]['character'],'missing');self.assertEqual(items[0]['group'],'character-elements')
     def test_exact_name_nonce_size_replay_and_ip_binding(self):
         with self.assertRaises(ServiceError):self.manager.token('asset','ip',False)
         with self.assertRaises(ServiceError):self.manager.token({},'ip',True)
@@ -86,7 +68,7 @@ class AssetContributionTests(unittest.TestCase):
         rect=int(bits,2).to_bytes(len(bits)//8,'big')
         body=rect+b'\0\x18\x01\0'+struct.pack('<H',9*64+3)+b'\x55\x88\xaa'+b'\x40\0\0\0'
         path.write_bytes(b'FWS\x09'+struct.pack('<I',len(body)+8)+body)
-        metadata=self.manager.validate(path,folder,'assets/sprites/restoration-elements/21/tete.swf')
+        metadata=self.manager.validate(path,folder,'assets/sprites/skins/example.swf')
         self.assertEqual(metadata['thumbnails'],1);self.assertTrue((folder/'flash-0.png').read_bytes().startswith(b'\x89PNG'))
     def test_original_ankama_swl_static_preview(self):
         original=Path(__file__).resolve().parents[1]/'assets/sprites/skins/61.swl'
