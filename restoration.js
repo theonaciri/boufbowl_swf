@@ -86,6 +86,16 @@
         "assets/site/restoration/field-references/hero-516.png",
         162,
         304
+    ],
+    "hero-505": [
+        "assets/site/restoration/field-references/hero-505.png",
+        202,
+        390
+    ],
+    "hero-506": [
+        "assets/site/restoration/field-references/hero-506.png",
+        167,
+        354
     ]
 };
   function renderFieldReference(c, sex) {

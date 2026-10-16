@@ -379,8 +379,8 @@ aussi sans le cache local de portraits, à partir du manifeste livré.
 Les propositions publiques de ressources et leur revue sont documentées dans
 [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
 
-Les références individuelles « Sur le terrain » de Kriss, Ruel, Kabrok, Jack
-et Roublard F sont les captures originales fournies dans
+Les références individuelles « Sur le terrain » de Kriss, Ruel, Kabrok, Jack,
+Goultard, Amalia et Roublard F sont les captures originales fournies dans
 `assets/site/restoration/field-references/`. Elles priment sur la référence de
 classe et sont orientées vers la gauche en CSS. Leur présence ne signifie pas
 que les pièces du pantin animé ont été restaurées.
