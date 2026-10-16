@@ -1611,7 +1611,7 @@
         "6a8f8c"
       ],
       "eyes": ["c02d37", "8d202c", "ec6970", "a780b7", "538c88", "d2b15e"],
-      "skin": ["a57c5c", "9d785e", "825d45", "bf9978", "d8b695", "604434"]
+      "skin": ["8f7147", "9d785e", "825d45", "bf9978", "d8b695", "604434"]
     },
     {
       "id": 17,
@@ -1739,7 +1739,7 @@
         "f1e7b3",
         "97765a"
       ],
-      "eyes": ["e1d69b", "d3c36c", "f1edd2", "b8dce4", "a884bd", "c99c4e"],
+      "eyes": ["0f3135", "d3c36c", "f1edd2", "b8dce4", "a884bd", "c99c4e"],
       "skin": ["27596c", "121c1f", "365861", "090f10", "456f7b"]
     },
     {
@@ -1765,25 +1765,34 @@
       "name": "Count Harebourg",
       "source": "Count Harebourg supplied reference",
       "hair": [
+        "50a2a3",
         "fffaf0",
+        "a884bd",
+        "c99c4e",
+        "9de8f0",
+        "bceeff",
+        "ebfaff",
+        "b8dce4"
+      ],
+      "eyes": [
         "ffe4ae",
+        "cc921a",
+        "d5bd8b",
         "fff8eb",
         "bdbbad",
         "8b8268",
-        "5c8c92",
-        "485d6f",
-        "cc921a"
+        "5c8c92"
       ],
-      "eyes": [
-        "a884bd",
-        "9de8f0",
-        "bceeff",
+      "skin": [
+        "fff0eb",
+        "a69056",
+        "02a0cd",
+        "ffc1ab",
+        "ff9b78",
         "7fdeff",
-        "ebfaff",
-        "b8dce4",
-        "c99c4e"
+        "ffe7de",
+        "ff7645"
       ],
-      "skin": ["fff0eb", "ffc1ab", "ff9b78", "ffe7de", "ff7645"],
       "reference_note": "White hair, pale skin and icy eyes; alternate swatches also reflect the olive and teal costumes."
     },
     {
@@ -1801,7 +1810,7 @@
         "af7746"
       ],
       "eyes": ["c99c4e", "100e09", "615235", "b8dce4", "a884bd"],
-      "skin": ["1a1714", "e0d298", "f8f4e6", "d5c170", "faf8ef"]
+      "skin": ["f8f4e6", "e0d298", "1a1714", "d5c170", "faf8ef"]
     },
     {
       "id": 34,
