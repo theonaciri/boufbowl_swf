@@ -5,10 +5,30 @@ import tempfile
 import unittest
 import zipfile
 import shlex
+import json
+from tools.player_server import player_server
 from tools.build_player_downloads import build
 
 
 class PlayerDownloadsTests(unittest.TestCase):
+    def test_hosted_server_default_is_shared_and_required(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(ValueError, 'hosted server'):
+                player_server(root)
+            (root/'resources').mkdir()
+            (root/'resources/site.json').write_text(json.dumps({'server_url':'https://hosted.example/'}))
+            self.assertEqual(player_server(root), 'https://hosted.example')
+            self.assertEqual(player_server(root, 'https://override.example'), 'https://override.example')
+            (root/'bin').mkdir()
+            (root/'bin/flashplayer_32_sa.exe').write_bytes(b'player')
+            (root/'bin/boufbowl-client-1.9.6.swf').write_bytes(b'client')
+            windows, linux = build(root)
+            with zipfile.ZipFile(windows) as archive:
+                self.assertIn('https://hosted.example/bin/', archive.read('Boufbowl/Jouer.cmd').decode())
+            with tarfile.open(linux) as archive:
+                self.assertIn('https://hosted.example/bin/', archive.extractfile('Boufbowl/jouer.sh').read().decode())
+
     def test_remote_launchers_bundle_only_player_and_instructions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

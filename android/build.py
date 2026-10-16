@@ -10,11 +10,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
+from tools.player_server import player_server
 
 
 def run(command, *, env=None, timeout=600):
@@ -29,17 +29,18 @@ def main():
     parser.add_argument("--android-sdk", type=Path, default=Path.home() / "Android/Sdk")
     parser.add_argument("--jdk", type=Path, required=True, help="JDK 17 or newer directory")
     parser.add_argument("--arch", choices=("armv8", "x64"), default="armv8")
-    parser.add_argument("--server-url", help="Default remote game server for this build")
+    parser.add_argument("--server-url", help="Override resources/site.json hosted server")
     parser.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime")
     parser.add_argument("--keystore", type=Path, help="Optional PKCS12 signing certificate")
     args = parser.parse_args()
-    if args.server_url:
-        endpoint = urlsplit(args.server_url)
-        if endpoint.scheme not in ('http','https') or not endpoint.hostname or endpoint.username or endpoint.password or endpoint.query or endpoint.fragment:
-            parser.error('--server-url must be an HTTP(S) server URL without credentials, query or fragment')
-    game_config = load_config(args.config)
     android = Path(__file__).resolve().parent
     root = android.parent
+    try:
+        args.server_url = player_server(root, args.server_url)
+    except ValueError as error:
+        parser.error(str(error))
+    game_config = load_config(args.config)
+    game_config['general']['startup_mode'] = 'server'
     build = android / "build"
     stage = build / "package"
     stage.mkdir(parents=True, exist_ok=True)
@@ -137,7 +138,7 @@ def main():
          "-C", stage, "bin/" + swf_name, "assets", "resources",
          "-platformsdk", args.android_sdk.resolve()], env=env)
     temporary_output.replace(output)
-    print("Built", output)
+    print("Built", output, "— default server:", args.server_url)
 
 
 if __name__ == "__main__":

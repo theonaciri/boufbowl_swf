@@ -14,6 +14,8 @@ comme rapportée ; son URL source reste à renseigner.
 
 `resources/site.json` configure les liens publics :
 
+- `server_url` : serveur HTTPS utilisé par défaut par les packages Windows, Linux et Android.
+  `--server-url` permet une surcharge explicite ; le packaging refuse une adresse absente.
 - `contact_url` : Discord Dofus 3, avec une invitation issue de sa fiche Discord.
 - `android_download_url`, `desktop_download_url` (Linux) et `windows_download_url` : URL HTTPS facultatives pour
   distribuer des builds depuis un autre hébergement.

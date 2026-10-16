@@ -2,7 +2,9 @@
 
 The APK packages the modified Flash client with the AIR Android runtime and all
 game assets. It runs the original ActionScript client without Wine. Assets are
-local; persistent matches connect to the Linux replacement server.
+local; persistent matches connect to the hosted server configured in
+`resources/site.json` (`server_url`). Packaging starts in server mode by default;
+`--server-url` explicitly overrides the hosted endpoint.
 
 ## Install
 
