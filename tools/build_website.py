@@ -12,7 +12,7 @@ import struct
 import subprocess
 import tempfile
 import threading
-from tools.site_portraits import ROOT, export_plan, manifest, webp_size
+from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size
 from tools.game_config import load_config, startup_source
 from tools.build_restoration_data import audit
 
@@ -22,6 +22,8 @@ def main():
     parser.add_argument('--ffdec', type=Path, default=os.environ.get('FFDEC_JAR'))
     parser.add_argument('--java', default=os.environ.get('JAVA', 'java'))
     parser.add_argument('--bun', default=os.environ.get('BUN', 'bun'))
+    parser.add_argument('--pose', action='append', choices=list(POSES), help='Render only this pose (repeatable)')
+    parser.add_argument('--character', action='append', help='Render only this character ID (repeatable)')
     parser.add_argument('--force', action='store_true', help='Re-render every portrait')
     parser.add_argument('--check', action='store_true', help='Verify existing exports without rendering')
     args = parser.parse_args()
@@ -41,6 +43,13 @@ def main():
         return (sources_match and all(entry.get(k)==v for k,v in task.items()) and path.is_file()
                 and webp_size(path)[1]==1080 and entry.get('sha256')==hashlib.sha256(path.read_bytes()).hexdigest())
     pending = [t for t in tasks if args.force or not current(t)]
+    if args.character:
+        known = {t['character'] for t in tasks}
+        if set(args.character)-known:
+            parser.error('Unknown character ID')
+        pending = [t for t in pending if t['character'] in args.character]
+    if args.pose:
+        pending = [t for t in pending if t['pose'] in args.pose]
     if args.check:
         if pending or manifest()!=old:
             raise SystemExit(f'{len(pending)} portraits require a website build')

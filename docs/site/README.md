@@ -241,3 +241,14 @@ avant de publier le site ou de lancer les contrôles qui vérifient ses images.
 Le rendu utilise un SWF temporaire et un serveur HTTP local sur un port libre ;
 il ne lance aucun serveur de jeu et ne modifie ni le client ni la base de données.
 Les fichiers générés doivent être copiés sur l’hébergement avec le reste du site.
+
+Pour réparer les exports d’un personnage sans reconstruire les autres :
+
+```sh
+python3 -m tools.build_website --ffdec /chemin/ffdec.jar --force --character hero-513
+```
+
+L’option `--character` est répétable. Les exports restent séquentiels dans un
+seul lecteur de rendu, afin de ne pas capturer l’état d’un autre personnage.
+Ajouter `--pose default` limite la réparation aux aperçus du sélecteur ; cette
+option est également répétable pour exporter plusieurs poses précises.

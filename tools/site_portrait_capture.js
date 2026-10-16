@@ -61,7 +61,11 @@ export async function capturePortrait(player, task) {
   const pixels = context.getImageData(0, 0, output.width, output.height).data;
   let visiblePixels = 0;
   for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) visiblePixels++;
-  if (visiblePixels < 1000) throw Error("Empty native portrait: " + task.id);
+  if (visiblePixels < 1000) {
+    const png = api.callExternalInterface("sitePNG");
+    if (!png || png.startsWith("ERROR")) throw Error("Empty native portrait: " + task.id);
+    return { id: task.id, png, width: output.width, height: output.height };
+  }
   return { id: task.id, png: output.toDataURL("image/png").split(",")[1],
     width: output.width, height: output.height };
 }
