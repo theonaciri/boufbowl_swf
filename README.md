@@ -206,6 +206,22 @@ workspace, the reference files are `../migration-work/ffdec/ffdec.jar` and
 these neighboring directories are not required for normal checkout playback and
 may not exist on another machine.
 
+### Experimental frame rates
+
+The production SWF targets 25 FPS. To build a disposable variant with another
+Stage frame-rate target (for example 60 or 120 FPS), run:
+
+```sh
+python3 tools/build_framerate_experiment.py --fps 60
+python3 -m http.server 8765
+```
+
+Open `http://localhost:8765/tools/framerate-experiment/?fps=60` to try it in
+Ruffle. Generate each variant first; `?fps=25` loads the regular client. These
+experimental SWFs are ignored by Git. Flash timeline animations follow the
+Stage frame rate, so higher targets may change their speed as well as render
+cadence; compare gameplay and 3D motion before treating a variant as usable.
+
 ### Simulation worker, only when its source changed
 
 Bun and the sibling `../boufbowl_server/src/` source tree are required to compile

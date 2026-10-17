@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Boufbowl frame-rate experiment</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+      body { background: #171717; color: #eee; font: 14px system-ui, sans-serif; }
+      #game { position: fixed; inset: 0; }
+      ruffle-player { display: block; width: 100%; height: 100%; }
+      #notice { position: fixed; z-index: 2; left: 1rem; top: 1rem; padding: .7rem 1rem; background: #171717dd; border: 1px solid #aaa; border-radius: .4rem; }
+      #status { position: fixed; z-index: 3; inset: 0; display: grid; place-items: center; pointer-events: none; }
+      #status[hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="notice">Experimental Stage target: <strong id="fps"></strong> FPS. Flash timelines may play faster.</div>
+    <div id="game"></div>
+    <div id="status" role="status">Loading experimental client…</div>
+    <script src="../../vendor/ruffle/ruffle.js"></script>
+    <script>
+      (async () => {
+        const status = document.querySelector("#status");
+        const fps = Number(new URLSearchParams(location.search).get("fps") || 60);
+        document.querySelector("#fps").textContent = String(fps);
+        const url = fps === 25
+          ? "../../bin/boufbowl-client-1.9.6.swf"
+          : `../../bin/boufbowl-client-1.9.6-${fps}fps.swf`;
+        try {
+          const player = window.RufflePlayer.newest().createPlayer();
+          document.querySelector("#game").appendChild(player);
+          await player.load({
+            url,
+            backgroundExecutionMode: "none",
+            scale: "exactFit",
+            forceScale: true,
+            parameters: { lang: "fr", tuto: "1", mock: "1", server: "0", scene3d: "1", clientPlatform: "browser", clientRuntime: "ruffle" },
+          });
+          status.hidden = true;
+        } catch (error) {
+          status.textContent = `Cannot load ${fps} FPS build: ${error.message}. Generate it with tools/build_framerate_experiment.py.`;
+        }
+      })();
+    </script>
+  </body>
+</html>
