@@ -34,7 +34,7 @@ package com.ankamagames.boufbowl
       private var _pinching:Boolean = false;
       private var _zoom:Number = 1;
       private var _minimumZoom:Number = 0.7;
-      private var _maximumZoom:Number = 2.5;
+      private var _maximumZoom:Number = 4;
       
       public function BoufbowlClient()
       {
@@ -131,6 +131,10 @@ package com.ankamagames.boufbowl
                   {
                      var localAnchor:Point = this._gameView.globalToLocal(new Point(oldMidX,oldMidY));
                      this._zoom = Math.max(this._minimumZoom,Math.min(this._maximumZoom,this._zoom * newDistance / oldDistance));
+                     if(this._zoom >= 0.95 && this._zoom <= 1.05)
+                     {
+                        this._zoom = 1;
+                     }
                      this._gameView.scaleX = this._zoom;
                      this._gameView.scaleY = this._zoom;
                      this._gameView.x = newMidX - localAnchor.x * this._zoom;
