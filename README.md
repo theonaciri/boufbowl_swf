@@ -231,6 +231,13 @@ to the normal launcher:
 ./play.sh --lang fr --profile Stibop --fps-experiment 240
 ```
 
+Add `--show-fps` to display the live calculated frame rate in the top-left
+corner while playing:
+
+```sh
+./play.sh --lang fr --profile Stibop --show-fps
+```
+
 ### Simulation worker, only when its source changed
 
 Bun and the sibling `../boufbowl_server/src/` source tree are required to compile

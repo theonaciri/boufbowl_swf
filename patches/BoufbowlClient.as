@@ -14,6 +14,7 @@ package com.ankamagames.boufbowl
    import flash.text.TextField;
    import flash.text.TextFormat;
    import flash.text.Font;
+   import flash.utils.getTimer;
    
    [SWF(width="1024", height="600", backgroundColor="#000000", frameRate="25")]
    public class BoufbowlClient extends Sprite
@@ -24,6 +25,9 @@ package com.ankamagames.boufbowl
       private static const LOGGER:ILogger = LoggerFactory.getLogger(BoufbowlClient);
       
       private var _uncaughtErrorsHandler:UncaughtErrorsHandler;
+      private var _fpsLabel:TextField;
+      private var _fpsFrames:int = 0;
+      private var _fpsWindowStart:int = 0;
       
       public function BoufbowlClient()
       {
@@ -77,6 +81,41 @@ package com.ankamagames.boufbowl
          }
          stage.frameRate = frameRateTarget;
          addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));
+         if(loaderInfo.parameters.showFps == "1")
+         {
+            this.showFpsCounter();
+         }
+      }
+
+      private function showFpsCounter() : void
+      {
+         this._fpsLabel = new TextField();
+         this._fpsLabel.defaultTextFormat = new TextFormat("_sans",14,16777215,true);
+         this._fpsLabel.autoSize = "left";
+         this._fpsLabel.background = true;
+         this._fpsLabel.backgroundColor = 0;
+         this._fpsLabel.alpha = 0.82;
+         this._fpsLabel.selectable = false;
+         this._fpsLabel.mouseEnabled = false;
+         this._fpsLabel.x = 8;
+         this._fpsLabel.y = 8;
+         this._fpsLabel.text = "FPS: --";
+         stage.addChild(this._fpsLabel);
+         this._fpsWindowStart = getTimer();
+         addEventListener(Event.ENTER_FRAME,this.updateFpsCounter,false,0,true);
+      }
+
+      private function updateFpsCounter(event:Event) : void
+      {
+         ++this._fpsFrames;
+         var now:int = getTimer();
+         var elapsed:int = now - this._fpsWindowStart;
+         if(elapsed >= 500)
+         {
+            this._fpsLabel.text = "FPS: " + Math.round(this._fpsFrames * 1000 / elapsed);
+            this._fpsFrames = 0;
+            this._fpsWindowStart = now;
+         }
       }
       
       private function addedToStageHandler(param1:Event) : void

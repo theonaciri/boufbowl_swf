@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--server-url", help="Use a standalone backend URL instead of starting a local backend")
     parser.add_argument("--profile", help="Local device profile name (otherwise use the saved selection)")
     parser.add_argument("--fps-experiment", type=float, metavar="FPS", help="Launch a generated experimental client, e.g. --fps-experiment 240")
+    parser.add_argument("--show-fps", action="store_true", help="Show the live calculated FPS in the top-left corner")
     parser.add_argument("--database", type=Path, default=default_database())
     parser.add_argument("--fixture", type=Path, help="Replay a local protocol fixture in mock mode")
     parser.add_argument("--scene-3d", action="store_true", help="Enable the original resolution animation scene for this launch")
@@ -110,6 +111,8 @@ def main():
             parameters = {"lang": args.lang, "tuto": tutorial, "mock": mock,
                           "server": "1" if args.mode == "server" else "0",
                           "clientPlatform": "linux", "clientRuntime": "flash", "clientOS": "Linux"}
+            if args.show_fps:
+                parameters["showFps"] = "1"
             if language_override:
                 parameters["languageOverride"]="1"
             if args.profile:
@@ -124,7 +127,8 @@ def main():
             url = f"http://127.0.0.1:{port}{client_url}?{urlencode(parameters)}"
             language_label=args.lang if language_override else "saved language or " + args.lang
             experiment_label = f", experimental {args.fps_experiment:g} FPS target" if args.fps_experiment else ""
-            print(f"Starting Boufbowl {args.mode}{experiment_label} with {client.name} ({language_label}). Logs: {logs}", flush=True)
+            fps_label = ", live FPS counter" if args.show_fps else ""
+            print(f"Starting Boufbowl {args.mode}{experiment_label}{fps_label} with {client.name} ({language_label}). Logs: {logs}", flush=True)
             try:
                 return subprocess.call(
                     ["wine", str(root / "bin/flashplayer_32_sa.exe"), url],
