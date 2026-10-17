@@ -26,7 +26,7 @@ The APK is signed with a local development certificate. Keep that certificate
 if you want future builds to install as updates. Its private key is stored in
 `~/.cache/boufbowl-flash-tools/android-signing/local.p12`, outside the APK.
 On Android, pinch with two fingers to zoom the full game view between 70% and
-400%. Zoom snaps to 100% when it enters the 95–105% range. The midpoint stays
+800%. Zoom snaps to 100% when it enters the 95–105% range. The midpoint stays
 anchored as you zoom; the game view moves with the gesture, and single-finger
 taps and drags remain available.
 

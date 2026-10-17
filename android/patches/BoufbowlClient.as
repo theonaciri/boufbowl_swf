@@ -34,7 +34,7 @@ package com.ankamagames.boufbowl
       private var _pinching:Boolean = false;
       private var _zoom:Number = 1;
       private var _minimumZoom:Number = 0.7;
-      private var _maximumZoom:Number = 4;
+      private var _maximumZoom:Number = 8;
       
       public function BoufbowlClient()
       {
