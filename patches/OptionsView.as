@@ -38,7 +38,7 @@ package com.ankamagames.boufbowl.client.options.view
       private var _frameRateValue:TextField;
       private var _frameRateLabel:TextField;
       private var _frameRateHint:TextField;
-      private var _frameRateTarget:Number = 240;
+      private var _frameRateTarget:Number = 60;
       private var _frameRateDragging:Boolean = false;
       private var _languageCodes:Array=["fr","en","de","es"];
       private var _languageNames:Array=["Français","English","Deutsch","Español"];
@@ -221,7 +221,7 @@ package com.ankamagames.boufbowl.client.options.view
          this._frameRateTarget = Number(saved.data.frameRateTarget);
          if(isNaN(this._frameRateTarget) || this._frameRateTarget < 25 || this._frameRateTarget > 240)
          {
-            this._frameRateTarget = Boolean(saved.data.limitFrameRate25) ? 25 : 240;
+            this._frameRateTarget = Boolean(saved.data.limitFrameRate25) ? 25 : 60;
          }
          var labels:Object = {
             fr:["Limite FPS","25–240 FPS · réglage en jeu","L’écran ou le moteur peut plafonner la cadence."],

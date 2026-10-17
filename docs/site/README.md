@@ -31,14 +31,14 @@ fichiers locaux servis sont exclusivement :
 
 Les chemins arbitraires et les liens symboliques sortant du dossier de build ne
 sont pas accessibles. Les paquets sont des artefacts ignorés par Git. Le site
-indique leur taille et les prérequis de la plateforme. Le téléchargement ne
+indique que les assets sont inclus, leur taille et les prérequis de la plateforme. Le téléchargement ne
 nécessite aucun accès au dépôt GitHub privé.
 
 Construire les paquets joueurs Desktop avec
 `python3 -m tools.build_player_downloads --server-url https://adresse-du-serveur`.
-Ils contiennent uniquement le lecteur Flash, les instructions et un lanceur :
+Ils contiennent les assets du jeu, les ressources, le lecteur Flash, les instructions et un lanceur :
 `Jouer.cmd` sous Windows, `jouer.sh` sous Linux. Le jeu, les ressources et les
-requêtes de compte sont chargés depuis le serveur distant. Ni Python, ni Bun,
+requêtes de compte se connectent au serveur distant. Ni Python, ni Bun,
 ni base de données ou serveur local ne sont nécessaires chez les joueurs.
 Wine avec prise en charge 32 bits reste nécessaire sous Linux ; Windows utilise
 directement le lecteur fourni. Les tailles affichées proviennent des archives

@@ -11,12 +11,13 @@ package com.ankamagames.boufbowl
    import flash.events.Event;
    import flash.events.UncaughtErrorEvent;
    import flash.net.SharedObject;
+   import flash.net.URLVariables;
    import flash.text.TextField;
    import flash.text.TextFormat;
    import flash.text.Font;
    import flash.utils.getTimer;
    
-   [SWF(width="1024", height="600", backgroundColor="#000000", frameRate="25")]
+   [SWF(width="1920", height="1125", backgroundColor="#000000", frameRate="60")]
    public class BoufbowlClient extends Sprite
    {
       
@@ -42,8 +43,8 @@ package com.ankamagames.boufbowl
             diagnostic.wordWrap = true;
             diagnostic.multiline = true;
             if(event.error is Error && Error(event.error).getStackTrace() != null) diagnostic.appendText("\n" + Error(event.error).getStackTrace());
-            diagnostic.width = 1024;
-            diagnostic.height = 500;
+            diagnostic.width = 1920;
+            diagnostic.height = 1025;
             if(stage != null) stage.addChild(diagnostic);
          });
          LOGGER.info("Starting up");
@@ -77,14 +78,46 @@ package com.ankamagames.boufbowl
          var frameRateTarget:Number = Number(preferences.data.frameRateTarget);
          if(isNaN(frameRateTarget) || frameRateTarget < 25 || frameRateTarget > 240)
          {
-            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 240;
+            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 60;
          }
          stage.frameRate = frameRateTarget;
          addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));
-         if(loaderInfo.parameters.showFps == "1")
+         if(this.launchFlagEnabled("showFps"))
          {
             this.showFpsCounter();
          }
+      }
+
+      private function launchFlagEnabled(name:String) : Boolean
+      {
+         var parameters:Object = loaderInfo.parameters;
+         var key:String = null;
+         if(parameters != null)
+         {
+            for(key in parameters)
+            {
+               if(key.toLowerCase() == name.toLowerCase() && String(parameters[key]) == "1")
+               {
+                  return true;
+               }
+            }
+         }
+         var url:String = loaderInfo.url;
+         var queryStart:int = url.indexOf("?");
+         if(queryStart < 0)
+         {
+            return false;
+         }
+         var query:String = url.substr(queryStart + 1).split("#")[0];
+         var variables:URLVariables = new URLVariables(query);
+         for(key in variables)
+         {
+            if(key.toLowerCase() == name.toLowerCase() && String(variables[key]) == "1")
+            {
+               return true;
+            }
+         }
+         return false;
       }
 
       private function showFpsCounter() : void

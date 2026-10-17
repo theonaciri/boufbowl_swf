@@ -179,15 +179,18 @@ package com.ankamagames.boufbowl.client.application.controller
          }
          teams = new ArrayList();
          var playerNames:Array = ["Aria","Baff","Cora","Dara","Elia","Fara","Gust","Hana","Iris","Jora"];
+         // Open with the five tutorial class/gender combinations, followed by five distinct classes.
+         var starterRoster:Array = [[1,1],[1,2],[4,2],[3,2],[6,1],[2,1],[5,2],[7,1],[8,2],[10,1]];
          var teamNames:Array = ["Offline Bonta","Offline Brakmar","Offline Amakna"];
          for(var teamIndex:int=0;teamIndex<3;teamIndex++)
          {
             var roster:LinkedMap = new LinkedMap();
             for(i=0;i<10;i++)
             {
-               var cls:int = 1+((i+teamIndex*3)%14);
+               var cls:int = teamIndex == 0 ? starterRoster[i][0] : 1+((i+teamIndex*3)%14);
+               var gender:int = teamIndex == 0 ? starterRoster[i][1] : 1+(i%2);
                var id:Int64 = new Int64(1+i);
-               roster.addItem(id,new ClubBoufbowlerModel(id,playerNames[i],cls,1+(i%2),0,1+(cls%4),cls,1,hair[0],skin[0],eyes[0],colors[teamIndex],new BoufbowlerAttributesModel(12,10,10,10,16,3)));
+               roster.addItem(id,new ClubBoufbowlerModel(id,playerNames[i],cls,gender,0,1+(cls%4),cls,1,hair[0],skin[0],eyes[0],colors[teamIndex],new BoufbowlerAttributesModel(12,10,10,10,16,3)));
             }
             var info:ClubInformation = new ClubInformation(new UInt64(teamIndex+1),teamNames[teamIndex],1,1,1,colors[teamIndex],Color3.WHITE,colors[teamIndex]);
             var team:ClubModel = new ClubModel();
