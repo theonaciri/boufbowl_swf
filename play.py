@@ -34,8 +34,8 @@ def main():
     root = Path(__file__).resolve().parent
     client = root / "bin/boufbowl-client-1.9.6.swf"
     if args.fps_experiment is not None:
-        if not 26 <= args.fps_experiment <= 1000:
-            parser.error("--fps-experiment must be between 26 and 1000")
+        if not 25 <= args.fps_experiment <= 1000:
+            parser.error("--fps-experiment must be between 25 and 1000")
         fps = f"{args.fps_experiment:g}"
         client = root / "bin" / f"boufbowl-client-1.9.6-{fps}fps.swf"
         if not client.is_file():

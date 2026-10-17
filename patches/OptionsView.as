@@ -13,6 +13,7 @@ package com.ankamagames.boufbowl.client.options.view
    import com.ankamagames.xgaming.utils.i18n.ITranslator;
    import flash.display.DisplayObject;
    import flash.display.Sprite;
+   import flash.geom.Point;
    import flash.net.SharedObject;
    import flash.text.TextField;
    import flash.text.TextFormat;
@@ -31,6 +32,14 @@ package com.ankamagames.boufbowl.client.options.view
       private var _languageLabel:TextField;
       private var _languageHint:TextField;
       private var _selectedLanguage:String;
+      private var _frameRateRow:Sprite;
+      private var _frameRateTrack:Sprite;
+      private var _frameRateThumb:Sprite;
+      private var _frameRateValue:TextField;
+      private var _frameRateLabel:TextField;
+      private var _frameRateHint:TextField;
+      private var _frameRateTarget:Number = 240;
+      private var _frameRateDragging:Boolean = false;
       private var _languageCodes:Array=["fr","en","de","es"];
       private var _languageNames:Array=["Français","English","Deutsch","Español"];
       private var _config:IBoufbowlConfig;
@@ -55,6 +64,7 @@ package com.ankamagames.boufbowl.client.options.view
          this._fxVolume.value = AbstractTracksController.fxVolume;
          this._musicVolume.value = AbstractTracksController.musicVolume;
          this.updateLanguageChoice();
+         this.updateFrameRateChoice();
          this.layoutOptions();
          soundCheckbox.selected = this._config.soundEnabled;
          soundMasterVolume.value = this._config.soundMasterVolume;
@@ -77,6 +87,7 @@ package com.ankamagames.boufbowl.client.options.view
          this.initUI();
          this.initTexts();
          this.initLanguageChoice();
+         this.initFrameRateChoice();
          this.initVolumeSliders();
       }
       
@@ -177,6 +188,111 @@ package com.ankamagames.boufbowl.client.options.view
          this._languageLabel.text=text[0]; this._languageHint.text=text[1];
       }
 
+      private function initFrameRateChoice() : void
+      {
+         this._frameRateRow = new Sprite();
+         addChild(this._frameRateRow);
+         this._frameRateLabel = this.languageText(this._frameRateRow,"",0,3,145);
+         this._frameRateTrack = new Sprite();
+         this._frameRateTrack.x = 150;
+         this._frameRateTrack.y = 14;
+         this._frameRateTrack.buttonMode = true;
+         this._frameRateTrack.graphics.beginFill(0xb6ae8c);
+         this._frameRateTrack.graphics.drawRoundRect(0,-4,150,8,8);
+         this._frameRateTrack.graphics.endFill();
+         this._frameRateRow.addChild(this._frameRateTrack);
+         this._frameRateThumb = new Sprite();
+         this._frameRateThumb.buttonMode = true;
+         this._frameRateThumb.graphics.beginFill(0x725d37);
+         this._frameRateThumb.graphics.lineStyle(2,0xffffff);
+         this._frameRateThumb.graphics.drawCircle(0,0,8);
+         this._frameRateThumb.graphics.endFill();
+         this._frameRateTrack.addChild(this._frameRateThumb);
+         this._frameRateTrack.addEventListener(MouseEvent.MOUSE_DOWN,this.frameRatePointerDown);
+         this._frameRateValue = this.languageText(this._frameRateRow,"",307,3,60);
+         this._frameRateHint = this.languageText(this._frameRateRow,"",0,32,360);
+         this._frameRateHint.wordWrap = true;
+         this._frameRateHint.height = 35;
+      }
+
+      private function updateFrameRateChoice() : void
+      {
+         var saved:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
+         this._frameRateTarget = Number(saved.data.frameRateTarget);
+         if(isNaN(this._frameRateTarget) || this._frameRateTarget < 25 || this._frameRateTarget > 240)
+         {
+            this._frameRateTarget = Boolean(saved.data.limitFrameRate25) ? 25 : 240;
+         }
+         var labels:Object = {
+            fr:["Limite FPS","25–240 FPS · réglage en jeu","L’écran ou le moteur peut plafonner la cadence."],
+            en:["FPS limit","25–240 FPS · adjustable in game","The display or runtime may cap the actual rate."],
+            de:["FPS-Limit","25–240 FPS · im Spiel einstellbar","Anzeige oder Laufzeitumgebung können die Rate begrenzen."],
+            es:["Límite FPS","25–240 FPS · ajustable en el juego","La pantalla o el motor pueden limitar la frecuencia."]
+         };
+         var text:Array = labels[this._translator.language] || labels.en;
+         this._frameRateLabel.text = text[0];
+         this._frameRateValue.text = Math.round(this._frameRateTarget) + " FPS";
+         this._frameRateHint.text = text[2];
+         this._frameRateThumb.x = (this._frameRateTarget - 25) / 215 * 150;
+         if(stage != null)
+         {
+            stage.frameRate = this._frameRateTarget;
+         }
+      }
+
+      private function frameRatePointerDown(event:MouseEvent) : void
+      {
+         if(stage == null)
+         {
+            return;
+         }
+         this._frameRateDragging = true;
+         stage.addEventListener(MouseEvent.MOUSE_MOVE,this.frameRatePointerMove);
+         stage.addEventListener(MouseEvent.MOUSE_UP,this.frameRatePointerUp);
+         this.setFrameRateFromPointer(event);
+         event.stopPropagation();
+      }
+
+      private function frameRatePointerMove(event:MouseEvent) : void
+      {
+         if(!this._frameRateDragging)
+         {
+            return;
+         }
+         this.setFrameRateFromPointer(event);
+         event.updateAfterEvent();
+      }
+
+      private function frameRatePointerUp(event:MouseEvent) : void
+      {
+         if(!this._frameRateDragging)
+         {
+            return;
+         }
+         this._frameRateDragging = false;
+         stage.removeEventListener(MouseEvent.MOUSE_MOVE,this.frameRatePointerMove);
+         stage.removeEventListener(MouseEvent.MOUSE_UP,this.frameRatePointerUp);
+         var saved:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
+         saved.data.frameRateTarget = this._frameRateTarget;
+         delete saved.data.limitFrameRate25;
+         saved.flush();
+         dispatchEvent(new InterfaceSoundEvent(InterfaceSoundEvents.OPTIONS_CHECKBOX_CHANGED));
+      }
+
+      private function setFrameRateFromPointer(event:MouseEvent) : void
+      {
+         var local:Point = this._frameRateTrack.globalToLocal(new Point(event.stageX,event.stageY));
+         var normalized:Number = Math.max(0,Math.min(1,local.x / 150));
+         this._frameRateTarget = 25 + Math.round(normalized * 43) * 5;
+         this._frameRateTarget = Math.min(240,this._frameRateTarget);
+         this._frameRateThumb.x = (this._frameRateTarget - 25) / 215 * 150;
+         this._frameRateValue.text = Math.round(this._frameRateTarget) + " FPS";
+         if(stage != null)
+         {
+            stage.frameRate = this._frameRateTarget;
+         }
+      }
+
       public function saveLanguage() : void
       {
          if(this._languageCodes.indexOf(this._selectedLanguage)<0) return;
@@ -232,6 +348,9 @@ package com.ankamagames.boufbowl.client.options.view
          this._languageRow.x=soundContainer.x;
          this._languageRow.y=_loc5_+5;
          _loc5_+=75;
+         this._frameRateRow.x=soundContainer.x;
+         this._frameRateRow.y=_loc5_+5;
+         _loc5_+=65;
          buttonsContainer.y = _loc5_;
          _loc5_ += buttonsContainer.height;
          optionsMainBackground.height = _loc5_ - optionsMainBackground.y;

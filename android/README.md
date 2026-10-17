@@ -25,6 +25,8 @@ and hero animations use Cra while retaining original character illustrations.
 The APK is signed with a local development certificate. Keep that certificate
 if you want future builds to install as updates. Its private key is stored in
 `~/.cache/boufbowl-flash-tools/android-signing/local.p12`, outside the APK.
+The Options screen has a live FPS slider from 25 to 240; the chosen target is
+saved and applies immediately during gameplay.
 On Android, pinch with two fingers to zoom the full game view between 70% and
 800%. Zoom snaps to 100% when it enters the 95–105% range. The midpoint stays
 anchored as you zoom; the game view moves with the gesture, and single-finger

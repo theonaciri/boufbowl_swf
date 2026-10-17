@@ -25,9 +25,7 @@
         const status = document.querySelector("#status");
         const fps = Number(new URLSearchParams(location.search).get("fps") || 60);
         document.querySelector("#fps").textContent = String(fps);
-        const url = fps === 25
-          ? "../../bin/boufbowl-client-1.9.6.swf"
-          : `../../bin/boufbowl-client-1.9.6-${fps}fps.swf`;
+        const url = `../../bin/boufbowl-client-1.9.6-${fps}fps.swf`;
         try {
           const player = window.RufflePlayer.newest().createPlayer();
           document.querySelector("#game").appendChild(player);

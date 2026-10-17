@@ -3,7 +3,6 @@
 import argparse
 import os
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import tempfile
@@ -33,8 +32,8 @@ def main() -> None:
     parser.add_argument("--ffdec", type=Path, help="FFDec JAR (or set FFDEC_JAR)")
     parser.add_argument("--java", type=Path, help="Java executable (or use java on PATH)")
     args = parser.parse_args()
-    if not 26 <= args.fps <= 1000:
-        parser.error("--fps must be between 26 and 1000")
+    if not 25 <= args.fps <= 1000:
+        parser.error("--fps must be between 25 and 1000")
     if not CLIENT.is_file() or not CLIENT_CLASS.is_file():
         parser.error("Build the regular desktop client first")
     ffdec = args.ffdec or (Path(os.environ["FFDEC_JAR"]).expanduser() if os.environ.get("FFDEC_JAR") else cached_tool("ffdec"))
@@ -46,9 +45,9 @@ def main() -> None:
 
     fps = f"{args.fps:g}"
     source = CLIENT_CLASS.read_text(encoding="utf-8")
-    marker = "stage.scaleMode = StageScaleMode.SHOW_ALL;"
-    if source.count(marker) != 1 or re.search(r"stage\.frameRate\s*=", source):
-        parser.error("Expected one unmodified stage scale setup in BoufbowlClient.as")
+    marker = "addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));"
+    if source.count(marker) != 1:
+        parser.error("Expected one MainApp creation in BoufbowlClient.as")
     destination = ROOT / "bin" / f"boufbowl-client-1.9.6-{fps}fps.swf"
     with tempfile.TemporaryDirectory(prefix="boufbowl-frame-rate-") as directory:
         temporary = Path(directory)

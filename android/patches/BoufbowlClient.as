@@ -12,6 +12,7 @@ package com.ankamagames.boufbowl
    import flash.events.TouchEvent;
    import flash.events.UncaughtErrorEvent;
    import flash.geom.Point;
+   import flash.net.SharedObject;
    import flash.ui.Multitouch;
    import flash.ui.MultitouchInputMode;
    import flash.utils.Dictionary;
@@ -87,6 +88,13 @@ package com.ankamagames.boufbowl
       {
          stage.align = StageAlign.TOP;
          stage.scaleMode = StageScaleMode.SHOW_ALL;
+         var preferences:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
+         var frameRateTarget:Number = Number(preferences.data.frameRateTarget);
+         if(isNaN(frameRateTarget) || frameRateTarget < 25 || frameRateTarget > 240)
+         {
+            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 240;
+         }
+         stage.frameRate = frameRateTarget;
          Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
          this._gameView = new Sprite();
          addChild(this._gameView);

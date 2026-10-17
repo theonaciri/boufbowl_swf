@@ -10,6 +10,7 @@ package com.ankamagames.boufbowl
    import flash.display.StageScaleMode;
    import flash.events.Event;
    import flash.events.UncaughtErrorEvent;
+   import flash.net.SharedObject;
    import flash.text.TextField;
    import flash.text.TextFormat;
    import flash.text.Font;
@@ -68,6 +69,13 @@ package com.ankamagames.boufbowl
       {
          stage.align = StageAlign.TOP;
          stage.scaleMode = StageScaleMode.SHOW_ALL;
+         var preferences:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
+         var frameRateTarget:Number = Number(preferences.data.frameRateTarget);
+         if(isNaN(frameRateTarget) || frameRateTarget < 25 || frameRateTarget > 240)
+         {
+            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 240;
+         }
+         stage.frameRate = frameRateTarget;
          addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));
       }
       
