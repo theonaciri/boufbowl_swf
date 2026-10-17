@@ -25,6 +25,9 @@ and hero animations use Cra while retaining original character illustrations.
 The APK is signed with a local development certificate. Keep that certificate
 if you want future builds to install as updates. Its private key is stored in
 `~/.cache/boufbowl-flash-tools/android-signing/local.p12`, outside the APK.
+On Android, pinch with two fingers to zoom the full game view between 70% and
+250%. The midpoint stays anchored as you zoom; the game view moves with the
+gesture, and single-finger taps and drags remain available.
 
 ## Rebuild on Linux
 
@@ -65,8 +68,9 @@ classes in `android/patches/` to a separate staging copy:
 - The five VP6/FLV clips are converted to H.264/AAC MP4 for Android playback.
   Dimensions and timing are preserved; the source FLV files are unchanged.
 - Remote logging is replaced with console logging.
-- The application descriptor sets landscape orientation, full screen, CPU
-  rendering, and the Android package identity `air.org.boufbowl.offline`.
+- The application descriptor enables automatic rotation between both
+  landscape orientations, full screen, CPU rendering, and the Android package
+  identity `air.org.boufbowl.offline`.
 
 The desktop SWF and the original archive are unchanged by this build.
 
