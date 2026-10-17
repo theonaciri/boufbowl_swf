@@ -221,6 +221,12 @@ Ruffle. Generate each variant first; `?fps=25` loads the regular client. These
 experimental SWFs are ignored by Git. Flash timeline animations follow the
 Stage frame rate, so higher targets may change their speed as well as render
 cadence; compare gameplay and 3D motion before treating a variant as usable.
+To launch a generated variant in the desktop Flash projector, pass its target
+to the normal launcher:
+
+```sh
+./play.sh --lang fr --profile Stibop --fps-experiment 240
+```
 
 ### Simulation worker, only when its source changed
 

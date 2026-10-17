@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--mode", choices=("menus", "tutorial", "mock", "server"), default=config["general"]["startup_mode"])
     parser.add_argument("--server-url", help="Use a standalone backend URL instead of starting a local backend")
     parser.add_argument("--profile", help="Local device profile name (otherwise use the saved selection)")
+    parser.add_argument("--fps-experiment", type=float, metavar="FPS", help="Launch a generated experimental client, e.g. --fps-experiment 240")
     parser.add_argument("--database", type=Path, default=default_database())
     parser.add_argument("--fixture", type=Path, help="Replay a local protocol fixture in mock mode")
     parser.add_argument("--scene-3d", action="store_true", help="Enable the original resolution animation scene for this launch")
@@ -31,6 +32,14 @@ def main():
     language_override=args.lang is not None
     if args.lang is None: args.lang=config["general"]["language"]
     root = Path(__file__).resolve().parent
+    client = root / "bin/boufbowl-client-1.9.6.swf"
+    if args.fps_experiment is not None:
+        if not 26 <= args.fps_experiment <= 1000:
+            parser.error("--fps-experiment must be between 26 and 1000")
+        fps = f"{args.fps_experiment:g}"
+        client = root / "bin" / f"boufbowl-client-1.9.6-{fps}fps.swf"
+        if not client.is_file():
+            parser.error(f"Experimental client not found; build it with: python3 tools/build_framerate_experiment.py --fps {fps}")
     client_config = json.loads((root / "resources/config.json").read_text())
     if args.scene_3d or args.mode == "server":
         client_config["3dActivated"] = "true"
@@ -110,10 +119,12 @@ def main():
             elif args.mode == "server":
                 # A remembered remote server must not replace this launch's backend.
                 parameters["backend"] = f"http://127.0.0.1:{port}"
-            parameters["v"] = hashlib.sha256((root / "bin/boufbowl-client-1.9.6.swf").read_bytes()).hexdigest()
-            url = f"http://127.0.0.1:{port}/bin/boufbowl-client-1.9.6.swf?{urlencode(parameters)}"
+            parameters["v"] = hashlib.sha256(client.read_bytes()).hexdigest()
+            client_url = "/" + client.relative_to(root).as_posix()
+            url = f"http://127.0.0.1:{port}{client_url}?{urlencode(parameters)}"
             language_label=args.lang if language_override else "saved language or " + args.lang
-            print(f"Starting Boufbowl {args.mode} ({language_label}). Logs: {logs}", flush=True)
+            experiment_label = f", experimental {args.fps_experiment:g} FPS target" if args.fps_experiment else ""
+            print(f"Starting Boufbowl {args.mode}{experiment_label} with {client.name} ({language_label}). Logs: {logs}", flush=True)
             try:
                 return subprocess.call(
                     ["wine", str(root / "bin/flashplayer_32_sa.exe"), url],
