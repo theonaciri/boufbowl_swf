@@ -32,6 +32,12 @@ VERSION = 'legends-v2'
 POSTER_FRAME_OVERRIDES = {'feu-terre': 10}
 
 
+def write_media_sources(clips):
+    path=ROOT/'docs/site/media-sources.json'
+    path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_text(json.dumps({'version':2,'source':'assets/artworks/cutscene-illustration.swf','capture':'Original Flash vectors and native palettes, deterministic frame capture through Ruffle','clips':clips},ensure_ascii=False,indent=2)+'\n')
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--scene',action='append',choices=[c[0] for c in CAST])
@@ -116,7 +122,7 @@ def main():
     for slug,_,_ in CAST:
         p=work/slug/'export.json'
         if p.exists():complete.append(json.loads(p.read_text()))
-    (ROOT/'docs/site/media-sources.json').write_text(json.dumps({'version':2,'source':'assets/artworks/cutscene-illustration.swf','capture':'Original Flash vectors and native palettes, deterministic frame capture through Ruffle','clips':complete},ensure_ascii=False,indent=2)+'\n')
+    write_media_sources(complete)
 
 
 if __name__=='__main__':main()

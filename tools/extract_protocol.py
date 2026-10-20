@@ -94,7 +94,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference", type=Path, default=REFERENCE)
     parser.add_argument("--output", type=Path, default=ROOT / "protocol/client_contract.json")
-    parser.add_argument("--markdown", type=Path, default=ROOT / "docs/protocol-matrix.md")
+    parser.add_argument("--markdown", type=Path, default=ROOT / ".local/reverse/protocol-matrix.md")
     args = parser.parse_args()
     result = extract(args.reference)
     args.output.parent.mkdir(parents=True, exist_ok=True)
