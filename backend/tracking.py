@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import os
+from pathlib import Path
 import re
 import threading
 import time
@@ -12,6 +13,14 @@ import uuid
 
 BUCKETS = (1, 5, 10, 25, 50, 100, 250, 500, 1000, 5000, 15000, 30000, 120000)
 PLATFORMS = {'browser', 'android', 'linux', 'windows', 'macos', 'unknown'}
+SITE_SECTIONS = {'hero', 'telecharger', 'le-jeu', 'le-chantier', 'vestiaires', 'benevoles', 'manifesto', 'final-cta'}
+SITE_DOWNLOADS = {'desktop', 'windows', 'android'}
+SITE_CLASSES = frozenset(row['class_name'] for row in json.loads(
+    (Path(__file__).resolve().parent.parent / 'assets/site/restoration/inventory.json').read_text()
+)['characters'] if not row.get('hero'))
+SITE_CHARACTERS = frozenset(row['name'] for row in json.loads(
+    (Path(__file__).resolve().parent.parent / 'assets/site/restoration/inventory.json').read_text()
+)['characters'] if row.get('hero'))
 
 
 def day_at(stamp):
@@ -56,6 +65,10 @@ def init_schema(db):
           PRIMARY KEY(profile_id,client_id,event_id));
         CREATE INDEX IF NOT EXISTS tracking_receipts_age ON tracking_receipts(created);
         CREATE INDEX IF NOT EXISTS tracking_receipts_client ON tracking_receipts(profile_id,client_id,created);
+        CREATE TABLE IF NOT EXISTS website_analytics(
+          day TEXT NOT NULL,kind TEXT NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL DEFAULT 0,
+          duration_seconds REAL NOT NULL DEFAULT 0,PRIMARY KEY(day,kind,name));
+        CREATE INDEX IF NOT EXISTS website_analytics_day ON website_analytics(day,kind);
     ''')
 
 
@@ -118,6 +131,7 @@ class Tracking:
         self.performance = {}
         self.errors = {}
         self.samples = {}
+        self.website_rows = {}
         self.seen = {}
         self.profile_seen = {}
         self.metadata = {}
@@ -190,6 +204,49 @@ class Tracking:
             row[3] = max(row[3], value)
             bucket = next((i for i, bound in enumerate(BUCKETS) if value <= bound), len(BUCKETS) - 1)
             row[4][bucket] += 1
+
+    def website_asset_request(self, path):
+        path = str(path or '').lstrip('/')
+        if (not path.startswith('assets/') or len(path) > 240 or '..' in path.split('/')
+                or '\\' in path or any(ord(char) < 32 for char in path)):
+            return
+        self._website_event('asset_request', path)
+
+    def website_events(self, body):
+        events = body.get('events')
+        if not isinstance(events, list) or not 1 <= len(events) <= 40:
+            raise ValueError('Send between one and forty website events')
+        accepted = []
+        for event in events:
+            if not isinstance(event, dict):
+                raise ValueError('Website events must be objects')
+            kind, name = event.get('kind'), event.get('name')
+            if not isinstance(name, str):
+                raise ValueError('Website event name is required')
+            allowed = {
+                'section_view': SITE_SECTIONS,
+                'section_time': SITE_SECTIONS,
+                'class_interest': SITE_CLASSES,
+                'character_interest': SITE_CHARACTERS,
+                'download_click': SITE_DOWNLOADS,
+                'web_click': {'play'},
+            }.get(kind)
+            if allowed is None or name not in allowed:
+                raise ValueError('Unknown website event')
+            duration = event.get('duration_ms', 0) if kind == 'section_time' else 0
+            if type(duration) not in (int, float) or not math.isfinite(duration) or not 0 <= duration <= 3600000:
+                raise ValueError('Invalid section duration')
+            accepted.append((kind, name, duration / 1000.0))
+        for kind, name, duration in accepted:
+            self._website_event(kind, name, duration)
+        return {'ok': True, 'accepted': len(accepted)}
+
+    def _website_event(self, kind, name, duration=0.0):
+        key = (day_at(time.time()), kind, name)
+        with self.lock:
+            row = self.website_rows.setdefault(key, [0, 0.0])
+            row[0] += 1
+            row[1] += duration
 
     def error(self, origin, code, message='', stack=''):
         now = time.time()
@@ -294,10 +351,16 @@ class Tracking:
                 for minute, row in self.samples.items():
                     db.execute('''INSERT INTO tracking_samples VALUES(?,?,?,?,?) ON CONFLICT(minute) DO UPDATE SET
                       online=MAX(online,excluded.online),active_matches=MAX(active_matches,excluded.active_matches),queued=MAX(queued,excluded.queued)''', (minute, *row))
+                for (day, kind, name), row in self.website_rows.items():
+                    db.execute('''INSERT INTO website_analytics VALUES(?,?,?,?,?) ON CONFLICT(day,kind,name) DO UPDATE SET
+                      count=count+excluded.count,duration_seconds=duration_seconds+excluded.duration_seconds''',
+                               (day, kind, name, *row))
                 db.execute("INSERT OR REPLACE INTO tracking_meta VALUES('runtime',?)", (json.dumps(self.resources()),))
                 db.execute('DELETE FROM tracking_receipts WHERE created<?', (time.time() - 7 * 86400,))
+                db.execute('DELETE FROM website_analytics WHERE day<?', (day_at(time.time() - 400 * 86400),))
             self.activity_rows.clear(); self.visits.clear(); self.clients.clear()
             self.performance.clear(); self.errors.clear(); self.samples.clear()
+            self.website_rows.clear()
             self.last_flush = time.monotonic()
             now = time.time()
             self.rates = {key: value for key, value in self.rates.items() if now - value[0] < 60}
@@ -415,3 +478,30 @@ def metrics_report(store, days=30):
             'daily': list(daily.values()), 'matches': matches, 'platforms': platforms, 'versions': versions,
             'diagnostics': diagnostics, 'performance': list(performance.values()), 'errors': errors,
             'resources': json.loads(meta['runtime']) if 'runtime' in meta else None}
+
+
+def website_metrics_report(store, days=30):
+    if type(days) is not int or not 1 <= days <= 365:
+        raise ValueError('Choose between one and 365 days')
+    now = time.time()
+    today = datetime.fromtimestamp(now, timezone.utc).date()
+    start = (today - timedelta(days=days - 1)).isoformat()
+    rows = [dict(row) for row in store.db.execute('''SELECT kind,name,SUM(count) AS count,
+        ROUND(SUM(duration_seconds),1) AS duration_seconds FROM website_analytics WHERE day>=?
+        GROUP BY kind,name ORDER BY count DESC,name''', (start,))]
+    by_kind = {}
+    for kind in ('section_view', 'section_time', 'class_interest', 'character_interest',
+                 'download_click', 'web_click', 'asset_request'):
+        by_kind[kind] = [row for row in rows if row['kind'] == kind]
+    sections = {}
+    for row in by_kind['section_view']:
+        sections[row['name']] = {'name': row['name'], 'views': row['count'], 'seconds': 0.0}
+    for row in by_kind['section_time']:
+        section = sections.setdefault(row['name'], {'name': row['name'], 'views': 0, 'seconds': 0.0})
+        section['seconds'] = row['duration_seconds'] or 0.0
+    sections = sorted(sections.values(), key=lambda row: (-row['views'], -row['seconds'], row['name']))
+    return {'ok': True, 'generated_at': now, 'period': {'days': days, 'since': start, 'timezone': 'UTC'},
+            'coverage': 'Aggregate events only; no visitor or client identifier is stored. Asset requests are server-observed; browser-cached assets do not generate a request.',
+            'sections': sections, 'classes': by_kind['class_interest'], 'characters': by_kind['character_interest'],
+            'downloads': by_kind['download_click'], 'web': by_kind['web_click'],
+            'asset_requests': by_kind['asset_request'][:100]}

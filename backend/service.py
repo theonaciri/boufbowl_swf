@@ -917,6 +917,21 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             result['resources'] = self.tracking.resources()
             return result
 
+    def website_events(self, body):
+        return self.tracking.website_events(body)
+
+    def live_presence(self, body=None):
+        now = time.time()
+        with self.store.lock:
+            online = self.store.db.execute('SELECT COUNT(*) FROM presence WHERE seen>?', (now - 90,)).fetchone()[0]
+            in_game = self.store.db.execute('''SELECT COUNT(DISTINCT p.profile_id) FROM presence p
+                JOIN participants pt ON pt.profile_id=p.profile_id
+                JOIN matches m ON m.id=pt.match_id
+                WHERE p.seen>? AND json_extract(m.state_json,'$.phase')!='ended' ''', (now - 90,)).fetchone()[0]
+        in_game = min(int(online), int(in_game))
+        return {'ok': True, 'total': int(online), 'lobby': int(online) - in_game, 'in_game': in_game,
+                'generated_at': now, 'grace_seconds': 90}
+
     def telemetry(self, body):
         with self.store.transaction():
             profile = self.store.authenticate(body.get('session'))

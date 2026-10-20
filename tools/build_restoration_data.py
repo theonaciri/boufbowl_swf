@@ -24,14 +24,17 @@ def homepage_assets(root):
                  [*(cls*10+gender for cls in range(1,15) for gender in (1,2)), *(h for h,_,_ in HEROES)])
     paths.update('assets/site/restoration/field-classes-'+str(i)+'.webp' for i in range(1,4))
     if not (root/'restoration.js').is_file():paths.clear()
-    paths.update(p.relative_to(root).as_posix() for p in (root/'assets/site').rglob('*') if p.is_file() and p.suffix in ('.webp','.png','.svg','.mp4','.ttf','.woff','.woff2'))
+    paths.update(p.relative_to(root).as_posix() for p in (root/'assets/site').rglob('*') if p.is_file() and p.suffix in ('.webp','.png','.svg','.mp4','.avif','.ttf','.woff','.woff2'))
     for name in ('index.html','home.css','home.js','restoration.css','restoration.js'):
         source=(root/name).read_text() if (root/name).is_file() else ''
-        paths.update(re.findall(r"assets/[A-Za-z0-9_./-]+\.(?:webp|png|svg|mp4|ttf|woff2?)",source))
+        paths.update(re.findall(r"assets/[A-Za-z0-9_./-]+\.(?:webp|png|svg|mp4|avif|ttf|woff2?)",source))
         if name=='home.js':
             block=source.split('const cinematicScenes = [',1)[-1].split('].map(',1)[0]
+            version=re.search(r'const cinematicMediaVersion = "([a-z0-9-]+)"',source)
+            suffix='-'+version.group(1) if version else ''
+            extensions=('.webp','.mp4','.av1.mp4','.avif') if version else ('.webp','.mp4')
             for identity in re.findall(r'\[\s*"([a-z0-9-]+)"\s*,',block):
-                paths.update('assets/site/cinematic-'+identity+extension for extension in ('.webp','.mp4'))
+                paths.update('assets/site/cinematic-'+identity+suffix+extension for extension in extensions)
     return [{'path':path,'available':(root/path).is_file() and (root/path).stat().st_size>0 and (root/path).resolve().is_relative_to(root.resolve())} for path in sorted(paths)]
 
 def audit(root=ROOT):

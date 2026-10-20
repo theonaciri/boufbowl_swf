@@ -2,11 +2,14 @@
 
 ## Run from a checkout on Ubuntu
 
-The repository includes the runnable game client (`bin/boufbowl-client-1.9.6.swf`)
-and simulation worker (`backend/build/engine.js` and `engine_base.json`). The
-main client and build base (`bin/base/boufbowl-client-1.9.6.swf`) stay tracked;
-temporary capture SWFs, standalone players and
-downloadable packages are generated or supplied locally and excluded from Git.
+The repository preserves the game build input
+(`bin/base/boufbowl-client-1.9.6.swf`) and source assets. Build the runnable
+client (`bin/boufbowl-client-1.9.6.swf`) locally before the first launch.
+Generated clients, media, stadium copies, and packages are excluded from Git.
+The simulator bundle (`backend/build/engine.js`) is retained because its
+archived sibling TypeScript sources are unavailable in this checkout.
+See [repository hygiene and regeneration](docs/repository-hygiene.md) for
+required build steps and preserved inputs.
 For desktop play, supply the standalone Flash player at
 `bin/flashplayer_32_sa.exe`. The Python server runs directly
 from `backend/`; it has no pip dependencies.
@@ -25,9 +28,12 @@ Open a new terminal after installing Bun, or use its installed
 X11/XWayland session is required. Java, FFDec, AIR and the Android SDK are needed
 only to rebuild, not to play. The Linux packages include Bun and Flash Player.
 
-From this repository directory:
+After the first client build, prepare the local runtime files from this repository
+directory:
 
 ```sh
+cp backend/engine_base.json backend/build/engine_base.json
+python3 -m tools.build_mock_fixture
 ./play.sh --mode server
 ```
 
@@ -170,7 +176,8 @@ Linux backend. Reinstall the new Linux package when using the desktop shortcut.
 
 Run commands from `boufbowl_swf`. The preserved build input is
 `bin/base/boufbowl-client-1.9.6.swf`; the runnable output is
-`bin/boufbowl-client-1.9.6.swf`. Both retain the original filename and are tracked.
+`bin/boufbowl-client-1.9.6.swf`. Both retain the original filename. The build input stays tracked; the runnable
+output is generated locally and ignored.
 The current base is the local patched client preserved before the latest rebuild;
 it is not an untouched historical archive. The build applies the readable
 `patches/` sources to this stable base without overwriting it. Pass `--original`

@@ -863,6 +863,9 @@ em {
 }
 .download-section {
   background: var(--paper);
+  padding-top: 76px;
+  padding-bottom: 82px;
+  border-bottom: 1px solid var(--line);
 }
 .download-header {
   max-width: 740px;

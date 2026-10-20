@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 import time
 from backend.storage import ServiceError
+from backend.tracking import website_metrics_report
 from tools.game_config import STADIUMS, check_rules, resolve_stadium
 
 
@@ -51,6 +52,10 @@ class Admin:
                     for watcher in self.store.db.execute('SELECT profile_id FROM tournament_watchers').fetchall():
                         self.send_tournaments(watcher[0])
                 result = self.admin_tournaments()
+            elif action == 'website_tracking':
+                if self.role(actor) != 'admin':
+                    raise ServiceError('ADMIN_FORBIDDEN', 'Administrator role required')
+                result = website_metrics_report(self.store, body.get('days', 30))
             else:
                 raise ServiceError('ADMIN_ACTION', 'Unknown administrator action')
             return {'ok': True, 'role': self.role(actor), **result}

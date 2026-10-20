@@ -143,6 +143,11 @@
   const selected = () =>
     inventory.characters.find((c) => c.id === state.id) ||
     inventory.characters[0];
+  function trackCharacterInterest(character) {
+    if (!character || !window.SiteTracking) return;
+    if (character.hero) window.SiteTracking.characterInterest(character.name);
+    else window.SiteTracking.classInterest(character.class_name);
+  }
   function choices() {
     return inventory.characters.filter(
       (c) =>
@@ -155,6 +160,7 @@
   function chooseCharacter(id) {
     state.id = id;
     const c = selected();
+    trackCharacterInterest(c);
     if (!c.poses[state.pose]) state.pose = "default";
     renderCharacter();
     renderPicker();
@@ -162,6 +168,7 @@
   function renderPicker() {
     const list = choices(),
       grid = $("character-class-grid");
+    const scrollLeft = grid.scrollLeft;
     grid.replaceChildren();
     for (const c of list) {
       const b = el("button");
@@ -193,6 +200,14 @@
           "empty-picker",
         ),
       );
+    // Keep the active icon visible in the mobile horizontal selector.
+    grid.scrollLeft = scrollLeft;
+    const active = grid.querySelector('[aria-pressed="true"]');
+    if (active && getComputedStyle(grid).gridAutoFlow === "column") {
+      const icon = active.getBoundingClientRect(), strip = grid.getBoundingClientRect();
+      if (icon.left < strip.left || icon.right > strip.right)
+        grid.scrollLeft += icon.left - strip.left - (grid.clientWidth - icon.width) / 2;
+    }
     $("character-picker-count").textContent =
       `${list.length} ${state.group === "heroes" ? "légende(s)" : "variante(s)"} dans cette sélection.`;
     for (const button of document.querySelectorAll("[data-gender]")) {
@@ -678,6 +693,7 @@
               )?.id ||
               choices()[0]?.id ||
               state.id;
+            trackCharacterInterest(selected());
             renderPicker();
             renderCharacter();
           }),

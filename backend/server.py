@@ -32,7 +32,7 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
-STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "moderation.html", "tournaments.html",
+STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "site-tracking.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "website-tracking.html", "website-tracking.js", "moderation.html", "tournaments.html",
                 "admin.css", "admin.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js", "contributions.js", "contributions.css",
                 "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
@@ -104,7 +104,8 @@ class Handler(SimpleHTTPRequestHandler):
         self._tracking_status = 500
         self._tracking_error = None
         self._tracking_detail = None
-        route = urlsplit(self.path).path
+        request_path = urlsplit(self.path).path
+        route = request_path
         if route.startswith('/assets/'):
             route = '/assets/*'
         elif route.startswith('/vendor/'):
@@ -115,7 +116,8 @@ class Handler(SimpleHTTPRequestHandler):
             route = '/resources/*'
         elif route.lstrip('/') not in STATIC_PAGES and route not in ('/', '/__mock_trace', '/crossdomain.xml',
                             '/api/hello', '/api/command', '/api/poll', '/api/replay', '/api/community',
-                            '/api/account', '/api/telemetry', '/api/metrics', '/api/admin', '/api/site', '/api/client', '/api/health'):
+                            '/api/account', '/api/telemetry', '/api/metrics', '/api/admin', '/api/site', '/api/client',
+                            '/api/health', '/api/site-events', '/api/presence-counts'):
             route = '/unknown'
         try:
             handler()
@@ -129,6 +131,8 @@ class Handler(SimpleHTTPRequestHandler):
             if tracker is not None:
                 failed = self._tracking_status >= 400 or self._tracking_error is not None
                 tracker.observe('http', method + ' ' + route, (time.perf_counter() - started) * 1000, failed)
+                if method == 'GET' and request_path.startswith('/assets/') and not failed:
+                    tracker.website_asset_request(unquote(request_path))
                 if failed:
                     message, stack = self._tracking_detail or (method + ' ' + route, '')
                     tracker.error('server', self._tracking_error or 'HTTP_' + str(self._tracking_status), message, stack)
@@ -146,6 +150,8 @@ class Handler(SimpleHTTPRequestHandler):
                   "/api/metrics": self.server.service.metrics,
                   "/api/admin": self.server.service.admin,
                   "/api/telemetry": self.server.service.telemetry,
+                  "/api/site-events": self.server.service.website_events,
+                  "/api/presence-counts": self.server.service.live_presence,
                   "/api/account": lambda body: self.server.service.account(body, self.client_address[0])}
         if route not in routes:
             self.send_error(404)

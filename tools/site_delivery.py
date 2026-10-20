@@ -7,8 +7,8 @@ import tempfile
 from backend.server import DOWNLOAD_FILES, download_path, site_manifest
 from tools.build_legal_pages import outputs
 
-PAGES = ('index.html', 'play.html', 'browser.html', 'admin.html', 'moderation.html', 'tournaments.html', 'assets-admin.html')
-FRONTEND = ('home.js', 'home.css', 'restoration.js', 'restoration.css', 'legal.css', 'contributions.js', 'contributions.css', 'admin.js', 'admin.css', 'moderation.js', 'tournaments.js', 'assets-admin.js')
+PAGES = ('index.html', 'play.html', 'browser.html', 'admin.html', 'website-tracking.html', 'moderation.html', 'tournaments.html', 'assets-admin.html')
+FRONTEND = ('home.js', 'home.css', 'site-tracking.js', 'website-tracking.js', 'restoration.js', 'restoration.css', 'legal.css', 'contributions.js', 'contributions.css', 'admin.js', 'admin.css', 'moderation.js', 'tournaments.js', 'assets-admin.js')
 
 
 def write_json(path, value):

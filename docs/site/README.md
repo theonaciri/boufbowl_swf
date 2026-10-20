@@ -75,11 +75,36 @@ des ordres et de la résolution 3D sont prises dans le client via Ruffle.
 
 Le carrousel présente les animations plein écran disponibles dans
 `assets/artworks/cutscene-illustration.swf` : contacts élémentaires, lancer,
-réceptions, interception, essai, tutoriel et réactions des tribunes. Les clips
+réceptions, interception et essai. Les clips
 H.264 muets et leurs affiches WebP sont capturés depuis les animations du client,
 avec ses propres personnages et palettes. Les scènes de match utilisent les
 fixtures de protocole du dépôt ; ce sont des démonstrations de restauration.
 Les fichiers Flash et les données du serveur restent inchangés.
+
+Le jeu de cinématiques `legends-v2` est exporté par
+`python3 -m tools.export_home_cinematics`. Il regroupe quinze films et les dix-huit
+légendes disponibles, sans réutiliser un personnage dans un autre film. Les variantes
+de tutoriel et les réactions des tribunes ne sont pas incluses dans cette sélection.
+Les tribunes sont des dessins fixes dont les labels de skin changent la palette,
+pas les personnages représentés. Sept variantes supplémentaires de lancer,
+réception, interception et essai mettent les autres légendes en scène à leur place.
+Les démonstrations d’interface et de résolution 3D restent présentes sous forme
+d’images fixes dans le carrousel ; les quinze vidéos montrent les légendes.
+Evangelyne porte une tenue noire (`000000`) dans le lancer. Le build isole les
+classes natives de `cutscene-illustration.swf`, applique les palettes originales,
+et capture chaque image native à 2560 × 1500 sans interface de match ni images
+perdues. Les images maîtresses sont conservées sans perte sous
+`.local/home-cinematics/` ; les empreintes évitent de les recalculer.
+
+Chaque film est livré en AVIF animé, en vidéo MP4 AV1 10 bits et en MP4 H.264 de
+compatibilité, à 60 images par seconde, avec une affiche WebP en qualité 95. La
+cadence des poses natives de 25 images par seconde est conservée. Le carrousel
+utilise AV1 lorsque le navigateur le reconnaît, avec repli H.264 en cas d’échec.
+Les fichiers AVIF sont des séquences animées, sans les commandes de lecture d’un
+élément vidéo HTML. Un seul film est chargé à la fois, avec arrêt du chargement
+hors écran. Les personnages, couleurs, empreintes et fichiers produits sont
+consignés dans `docs/site/media-sources.json`.
+
 
 Le carrousel permet de naviguer avec les flèches, Début/Fin, les catégories et
 les boutons précédent/suivant. Une commande de pause et un agrandissement plein

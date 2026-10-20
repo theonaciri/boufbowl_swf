@@ -16,6 +16,7 @@ Le responsable du traitement est [] ; son adresse est [] ; son contact pour la p
 - Relations et échanges : demandes d’amis, relations, blocages, abonnements aux canaux et contenu des messages publics, privés et de match, avec expéditeur, destinataire ou match concerné, langue et date.
 - Modération : signalements, motifs, personnes concernées, sanctions, durée, décisions et identité interne du modérateur ou de l’administrateur.
 - Fonctionnement et diagnostics : identifiant du client, plateforme, versions du jeu et du moteur d’exécution, système d’exploitation, navigateur, informations CPU déclarées, dimensions d’écran, indicateurs GPU et débogueur, activité quotidienne, connexions et reconnexions, durée estimée des visites, erreurs et performances.
+- Statistiques agrégées du site : sections consultées et durée approximative de visibilité, intérêts pour les classes et personnages sélectionnés dans la restauration, clics sur les boutons de téléchargement et de lancement Web, ainsi que chemins des assets demandés au serveur. Ces statistiques ne contiennent pas d’identifiant de visiteur ; les fichiers servis depuis le cache du navigateur ne sont pas comptés comme une nouvelle requête.
 - Réseau et support : adresse IP et métadonnées techniques traitées lors des connexions, journaux d’accès et de sécurité selon l’infrastructure utilisée, ainsi que les informations que vous transmettez lors d’une demande d’assistance ou d’exercice de droits.
 
 N’envoyez pas de mot de passe, code de récupération, document d’identité ou donnée sensible dans les discussions. Un pseudonyme ne rend pas nécessairement anonymes les données associées à votre profil.
@@ -54,6 +55,7 @@ Le serveur est hébergé chez Oracle à Paris, en France. Pays et localisation d
 - Messages publics, privés et de match : [].
 - Signalements, sanctions et journaux de modération : [].
 - Activité, visites et diagnostics associés aux profils : [].
+- Statistiques agrégées du site : les agrégats quotidiens sont conservés au maximum 400 jours puis supprimés automatiquement.
 - Journaux réseau, sécurité et tentatives de connexion : [].
 - Demandes d’assistance et d’exercice de droits : [].
 - Sauvegardes et délai de répercussion d’une suppression : [].

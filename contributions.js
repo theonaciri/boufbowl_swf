@@ -39,11 +39,11 @@
         xhr.onload=()=>{try{const data=JSON.parse(xhr.responseText);if(!data.ok)throw Error(data.error);status.textContent=`Merci ! Proposition ${data.id}. Le fichier attend son analyse et la validation d’un administrateur ; il ne remplace aucun asset automatiquement.`;resolve();}catch(error){reject(error);}};
         xhr.onerror=()=>reject(Error('Envoi interrompu.'));xhr.ontimeout=()=>reject(Error('Délai dépassé.'));xhr.onabort=()=>reject(Error('Envoi annulé.'));xhr.send(file);});
     }catch(error){status.textContent=error.message;}finally{xhr=null;submit.disabled=false;cancel.hidden=true;}};
-  const section=el('section');section.id='asset-contributions';section.className='section asset-contributions';
-  section.append(el('span','RECONSTITUONS LES ARCHIVES'),el('h2','Le vestiaire des pièces manquantes.'),el('p','Un original dort dans vos archives ? Proposez le fichier exact ci-dessous. Les propositions sont isolées, contrôlées puis examinées ; aucune publication automatique.'));
-  const search=el('input');search.type='search';search.placeholder='Rechercher une classe, une légende, un stade ou un fichier';search.setAttribute('aria-label','Rechercher une ressource à restaurer');
-  const count=el('p');count.id='asset-catalog-status';count.setAttribute('role','status');const list=el('div');list.className='asset-contribution-list';
-  section.append(search,count,list);document.querySelector('#telecharger').before(section);search.oninput=render;
+  const search=document.querySelector('#asset-catalog-search');
+  const count=document.querySelector('#asset-catalog-status');
+  const list=document.querySelector('#asset-contributions .asset-contribution-list');
+  if(!search||!count||!list)return;
+  search.oninput=render;
   const fold=value=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   function render(){const query=fold(search.value.trim());const rows=items.filter(a=>fold(a.path+' '+a.group+' '+(a.related_to||[]).map(r=>r.label).join(' ')).includes(query));count.textContent=`${rows.length} ressource(s) manquante(s), remplacée(s) ou de qualité réduite.`;list.replaceChildren();
     for(const a of rows){const row=el('div');row.className='asset-contribution-row';const copy=el('div');const context=el('span',(a.related_to||[]).map(r=>r.label).join(' · ')||'Aucune association renseignée');context.className='asset-context';copy.append(el('strong',a.name),context,el('small',a.path),el('span',a.status==='restored_low_quality'?'Restauré, qualité basse':a.status==='substitute'?'Original remplacé':'Fichier manquant'));row.append(copy,window.AssetContributions.button(a.path));list.append(row);}}

@@ -36,6 +36,7 @@ window.AdminConsole = (() => {
   links.setAttribute("aria-label", "Administrator pages");
   for (const [href, label] of [
     ["admin.html", "Overview"],
+    ["website-tracking.html", "Website"],
     ["moderation.html", "Moderation"],
     ["tournaments.html", "Tournaments"],
     ["assets-admin.html", "Assets"],
@@ -66,7 +67,7 @@ window.AdminConsole = (() => {
   async function connect() {
     try {
       const data = await api(
-        document.body.dataset.console === "assets" ? "assets" : document.body.dataset.console === "tournaments"
+        document.body.dataset.console === "analytics" ? "website_tracking" : document.body.dataset.console === "assets" ? "assets" : document.body.dataset.console === "tournaments"
           ? "tournaments"
           : "moderation",
       );

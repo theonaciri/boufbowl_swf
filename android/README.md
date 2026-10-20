@@ -54,8 +54,10 @@ python3 android/build.py \
 Output: `android/build/BoufbowlOffline.apk`.
 Use `--arch x64` for the separate emulator build. For your own PKCS12 signing
 certificate, set `BOUFBOWL_KEYSTORE_PASSWORD` and add `--keystore /path/to/key.p12`.
-The default certificate is intended for local testing and has the password
-`SET_WITH_BOUFBOWL_KEYSTORE_PASSWORD`.
+The default certificate receives a random password stored beside it in the user
+cache as `local.password` with mode `0600`. Existing certificates without that
+file require `BOUFBOWL_KEYSTORE_PASSWORD`; preserve the certificate to keep the
+same signing identity for app updates.
 
 The build starts from the desktop's already patched SWF and applies the readable
 classes in `android/patches/` to a separate staging copy:

@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import shutil
 import subprocess
 import sys
@@ -18,7 +19,32 @@ from tools.player_server import player_server
 
 
 def run(command, *, env=None, timeout=600):
-    subprocess.run([str(arg) for arg in command], check=True, env=env, timeout=timeout)
+    try:
+        subprocess.run([str(arg) for arg in command], check=True, env=env, timeout=timeout)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        # Packaging arguments contain the signing password.
+        raise RuntimeError("Build command failed: " + Path(command[0]).name) from None
+
+
+def local_signing_password(certificate):
+    """Keep the local signing password beside the certificate, outside Git."""
+    override = os.environ.get("BOUFBOWL_KEYSTORE_PASSWORD")
+    if override:
+        return override
+    password_file = certificate.with_suffix(".password")
+    if password_file.is_file():
+        password = password_file.read_text().strip()
+        if not password:
+            raise ValueError("The local signing password file is empty.")
+        password_file.chmod(0o600)
+        return password
+    if certificate.exists():
+        raise ValueError("Existing signing certificate needs BOUFBOWL_KEYSTORE_PASSWORD or its local .password file. Keep the certificate to preserve app updates.")
+    password = secrets.token_urlsafe(32)
+    descriptor = os.open(password_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w") as output:
+        output.write(password + "\n")
+    return password
 
 
 def main():
@@ -123,7 +149,10 @@ def main():
         cache = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
         certificate = cache / "boufbowl-flash-tools/android-signing/local.p12"
         certificate.parent.mkdir(parents=True, exist_ok=True)
-        password = "SET_WITH_BOUFBOWL_KEYSTORE_PASSWORD"
+        try:
+            password = local_signing_password(certificate)
+        except ValueError as error:
+            parser.error(str(error))
         if not certificate.exists():
             run([java, "-jar", adt, "-certificate", "-cn", "BoufbowlOffline",
                  "2048-RSA", certificate, password], env=env)

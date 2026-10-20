@@ -22,6 +22,8 @@
       private static var serverAbilities:Object = {};
       public static var serverZobalMasks:Object = {};
       private static var serverLabel:TextField;
+      private static var serverLivePlayersLabel:TextField;
+      private static var serverLivePlayersTimer:uint;
       private static var serverInMatch:Boolean = false;
       private static var serverCurrentMatch:String;
       private static var serverPanel:Sprite;
@@ -93,6 +95,8 @@
          serverAccountBusy = false;
          serverActive = true;serverConnecting=true;serverRole="player";
          clearTimeout(serverPollTimer);clearTimeout(serverSendTimer);
+         clearTimeout(serverLivePlayersTimer);
+         if(serverLivePlayersLabel != null)serverLivePlayersLabel.text="Lobby — · En jeu —";
          serverPollEpoch++;serverPollWait=1000;serverPollFailures=0;serverCommandFailures=0;
          Stage(app.contextInjector.getInstance(Stage)).addEventListener(flash.events.Event.ACTIVATE,serverResume,false,0,true);
          serverSending = false; serverPolling = false; serverQueue = [];
@@ -128,6 +132,7 @@
                   serverSession=null;helloBody.session=null;serverRequest("hello",helloBody,connected);return;
                }
                serverActive=false;serverConnecting=false;serverSession=null;serverQueue=[];
+               if(serverLivePlayersLabel != null)serverLivePlayersLabel.text="Hors ligne";
                serverStatus(serverCaption(response.code == "SESSION_INVALID" && serverAuthMode == "account" ? "Account session expired. Sign in from Club / Account." : "Connection failed")+": "+response.error,true);
                if(complete != null)complete(false);return;
             }
@@ -144,6 +149,7 @@
             serverStatus("Logged as " + response.profile.nickname,true);
             serverPump();
             serverPoll();
+            serverUpdateLivePlayers();
             if(complete != null)complete(true);
          };
          serverRequest("hello",helloBody,connected);
@@ -153,6 +159,7 @@
          if(serverAuthMode != "device") {
             serverTrace("Account session requires login");
             serverActive=false;serverSession=null;serverQueue=[];serverConnecting=false;
+            if(serverLivePlayersLabel != null)serverLivePlayersLabel.text="Hors ligne";
             serverStatus(serverCaption("Account session expired. Sign in from Club / Account."),true);
             if(complete != null)complete(false);return;
          }
@@ -271,6 +278,18 @@
          try { loader.load(request); } catch(error:Error) { finish({ok:false,retryable:true,error:error.message}); }
       }
 
+      private static function serverUpdateLivePlayers() : void
+      {
+         clearTimeout(serverLivePlayersTimer);
+         if(!serverActive || serverBase == null) return;
+         serverRequest("presence-counts",{},function(data:Object):void {
+            if(!serverActive || serverLivePlayersLabel == null) return;
+            if(data.ok)serverLivePlayersLabel.text="Lobby " + data.lobby + " · En jeu " + data.in_game;
+            else serverLivePlayersLabel.text="Présence indisponible";
+            serverLivePlayersTimer=setTimeout(serverUpdateLivePlayers,15000);
+         });
+      }
+
       private static function serverSend(body:Object) : void
       {
          body.request_id = String(getTimer()) + "-" + String(Math.random()) + "-" + String(serverQueue.length);
@@ -341,6 +360,7 @@
                   if(serverPollFailures == 1)serverStatus("Connection interrupted; reconnecting: " + response.error,true);
                   if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID") {
                      serverGeneration++;serverPollEpoch++;serverActive=false;
+                     if(serverLivePlayersLabel != null)serverLivePlayersLabel.text="Hors ligne";
                      clearTimeout(serverSendTimer);serverQueue=[];serverSending=false;stopMock();showHome();serverCurrentMatch=null;
                      serverStatus(response.error,true);return;
                   }

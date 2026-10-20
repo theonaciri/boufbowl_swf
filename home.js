@@ -45,153 +45,180 @@
       ? "RELANCER LES ANIMATIONS ▷"
       : "METTRE LES ANIMATIONS EN PAUSE Ⅱ";
   };
+  const puppetVideos = [...document.querySelectorAll("[data-puppet-src]")];
+  const puppetToggle = $("puppet-motion-toggle");
+  if (puppetVideos.length && puppetToggle) {
+    const visiblePuppets = new Set();
+    let puppetsPaused = reducedMotion.matches;
+    const syncPuppets = () => {
+      const globallyPaused = document.documentElement.classList.contains("motion-paused");
+      const paused = puppetsPaused || globallyPaused;
+      puppetToggle.disabled = globallyPaused;
+      puppetToggle.setAttribute("aria-pressed", String(paused));
+      puppetToggle.textContent = paused ? "Animer les personnages" : "Mettre les animations en pause";
+      for (const video of puppetVideos) {
+        const inView = visiblePuppets.has(video) && !document.hidden;
+        if (!inView || paused) {
+          video.pause();
+          // Cancel offscreen downloads; the cached loop is reused on return.
+          if (!inView && video.hasAttribute("src")) {
+            video.removeAttribute("src");
+            video.load();
+          }
+          continue;
+        }
+        if (!video.hasAttribute("src")) video.src = video.dataset.puppetSrc;
+        video.muted = true;
+        video.play().catch(() => {});
+      }
+    };
+    const puppetObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visiblePuppets.add(entry.target);
+        else visiblePuppets.delete(entry.target);
+      }
+      syncPuppets();
+    }, { threshold: 0.01 });
+    puppetVideos.forEach((video) => puppetObserver.observe(video));
+    puppetToggle.addEventListener("click", () => {
+      puppetsPaused = !puppetsPaused;
+      syncPuppets();
+    });
+    document.addEventListener("visibilitychange", syncPuppets);
+    $("motion-toggle").addEventListener("click", syncPuppets);
+    reducedMotion.addEventListener("change", () => {
+      puppetsPaused = reducedMotion.matches;
+      syncPuppets();
+    });
+    syncPuppets();
+  }
+  const cinematicMediaVersion = "legends-v2";
   const cinematicScenes = [
     [
       "terre-terre",
-      "LE CONTACT, C’EST SACRÉ.",
-      "Deux tempéraments de Terre. Une façon très personnelle de se dire bonjour.",
+      "OBJECTIF : MARQUER UN ESSAI",
+      "Deux équipes de cinq joueurs s’affrontent. Le but est de porter le ballon jusqu’à la ligne d’en-but adverse.",
     ],
     [
       "terre-feu",
-      "ÇA VA CHAUFFER.",
-      "Terre contre Feu : la diplomatie prend son après-midi.",
+      "PRÉPAREZ VOS ORDRES",
+      "À chaque tour, placez vos joueurs sur le terrain hexagonal et choisissez leurs actions avant la résolution du jeu.",
     ],
     [
       "feu-terre",
-      "L’ÉCHAUFFEMENT EST FINI.",
-      "Les crampons parlent. L’arbitre fait semblant de regarder ailleurs.",
+      "GÉREZ VOS DÉPLACEMENTS",
+      "La portée des déplacements dépend des éléments attribués au joueur. Gardez-en assez pour atteindre une position utile.",
     ],
     [
       "lancer",
-      "ENVOYEZ DU LOURD.",
-      "Un ballon, un bras, et beaucoup trop de confiance.",
+      "PASSEZ LE BALLON",
+      "Une passe permet d’envoyer le ballon à un coéquipier à portée. L’AIR contribue aux actions de lancer et de réception.",
     ],
     [
       "reception-ok-air",
-      "DANS LES MAINS. PRESQUE FACILE.",
-      "Une réception réussie, dans l’animation plein écran d’origine.",
+      "RÉUSSISSEZ VOS RÉCEPTIONS",
+      "Une passe n’est jamais sûre : le receveur doit être bien placé, et la réussite de la réception dépend de ses caractéristiques.",
     ],
     [
       "reception-ratee-air",
-      "ÇA, C’ÉTAIT LA TÊTE.",
-      "La réception ratée fait aussi partie du patrimoine sportif.",
+      "RÉCUPÉREZ LE BALLON",
+      "Si personne ne maîtrise le ballon, il reste au sol et les joueurs peuvent tenter de le récupérer.",
     ],
     [
       "interception",
-      "MERCI POUR LA PASSE.",
-      "Intercepter : recevoir un cadeau qui ne vous était pas destiné.",
+      "INTERCEPTEZ LA PASSE",
+      "Les adversaires proches peuvent tenter d’intercepter une passe en vol. Placez vos défenseurs sur sa trajectoire.",
     ],
     [
       "touchdown",
-      "LE BALLON EST RENTRÉ !",
-      "L’essai. Ce bref instant où tout le monde vous aime.",
+      "FRANCHISSEZ L’EN-BUT",
+      "Un joueur vivant et non étourdi marque en franchissant la ligne d’en-but adverse avec le ballon.",
     ],
     [
-      "bouftous-contents",
-      "LES BOUFTOUS APPROUVENT.",
-      "Le public de Cania donne de la voix. Et de la laine.",
+      "masque-reception",
+      "ACTIVEZ UN POUVOIR DE CLASSE",
+      "Chaque classe dispose d’un pouvoir. Une équipe peut en activer un par tour, au prix de l’action de son lanceur.",
     ],
     [
-      "foule-contente",
-      "LE STADE SE RÉVEILLE.",
-      "Une ovation d’époque. Les tribunes ont gardé de la voix.",
+      "harebourg-lancer",
+      "PLACEZ VOTRE RECEVEUR",
+      "Choisissez un coéquipier comme cible de la passe et placez-le à portée pour augmenter ses chances de réception.",
     ],
     [
-      "crabes-contents",
-      "DES PINCES ET DES CRAMPONS.",
-      "À la plage aussi, on sait reconnaître un beau geste.",
+      "pan-diego-interception",
+      "COUPEZ LA PASSE",
+      "Un défenseur à portée du ballon peut tenter une interception. L’AIR est nécessaire pour tenter une réception en vol.",
     ],
     [
-      "frigost-content",
-      "UNE AMBIANCE À BRISER LA GLACE.",
-      "Le public de Frigost vous réserve un accueil presque chaleureux.",
+      "ironman-touchdown",
+      "GAGNEZ LES DUELS",
+      "Les combats peuvent blesser ou éliminer un joueur. Si le porteur est mis hors jeu, il lâche le ballon.",
     ],
     [
-      "canyon-contents",
-      "ÇA RÉSONNE DANS LE CANYON.",
-      "Une célébration originale du stade de Kara.",
+      "jack-reception-ratee",
+      "PRENEZ GARDE AUX CHUTES",
+      "Allonger un déplacement au-delà de la distance sûre augmente le risque de chute : mesurez le gain face au danger.",
     ],
     [
-      "forest-contents",
-      "LA FORÊT FAIT DU BRUIT.",
-      "Les tribunes de la forêt ont gardé toute leur animation.",
+      "armand-reception",
+      "GAGNEZ LE MATCH",
+      "La victoire revient à l’équipe qui marque le plus d’essais avant la fin du match.",
     ],
     [
-      "ballotin-contents",
-      "L’AMOUR DU BEAU GESTE.",
-      "Le stade de Ballotin célèbre à sa manière.",
-    ],
-    [
-      "pixel-contents",
-      "LA FOULE, PIXEL PAR PIXEL.",
-      "Une célébration aux petits carrés et aux grandes émotions.",
-    ],
-    [
-      "tuto-terre-feu",
-      "LA LEÇON COMMENCE.",
-      "Terre et Feu : une démonstration du tutoriel original.",
-    ],
-    [
-      "tuto-feu-terre",
-      "TRAVAUX PRATIQUES.",
-      "Le tutoriel explique. L’adversaire encaisse.",
-    ],
-    [
-      "tuto-terre-terre",
-      "RÉVISION DES FONDAMENTAUX.",
-      "La théorie du contact, illustrée par le client Flash d’origine.",
+      "skunk-lancer",
+      "CHANGEZ DE CÔTÉ À LA MI-TEMPS",
+      "Le match se joue en deux périodes. À la reprise, les équipes changent de côté pour attaquer l’autre en-but.",
     ],
   ].map(([id, title, description]) => ({
     category: "cinematic",
     title,
     description,
-    image: `assets/site/cinematic-${id}.webp`,
-    video: `assets/site/cinematic-${id}.mp4`,
+    image: `assets/site/cinematic-${id}-${cinematicMediaVersion}.webp`,
+    video: `assets/site/cinematic-${id}-${cinematicMediaVersion}.mp4`,
+    videoAv1: `assets/site/cinematic-${id}-${cinematicMediaVersion}.av1.mp4`,
   }));
   const scenes = [
     ...cinematicScenes,
     {
       category: "orders",
-      title: "LE PLAN ÉTAIT PARFAIT.",
+      title: "PRÉPAREZ CHAQUE TOUR",
       description:
-        "Sélection des joueurs, éléments et ordres sur la grille tactique. C’est après que ça se complique.",
+        "Avant chaque tour, répartissez les éléments de vos joueurs et préparez leurs ordres sur la grille tactique.",
       image: "assets/site/game-orders.webp",
-      video: "assets/site/game-orders.mp4",
     },
     {
       category: "resolution",
-      title: "ET MAINTENANT… ON ASSUME.",
+      title: "LES ORDRES SE RÉSOLVENT",
       description:
-        "Les ordres se résolvent sur le terrain en 3D, dans le client du jeu.",
+        "Une fois les ordres des deux équipes validés, déplacements, passes et duels se résolvent sur le terrain.",
       image: "assets/site/game-resolution.webp",
-      video: "assets/site/game-resolution.mp4",
     },
     {
       category: "team",
-      title: "LE RECRUTEMENT EST OUVERT.",
+      title: "CINQ JOUEURS SUR LE TERRAIN",
       description:
-        "Créez l’équipe et choisissez vos joueurs dans l’interface d’origine.",
+        "Chaque équipe aligne cinq joueurs et dispose d’un effectif de dix. Choisissez les profils adaptés à votre stratégie.",
       image: "assets/site/game-club.png",
     },
     {
       category: "team",
-      title: "UNE TENUE. DU CARACTÈRE.",
+      title: "CHOISISSEZ VOS CLASSES",
       description:
-        "La personnalisation des personnages, avant de personnaliser les bleus de l’adversaire.",
+        "Les classes ont des caractéristiques différentes : composez votre équipe pour équilibrer déplacement, passe et combat.",
       image: "assets/site/game-customization.png",
     },
     {
       category: "goultard",
-      title: "GOULTARD ENTRE AU VESTIAIRE.",
+      title: "CHAQUE CLASSE A SES FORCES",
       description:
-        "Son illustration originale est bien là. On vous laisse lui expliquer les règles.",
+        "Les joueurs spéciaux gardent leur identité, mais suivent les règles de leur classe sur le terrain.",
       image: "assets/site/game-goultard.webp",
     },
     {
       category: "goultard",
-      title: "LE VESTIAIRE DES LÉGENDES.",
+      title: "PROTÉGEZ LE PORTEUR",
       description:
-        "Goultard, Kriss la Krass, Maude… Les personnages spéciaux retrouvent leurs illustrations d’origine.",
+        "Une équipe gagne en combinant ses classes, en protégeant le porteur et en ouvrant une voie vers l’en-but.",
       image: "assets/site/game-legends.webp",
     },
   ];
@@ -200,7 +227,7 @@
   let sceneIndex = 0,
     carouselPaused = reducedMotion.matches,
     carouselTimer;
-  let carouselInView = true,
+  let carouselInView = false,
     carouselHover = false,
     carouselFocus = false;
   const globalPaused = () =>
@@ -210,10 +237,30 @@
       !carouselPaused && !globalPaused() && !document.hidden && carouselInView
     );
   }
+  const failedAv1 = new Set();
+  function preferredCarouselVideo(scene) {
+    return scene.videoAv1 && !failedAv1.has(scene.videoAv1) &&
+      carouselVideo.canPlayType('video/mp4; codecs="av01.0.13M.10"')
+      ? scene.videoAv1 : scene.video;
+  }
   function syncCarousel() {
     clearTimeout(carouselTimer);
+    const scene = scenes[sceneIndex], source = preferredCarouselVideo(scene);
+    if (source && carouselInView) {
+      if (carouselVideo.dataset.source !== source) {
+        carouselVideo.pause();
+        carouselVideo.src = source;
+        carouselVideo.dataset.source = source;
+        carouselVideo.load();
+      }
+    } else if (carouselVideo.hasAttribute("src")) {
+      carouselVideo.pause();
+      carouselVideo.removeAttribute("src");
+      delete carouselVideo.dataset.source;
+      carouselVideo.load();
+    }
     if (mayPlay()) {
-      if (scenes[sceneIndex].video) carouselVideo.play().catch(() => {});
+      if (scene.video) carouselVideo.play().catch(() => {});
       if (!carouselHover && !carouselFocus)
         carouselTimer = setTimeout(() => showScene(sceneIndex + 1), 6500);
     } else carouselVideo.pause();
@@ -233,13 +280,8 @@
     $("carousel-image").alt = scene.description;
     carouselVideo.hidden = true;
     if (scene.video) {
-      carouselVideo.src = scene.video;
       carouselVideo.poster = scene.image;
       carouselVideo.setAttribute("aria-label", scene.description);
-      carouselVideo.load();
-    } else {
-      carouselVideo.removeAttribute("src");
-      carouselVideo.load();
     }
     $("carousel-title").textContent = scene.title;
     $("carousel-description").textContent = scene.description;
@@ -266,6 +308,12 @@
     $("carousel-image").hidden = false;
   });
   carouselVideo.addEventListener("error", () => {
+    const scene = scenes[sceneIndex];
+    if (scene.videoAv1 && carouselVideo.dataset.source === scene.videoAv1) {
+      failedAv1.add(scene.videoAv1);
+      syncCarousel();
+      return;
+    }
     carouselVideo.hidden = true;
     $("carousel-image").hidden = false;
   });

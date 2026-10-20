@@ -9,6 +9,16 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parent.parent
+SEO_DESCRIPTIONS = {
+    'legal': 'Consultez les informations juridiques de Boufbowl : confidentialité, conditions d’utilisation, mentions légales, cookies, charte communautaire et règlement des tournois.',
+    'confidentialite': 'Projet de politique de confidentialité de Boufbowl : données traitées, finalités, conservation et droits des joueurs. Document en cours de complétion.',
+    'conditions-utilisation': 'Projet de conditions générales d’utilisation du jeu Boufbowl : accès au service, règles de conduite, comptes et modération. Document en cours de complétion.',
+    'mentions-legales': 'Projet de mentions légales du site et du jeu Boufbowl. Les informations sur l’exploitant restent à compléter.',
+    'cookies': 'Projet d’information sur les cookies, traceurs et stockages locaux utilisés par le site et le jeu Boufbowl.',
+    'charte-communaute': 'Projet de charte communautaire de Boufbowl : règles de conduite, signalements et principes de modération.',
+    'reglement-tournois': 'Projet de règlement des tournois Boufbowl : participation, déroulement des compétitions et règles applicables.',
+}
+
 DOCUMENTS = (
     ('confidentialite', 'Confidentialité'),
     ('conditions-utilisation', 'Conditions d’utilisation'),
@@ -62,7 +72,8 @@ def page(slug, title, body, headings=()):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex,follow">
+<meta name="description" content="'''+html.escape(SEO_DESCRIPTIONS.get(slug, SEO_DESCRIPTIONS['legal']), quote=True)+'''">
 <title>'''+html.escape(title)+''' · Boufbowl</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="legal.css">

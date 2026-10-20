@@ -3,3 +3,5 @@
 .asset-context{font-weight:600;font-size:13px;color:#49602a;margin:5px 0;overflow-wrap:anywhere}
 
 .asset-contact-input{display:block;width:100%;box-sizing:border-box;padding:10px;margin:8px 0;border:1px solid #7c872d;background:#fff;color:inherit;font:inherit}
+
+.asset-contributions{margin-top:42px;padding:clamp(20px,4vw,38px);border:1px solid #cbd0ac;background:#ffffe9}.asset-contributions .restoration-heading{margin-bottom:24px}.asset-contributions .restoration-heading h3{font-size:clamp(28px,3.5vw,44px)}.asset-contributions>input{box-sizing:border-box;width:min(100%,720px);background:#fff}
