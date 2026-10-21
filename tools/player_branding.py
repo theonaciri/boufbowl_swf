@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import struct
 import subprocess
+from tools.package_cache import Receipt, digest
 from tools.build_parallel import cpu_run, parallel
 
 ANDROID_SIZES = (36, 48, 72, 96, 144, 192, 512)
@@ -11,6 +12,11 @@ SIZES = sorted(set(ANDROID_SIZES) | {16, 24, 32, 64, 128, 256})
 
 
 def build_icons(root, output):
+    with Receipt(root, 'icons/'+digest(str(Path(output).absolute()))).lock():
+        return _build_icons(root, output)
+
+
+def _build_icons(root, output):
     root, output = Path(root), Path(output)
     source = root/'assets/branding/logo.png'
     output.mkdir(parents=True, exist_ok=True)

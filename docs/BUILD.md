@@ -313,3 +313,34 @@ The shared game client is prepared first if missing, then all three downloads ar
 built by default; with a platform selection, only those downloads are rebuilt.
 The website is refreshed once after the selected builds finish. `--jobs N` limits combined concurrency;
 `--no-website` defers the refresh.
+
+## Incremental player packages
+
+Selected packages are reused when their content fingerprints and output checksums
+match. Unchanged `.exe`, `.run`, archives, and APKs keep their contents and mtimes;
+NSIS, compression, Android staging, and APK packaging are skipped on a cache hit.
+Missing, changed, or non-executable Linux outputs are rebuilt.
+
+Fingerprints cover bundled assets and resources (including additions and removals),
+server URL, client SWFs, patches, packaging code, icons, templates, architecture and
+debug options, the Android certificate, and relevant Java/FFDec/AIR/Android/NSIS/
+FFmpeg toolchain inputs. Passwords are excluded. File contents are hashed; merely
+touching a file does not invalidate a package. Website-only media and stadium AVIF
+previews are excluded from game package inputs as well as from the bundles.
+
+Android client compilation has a separate cache keyed by the base SWF, the actual
+configured ActionScript replacements, Java, and FFDec. Changing an asset, app icon,
+or certificate can rebuild the APK while reusing the compiled SWF. Video conversions
+have separate source/recipe/tool fingerprints. Staging copies changed files and
+removes obsolete ones when a package needs rebuilding.
+
+Receipts live in `.local/player-builds/`, compiled clients in
+`.local/player-clients/`, and Android videos in `android/build/video-cache/`.
+Keep them between builds. Removing a final package rebuilds that output using the
+remaining intermediate caches. Cache records are written only after success;
+locks prevent simultaneous builds from publishing conflicting package outputs.
+A failed build leaves its last successfully published executable/APK in place.
+
+`build:players` still validates dependencies and signing credentials at startup,
+and refreshes website download links after all selected builds succeed. Use
+`--no-website` when only building or measuring packages.

@@ -4,11 +4,13 @@ import hashlib
 from io import BytesIO
 from pathlib import Path
 import json
+import os
 import shutil
 import subprocess
 import tarfile
 import tempfile
 from tools.build_parallel import build_budget, cpu_job, cpu_run, parallel
+from tools.package_cache import Inputs, Receipt, digest, runtime_identity
 from tools.player_server import player_server
 from tools.player_branding import build_icons
 from tools.player_assets import website_stadium_preview
@@ -36,21 +38,26 @@ def desktop_client(root, platform, server_url, ffdec=None, java=None):
                 '         }\n')
     source = source.replace(marker, fallback + marker).replace('return "en";', 'return "fr";')
     client = root / 'bin/boufbowl-client-1.9.6.swf'
-    revision = hashlib.sha256(client.read_bytes() + source.encode()).hexdigest()
+    ffdec = ffdec_jar(ffdec, download=True)
+    java = java_binary(java)
+    inputs = Inputs()
+    revision = digest({'client': inputs.file(client), 'source': source,
+                       'ffdec': inputs.tree(Path(ffdec).parent), 'java': inputs.java(java), 'recipe': 1})
     cache = root / '.local/player-clients' / revision
     output = cache / 'boufbowl-client-1.9.6.swf'
-    if output.is_file():
+    receipt = Receipt(root, 'desktop-client/'+revision)
+    if receipt.current(revision, [output]):
+        print('Reusing compiled '+platform+' client', flush=True)
         return output
     cache.mkdir(parents=True, exist_ok=True)
     patch = cache / 'FlashVarsManager.as'
     patch.write_text(source)
-    ffdec = ffdec_jar(ffdec, download=True)
-    java = java_binary(java)
     temporary = cache / 'client.building.swf'
     cpu_run([str(java), '-jar', str(Path(ffdec).resolve()), '-replace', str(client), str(temporary),
                     'com.ankamagames.xgaming.utils.flashvars.FlashVarsManager', str(patch)],
                    check=True, timeout=600)
     temporary.replace(output)
+    receipt.save(revision, [output])
     return output
 
 
@@ -146,10 +153,40 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
         'prepares dans le cache utilisateur. Aucun droit administrateur requis.\n\n'
         f'Serveur : {server_url}\n'
     ).encode('utf-8')
+    inputs = Inputs()
+    common = {'files': {name: inputs.file(path) for name, path in bundled_files},
+              'player': inputs.file(root/'bin/flashplayer_32_sa.exe'),
+              'readme': hashlib.sha256(readme).hexdigest(), 'server_url': server_url,
+              'recipe': inputs.file(Path(__file__)), 'launcher': windows_launcher(), 'runtime': runtime_identity()}
     def package(platform):
+        receipt = Receipt(root, 'package-'+platform)
+        with receipt.lock():
+            return package_locked(platform, receipt)
+
+    def package_locked(platform, receipt):
         client = desktop_client(root, platform, server_url, ffdec=ffdec, java=java)
         folder = root / platform / 'build'
         folder.mkdir(parents=True, exist_ok=True)
+        extension = '.zip' if platform == 'windows' else '.tar.gz'
+        output = folder/('Boufbowl Fan'+extension)
+        executable = folder/('Boufbowl Fan.exe' if platform == 'windows' else 'Boufbowl Fan.run')
+        identity = {'common': common, 'platform': platform, 'client': inputs.file(client)}
+        if platform == 'windows':
+            compiler = makensis or shutil.which('makensis')
+            if not compiler:
+                raise BuildError('NSIS compiler (makensis) is required for Windows packaging')
+            identity.update(icon=inputs.file(icons/'icon.ico'),
+                            nsis=inputs.tool(compiler), template=inputs.file(ROOT/'tools/players/windows.nsi'))
+            nsis_data = Path(os.environ.get('NSISDIR') or (Path(shutil.which(str(compiler)) or compiler).resolve().parent.parent/'share/nsis'))
+            if nsis_data.is_dir():
+                identity['nsis_data'] = inputs.tree(nsis_data)
+        else:
+            identity['template'] = inputs.file(ROOT/'tools/players/linux.run.sh')
+        fingerprint = digest(identity)
+        if receipt.current(fingerprint, [output, executable]):
+            print('Reusing '+platform+' package: '+executable.name, flush=True)
+            return executable
+        print('Packaging '+platform, flush=True)
         if platform == 'windows':
             output = folder / 'Boufbowl Fan.zip'
             launchers = {'Jouer.cmd': windows_launcher()}
@@ -175,7 +212,9 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
                 for name, path in bundled_files:
                     archive.add(path, name)
         output.with_suffix('.building').replace(output)
-        return windows_executable(output, makensis) if platform == 'windows' else linux_executable(output)
+        executable = windows_executable(output, makensis) if platform == 'windows' else linux_executable(output)
+        receipt.save(fingerprint, [output, executable])
+        return executable
     outputs = dict(parallel(lambda platform: (platform, package(platform)), selected))
     return [outputs[platform] for platform in selected]
 

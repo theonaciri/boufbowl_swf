@@ -16,6 +16,8 @@ from tools.build_parallel import build_budget, cpu_run, parallel
 from tools.build_tools import BuildError, air_sdk, android_sdk, jdk_directory, ffdec_jar, remember_build_tools
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
+from tools.package_cache import Inputs, Receipt, digest, copy_changed, sync_tree, runtime_identity
+from tools.player_assets import website_stadium_preview
 from tools.player_server import player_server
 from tools.android_signing import signing_credentials
 from tools.player_branding import build_icons
@@ -60,6 +62,12 @@ def main():
 
 
 def build(args, parser):
+    root = Path(__file__).resolve().parent.parent
+    with Receipt(root, 'android-build').lock():
+        return build_locked(args, parser)
+
+
+def build_locked(args, parser):
     android = Path(__file__).resolve().parent
     root = android.parent
     try:
@@ -78,39 +86,75 @@ def build(args, parser):
     game_config = load_config(args.config)
     game_config['general']['startup_mode'] = 'server'
     build = android / "build"
+    build.mkdir(parents=True, exist_ok=True)
+    suffix = '' if args.arch == 'armv8' else '-emulator-x64'
+    if args.debug:
+        suffix += '-debug'
+    output = build/('Boufbowl Fan'+suffix+'.apk')
+    inputs = Inputs()
+    asset_root = root/'assets'
+    game_assets = {path.relative_to(root).as_posix(): inputs.file(path)
+                   for path in sorted(asset_root.rglob('*')) if path.is_file()
+                   and not path.is_relative_to(asset_root/'site') and not website_stadium_preview(path)}
+    tools = ['game_config', 'visual_assets', 'mock_codegen', 'server_codegen',
+             'stadium_celebrations', 'power_descriptions', 'tournament_text',
+             'player_assets', 'player_branding', 'package_cache']
+    ffmpeg = shutil.which('ffmpeg')
+    if not ffmpeg:
+        raise BuildError('FFmpeg is required for Android media and icons')
+    identity = {'recipe': inputs.file(Path(__file__)), 'runtime': runtime_identity(), 'assets': game_assets,
+                'resources': inputs.tree(root/'resources'), 'config': inputs.file(args.config),
+                'client': inputs.file(root/'bin/boufbowl-client-1.9.6.swf'),
+                'patches': inputs.tree(android/'patches'),
+                'common_patches': {p.name: inputs.file(p) for p in sorted((root/'patches').iterdir()) if p.is_file()},
+                'helpers': {name: inputs.file(root/('tools/'+name+'.py')) for name in tools},
+                'descriptor': inputs.file(android/'application.xml'), 'server_url': args.server_url,
+                'arch': args.arch, 'debug': args.debug, 'certificate': inputs.file(certificate),
+                'java': inputs.java(java), 'ffdec': inputs.tree(args.ffdec.parent),
+                'air_lib': inputs.tree(args.air_sdk/'lib'), 'air_bin': inputs.tree(args.air_sdk/'bin'),
+                'android_platforms': inputs.tree(args.android_sdk/'platforms'),
+                'android_build_tools': inputs.tree(args.android_sdk/'build-tools'),
+                'ffmpeg': inputs.tool(ffmpeg)}
+    fingerprint = digest(identity)
+    receipt = Receipt(root, 'package-android'+suffix)
+    if receipt.current(fingerprint, [output]):
+        print('Reusing Android package: '+output.name, flush=True)
+        if not args.no_website:
+            from tools.refresh_website import refresh_website
+            refresh_website(root, args.bun)
+        return output
+    print('Preparing Android package', flush=True)
     stage = build / "package"
     stage.mkdir(parents=True, exist_ok=True)
     (stage / "bin").mkdir(exist_ok=True)
-    for name in ("assets", "resources"):
-        target = stage / name
-        if target.exists():
-            shutil.rmtree(target)
-        # Website portraits and promotional media are not used by the game.
-        shutil.copytree(root / name, target, ignore=lambda directory, names: (
-            set(ignore_website_stadium_previews(directory, names))
-            | ({"site"} & set(names) if Path(directory) == root / "assets" else set())
-        ))
+    video_sources = sorted((asset_root/'videos').glob('*.flv'))
+    preserve = [source.relative_to(asset_root).with_suffix('.mp4') for source in video_sources]
+    asset_stats = sync_tree(asset_root, stage/'assets',
+                           include=lambda p: not p.is_relative_to(asset_root/'site')
+                           and not website_stadium_preview(p) and p not in video_sources,
+                           preserve=preserve)
+    resource_stats = sync_tree(root/'resources', stage/'resources')
+    print(f'Android staging: assets {asset_stats}; resources {resource_stats}', flush=True)
     build_icons(root, stage/"icons")
     apply_resources(stage / "resources", game_config)
     # Android's VP6 decoder produces artifacts on these legacy FLV clips.
     # Cache H.264/AAC copies; all original media stays intact in the desktop tree.
     video_cache = build / "video-cache"
     video_cache.mkdir(exist_ok=True)
+    video_options = ['-map', '0:v:0', '-map', '0:a?', '-c:v', 'libx264',
+                     '-profile:v', 'baseline', '-level', '3.1', '-pix_fmt', 'yuv420p',
+                     '-crf', '18', '-preset', 'fast', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart']
     def encode_video(source):
-        digest = hashlib.sha256(source.read_bytes()).hexdigest()
-        cached = video_cache / (source.stem + ".mp4")
-        stamp = video_cache / (source.stem + ".sha256")
-        if not cached.exists() or not stamp.exists() or stamp.read_text() != digest:
-            run(["ffmpeg", "-y", "-loglevel", "error", "-i", source,
-                 "-map", "0:v:0", "-map", "0:a?", "-c:v", "libx264",
-                 "-profile:v", "baseline", "-level", "3.1", "-pix_fmt", "yuv420p",
-                 "-crf", "18", "-preset", "fast", "-c:a", "aac", "-b:a", "128k",
-                 "-movflags", "+faststart", cached])
-            stamp.write_text(digest)
-        target = stage / "assets/videos" / cached.name
-        shutil.copyfile(cached, target)
-        (stage / "assets/videos" / source.name).unlink()
-    for _ in parallel(encode_video, (root/"assets/videos").glob("*.flv")):
+        key = digest({'source': inputs.file(source), 'options': video_options, 'ffmpeg': identity['ffmpeg']})
+        cached = video_cache/(source.stem+'.mp4')
+        video_receipt = Receipt(root, 'android-video/'+source.stem)
+        if not video_receipt.current(key, [cached]):
+            temporary = cached.with_name('.'+cached.stem+'.building.mp4')
+            run(['ffmpeg', '-y', '-loglevel', 'error', '-i', source, *video_options, temporary])
+            temporary.replace(cached)
+            video_receipt.save(key, [cached])
+        copy_changed(cached, stage/'assets/videos'/cached.name)
+    for _ in parallel(encode_video, video_sources):
         pass
     # AIR uses application URLs rather than the desktop HTTP server.
     for file in (stage / "resources").glob("*.json"):
@@ -150,13 +194,24 @@ def build(args, parser):
         flashvars = Path(temporary) / "FlashVarsManager.as"
         flashvars.write_text(flashvars_source((root / "patches/FlashVarsManager.as").read_text(), game_config))
         replacements.extend(["com.ankamagames.xgaming.utils.flashvars.FlashVarsManager", flashvars])
-        run([java, "-jar", args.ffdec.resolve(), "-replace", root / "bin" / swf_name,
-             stage / "bin" / swf_name, *replacements], timeout=600)
+        compile_key = digest({'client': identity['client'], 'ffdec': identity['ffdec'],
+                              'java': identity['java'], 'recipe': 1,
+                              'patches': [(replacements[i], inputs.file(replacements[i+1]))
+                                          for i in range(0, len(replacements), 2)]})
+        compile_receipt = Receipt(root, 'android-client/'+compile_key)
+        compiled = root/'.local/player-clients/android'/compile_key/'client.swf'
+        if not compile_receipt.current(compile_key, [compiled]):
+            print('Compiling Android client', flush=True)
+            compiled.parent.mkdir(parents=True, exist_ok=True)
+            temporary_client = compiled.with_suffix('.building.swf')
+            run([java, '-jar', args.ffdec.resolve(), '-replace', root/'bin'/swf_name,
+                 temporary_client, *replacements], timeout=600)
+            temporary_client.replace(compiled)
+            compile_receipt.save(compile_key, [compiled])
+        else:
+            print('Reusing compiled Android client', flush=True)
+        copy_changed(compiled, stage/'bin'/swf_name)
 
-    suffix = "" if args.arch == "armv8" else "-emulator-x64"
-    if args.debug:
-        suffix += "-debug"
-    output = build / ("Boufbowl Fan" + suffix + ".apk")
     temporary_output = output.with_name("." + output.stem + ".building.apk")
     run([java, "-Xmx2g", "-jar", adt, "-package", "-target", "apk-debug" if args.debug else "apk",
          "-arch", args.arch, "-storetype", "pkcs12", "-keystore", certificate,
@@ -164,6 +219,7 @@ def build(args, parser):
          "-C", stage, "bin/" + swf_name, "assets", "resources", "icons",
          "-platformsdk", args.android_sdk.resolve()], env=env)
     temporary_output.replace(output)
+    receipt.save(fingerprint, [output])
     print("Built", output, "— default server:", args.server_url, flush=True)
     if not args.no_website:
         from tools.refresh_website import refresh_website

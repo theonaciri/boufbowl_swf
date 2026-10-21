@@ -11,8 +11,14 @@ from tools.build_player_downloads import build
 from unittest.mock import patch
 
 
+def fake_executable(archive, *args):
+    output = archive.with_suffix('.exe')
+    output.write_bytes(b'executable')
+    return output
+
+
 class PlayerDownloadsTests(unittest.TestCase):
-    @patch('tools.build_player_downloads.windows_executable', side_effect=lambda archive, *args: archive.with_suffix('.exe'))
+    @patch('tools.build_player_downloads.windows_executable', side_effect=fake_executable)
     @patch('tools.build_player_downloads.desktop_client', side_effect=lambda root, *args, **kwargs: root/'bin/boufbowl-client-1.9.6.swf')
     def test_hosted_server_default_is_shared_and_required(self, compile_client, compile_wrapper):
         with tempfile.TemporaryDirectory() as directory:
@@ -33,8 +39,10 @@ class PlayerDownloadsTests(unittest.TestCase):
             (root/'resources/config.json').write_text('{}')
             (root/'icons').mkdir()
             (root/'icons/icon-256.png').write_bytes(b'icon')
+            (root/'icons/icon.ico').write_bytes(b'ico')
+            (root/'makensis').write_bytes(b'compiler')
             with patch('tools.build_player_downloads.build_icons', return_value=root/'icons'):
-                windows, linux = build(root)
+                windows, linux = build(root, makensis=root/'makensis')
             with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
                 launcher = archive.read('Boufbowl/Jouer.cmd').decode()
                 self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
@@ -51,7 +59,7 @@ class PlayerDownloadsTests(unittest.TestCase):
                 self.assertEqual(archive.extractfile('Boufbowl/resources/config.json').read(), b'{}')
                 self.assertNotIn('Boufbowl/assets/site/home.webp', archive.getnames())
 
-    @patch('tools.build_player_downloads.windows_executable', side_effect=lambda archive, *args: archive.with_suffix('.exe'))
+    @patch('tools.build_player_downloads.windows_executable', side_effect=fake_executable)
     @patch('tools.build_player_downloads.desktop_client', side_effect=lambda root, *args, **kwargs: root/'bin/boufbowl-client-1.9.6.swf')
     def test_remote_player_packages_include_game_assets(self, compile_client, compile_wrapper):
         with tempfile.TemporaryDirectory() as directory:
@@ -63,8 +71,19 @@ class PlayerDownloadsTests(unittest.TestCase):
             (root / 'resources').mkdir()
             (root/'icons').mkdir()
             (root/'icons/icon-256.png').write_bytes(b'icon')
+            (root/'icons/icon.ico').write_bytes(b'ico')
+            (root/'makensis').write_bytes(b'compiler')
             with patch('tools.build_player_downloads.build_icons', return_value=root/'icons'):
-                windows, linux = build(root, 'https://game.example')
+                windows, linux = build(root, 'https://game.example', makensis=root/'makensis')
+                first_mtimes = [path.stat().st_mtime_ns for path in (windows, linux)]
+                again = build(root, 'https://game.example', makensis=root/'makensis')
+                self.assertEqual(first_mtimes, [path.stat().st_mtime_ns for path in again])
+                self.assertEqual(compile_wrapper.call_count, 1)
+                (root/'assets/change.bin').write_bytes(b'new asset')
+                build(root, 'https://game.example', makensis=root/'makensis')
+                self.assertEqual(compile_wrapper.call_count, 2)
+                (root/'assets/change.bin').unlink()
+                build(root, 'https://game.example', makensis=root/'makensis')
             with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
                 self.assertEqual(set(archive.namelist()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
                 launcher = archive.read('Boufbowl/Jouer.cmd').decode()
@@ -84,3 +103,37 @@ class PlayerDownloadsTests(unittest.TestCase):
             for url in ('http://game.example', 'https://user:pass@game.example', 'https://game.example?query=1'):
                 with self.assertRaises(ValueError):
                     build(root, url)
+
+
+    @patch('tools.build_player_downloads.windows_executable', side_effect=fake_executable)
+    @patch('tools.build_player_downloads.desktop_client', side_effect=lambda root, *args, **kwargs: root/'bin/boufbowl-client-1.9.6.swf')
+    def test_tool_changes_exclusions_and_missing_outputs_invalidate_only_affected_packages(self, compile_client, compile_wrapper):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for folder in ('bin', 'resources', 'assets/site', 'assets/textures/stadiums', 'icons'):
+                (root/folder).mkdir(parents=True, exist_ok=True)
+            for name, data in {'bin/flashplayer_32_sa.exe': b'player', 'bin/boufbowl-client-1.9.6.swf': b'client',
+                               'icons/icon-256.png': b'icon', 'icons/icon.ico': b'ico', 'makensis': b'compiler'}.items():
+                (root/name).write_bytes(data)
+            with patch('tools.build_player_downloads.build_icons', return_value=root/'icons'):
+                def package(platforms=None):
+                    return build(root, 'https://game.example', makensis=root/'makensis', platforms=platforms)
+                windows, linux = package()
+                original_linux = linux.stat().st_mtime_ns
+                (root/'assets/site/website-only.webp').write_bytes(b'website')
+                (root/'assets/textures/stadiums/grass.avif').write_bytes(b'website preview')
+                package()
+                self.assertEqual(compile_wrapper.call_count, 1)
+                self.assertEqual(linux.stat().st_mtime_ns, original_linux)
+                (root/'makensis').write_bytes(b'new compiler')
+                package()
+                self.assertEqual(compile_wrapper.call_count, 2)
+                self.assertEqual(linux.stat().st_mtime_ns, original_linux)
+                windows.unlink()
+                package()
+                self.assertEqual(compile_wrapper.call_count, 3)
+                self.assertEqual(linux.stat().st_mtime_ns, original_linux)
+                linux.write_bytes(b'corrupt')
+                package(['linux'])
+                self.assertEqual(compile_wrapper.call_count, 3)
+                self.assertTrue(linux.read_bytes().startswith(b'#!/bin/sh'))
