@@ -1,5 +1,6 @@
 import {chromium} from 'playwright';
-import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {readFileSync,writeFileSync,mkdirSync,renameSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {join} from 'node:path';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
@@ -22,7 +23,7 @@ try{
   await page.waitForFunction(d=>{try{const s=window.p.ruffle().callExternalInterface('cinemaCreate',d.name,d.actors);if(String(s).startsWith('ERROR'))throw Error(s);return Number(s)>0}catch(e){if(String(e).includes('ERROR:'))throw e;return false}},data,{timeout:90000,polling:100});
   const count=Number(await page.evaluate(d=>window.p.ruffle().callExternalInterface('cinemaCreate',d.name,d.actors),data));
   const folder=join(directory,task.slug);mkdirSync(folder,{recursive:true});
-  const encoder=spawn('ffmpeg',['-y','-v','error','-f','image2pipe','-framerate','25','-c:v','png','-i','pipe:0','-an','-c:v','ffv1','-level','3','-threads','2',join(folder,'native.mkv')],{stdio:['pipe','inherit','inherit']});
+  const encoder=spawn('ffmpeg',['-y','-v','error','-f','image2pipe','-framerate','25','-c:v','png','-i','pipe:0','-an','-c:v','ffv1','-level','3','-threads','2',join(folder,'native.building.mkv')],{stdio:['pipe','inherit','inherit']});
   const completion=once(encoder,'close');
   const slots=new Set();const heroes=new Set();
   const started=performance.now();
@@ -60,7 +61,9 @@ try{
   }catch(error){encoder.kill();throw error}
   const expected=task.actors.map(a=>a.hero).sort((a,b)=>a-b);
   if(JSON.stringify([...heroes].sort((a,b)=>a-b))!==JSON.stringify(expected))throw Error('Legend cast was not rendered: '+JSON.stringify([...heroes]));
-  const metadata={...task,frames:count,seconds:count/25,verified_skin_labels:[...heroes],actor_slots:[...slots]};
+  renameSync(join(folder,'native.building.mkv'),join(folder,'native.mkv'));
+  const native_sha256=createHash('sha256').update(readFileSync(join(folder,'native.mkv'))).digest('hex');
+  const metadata={...task,native_sha256,frames:count,seconds:count/25,verified_skin_labels:[...heroes],actor_slots:[...slots]};
   writeFileSync(join(folder,'capture.json'),JSON.stringify(metadata,null,2));
   console.log('Captured',task.slug,count,'native vector frames');
  }

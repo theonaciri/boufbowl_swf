@@ -14,7 +14,7 @@ display pages, but cannot provide those interactive features.
 ## Build and publish
 
 ```sh
-bun run build
+bun run build:website
 bun run check:site
 ```
 

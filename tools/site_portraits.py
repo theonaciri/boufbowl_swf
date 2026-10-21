@@ -123,13 +123,16 @@ def capture_source(root=ROOT):
 
 
 def renderer_inputs(root=ROOT):
+    from tools.media_fingerprints import client_fingerprint, renderer_fingerprint
     root=Path(root)
     files=['tools/site_portrait_capture.as.inc','tools/site_portrait_capture.js',
            'patches/StartUpApplicationCommand.as','tools/game_config.py','tools/visual_assets.py',
            'bin/boufbowl-client-1.9.6.swf','resources/game_config.json','vendor/ruffle/ruffle.js','assets/artworks/cutscene-boufbowler-repository.swf',
            'assets/artworks/cutscene-illustration.swf']
     files += [p.relative_to(root).as_posix() for p in sorted((root/'vendor/ruffle').glob('*.wasm'))]
-    return {p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in files}
+    inputs = {p:client_fingerprint(root) if p=='bin/boufbowl-client-1.9.6.swf' else hashlib.sha256((root/p).read_bytes()).hexdigest() for p in files}
+    inputs['shared-renderer'] = renderer_fingerprint(root, [])
+    return inputs
 
 
 def render_fingerprint(task, inputs):

@@ -33,6 +33,7 @@ def main():
     parser.add_argument('--pose', action='append', choices=list(POSES), help='Render only this pose (repeatable)')
     parser.add_argument('--character', action='append', help='Render only this character ID (repeatable)')
     parser.add_argument('--force', action='store_true', help='Re-render every portrait')
+    parser.add_argument('--skip-images', action='store_true', help='Images already prepared by the website build')
     parser.add_argument('--check', action='store_true', help='Verify existing exports without rendering')
     args = parser.parse_args()
     try:
@@ -40,7 +41,8 @@ def main():
         args.java = str(java_binary(args.java))
     except BuildError as error:
         parser.error(str(error))
-    convert_site_avif()
+    if not args.skip_images:
+        convert_site_avif()
     directory = ROOT/'assets/site/restoration'
     settings = json.loads((ROOT/'resources/palettes.json').read_text())
     tasks = export_plan(audit()['characters'], settings)

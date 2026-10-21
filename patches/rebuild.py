@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Rebuild the game SWF from the preserved base client or an explicit archive."""
 import argparse
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -9,6 +10,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
+from tools.media_fingerprints import logic_fingerprint, file_hash
 from tools.build_tools import BuildError, ffdec_jar, java_binary
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -28,6 +30,8 @@ if not original.is_file():
 print("Rebuilding from", original, flush=True)
 config = load_config(args.config)
 config_source = args.config.read_bytes()
+logic = logic_fingerprint(root, original, args.config)
+palette_source = (root/"resources/palettes.json").read_bytes()
 classes = [
     "com.ankamagames.boufbowl.client.premiumservice.common.model.item.BoufbowlerPaletteItem",
     "com.ankamagames.boufbowl.client.match.strategic.controller.PlacementDragNDropCommand",
@@ -107,8 +111,11 @@ with tempfile.TemporaryDirectory(prefix=".tutorial-build-", dir=root / "bin") as
         str(java), "-jar", str(args.ffdec.resolve()), "-replace", str(original), str(output),
         *replacements,
     ], check=True, timeout=600)
-    if args.config.read_bytes() != config_source:
+    if args.config.read_bytes() != config_source or (root/"resources/palettes.json").read_bytes() != palette_source:
         raise RuntimeError("Configuration changed during compilation; rebuild with the updated file")
     output.replace(root / "bin" / output.name)
+receipt = root/".local/game-build.json"
+receipt.parent.mkdir(parents=True, exist_ok=True)
+receipt.write_text(json.dumps({"client": file_hash(root/"bin/boufbowl-client-1.9.6.swf"), "logic": logic})+"\n")
 apply_resources(root / "resources", config)
 print("Rebuilt", root / "bin/boufbowl-client-1.9.6.swf")

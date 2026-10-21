@@ -1,7 +1,13 @@
 # Build the game
 
-Run commands from the repository root. For a fresh checkout, use the same command
-as for later website edits: **`bun run build`**.
+Run commands from the repository root:
+
+```sh
+bun run build                 # Build the game only
+bun run build:website         # Build the website (including missing media)
+```
+
+The game command does not render website media or start Chromium.
 
 ## Tools and inputs
 
@@ -19,6 +25,7 @@ Arch Linux:
 sudo pacman -S --needed python jre17-openjdk ffmpeg libavif
 ```
 
+FFmpeg and `avifenc` are needed only for website media, not the game build.
 FFmpeg must support libx264, libaom-av1, libsvtav1, and libwebp; `avifenc` must
 support `--qcolor`. Distribution packages on current systems normally provide them.
 
@@ -35,7 +42,7 @@ It is a previously patched baseline; no untouched historical binary is verified.
 ## Build the website
 
 ```sh
-bun run build
+bun run build:website
 ```
 
 This command, in order:
@@ -47,7 +54,7 @@ This command, in order:
    including legal pages, robots.txt, sitemap.xml, and download size labels.
 
 The result is **`.local/website/dist/`**, ready for your static web server.
-Existing media is reused. A first build can take a long time because it renders
+Changed media inputs are detected automatically; unchanged media is reused. A first build can take a long time because it renders
 and encodes the recovered game assets. Run the same command again after a
 failure; completed work stays cached. Failed steps stop the process immediately.
 
@@ -60,11 +67,11 @@ for the generated HTML. [Hosting](HOSTING.md) explains serving the output.
 To rebuild the game after changing ActionScript or game configuration:
 
 ```sh
-bun run build:game
+bun run build
 ```
 
 This finds the same tools and builds the SWF/runtime files without rendering the
-website. Follow it with `bun run build` when you also need website delivery.
+website. Follow it with `bun run build:website` when you also need website delivery.
 For native desktop play, supply `bin/flashplayer_32_sa.exe` (not included in Git),
 install Wine with 32-bit support, and run `./play.sh --mode server` in a graphical
 session. The web build does not require Wine or the standalone Flash player.
@@ -128,7 +135,7 @@ website after changing the server URL or game assets. Desktop and Android build
 commands automatically run the Bun website compiler after creating their bundles,
 refreshing published files, versioned download links, and French size labels. Use
 `--no-website` only to defer delivery (for example before the first media export);
-then run `bun run build` once those inputs are ready. `--bun` selects Bun’s path.
+then run `bun run build:website` once those inputs are ready. `--bun` selects Bun’s path.
 
 For the separate Linux development bundle:
 

@@ -47,7 +47,8 @@ def build(root, characters, ffdec=None, java='java', force=False, check=False):
         raise ValueError('Character roster and native grid icons do not match')
     directory = root/'assets/site/restoration/grid-icons'
     manifest_path = directory/'manifest.json'
-    fingerprint = hashlib.sha256(source.read_bytes()+Path(__file__).read_bytes()).hexdigest()
+    from tools.media_fingerprints import client_fingerprint
+    fingerprint = hashlib.sha256(client_fingerprint(root).encode()+Path(__file__).read_bytes()).hexdigest()
     previous = json.loads(manifest_path.read_text()) if manifest_path.is_file() else {}
     valid = previous.get('fingerprint') == fingerprint and set(previous.get('files', {})) == {str(i) for i in expected}
     for key, digest in previous.get('files', {}).items():

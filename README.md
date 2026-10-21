@@ -11,25 +11,28 @@ The French website serves the browser client, downloads, and restoration tools.
 - [Binary](docs/BINARY.md): find functions, export AS3/assets, and patch the SWF.
 - [Server](docs/SERVER.md): configuration, accounts, administration, and backups.
 
-## Build the website
+## Build
 
 Install the [system prerequisites](docs/BUILD.md#tools-and-inputs), then run from
 the repository root:
 
 ```sh
-bun run build
+bun run build                 # Game client and runtime files only
+bun run build:website         # Static website and any missing website media
+bun run serve:website         # Serve the built website at http://127.0.0.1:9900
 ```
 
-The build finds/downloads FFDec, prepares a missing game client and website media,
-and generates **`.local/website/dist/`**. Serve that folder with a static web
-server; [Hosting](docs/HOSTING.md) explains Nginx and the separate game API.
-First builds can take a long time; existing media is reused on later builds.
-You do not need `FFDEC_JAR`, manual file copies, or a separate legal-page build.
+Both commands find/download FFDec when needed. The game build does not render
+website media or start Chromium. The website command reuses the game client,
+preparing it first only if missing, and generates **`.local/website/dist/`**.
+First website builds can take a long time; later builds automatically refresh changed media and reuse unchanged exports.
+Serve that folder with a static web server; [Hosting](docs/HOSTING.md) explains
+Nginx and the separate game API. No manual file copies or legal-page build needed.
 
 For native desktop development (with Wine and the standalone Flash player):
 
 ```sh
-bun run build:game
+bun run build
 ./play.sh --mode server
 ```
 

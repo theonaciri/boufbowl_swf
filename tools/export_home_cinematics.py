@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import threading
+from tools.media_fingerprints import renderer_fingerprint, read_json, file_hash
 from tools.game_config import load_config, startup_source
 from tools.build_tools import ffdec_jar, java_binary
 from tools.site_portraits import ROOT, export_plan
@@ -54,11 +55,7 @@ def main():
     startup=work/'StartUpApplicationCommand.as';startup.write_text(source)
     fingerprint=hashlib.sha256(source.encode()+(ROOT/'bin/boufbowl-client-1.9.6.swf').read_bytes()).hexdigest()
     capture=work/'capture.swf';stamp=work/'capture.sha256'
-    if not capture.exists() or not stamp.exists() or stamp.read_text()!=fingerprint:
-        java=java_binary()
-        ffdec=ffdec_jar()
-        subprocess.run([str(java),'-jar',str(ffdec),'-replace',str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
-        stamp.write_text(fingerprint)
+    dependencies=renderer_fingerprint(ROOT, ['tools/site_cinematic_capture.as.inc', 'tools/website/cinematics.mjs', 'assets/artworks/cutscene-illustration.swf'])
     inventory=json.loads((ROOT/'assets/site/restoration/inventory.json').read_text())
     palette_plan=export_plan(inventory['characters'],json.loads((ROOT/'resources/palettes.json').read_text()))
     tasks=[]
@@ -72,7 +69,7 @@ def main():
                            'team':0 if hero==508 else (0x3578cf if index==0 else 0xd14b33)})
         task={'slug':slug,'name':symbol,'actors':actors,'width':2560,'height':1500,'native_fps':25,'fps':60,
               'base':f'cinematic-{slug}-{VERSION}'}
-        task['fingerprint']=hashlib.sha256(json.dumps(task,sort_keys=True).encode()+fingerprint.encode()+(ROOT/'assets/artworks/cutscene-illustration.swf').read_bytes()+(ROOT/'tools/website/cinematics.mjs').read_bytes()).hexdigest()
+        task['fingerprint']=hashlib.sha256(json.dumps(task,sort_keys=True).encode()+dependencies.encode()+(ROOT/'assets/artworks/cutscene-illustration.swf').read_bytes()+(ROOT/'tools/website/cinematics.mjs').read_bytes()).hexdigest()
         if args.scene and slug not in args.scene:continue
         tasks.append(task)
     assert len({a['hero'] for t in tasks for a in t['actors']})==sum(len(t['actors']) for t in tasks)
@@ -80,9 +77,17 @@ def main():
     pending=[]
     for task in tasks:
         metadata=work/task['slug']/'capture.json'
-        if args.force or not metadata.exists() or json.loads(metadata.read_text()).get('fingerprint')!=task['fingerprint']:
+        saved=read_json(metadata, {})
+        native=metadata.parent/'native.mkv'
+        if (args.force or saved.get('fingerprint')!=task['fingerprint'] or not native.is_file()
+                or saved.get('native_sha256')!=file_hash(native)):
             pending.append(task)
     if pending and not args.encode_only:
+        if not capture.exists() or not stamp.exists() or stamp.read_text()!=fingerprint:
+            java=java_binary()
+            ffdec=ffdec_jar()
+            subprocess.run([str(java),'-jar',str(ffdec),'-replace',str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
+            stamp.write_text(fingerprint)
         (work/'pending.json').write_text(json.dumps(pending))
         class Handler(SimpleHTTPRequestHandler):
             def __init__(self,*a,**kw):super().__init__(*a,directory=str(ROOT),**kw)
@@ -100,14 +105,16 @@ def main():
     if args.capture_only:return
     for task in tasks:
         folder=work/task['slug'];metadata=json.loads((folder/'capture.json').read_text())
-        if metadata['fingerprint']!=task['fingerprint']:raise ValueError('Stale capture: '+task['slug'])
+        if (metadata['fingerprint']!=task['fingerprint'] or not (folder/'native.mkv').is_file()
+                or metadata.get('native_sha256')!=file_hash(folder/'native.mkv')):
+            raise ValueError('Stale capture: '+task['slug'])
         target=output/f'cinematic-{task["slug"]}-{EXPORT_VERSION}';av1=target.with_suffix('.av1.mp4');fallback=target.with_suffix('.mp4');avif=target.with_suffix('.avif')
         native=folder/'native.mkv'
         prior=folder/'export.json'
         if not args.force and prior.exists():
             saved=json.loads(prior.read_text())
             exports={k:v for k,v in saved.get('exports',{}).items() if k in ('avif','av1','h264')}
-            if saved.get('fingerprint')==task['fingerprint'] and saved.get('encoding')==ENCODING and saved.get('base')==target.name and set(exports)=={'avif','av1','h264'} and all((ROOT/e['path']).is_file() and (ROOT/e['path']).stat().st_size==e['bytes'] for e in exports.values()):
+            if saved.get('fingerprint')==task['fingerprint'] and saved.get('encoding')==ENCODING and saved.get('base')==target.name and set(exports)=={'avif','av1','h264'} and all((ROOT/e['path']).is_file() and (ROOT/e['path']).stat().st_size==e['bytes'] and file_hash(ROOT/e['path'])==e['sha256'] for e in exports.values()):
                 saved['exports']=exports
                 saved.pop('poster_frame',None)
                 (folder/'export.json').write_text(json.dumps(saved,ensure_ascii=False,indent=2)+'\n')

@@ -12,19 +12,34 @@ The build leaves source pages untouched; generated output stays out of Git.
 After installing the [system prerequisites](BUILD.md#tools-and-inputs), run:
 
 ```sh
-bun run build
+bun run build:website
 ```
 
 This is also the command for a fresh checkout: it prepares the game client and
 missing media before compiling the website. No FFDec environment variable or
 manual command sequence is needed. First builds download FFDec and renderer tools
-and can take a long time; subsequent frontend builds reuse the existing inputs.
-The generated site is **`.local/website/dist/`**.
+and can take a long time; subsequent builds refresh changed media inputs and reuse unchanged exports.
+The generated site is **`.local/website/dist/`**. Serve it locally with:
+
+```sh
+bun run serve:website
+```
+
+Open **http://127.0.0.1:9900**. This serves the existing build without rebuilding it.
+The game API must run separately for interactive features. Stop with Ctrl+C.
+Choose another port or expose it to your local network with:
+
+```sh
+bun run serve:website --port 8080
+bun run serve:website --host 0.0.0.0
+```
+
+Use `--directory /path/to/public` to serve a custom website output directory.
 
 For another output directory:
 
 ```sh
-bun run build --output /path/to/public
+bun run build:website --output /path/to/public
 ```
 
 The compiler is `tools/website/build.mjs`; it renders the legal Markdown pages,
@@ -42,19 +57,30 @@ for the logo and 768/1024 px for the tutorial poster. `srcset`/`sizes` retain th
 full 630/1024-pixel candidates for dense screens. The poster's cover crop is
 included in its source-size calculation to avoid upscaling undersized images.
 
-## Regenerate existing media
+## Automatic media updates
 
-For changes to capture code, palettes, or media encoders, run:
+The same `bun run build:website` command detects changes to media inputs, palettes,
+capture code, and encoding settings. After a character's default colors change,
+only that character's portraits, cinematic scenes containing that character, and
+its puppet demo (if one exists) are rendered again. Shared palettes can affect
+several characters. Other scenes and characters reuse their existing exports.
+A palette-only `bun run build` also preserves this reuse: the game build records
+its palette-independent renderer identity in `.local/game-build.json`. Unrecognized
+or manually replaced client SWFs conservatively invalidate the rendering cache.
 
-```sh
-bun run build:media
-```
+Logo and stadium AVIFs are cached separately by source image and encoding recipe;
+character color changes do not reconvert them. Tutorial videos are independent.
+HTML/CSS/JavaScript-only changes compile the static site without rendering media.
 
-This refreshes all exporters using their caches and finishes with the same Bun
-compiler. To rebuild ActionScript first, run `bun run build:game`.
-Renderer packages and Chromium are installed by the orchestrator when media is missing.
-If Chromium reports missing Linux shared libraries, install the libraries it
-lists; on Ubuntu/Debian the Playwright helper is available from `tools/website`
+Stage fingerprints live in `.local/website/media-stages.json`; individual render
+receipts and image fingerprints live alongside their capture caches under
+`.local/`. Puppet captures and encodes are cached separately, so encoding changes
+reuse native frames. Keep these caches between builds. The first build using the
+new fingerprints refreshes existing exports once; later builds reuse them.
+
+Renderer packages and Chromium are prepared only when a rendering stage needs an
+update. If Chromium reports missing Linux shared libraries, install the libraries
+it lists; on Ubuntu/Debian the Playwright helper is available from `tools/website`
 with `bunx playwright install-deps chromium`.
 
 The following modules remain available for targeted advanced work. Their normal
@@ -103,7 +129,7 @@ still use `/api/`, which Nginx proxies to the Python backend on port 9901.
 Browsing static pages does not require the API; interactive server features do.
 
 ```sh
-bun run build
+bun run build:website
 bun run check:site
 curl -I http://127.0.0.1:9900/
 curl -fsS http://127.0.0.1:9900/api/health
@@ -159,7 +185,7 @@ The six files in `docs/legal/` are French legal-page sources with explicit
 them as final. Their content does not implement consent, deletion, or retention.
 
 ```sh
-bun run build
+bun run build:website
 bun run check:site
 ```
 

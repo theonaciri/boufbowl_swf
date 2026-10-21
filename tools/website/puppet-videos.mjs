@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, writeFileSync, readdirSync, unlinkSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 const directory=process.argv[3];
 const tasks=JSON.parse(readFileSync(join(directory,'tasks.json'),'utf8'));
@@ -53,7 +54,10 @@ try {
      if(!png||png.startsWith('ERROR:'))throw Error(png);
      writeFileSync(join(path,String(index).padStart(4,'0')+'.png'),Buffer.from(png,'base64'));
    }
-   results.push({...task,frames,...state});
+   const images=Object.fromEntries(readdirSync(path).filter(name=>/^\d{4}\.png$/.test(name)).sort().map(name=>[name,createHash('sha256').update(readFileSync(join(path,name))).digest('hex')]));
+   const captured={...task,frames,...state,images};
+   writeFileSync(join(path,'capture.json'),JSON.stringify(captured,null,2));
+   results.push(captured);
    writeFileSync(join(directory,'frames.json'),JSON.stringify(results,null,2));
    console.log('Captured',task.id,frames,'native frames');
  }

@@ -139,7 +139,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
     }
     const client = "bin/boufbowl-client-1.9.6.swf";
     const clientFile = await downloadFile(root, client);
-    if (!clientFile) throw new Error("Missing " + client + ". Run bun run build from the repository root; it prepares the game and missing media automatically.");
+    if (!clientFile) throw new Error("Missing " + client + ". Run bun run build for the game, then bun run build:website for the website.");
     await record(client, await fs.readFile(clientFile));
     for (const [source, name] of Object.values(DOWNLOADS)) {
       const filename = await downloadFile(root, source);
