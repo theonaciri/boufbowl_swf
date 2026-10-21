@@ -14,6 +14,7 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.build_parallel import build_budget, cpu_run, parallel
+from tools.build_tools import BuildError, air_sdk, android_sdk, jdk_directory, ffdec_jar, remember_build_tools
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 from tools.player_server import player_server
@@ -53,11 +54,11 @@ def local_signing_password(certificate):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs", type=int, help="Maximum CPU jobs (default: available CPUs)")
-    parser.add_argument("--air-sdk", type=Path, required=True)
+    parser.add_argument("--air-sdk", type=Path, help="Override automatic AIR SDK discovery")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
-    parser.add_argument("--ffdec", type=Path, required=True)
-    parser.add_argument("--android-sdk", type=Path, default=Path.home() / "Android/Sdk")
-    parser.add_argument("--jdk", type=Path, required=True, help="JDK 17 or newer directory")
+    parser.add_argument("--ffdec", type=Path, help="Override automatic FFDec discovery/download")
+    parser.add_argument("--android-sdk", type=Path, help="Override automatic Android SDK discovery")
+    parser.add_argument("--jdk", type=Path, help="Override automatic JDK 17+ discovery")
     parser.add_argument("--arch", choices=("armv8", "x64"), default="armv8")
     parser.add_argument("--server-url", help="Override resources/site.json hosted server")
     parser.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime")
@@ -67,6 +68,14 @@ def main():
     args = parser.parse_args()
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
+    try:
+        args.air_sdk = air_sdk(args.air_sdk)
+        args.android_sdk = android_sdk(args.android_sdk)
+        args.jdk = jdk_directory(args.jdk)
+        args.ffdec = ffdec_jar(args.ffdec, download=True)
+    except BuildError as error:
+        parser.error(str(error))
+    remember_build_tools(**{'AIR SDK': args.air_sdk, 'Android SDK': args.android_sdk, 'JDK': args.jdk})
     with build_budget(args.jobs):
         build(args, parser)
 

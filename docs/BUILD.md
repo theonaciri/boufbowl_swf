@@ -230,13 +230,35 @@ python3 -m tools.build_player_downloads --jobs 4
 To build Windows, Linux, and Android together with one shared CPU budget:
 
 ```sh
+bun run build:players
+```
+
+The command discovers installed AIR/Android SDKs and a full JDK automatically.
+It checks the Boufbowl tool cache (`$XDG_CACHE_HOME/boufbowl-flash-tools`, normally
+`~/.cache/boufbowl-flash-tools`), remembered paths, standard installation folders,
+and `adt`/`sdkmanager` on PATH. Common locations include `~/AIRSDK`, `/opt/AIRSDK`,
+`~/Android/Sdk`, and `/usr/lib/jvm/`. Android discovery requires installed platform
+and build-tools directories.
+
+For tools installed elsewhere, supply their paths once:
+
+```sh
 bun run build:players \
   --air-sdk /path/to/AIRSDK \
   --android-sdk /path/to/Android/Sdk \
   --jdk /path/to/jdk-17
 ```
 
-`AIR_SDK` and `ANDROID_HOME` can supply SDK paths. Java/FFDec use normal automatic
-discovery, with `--jdk` and `--ffdec` available as overrides. The Android SDK must
-already be installed. The shared game client is prepared first if missing, then
-all three downloads are built before the website is refreshed once. `--jobs N` limits their combined concurrency; `--no-website` defers the refresh.
+Resolved SDK/JDK paths are remembered locally in `.local/build-tools.json`, which
+is ignored by Git. `AIR_SDK`/`AIRSDK_HOME`/`AIR_HOME`, `ANDROID_HOME`/`ANDROID_SDK_ROOT`,
+and `JAVA_HOME`/`JDK_HOME` are also supported. Explicit flags and SDK environment
+variables take precedence; a stale remembered path falls back to discovery.
+
+AIR and Android SDKs must already be installed; discovery does not download them.
+For AIR, extracting the SDK into `~/.cache/boufbowl-flash-tools/air-sdk` makes it
+available automatically. FFDec is downloaded when missing. The standalone
+`python3 android/build.py` command uses the same discovery and remembered paths.
+
+The shared game client is prepared first if missing, then all three downloads are
+built before the website is refreshed once. `--jobs N` limits combined concurrency;
+`--no-website` defers the refresh.

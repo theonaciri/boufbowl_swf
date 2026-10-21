@@ -76,3 +76,115 @@ def java_binary(explicit=None):
         if result.returncode == 0 and match and int(match[1]) >= 17:
             return Path(resolved).resolve()
     raise BuildError('Java 17+ is missing. Ubuntu/Debian: sudo apt install openjdk-17-jre-headless. Arch: sudo pacman -S jre17-openjdk.')
+
+
+def _version_key(path):
+    return tuple((1, int(part)) if part.isdigit() else (0, part.lower())
+                 for part in re.split(r'(\d+)', str(path)))
+
+
+def _saved_tool(name):
+    import json
+    try:
+        saved = json.loads((Path(__file__).resolve().parent.parent/'.local/build-tools.json').read_text())
+        return saved.get(name) if isinstance(saved, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _find_sdk(name, explicit, environment, candidates, valid, hint):
+    # A supplied override must be valid; stale automatically saved paths can fall back.
+    override = explicit or next((os.environ[key] for key in environment if os.environ.get(key)), None)
+    if override:
+        path = Path(override).expanduser().resolve()
+        if not valid(path):
+            raise BuildError(f'{name} is incomplete or missing at {path}. {hint}')
+        return path
+    for candidate in [_saved_tool(name), *candidates]:
+        if candidate:
+            path = Path(candidate).expanduser().resolve()
+            if valid(path):
+                return path
+    raise BuildError(f'{name} was not found in the project, tool cache, or standard installation folders. {hint}')
+
+
+def air_sdk(explicit=None):
+    root = Path(__file__).resolve().parent.parent
+    candidates = [
+        *sorted(CACHE.glob('air-sdk*'), key=_version_key, reverse=True), CACHE/'AIRSDK',
+        *sorted(Path('/opt').glob('air-sdk*'), key=_version_key, reverse=True),
+        *sorted((root/'.local').glob('air-sdk*'), key=_version_key, reverse=True),
+        root/'.local/AIRSDK', root/'.local/air-sdk', root/'.local/tools/AIRSDK',
+        root/'AIRSDK', root/'air-sdk',
+        Path.home()/'AIRSDK', Path.home()/'air-sdk', Path.home()/'SDKs/AIRSDK',
+        Path.home()/'sdk/AIRSDK', Path.home()/'.local/share/AIRSDK',
+        '/opt/AIRSDK', '/opt/air-sdk', '/opt/airsdk', '/usr/local/lib/airsdk', '/usr/share/airsdk',
+    ]
+    adt = shutil.which('adt')
+    if adt:
+        candidates.insert(0, Path(adt).resolve().parent.parent)
+    return _find_sdk('AIR SDK', explicit, ('AIR_SDK', 'AIRSDK_HOME', 'AIR_HOME'), candidates,
+                     lambda path: (path/'lib/adt.jar').is_file(),
+                     f'Install/extract the AIR SDK into {CACHE}/air-sdk, or pass --air-sdk /path/to/AIRSDK once; the path is remembered.')
+
+
+def android_sdk(explicit=None):
+    root = Path(__file__).resolve().parent.parent
+    candidates = [
+        CACHE/'android-sdk', root/'.local/android-sdk',
+        Path.home()/'Android/Sdk', Path.home()/'Android/sdk',
+        Path.home()/'.android/sdk', Path.home()/'Library/Android/sdk',
+        '/opt/android-sdk', '/opt/android-sdk-linux', '/usr/lib/android-sdk', '/usr/share/android-sdk',
+    ]
+    sdkmanager = shutil.which('sdkmanager')
+    if sdkmanager:
+        candidates = [*Path(sdkmanager).resolve().parents, *candidates]
+    return _find_sdk('Android SDK', explicit, ('ANDROID_HOME', 'ANDROID_SDK_ROOT'), candidates,
+                     lambda path: (path/'platforms').is_dir() and (path/'build-tools').is_dir(),
+                     'Install Android SDK platforms and build tools, or pass --android-sdk /path/to/Android/Sdk once; the path is remembered.')
+
+
+def jdk_directory(explicit=None):
+    executable = 'java.exe' if os.name == 'nt' else 'java'
+    compiler = 'javac.exe' if os.name == 'nt' else 'javac'
+    if explicit:
+        path = Path(explicit).expanduser().resolve()
+        if not (path/'bin'/compiler).is_file() or not (path/'bin'/executable).is_file():
+            raise BuildError(f'A full JDK 17+ is required at {path}; pass --jdk /path/to/jdk-17.')
+        if java_binary(path/'bin'/executable) != (path/'bin'/executable).resolve():
+            raise BuildError(f'The JDK at {path} is older than Java 17; pass --jdk /path/to/jdk-17.')
+        return path
+    candidates = [_saved_tool('JDK'), os.environ.get('JDK_HOME'), os.environ.get('JAVA_HOME')]
+    try:
+        candidates.append(java_binary().parent.parent)
+    except BuildError:
+        pass
+    candidates += [*sorted(CACHE.glob('jdk-*/*'), key=_version_key, reverse=True),
+                   *sorted(CACHE.glob('jdk-*'), key=_version_key, reverse=True),
+                   *sorted(Path('/usr/lib/jvm').glob('*'), key=_version_key, reverse=True)]
+    for candidate in candidates:
+        if candidate:
+            path = Path(candidate).expanduser().resolve()
+            if (path/'bin'/compiler).is_file() and (path/'bin'/executable).is_file():
+                try:
+                    if java_binary(path/'bin'/executable) == (path/'bin'/executable).resolve():
+                        return path
+                except BuildError:
+                    pass
+    raise BuildError('A full JDK 17+ is required for Android packaging. Ubuntu/Debian: sudo apt install openjdk-17-jdk-headless. Or pass --jdk /path/to/jdk-17.')
+
+
+def remember_build_tools(**paths):
+    import json
+    destination = Path(__file__).resolve().parent.parent/'.local/build-tools.json'
+    try:
+        saved = json.loads(destination.read_text())
+        if not isinstance(saved, dict):
+            saved = {}
+    except (OSError, ValueError):
+        saved = {}
+    saved.update({key: str(Path(value).resolve()) for key, value in paths.items()})
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix('.building.json')
+    temporary.write_text(json.dumps(saved, indent=2)+'\n')
+    temporary.replace(destination)

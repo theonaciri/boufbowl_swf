@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 from tools.build_parallel import build_budget, parallel
-from tools.build_tools import ffdec_jar, java_binary
+from tools.build_tools import BuildError, ffdec_jar, air_sdk, android_sdk, jdk_directory, remember_build_tools
 from tools.refresh_website import refresh_website
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--air-sdk', type=Path, default=os.environ.get('AIR_SDK'))
-    parser.add_argument('--android-sdk', type=Path, default=Path(os.environ.get('ANDROID_HOME', Path.home()/'Android/Sdk')))
+    parser.add_argument('--air-sdk', type=Path, help='AIR SDK override; otherwise discover installed SDKs automatically')
+    parser.add_argument('--android-sdk', type=Path, help='Android SDK override; otherwise discover installed SDKs automatically')
     parser.add_argument('--jdk', type=Path, help='JDK 17+ directory; otherwise use Java from the normal tool cache/PATH')
     parser.add_argument('--ffdec', type=Path)
     parser.add_argument('--server-url')
@@ -27,15 +27,16 @@ def main():
     args = parser.parse_args()
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
-    if not args.air_sdk or not (args.air_sdk/'lib/adt.jar').is_file():
-        parser.error('Pass --air-sdk /path/to/AIRSDK or set AIR_SDK to an installed AIR SDK.')
-    if not args.android_sdk.is_dir():
-        parser.error('Pass --android-sdk /path/to/Android/Sdk or set ANDROID_HOME.')
-    java = java_binary(args.jdk/'bin/java' if args.jdk else None)
-    jdk = args.jdk or java.resolve().parent.parent
-    if not (jdk/'bin/javac').is_file():
-        parser.error('Android packaging needs a full JDK; pass --jdk /path/to/jdk-17.')
-    ffdec = ffdec_jar(args.ffdec, download=True)
+    try:
+        args.air_sdk = air_sdk(args.air_sdk)
+        args.android_sdk = android_sdk(args.android_sdk)
+        jdk = jdk_directory(args.jdk)
+        java = jdk/('bin/java.exe' if os.name == 'nt' else 'bin/java')
+        ffdec = ffdec_jar(args.ffdec, download=True)
+    except BuildError as error:
+        parser.error(str(error))
+    remember_build_tools(**{'AIR SDK': args.air_sdk, 'Android SDK': args.android_sdk, 'JDK': jdk})
+    print(f'AIR SDK: {args.air_sdk}\nAndroid SDK: {args.android_sdk}\nJDK: {jdk}\nFFDec: {ffdec}', flush=True)
     desktop = [sys.executable, '-m', 'tools.build_player_downloads', '--java', java,
                '--ffdec', ffdec, '--no-website']
     android = [sys.executable, 'android/build.py', '--jdk', jdk, '--ffdec', ffdec,
