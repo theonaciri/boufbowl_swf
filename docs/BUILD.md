@@ -171,8 +171,26 @@ binaries or emulation.
 
 Keep the signing certificate for updates. The default lives under
 `~/.cache/boufbowl-flash-tools/android-signing/local.p12`; its random password is
-stored beside it in `local.password` with mode 0600. For a custom certificate,
-set `BOUFBOWL_KEYSTORE_PASSWORD` and pass `--keystore /path/to/key.p12`.
+stored beside it in `local.password` with mode 0600. Keep both files when moving
+build tools between machines.
+
+Signing credentials are checked before compilation starts. If an older certificate
+has no password file, the script checks the historical development password from
+available Git history against that certificate. Only a verified match is saved to
+`local.password`; the existing certificate is preserved. With a shallow clone or
+an unrelated certificate, run from an interactive terminal to enter its password
+privately. The default certificate's verified password is remembered for later builds.
+If the password is unknown and the legacy migration does not match, the script
+cannot recover it and stops without replacing the certificate.
+
+For a custom certificate, pass `--keystore /path/to/key.p12`. Its password can come
+from `BOUFBOWL_KEYSTORE_PASSWORD`, an adjacent `.password` file, or a private terminal
+prompt. Automated builds must provide the environment variable or password file.
+The build never prints passwords or includes them in its Python error messages.
+
+The combined player build also checks NSIS, FFmpeg, and the desktop Flash player
+before starting package jobs. Platform failures are summarized separately, without
+an additional Python traceback; successfully built downloads are kept.
 
 ## Check changes and refresh
 

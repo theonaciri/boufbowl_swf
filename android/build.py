@@ -6,7 +6,6 @@ import json
 import os
 from pathlib import Path
 import re
-import secrets
 import shutil
 import subprocess
 import sys
@@ -18,6 +17,7 @@ from tools.build_tools import BuildError, air_sdk, android_sdk, jdk_directory, f
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 from tools.player_server import player_server
+from tools.android_signing import signing_credentials
 from tools.player_branding import build_icons
 from tools.player_assets import ignore_website_stadium_previews
 
@@ -28,27 +28,6 @@ def run(command, *, env=None, timeout=600):
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         # Packaging arguments contain the signing password.
         raise RuntimeError("Build command failed: " + Path(command[0]).name) from None
-
-
-def local_signing_password(certificate):
-    """Keep the local signing password beside the certificate, outside Git."""
-    override = os.environ.get("BOUFBOWL_KEYSTORE_PASSWORD")
-    if override:
-        return override
-    password_file = certificate.with_suffix(".password")
-    if password_file.is_file():
-        password = password_file.read_text().strip()
-        if not password:
-            raise ValueError("The local signing password file is empty.")
-        password_file.chmod(0o600)
-        return password
-    if certificate.exists():
-        raise ValueError("Existing signing certificate needs BOUFBOWL_KEYSTORE_PASSWORD or its local .password file. Keep the certificate to preserve app updates.")
-    password = secrets.token_urlsafe(32)
-    descriptor = os.open(password_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(descriptor, "w") as output:
-        output.write(password + "\n")
-    return password
 
 
 def main():
@@ -87,6 +66,15 @@ def build(args, parser):
         args.server_url = player_server(root, args.server_url)
     except ValueError as error:
         parser.error(str(error))
+    certificate, password = signing_credentials(args.jdk, args.keystore)
+    java = args.jdk.resolve() / 'bin/java'
+    env = dict(os.environ, JAVA_HOME=str(args.jdk.resolve()))
+    adt = args.air_sdk.resolve() / 'lib/adt.jar'
+    if not certificate.exists():
+        run([java, '-jar', adt, '-certificate', '-cn', 'Boufbowl Fan',
+             '2048-RSA', certificate, password], env=env)
+    if not args.keystore:
+        certificate.chmod(0o600)
     game_config = load_config(args.config)
     game_config['general']['startup_mode'] = 'server'
     build = android / "build"
@@ -140,9 +128,6 @@ def build(args, parser):
         '<root><level value="WARN"/><appender-ref ref="STDOUT"/>'
         '</root></configuration>')
 
-    java = args.jdk.resolve() / "bin/java"
-    env = dict(os.environ, JAVA_HOME=str(args.jdk.resolve()))
-    adt = args.air_sdk.resolve() / "lib/adt.jar"
     swf_name = "boufbowl-client-1.9.6.swf"
     replacements = []
     sources_by_name = {source.name: source for source in (root / "patches").glob("*.as")}
@@ -168,23 +153,6 @@ def build(args, parser):
         run([java, "-jar", args.ffdec.resolve(), "-replace", root / "bin" / swf_name,
              stage / "bin" / swf_name, *replacements], timeout=600)
 
-    if args.keystore:
-        certificate = args.keystore.resolve()
-        password = os.environ.get("BOUFBOWL_KEYSTORE_PASSWORD")
-        if not password:
-            parser.error("Set BOUFBOWL_KEYSTORE_PASSWORD for your certificate.")
-    else:
-        cache = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
-        certificate = cache / "boufbowl-flash-tools/android-signing/local.p12"
-        certificate.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            password = local_signing_password(certificate)
-        except ValueError as error:
-            parser.error(str(error))
-        if not certificate.exists():
-            run([java, "-jar", adt, "-certificate", "-cn", "Boufbowl Fan",
-                 "2048-RSA", certificate, password], env=env)
-        certificate.chmod(0o600)
     suffix = "" if args.arch == "armv8" else "-emulator-x64"
     if args.debug:
         suffix += "-debug"
@@ -203,4 +171,11 @@ def build(args, parser):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (BuildError, RuntimeError, OSError) as error:
+        print(f'Android build stopped: {error}', file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print('Android build interrupted.', file=sys.stderr)
+        sys.exit(130)

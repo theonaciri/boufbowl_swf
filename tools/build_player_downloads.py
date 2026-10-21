@@ -12,7 +12,7 @@ from tools.build_parallel import build_budget, cpu_job, cpu_run, parallel
 from tools.player_server import player_server
 from tools.player_branding import build_icons
 from tools.player_assets import website_stadium_preview
-from tools.build_tools import ffdec_jar, java_binary
+from tools.build_tools import BuildError, ffdec_jar, java_binary
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -177,7 +177,7 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None):
     return [outputs['windows'], outputs['linux']]
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--jobs', type=int, help='Maximum concurrent CPU jobs (default: available CPUs)')
     parser.add_argument('--server-url', help='Override resources/site.json hosted server')
@@ -195,3 +195,18 @@ if __name__ == '__main__':
         if not args.no_website:
             from tools.refresh_website import refresh_website
             refresh_website(ROOT, args.bun)
+
+
+if __name__ == '__main__':
+    import sys
+    try:
+        main()
+    except subprocess.CalledProcessError as error:
+        print(f'Desktop build stopped: {Path(str(error.cmd[0])).name} exited with code {error.returncode}. See the error above.', file=sys.stderr)
+        sys.exit(1)
+    except (BuildError, OSError, ValueError) as error:
+        print(f'Desktop build stopped: {error}', file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print('Desktop build interrupted.', file=sys.stderr)
+        sys.exit(130)
