@@ -29,7 +29,8 @@ The logo and tutorial poster have responsive AVIF variants generated from
 `assets/site/logo.webp` and the original tutorial frame. Color/alpha quality is
 80; the transparent logo keeps 4:4:4 color and the poster uses 4:2:0 compression.
 The image cache is `.local/website/image-cache`; unchanged inputs reuse it.
-Variants are emitted only into the static output. `srcset`/`sizes` retain the
+Exactly two widths are emitted per image, only into the static output: 240/630 px
+for the logo and 768/1024 px for the tutorial poster. `srcset`/`sizes` retain the
 full 630/1024-pixel candidates for dense screens. The poster's cover crop is
 included in its source-size calculation to avoid upscaling undersized images.
 

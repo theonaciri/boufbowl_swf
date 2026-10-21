@@ -4,8 +4,8 @@ import path from "node:path";
 
 const exists = (name) => fs.access(name).then(() => true, () => false);
 const recipes = [
-  { name: "logo", sources: ["assets/site/logo.webp"], widths: [120, 200, 240, 400, 600, 630], yuv: "444" },
-  { name: "tutorial-poster", sources: ["assets/videos/layout_tuto_01.flv", "assets/site/tutorial-poster.avif"], widths: [480, 768, 1024], yuv: "420" },
+  { name: "logo", sources: ["assets/site/logo.webp"], widths: [240, 630], yuv: "444" },
+  { name: "tutorial-poster", sources: ["assets/videos/layout_tuto_01.flv", "assets/site/tutorial-poster.avif"], widths: [768, 1024], yuv: "420" },
 ];
 
 async function command(args) {
