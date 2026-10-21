@@ -240,10 +240,13 @@ and `adt`/`sdkmanager` on PATH. Common locations include `~/AIRSDK`, `/opt/AIRSD
 `~/Android/Sdk`, and `/usr/lib/jvm/`. Android discovery requires installed platform
 and build-tools directories.
 
-If the quick AIR checks find nothing, the script recursively searches the project,
+If the quick AIR or JDK checks find nothing, the script recursively searches the project,
 tool cache, your home directory (including hidden folders), `/opt`, `/usr/local`,
-and `/usr/share` for `lib/adt.jar`. A match is remembered automatically, so later
-builds do not repeat the search. Unreadable folders, dependency trees, and Git
+and `/usr/share` for `lib/adt.jar` (AIR) or `bin/javac` (JDK). JDK searches also
+include `/usr/lib/jvm`, `/usr/java`, and macOS Java installation folders. Java must
+report version 17 or newer, and a full JDK must include both `java` and `javac`.
+The game builder uses the same recursive JDK fallback when Java is missing from
+PATH. A match is remembered automatically, so later builds do not repeat the search. Unreadable folders, dependency trees, and Git
 metadata are skipped; directory symlinks are not followed recursively, although
 links pointing directly to an SDK are recognized.
 

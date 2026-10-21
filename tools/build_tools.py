@@ -59,23 +59,41 @@ def ffdec_jar(explicit=None, download=False):
     return (CACHE/f'ffdec-{FFDEC_VERSION}/ffdec.jar').resolve()
 
 
+def _java_major(executable):
+    try:
+        result = subprocess.run([str(executable), '-version'], capture_output=True, text=True, timeout=15)
+        match = re.search(r'version "(\d+)', result.stderr + result.stdout)
+        return int(match[1]) if result.returncode == 0 and match else 0
+    except (OSError, subprocess.TimeoutExpired):
+        return 0
+
+
 def java_binary(explicit=None):
+    saved = _saved_tool('JDK')
+    executable = 'java.exe' if os.name == 'nt' else 'java'
     candidates = [explicit, os.environ.get('JAVA'),
-                  str(Path(os.environ['JAVA_HOME'])/'bin/java') if os.environ.get('JAVA_HOME') else None,
-                  shutil.which('java'), *sorted(CACHE.glob('jdk-17/*/bin/java')),
+                  str(Path(os.environ['JDK_HOME'])/'bin'/executable) if os.environ.get('JDK_HOME') else None,
+                  str(Path(os.environ['JAVA_HOME'])/'bin'/executable) if os.environ.get('JAVA_HOME') else None,
+                  str(Path(saved)/'bin'/executable) if saved else None,
+                  shutil.which('java'), *sorted(CACHE.glob('jdk-*/**/bin/'+executable), key=_version_key, reverse=True),
                   '/usr/lib/jvm/java-17-openjdk/bin/java', '/usr/lib/jvm/java-17-openjdk-amd64/bin/java',
                   '/usr/lib/jvm/java-17-openjdk-arm64/bin/java']
+    visited = set()
     for candidate in candidates:
         if not candidate:
             continue
         resolved = shutil.which(str(candidate))
-        if not resolved:
+        if not resolved or resolved in visited:
             continue
-        result = subprocess.run([resolved, '-version'], capture_output=True, text=True)
-        match = re.search(r'version "(\d+)', result.stderr + result.stdout)
-        if result.returncode == 0 and match and int(match[1]) >= 17:
+        visited.add(resolved)
+        if _java_major(resolved) >= 17:
             return Path(resolved).resolve()
-    raise BuildError('Java 17+ is missing. Ubuntu/Debian: sudo apt install openjdk-17-jre-headless. Arch: sudo pacman -S jre17-openjdk.')
+    for directory in _search_jdks():
+        if _valid_jdk(directory):
+            directory = directory.resolve()
+            remember_build_tools(JDK=directory)
+            return directory/'bin'/executable
+    raise BuildError('Java 17+ was not found, including the recursive JDK search. Ubuntu/Debian: sudo apt install openjdk-17-jdk-headless. Arch: sudo pacman -S jdk17-openjdk.')
 
 
 def _version_key(path):
@@ -117,11 +135,13 @@ def _find_sdk(name, explicit, environment, candidates, valid, hint, search=None)
     raise BuildError(f'{name} was not found in {locations}. {hint}')
 
 
-def _search_air_sdks():
-    """Find extracted SDKs even when their parent folders have arbitrary names."""
+def _search_installations(label, marker, extra_roots=()):
+    """Find extracted toolchains even when parent folders have arbitrary names."""
     root = Path(__file__).resolve().parent.parent
-    roots = [root, CACHE, Path.home(), Path('/opt'), Path('/usr/local'), Path('/usr/share')]
-    print('Searching for AIR SDK (lib/adt.jar) in the project, home directory, /opt, /usr/local and /usr/share…', flush=True)
+    roots = [root, CACHE, Path.home(), *map(Path, extra_roots),
+             Path('/opt'), Path('/usr/local'), Path('/usr/share')]
+    print(f'Searching recursively for {label} ({marker}) in the project, home directory and installation folders…', flush=True)
+    marker = Path(marker)
     visited = set()
     skipped = {'.git', 'node_modules', '__pycache__', '.venv', 'venv', '.Trash', 'Trash'}
     for base in roots:
@@ -141,14 +161,32 @@ def _search_air_sdks():
                 children[:] = []
                 continue
             visited.add(identity)
-            if path.name == 'lib' and 'adt.jar' in files:
+            if path.name == marker.parent.name and marker.name in files:
                 yield path.parent
             children[:] = sorted((name for name in children if name not in skipped),
                                  key=_version_key, reverse=True)
             for child in children:
                 candidate = path/child
-                if candidate.is_symlink() and (candidate/'lib/adt.jar').is_file():
+                if candidate.is_symlink() and (candidate/marker).is_file():
                     yield candidate
+
+
+
+def _search_air_sdks():
+    yield from _search_installations('AIR SDK', 'lib/adt.jar')
+
+
+def _search_jdks():
+    compiler = 'javac.exe' if os.name == 'nt' else 'javac'
+    yield from _search_installations('JDK 17+', 'bin/'+compiler,
+                                     ('/usr/lib/jvm', '/usr/java', '/Library/Java/JavaVirtualMachines'))
+
+
+def _valid_jdk(path):
+    executable = 'java.exe' if os.name == 'nt' else 'java'
+    compiler = 'javac.exe' if os.name == 'nt' else 'javac'
+    return ((path/'bin'/compiler).is_file() and (path/'bin'/executable).is_file()
+            and _java_major(path/'bin'/executable) >= 17)
 
 
 def air_sdk(explicit=None):
@@ -189,33 +227,38 @@ def android_sdk(explicit=None):
 
 
 def jdk_directory(explicit=None):
-    executable = 'java.exe' if os.name == 'nt' else 'java'
-    compiler = 'javac.exe' if os.name == 'nt' else 'javac'
     if explicit:
         path = Path(explicit).expanduser().resolve()
-        if not (path/'bin'/compiler).is_file() or not (path/'bin'/executable).is_file():
+        if not _valid_jdk(path):
             raise BuildError(f'A full JDK 17+ is required at {path}; pass --jdk /path/to/jdk-17.')
-        if java_binary(path/'bin'/executable) != (path/'bin'/executable).resolve():
-            raise BuildError(f'The JDK at {path} is older than Java 17; pass --jdk /path/to/jdk-17.')
         return path
+    executable = 'java.exe' if os.name == 'nt' else 'java'
     candidates = [_saved_tool('JDK'), os.environ.get('JDK_HOME'), os.environ.get('JAVA_HOME')]
-    try:
-        candidates.append(java_binary().parent.parent)
-    except BuildError:
-        pass
+    javac = shutil.which('javac')
+    if javac:
+        candidates.append(Path(javac).resolve().parent.parent)
     candidates += [*sorted(CACHE.glob('jdk-*/*'), key=_version_key, reverse=True),
                    *sorted(CACHE.glob('jdk-*'), key=_version_key, reverse=True),
                    *sorted(Path('/usr/lib/jvm').glob('*'), key=_version_key, reverse=True)]
+    java = shutil.which(executable)
+    if java:
+        candidates.append(Path(java).resolve().parent.parent)
+    visited = set()
     for candidate in candidates:
         if candidate:
             path = Path(candidate).expanduser().resolve()
-            if (path/'bin'/compiler).is_file() and (path/'bin'/executable).is_file():
-                try:
-                    if java_binary(path/'bin'/executable) == (path/'bin'/executable).resolve():
-                        return path
-                except BuildError:
-                    pass
-    raise BuildError('A full JDK 17+ is required for Android packaging. Ubuntu/Debian: sudo apt install openjdk-17-jdk-headless. Or pass --jdk /path/to/jdk-17.')
+            if path not in visited:
+                visited.add(path)
+                if _valid_jdk(path):
+                    return path
+    for candidate in _search_jdks():
+        path = candidate.resolve()
+        if path not in visited:
+            visited.add(path)
+            if _valid_jdk(path):
+                remember_build_tools(JDK=path)
+                return path
+    raise BuildError('A full JDK 17+ was not found, including the recursive installation search. Ubuntu/Debian: sudo apt install openjdk-17-jdk-headless. Or pass --jdk /path/to/jdk-17.')
 
 
 def remember_build_tools(**paths):
