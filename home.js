@@ -611,13 +611,14 @@ import { assetUrl } from "./tools/website/asset-url.js";
       return null;
     }
   }
-  fetch("api/site", { cache: "no-store" })
+  // Download metadata must match the files published in this static build.
+  fetch("resources/site-manifest.json", { cache: "no-store" })
     .then((r) => {
       if (!r.ok) throw Error("Site configuration unavailable");
       return r.json();
     })
     .catch(async () => {
-      const response = await fetch("resources/site-manifest.json", { cache: "no-store" });
+      const response = await fetch("api/site", { cache: "no-store" });
       if (!response.ok) throw Error("Site configuration unavailable");
       return response.json();
     })

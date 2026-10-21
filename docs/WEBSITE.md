@@ -159,7 +159,9 @@ the sitemap; their HTML remains crawlable so search engines can read those tags.
 Desktop/Android bundle commands refresh the website automatically unless passed
 `--no-website`. Download URLs include a content revision and size labels are
 generated from the published bytes (for example `Linux x86-64 · 48,9 Mo`),
-including in static HTML before the browser fetches the live manifest.
+including in static HTML. The browser uses the generated
+`resources/site-manifest.json` first so links and sizes match the published
+files even when the backend has not restarted. `/api/site` is a fallback.
 Windows and Linux downloads load the included desktop SWF and game assets from
 the extracted folder; only the game API uses `server_url`. They do not download
 the browser SWF or its assets at startup.
