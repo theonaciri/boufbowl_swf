@@ -115,8 +115,11 @@ def linux_executable(archive):
     return output
 
 
-def build(root, server_url=None, ffdec=None, java=None, makensis=None):
+def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms=None):
     root = Path(root)
+    selected = tuple(dict.fromkeys(platforms if platforms is not None else ('windows', 'linux')))
+    if not selected or any(platform not in ('windows', 'linux') for platform in selected):
+        raise ValueError('Select at least one desktop platform: windows or linux')
     server_url = player_server(root, server_url)
     icons = build_icons(root, root/'.local/player-icons')
     player = (root / 'bin/flashplayer_32_sa.exe').read_bytes()
@@ -173,12 +176,14 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None):
                     archive.add(path, name)
         output.with_suffix('.building').replace(output)
         return windows_executable(output, makensis) if platform == 'windows' else linux_executable(output)
-    outputs = dict(parallel(lambda platform: (platform, package(platform)), ('windows', 'linux')))
-    return [outputs['windows'], outputs['linux']]
+    outputs = dict(parallel(lambda platform: (platform, package(platform)), selected))
+    return [outputs[platform] for platform in selected]
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--platform', '--platforms', action='extend', nargs='+', choices=('windows', 'linux'),
+                        help='Platforms to build (default: windows linux; repeatable)')
     parser.add_argument('--jobs', type=int, help='Maximum concurrent CPU jobs (default: available CPUs)')
     parser.add_argument('--server-url', help='Override resources/site.json hosted server')
     parser.add_argument('--ffdec', type=Path, help='Path to ffdec.jar (or set FFDEC_JAR)')
@@ -190,7 +195,7 @@ def main():
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
     with build_budget(args.jobs):
-        for output in build(ROOT, args.server_url, ffdec=args.ffdec, java=args.java, makensis=args.makensis):
+        for output in build(ROOT, args.server_url, ffdec=args.ffdec, java=args.java, makensis=args.makensis, platforms=args.platform):
             print(f'Built {output} ({output.stat().st_size} bytes)', flush=True)
         if not args.no_website:
             from tools.refresh_website import refresh_website

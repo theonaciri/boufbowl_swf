@@ -251,7 +251,29 @@ To build Windows, Linux, and Android together with one shared CPU budget:
 bun run build:players
 ```
 
-The command discovers installed AIR/Android SDKs and a full JDK automatically.
+Select one or more target platforms with `--platform` (also `--platforms`):
+
+```sh
+bun run build:players --platform linux
+bun run build:players --platform windows linux
+bun run build:players --platform android
+```
+
+The option can also be repeated: `--platform linux --platform android`.
+With no selection, all three platforms are built. Only selected platform tools
+are required: NSIS for Windows; AIR, Android SDK, a full JDK, and signing credentials
+for Android. Desktop-only builds need Java 17+ but do not require Android tools or
+signing credentials. Linux-only builds do not require NSIS. FFmpeg is needed for
+application icon generation on every platform.
+
+The desktop packager supports the same selection for its two targets:
+
+```sh
+python3 -m tools.build_player_downloads --platform linux
+```
+
+The command discovers installed AIR/Android SDKs and a full JDK automatically
+when Android is selected.
 It checks the Boufbowl tool cache (`$XDG_CACHE_HOME/boufbowl-flash-tools`, normally
 `~/.cache/boufbowl-flash-tools`), remembered paths, standard installation folders,
 and `adt`/`sdkmanager` on PATH. Common locations include `~/AIRSDK`, `/opt/AIRSDK`,
@@ -288,5 +310,6 @@ available automatically. FFDec is downloaded when missing. The standalone
 `python3 android/build.py` command uses the same discovery and remembered paths.
 
 The shared game client is prepared first if missing, then all three downloads are
-built before the website is refreshed once. `--jobs N` limits combined concurrency;
+built by default; with a platform selection, only those downloads are rebuilt.
+The website is refreshed once after the selected builds finish. `--jobs N` limits combined concurrency;
 `--no-website` defers the refresh.
