@@ -7,15 +7,23 @@ Media URLs receive an automatic revision derived from the media contents.
 The build leaves source pages untouched; generated output stays out of Git.
 `restoration.*` implements character/stadium/audio previews;
 `contributions.*` handles resource proposals. `/play.html` hosts Ruffle.
-[Build the game](BUILD.md#desktop-client-and-runtime-files) before exporting characters.
+## Build
 
-For frontend changes with existing media exports, run Bun. FFmpeg and `avifenc`
-are also needed when generating responsive AVIF variants for the first time:
+After installing the [system prerequisites](BUILD.md#tools-and-inputs), run:
 
 ```sh
 bun run build
-bun run check:site
-# Optional destination outside the checkout (or under .local):
+```
+
+This is also the command for a fresh checkout: it prepares the game client and
+missing media before compiling the website. No FFDec environment variable or
+manual command sequence is needed. First builds download FFDec and renderer tools
+and can take a long time; subsequent frontend builds reuse the existing inputs.
+The generated site is **`.local/website/dist/`**.
+
+For another output directory:
+
+```sh
 bun run build --output /path/to/public
 ```
 
@@ -34,38 +42,30 @@ for the logo and 768/1024 px for the tutorial poster. `srcset`/`sizes` retain th
 full 630/1024-pixel candidates for dense screens. The poster's cover crop is
 included in its source-size calculation to avoid upscaling undersized images.
 
-## Renderer setup
+## Regenerate existing media
 
-Use JDK 17, FFDec, Bun 1.4.3, FFmpeg (libx264, libsvtav1), libavif's `avifenc`, and the preserved
-`vendor/ruffle/` runtime. Set `FFDEC_JAR` as in [Build](BUILD.md#tools-and-inputs).
-The carousel exporter currently expects that documented FFDec cache location.
+For changes to capture code, palettes, or media encoders, run:
 
 ```sh
-cd tools/website
-bun install --frozen-lockfile
-bunx playwright install --with-deps chromium
-cd ../..
+bun run build:media
 ```
 
-## Export characters and videos
+This refreshes all exporters using their caches and finishes with the same Bun
+compiler. To rebuild ActionScript first, run `bun run build:game`.
+Renderer packages and Chromium are installed by the orchestrator when media is missing.
+If Chromium reports missing Linux shared libraries, install the libraries it
+lists; on Ubuntu/Debian the Playwright helper is available from `tools/website`
+with `bunx playwright install-deps chromium`.
 
-For a fresh checkout, after the renderer setup and game build, generate the
-media and site in this order. The final Python command generates media/metadata
-and calls the same Bun compiler to produce `.local/website/dist`.
-
-```sh
-python3 -m tools.build_restoration_data
-python3 -m tools.build_site_videos
-python3 -m tools.export_home_cinematics
-python3 -m tools.export_puppet_videos --ffdec "$FFDEC_JAR"
-python3 -m tools.build_website --ffdec "$FFDEC_JAR"
-```
+The following modules remain available for targeted advanced work. Their normal
+order is managed by `tools/build_project.py`; do not run them all manually for a
+fresh checkout.
 
 | Generator | Outputs |
 | --- | --- |
 | `build_restoration_data` | Resource availability inventory |
 | `build_site_videos` | Tutorial MP4s and AVIF poster from the preserved FLVs |
-| `export_home_cinematics` | 15 films, 18 distinct legends, animated AVIF + AV1/H.264 MP4 + WebP |
+| `export_home_cinematics` | 15 films, 18 distinct legends, animated AVIF + AV1/H.264 MP4 |
 | `export_puppet_videos` | Five gameplay puppet loops, AV1 CRF 35 at 530 px high |
 | `build_website` | Minified Bun JavaScript bundle, bundled and inlined Bun CSS, stadium previews and transparent logo as AVIF, native portraits, grid icons, refreshed inventory/legal/download manifests, public delivery |
 
@@ -83,8 +83,8 @@ For a smaller iteration, use:
 
 ```sh
 python3 -m tools.export_home_cinematics --scene lancer
-python3 -m tools.export_puppet_videos --character enutrof-2 --ffdec "$FFDEC_JAR"
-python3 -m tools.build_website --character hero-508 --pose default --ffdec "$FFDEC_JAR"
+python3 -m tools.export_puppet_videos --character enutrof-2
+python3 -m tools.build_website --character hero-508 --pose default
 ```
 
 The carousel also accepts `--capture-only`, `--encode-only`, and `--force`.
@@ -108,7 +108,7 @@ bun run check:site
 curl -I http://127.0.0.1:9900/
 curl -fsS http://127.0.0.1:9900/api/health
 # Optional full media/metadata verification after exports:
-python3 -m tools.build_website --check --ffdec "$FFDEC_JAR"
+python3 -m tools.build_website --check
 ```
 The carousel loads only its active film, prefers AV1 with H.264 fallback, and
 pauses/unloads outside the viewport. Reduced motion and pause controls apply.

@@ -18,10 +18,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
-    command = [os.environ.get('BUN', 'bun'), str(ROOT/'tools/website/build.mjs')]
+    command = [os.environ.get('BUN', 'bun'), str(ROOT/('tools/website/build.mjs' if args.check else 'tools/build.mjs'))]
     if args.check:
         command.append('--check')
-    subprocess.run(command, cwd=ROOT, check=True)
+    raise SystemExit(subprocess.run(command, cwd=ROOT).returncode)
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ from tools.game_config import load_config, startup_source
 from tools.build_restoration_data import audit
 from tools.site_grid_icons import build as build_grid_icons
 from tools.convert_site_avif import main as convert_site_avif
+from tools.build_tools import BuildError, ffdec_jar, java_binary
 
 
 def main():
@@ -25,7 +26,7 @@ def main():
     timings = {}
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'.local/website/dist', help='Public website delivery directory')
-    parser.add_argument('--ffdec', type=Path, default=os.environ.get('FFDEC_JAR'))
+    parser.add_argument('--ffdec', type=Path, default=os.environ.get('FFDEC_JAR') or None)
     parser.add_argument('--java', default=os.environ.get('JAVA', 'java'))
     parser.add_argument('--bun', default=os.environ.get('BUN', 'bun'))
     parser.add_argument('--jobs', type=int, choices=range(1,5), default=1, help='Independent render pages (default: 1; software rendering benchmark winner)')
@@ -34,6 +35,11 @@ def main():
     parser.add_argument('--force', action='store_true', help='Re-render every portrait')
     parser.add_argument('--check', action='store_true', help='Verify existing exports without rendering')
     args = parser.parse_args()
+    try:
+        args.ffdec = ffdec_jar(args.ffdec)
+        args.java = str(java_binary(args.java))
+    except BuildError as error:
+        parser.error(str(error))
     convert_site_avif()
     directory = ROOT/'assets/site/restoration'
     settings = json.loads((ROOT/'resources/palettes.json').read_text())

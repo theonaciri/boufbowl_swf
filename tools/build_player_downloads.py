@@ -4,13 +4,13 @@ import hashlib
 from io import BytesIO
 from pathlib import Path
 import json
-import os
 import shutil
 import subprocess
 import tarfile
 import tempfile
 from tools.player_server import player_server
 from tools.player_assets import website_stadium_preview
+from tools.build_tools import ffdec_jar, java_binary
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -42,18 +42,8 @@ def desktop_client(root, platform, server_url, ffdec=None, java=None):
     cache.mkdir(parents=True, exist_ok=True)
     patch = cache / 'FlashVarsManager.as'
     patch.write_text(source)
-    cache_root = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache'))
-    ffdec = ffdec or os.environ.get('FFDEC_JAR')
-    if not ffdec:
-        ffdec = next((candidate for candidate in (
-            cache_root / 'boufbowl-flash-tools/ffdec-26.3.0/ffdec.jar',
-            cache_root / 'boufbowl-flash-tools/ffdec/ffdec.jar',
-        ) if candidate.is_file()), None)
-    if not ffdec or not Path(ffdec).is_file():
-        raise FileNotFoundError('Set FFDEC_JAR or pass --ffdec to compile the bundled desktop clients')
-    java = java or shutil.which('java')
-    if not java:
-        raise FileNotFoundError('Put Java on PATH or pass --java to compile the bundled desktop clients')
+    ffdec = ffdec_jar(ffdec, download=True)
+    java = java_binary(java)
     temporary = cache / 'client.building.swf'
     subprocess.run([str(java), '-jar', str(Path(ffdec).resolve()), '-replace', str(client), str(temporary),
                     'com.ankamagames.xgaming.utils.flashvars.FlashVarsManager', str(patch)],

@@ -1,7 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "build": "bun tools/website/build.mjs",
-    "check:site": "bun tools/website/build.mjs --check"
+    "build": "bun tools/build.mjs",
+    "check:site": "bun tools/website/build.mjs --check",
+    "build:game": "bun tools/build.mjs --game-only --rebuild-game",
+    "build:media": "bun tools/build.mjs --refresh-media"
   }
 }

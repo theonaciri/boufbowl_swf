@@ -10,6 +10,7 @@ import subprocess
 import threading
 
 from tools.game_config import load_config, startup_source
+from tools.build_tools import BuildError, ffdec_jar, java_binary
 from tools.site_portraits import ROOT, export_plan
 
 ANIMATIONS = [
@@ -30,11 +31,13 @@ def main():
     parser.add_argument('--character', action='append', choices=[item[0] for item in ANIMATIONS],
                         help='Re-export only this character, preserving the other exports')
     args = parser.parse_args()
-    cache = Path.home()/'.cache/boufbowl-flash-tools'
-    java = args.java or next(cache.glob('jdk-17/*/bin/java'), None)
-    ffdec = args.ffdec or cache/'ffdec-26.3.0/ffdec.jar'
-    if not java or not ffdec.is_file() or not args.bun:
-        parser.error('Java, FFDec and Bun are required')
+    try:
+        java = java_binary(args.java)
+        ffdec = ffdec_jar(args.ffdec)
+    except BuildError as error:
+        parser.error(str(error))
+    if not args.bun:
+        parser.error('Bun is required')
     work = ROOT/'.local/puppet-videos'
     work.mkdir(parents=True, exist_ok=True)
     output = ROOT/'assets/site/restoration/puppets'

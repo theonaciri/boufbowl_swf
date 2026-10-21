@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import threading
 from tools.game_config import load_config, startup_source
+from tools.build_tools import ffdec_jar, java_binary
 from tools.site_portraits import ROOT, export_plan
 
 # Eighteen legendary actors, each appearing in exactly one carousel movie.
@@ -54,9 +55,9 @@ def main():
     fingerprint=hashlib.sha256(source.encode()+(ROOT/'bin/boufbowl-client-1.9.6.swf').read_bytes()).hexdigest()
     capture=work/'capture.swf';stamp=work/'capture.sha256'
     if not capture.exists() or not stamp.exists() or stamp.read_text()!=fingerprint:
-        cache=Path.home()/'.cache/boufbowl-flash-tools'
-        java=shutil.which('java') or next(cache.glob('jdk-17/*/bin/java'))
-        subprocess.run([str(java),'-jar',str(cache/'ffdec-26.3.0/ffdec.jar'),'-replace',str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
+        java=java_binary()
+        ffdec=ffdec_jar()
+        subprocess.run([str(java),'-jar',str(ffdec),'-replace',str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
         stamp.write_text(fingerprint)
     inventory=json.loads((ROOT/'assets/site/restoration/inventory.json').read_text())
     palette_plan=export_plan(inventory['characters'],json.loads((ROOT/'resources/palettes.json').read_text()))

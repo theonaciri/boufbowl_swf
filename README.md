@@ -11,15 +11,28 @@ The French website serves the browser client, downloads, and restoration tools.
 - [Binary](docs/BINARY.md): find functions, export AS3/assets, and patch the SWF.
 - [Server](docs/SERVER.md): configuration, accounts, administration, and backups.
 
-All commands run from the repository root. After completing the build steps:
+## Build the website
+
+Install the [system prerequisites](docs/BUILD.md#tools-and-inputs), then run from
+the repository root:
 
 ```sh
-./play.sh --mode server
-# Or run a shared website/game server:
-python3 -m backend.server --host 127.0.0.1 --port 9900
+bun run build
 ```
 
-Open `http://127.0.0.1:9900/` for the homepage or `/play.html` for Ruffle.
+The build finds/downloads FFDec, prepares a missing game client and website media,
+and generates **`.local/website/dist/`**. Serve that folder with a static web
+server; [Hosting](docs/HOSTING.md) explains Nginx and the separate game API.
+First builds can take a long time; existing media is reused on later builds.
+You do not need `FFDEC_JAR`, manual file copies, or a separate legal-page build.
+
+For native desktop development (with Wine and the standalone Flash player):
+
+```sh
+bun run build:game
+./play.sh --mode server
+```
+
 To connect the desktop client to that server:
 
 ```sh

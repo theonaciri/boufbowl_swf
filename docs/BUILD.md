@@ -1,47 +1,76 @@
 # Build the game
 
-Run commands from the repository root. Rebuild the desktop SWF before packaging
-Android or exporting website characters.
+Run commands from the repository root. For a fresh checkout, use the same command
+as for later website edits: **`bun run build`**.
 
 ## Tools and inputs
 
-- Python 3 (standard library only), Bun, JDK 17, and JPEXS FFDec 26.3.0.
-- Native desktop play: Wine with 32-bit support, a graphical session, and the
-  supplied Flash projector at `bin/flashplayer_32_sa.exe`.
-- Video builds: FFmpeg with libx264, libsvtav1, and libwebp.
-- Android: AIR SDK 51.4, Android SDK platform 35/build-tools 35.0.1, and
-  host-compatible Android tools. AIR/Gradle may download dependencies.
+Install Bun and these system packages once:
 
-Install Bun and FFDec separately. Put Java and Bun on PATH and set:
+Ubuntu/Debian:
 
 ```sh
-export PATH="/path/to/jdk-17/bin:$HOME/.bun/bin:$PATH"
-export FFDEC_JAR="$HOME/.cache/boufbowl-flash-tools/ffdec-26.3.0/ffdec.jar"
+sudo apt install python3 openjdk-17-jre-headless ffmpeg libavif-bin
 ```
 
-Place FFDec at that path for the carousel exporter, which currently uses this
-cache location directly. Other builders accept `--ffdec`.
+Arch Linux:
 
-The preserved input is `bin/base/boufbowl-client-1.9.6.swf`, SHA-256
+```sh
+sudo pacman -S --needed python jre17-openjdk ffmpeg libavif
+```
+
+FFmpeg must support libx264, libaom-av1, libsvtav1, and libwebp; `avifenc` must
+support `--qcolor`. Distribution packages on current systems normally provide them.
+
+**Do not set `FFDEC_JAR` unless you want a custom FFDec installation.** The build
+finds Java 17+ and FFDec automatically. If FFDec is absent, it downloads version
+26.3.0 from its official GitHub release, verifies the pinned SHA-256, and caches it
+under `${XDG_CACHE_HOME:-$HOME/.cache}/boufbowl-flash-tools/ffdec-26.3.0`.
+
+The required game input is already tracked:
+`bin/base/boufbowl-client-1.9.6.swf`, SHA-256
 `b13475e837bec851157e5d02b45088d1f697ad65121a383d3e40b43074883154`.
-It is already patched; no untouched historical binary is verified here.
+It is a previously patched baseline; no untouched historical binary is verified.
+
+## Build the website
+
+```sh
+bun run build
+```
+
+This command, in order:
+
+1. Builds the game SWF if missing, then prepares its runtime JSON files.
+2. Generates missing website videos, portraits, stadium previews, and metadata.
+   Renderer packages and Chromium are downloaded automatically when needed.
+3. Uses Bun to bundle/minify CSS and JavaScript and generate all static pages,
+   including legal pages, robots.txt, sitemap.xml, and download size labels.
+
+The result is **`.local/website/dist/`**, ready for your static web server.
+Existing media is reused. A first build can take a long time because it renders
+and encodes the recovered game assets. Run the same command again after a
+failure; completed work stays cached. Failed steps stop the process immediately.
+
+You do not need to run `cp`, `tools.build_mock_fixture`, or
+`tools.build_legal_pages` separately. There is no Python web-server requirement
+for the generated HTML. [Hosting](HOSTING.md) explains serving the output.
 
 ## Desktop client and runtime files
 
+To rebuild the game after changing ActionScript or game configuration:
+
 ```sh
-python3 -m tools.game_config
-python3 patches/rebuild.py --ffdec "$FFDEC_JAR"
-cp backend/engine_base.json backend/build/engine_base.json
-python3 -m tools.build_mock_fixture
-python3 -m tools.build_legal_pages
-./play.sh --mode server
+bun run build:game
 ```
 
-The first command validates configuration. The rebuild applies `patches/*.as`,
-generated startup/FlashVars/palette code, and creates
-`bin/boufbowl-client-1.9.6.swf` plus themed stadium models/resources.
-It preserves the input. Use `--original /path/to/archive.swf` to supply another
-baseline. [Binary workflow](BINARY.md) explains how to add a patch.
+This finds the same tools and builds the SWF/runtime files without rendering the
+website. Follow it with `bun run build` when you also need website delivery.
+For native desktop play, supply `bin/flashplayer_32_sa.exe` (not included in Git),
+install Wine with 32-bit support, and run `./play.sh --mode server` in a graphical
+session. The web build does not require Wine or the standalone Flash player.
+Use the advanced `patches/rebuild.py --original /path/to/archive.swf` only when
+intentionally replacing the preserved game baseline. [Binary workflow](BINARY.md)
+explains individual patches.
 
 `play.sh` launches existing files without compiling them. Useful options:
 `--mode tutorial`, `--mode menus`, `--mode mock --scene-3d`,
@@ -74,8 +103,8 @@ stadium previews (`assets/textures/stadiums/*.avif`) are excluded from desktop
 and Android packaging; the PNG textures remain included for the game.
 
 Build prerequisites: Java/FFDec and NSIS (`sudo apt-get install nsis` on Ubuntu).
-Set `FFDEC_JAR`/Java on PATH or pass `--ffdec` and `--java`; `--makensis` can
-specify the NSIS compiler. Separate cached SWFs contain each platform's defaults;
+Use the Java/FFDec paths printed by the game build when overrides are needed;
+`--ffdec`, `--java`, and `--makensis` can specify custom tool locations. Separate cached SWFs contain each platform's defaults;
 the hosted browser SWF is unchanged. Only the game API uses the remote server.
 
 - Windows: double-click the `.exe`. The NSIS launcher prepares a versioned cache
@@ -111,15 +140,14 @@ python3 linux/build.py
 
 Outputs `linux/build/BoufbowlOffline-linux.tar.gz` and
 `BoufbowlOffline-linux-amd64.deb`. These include the backend and Bun.
-Generate legal pages first; packaging copies the current files without compiling
-Flash. `--rebuild-worker` requires the external simulator sources.
+Build the website first; packaging copies current files without compiling Flash. `--rebuild-worker` requires the external simulator sources.
 
 ## Android
 
 ```sh
 python3 android/build.py \
   --air-sdk /path/to/AIRSDK \
-  --ffdec "$FFDEC_JAR" \
+  --ffdec /path/to/ffdec.jar \
   --jdk /path/to/jdk-17 \
   --android-sdk "$HOME/Android/Sdk" \
   --server-url https://YOUR_SERVER

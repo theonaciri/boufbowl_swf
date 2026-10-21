@@ -35,7 +35,7 @@ def homepage_assets(root):
             extensions=('.mp4','.av1.mp4','.avif') if version else ('.webp','.mp4')
             for identity in re.findall(r'\[\s*"([a-z0-9-]+)"\s*,',block):
                 paths.update('assets/site/cinematic-'+identity+suffix+extension for extension in extensions)
-    return [{'path':path,'available':(root/path).is_file() and (root/path).stat().st_size>0 and (root/path).resolve().is_relative_to(root.resolve())} for path in sorted(paths)]
+    return [{'path':path,'available':(root/path).is_file() and (root/path).stat().st_size>0 and (root/path).resolve().is_relative_to(root.resolve())} for path in sorted(paths) if not path.startswith('assets/site/responsive/')]
 
 def audit(root=ROOT):
     root=Path(root)
