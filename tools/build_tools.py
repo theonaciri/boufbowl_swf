@@ -92,7 +92,7 @@ def _saved_tool(name):
         return None
 
 
-def _find_sdk(name, explicit, environment, candidates, valid, hint):
+def _find_sdk(name, explicit, environment, candidates, valid, hint, search=None):
     # A supplied override must be valid; stale automatically saved paths can fall back.
     override = explicit or next((os.environ[key] for key in environment if os.environ.get(key)), None)
     if override:
@@ -105,7 +105,50 @@ def _find_sdk(name, explicit, environment, candidates, valid, hint):
             path = Path(candidate).expanduser().resolve()
             if valid(path):
                 return path
-    raise BuildError(f'{name} was not found in the project, tool cache, or standard installation folders. {hint}')
+    if search:
+        for candidate in search():
+            path = Path(candidate).resolve()
+            if valid(path):
+                remember_build_tools(**{name: path})
+                return path
+    locations = 'the project, tool cache, or standard installation folders'
+    if search:
+        locations += ' or the recursive installation search'
+    raise BuildError(f'{name} was not found in {locations}. {hint}')
+
+
+def _search_air_sdks():
+    """Find extracted SDKs even when their parent folders have arbitrary names."""
+    root = Path(__file__).resolve().parent.parent
+    roots = [root, CACHE, Path.home(), Path('/opt'), Path('/usr/local'), Path('/usr/share')]
+    print('Searching for AIR SDK (lib/adt.jar) in the project, home directory, /opt, /usr/local and /usr/share…', flush=True)
+    visited = set()
+    skipped = {'.git', 'node_modules', '__pycache__', '.venv', 'venv', '.Trash', 'Trash'}
+    for base in roots:
+        if not base.is_dir():
+            continue
+        # Do not follow directory symlinks recursively: they may lead back to a
+        # parent or into unrelated filesystem trees. Direct SDK links still work.
+        for directory, children, files in os.walk(base, followlinks=False):
+            path = Path(directory)
+            try:
+                info = path.stat()
+            except OSError:
+                children[:] = []
+                continue
+            identity = (info.st_dev, info.st_ino)
+            if identity in visited:
+                children[:] = []
+                continue
+            visited.add(identity)
+            if path.name == 'lib' and 'adt.jar' in files:
+                yield path.parent
+            children[:] = sorted((name for name in children if name not in skipped),
+                                 key=_version_key, reverse=True)
+            for child in children:
+                candidate = path/child
+                if candidate.is_symlink() and (candidate/'lib/adt.jar').is_file():
+                    yield candidate
 
 
 def air_sdk(explicit=None):
@@ -125,7 +168,8 @@ def air_sdk(explicit=None):
         candidates.insert(0, Path(adt).resolve().parent.parent)
     return _find_sdk('AIR SDK', explicit, ('AIR_SDK', 'AIRSDK_HOME', 'AIR_HOME'), candidates,
                      lambda path: (path/'lib/adt.jar').is_file(),
-                     f'Install/extract the AIR SDK into {CACHE}/air-sdk, or pass --air-sdk /path/to/AIRSDK once; the path is remembered.')
+                     f'Install/extract the AIR SDK into {CACHE}/air-sdk and rerun; installed SDKs are found and remembered automatically.',
+                     search=_search_air_sdks)
 
 
 def android_sdk(explicit=None):

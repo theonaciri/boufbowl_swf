@@ -240,7 +240,14 @@ and `adt`/`sdkmanager` on PATH. Common locations include `~/AIRSDK`, `/opt/AIRSD
 `~/Android/Sdk`, and `/usr/lib/jvm/`. Android discovery requires installed platform
 and build-tools directories.
 
-For tools installed elsewhere, supply their paths once:
+If the quick AIR checks find nothing, the script recursively searches the project,
+tool cache, your home directory (including hidden folders), `/opt`, `/usr/local`,
+and `/usr/share` for `lib/adt.jar`. A match is remembered automatically, so later
+builds do not repeat the search. Unreadable folders, dependency trees, and Git
+metadata are skipped; directory symlinks are not followed recursively, although
+links pointing directly to an SDK are recognized.
+
+Paths can also be supplied explicitly to choose an installation:
 
 ```sh
 bun run build:players \
