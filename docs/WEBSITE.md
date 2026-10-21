@@ -78,6 +78,12 @@ receipts and image fingerprints live alongside their capture caches under
 reuse native frames. Keep these caches between builds. The first build using the
 new fingerprints refreshes existing exports once; later builds reuse them.
 
+Media stages and independent images, captures, and encodes run concurrently with
+one CPU budget shared between Python and Bun. The default uses all available CPUs
+and respects Linux container quotas. Use `bun run build:website --jobs 4` to lower
+the ceiling. Manifests are saved by a single coordinator, and static compilation
+runs once after every media stage succeeds.
+
 Renderer packages and Chromium are prepared only when a rendering stage needs an
 update. If Chromium reports missing Linux shared libraries, install the libraries
 it lists; on Ubuntu/Debian the Playwright helper is available from `tools/website`
@@ -147,8 +153,8 @@ Bun also generates `robots.txt` (allows crawling except `/api/`) and `sitemap.xm
 from canonical URLs of pages without `noindex` or a refresh redirect. Private
 consoles and draft legal pages retain their `noindex` tags and are omitted from
 the sitemap; their HTML remains crawlable so search engines can read those tags.
-`GET /api/site` discovers local builds at `android/build/BoufbowlOffline.apk`,
-`windows/build/Boufbowl-windows.exe`, and `linux/build/Boufbowl-linux.run`.
+`GET /api/site` discovers local builds at `android/build/Boufbowl Fan.apk`,
+`windows/build/Boufbowl Fan.exe`, and `linux/build/Boufbowl Fan.run`.
 [Build packages](BUILD.md#distribute-players) before the final website build.
 Desktop/Android bundle commands refresh the website automatically unless passed
 `--no-website`. Download URLs include a content revision and size labels are

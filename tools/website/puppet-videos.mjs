@@ -1,11 +1,14 @@
+import { renderTasks } from './cpu-budget.mjs';
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, writeFileSync, readdirSync, unlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 const directory=process.argv[3];
 const tasks=JSON.parse(readFileSync(join(directory,'tasks.json'),'utf8'));
-const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding']});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding','--num-raster-threads=1']});
 try {
+ const results=[];
+ await renderTasks(tasks, async()=>{
  const page=await browser.newPage({viewport:{width:1024,height:700}});
  page.on('console',m=>{if(m.type()==='error')console.error(m.text())});
  await page.goto(process.argv[2]);
@@ -14,8 +17,10 @@ try {
    document.querySelector('#mount').append(p);window.puppetPlayer=p;
    await p.load({url:'/bin/site-puppets.swf',autoplay:'on',allowScriptAccess:true,unmuteOverlay:'hidden',parameters:{lang:'fr',server:'0',mock:'0',tuto:'0'}});
  });
- const results=[];
- for(const task of tasks){
+
+ return page;
+ }, async(task,page)=>{
+
    await page.evaluate(()=>window.puppetPlayer.ruffle().resume());
    await page.waitForFunction(task=>{
      try {
@@ -60,5 +65,5 @@ try {
    results.push(captured);
    writeFileSync(join(directory,'frames.json'),JSON.stringify(results,null,2));
    console.log('Captured',task.id,frames,'native frames');
- }
+ });
 }finally{await browser.close();}

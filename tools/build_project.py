@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from tools.build_parallel import build_budget, available_cpus, parallel
 from tools.build_tools import BuildError, ffdec_jar, java_binary
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -19,12 +20,22 @@ def run(command, label, env, cwd=ROOT):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--jobs', type=int, help='Maximum CPU jobs (default: all available CPUs)')
     parser.add_argument('--output', type=Path, default=ROOT/'.local/website/dist')
     parser.add_argument('--ffdec', help='Optional FFDec JAR override; otherwise found/downloaded automatically')
     parser.add_argument('--java', help='Optional Java 17+ executable override')
     parser.add_argument('--game-only', action='store_true', help='Prepare the game without building the website')
     parser.add_argument('--rebuild-game', action='store_true', help='Recompile the game even if its SWF already exists')
     args = parser.parse_args()
+    if args.jobs is not None and args.jobs < 1:
+        parser.error('--jobs must be positive')
+    if args.jobs:
+        os.environ['BOUFBOWL_BUILD_CPUS'] = str(min(args.jobs, available_cpus()))
+    with build_budget(args.jobs):
+        build(args)
+
+
+def build(args):
     env = dict(os.environ)
     bun = env.get('BUN') or shutil.which('bun')
     if not bun:
@@ -70,13 +81,13 @@ def main():
     shared = ['bin/boufbowl-client-1.9.6.swf', 'resources/game_config.json',
               'resources/palettes.json', 'resources/local_ui.json', 'resources/cosmetic_catalog.json',
               'tools/game_config.py', 'tools/mock_codegen.py', 'tools/server_codegen.py',
-              'tools/visual_assets.py', 'tools/media_fingerprints.py', 'patches/*.as', 'patches/*.inc',
+              'tools/visual_assets.py', 'tools/media_fingerprints.py', 'tools/build_parallel.py', 'tools/website/cpu-budget.mjs', 'patches/*.as', 'patches/*.inc',
               'assets/artworks/*.swf', 'assets/sprites/**/*', 'vendor/ruffle/*']
     stages = {
-        'images': (['tools/convert_site_avif.py', 'tools/media_fingerprints.py', 'resources/stadium_art.json',
+        'images': (['tools/convert_site_avif.py', 'tools/media_fingerprints.py', 'tools/build_parallel.py', 'resources/stadium_art.json',
                     'assets/site/logo.webp', 'assets/textures/stadiums/*.png'],
                    ['assets/textures/stadiums/*.avif', 'assets/site/logo.avif']),
-        'tutorial': (['tools/build_site_videos.py', 'assets/videos/tutorial-intro.flv',
+        'tutorial': (['tools/build_site_videos.py', 'tools/build_parallel.py', 'assets/videos/tutorial-intro.flv',
                       'assets/videos/layout_tuto_01.flv'],
                      ['assets/site/tutorial-archive.mp4', 'assets/site/tutorial-field.mp4', 'assets/site/tutorial-poster.avif']),
         'cinematics': (shared + ['tools/export_home_cinematics.py', 'tools/site_cinematic_capture.as.inc', 'tools/website/cinematics.mjs'],
@@ -120,20 +131,22 @@ def main():
             'tutorial': [python, '-m', 'tools.build_site_videos'],
             'cinematics': [python, '-m', 'tools.export_home_cinematics'],
             'puppets': [python, '-m', 'tools.export_puppet_videos', '--java', java, '--ffdec', ffdec, '--bun', bun],
-            'portraits': [python, '-m', 'tools.build_website', '--java', java, '--ffdec', ffdec, '--bun', bun, '--skip-images', '--output', args.output],
+            'portraits': [python, '-m', 'tools.build_website', '--java', java, '--ffdec', ffdec, '--bun', bun, '--skip-images', '--assets-only', '--output', args.output],
         }
-        for name, command in commands.items():
-            if dirty[name]:
-                run(command, 'Update website ' + name, env)
-                cache.save(name, *stages[name])
-            else:
+        def update(item):
+            name, command = item
+            run(command, 'Update website ' + name, env)
+            return name
+        for name in parallel(update, [(name, command) for name, command in commands.items() if dirty[name]]):
+            cache.save(name, *stages[name])
+        for name in commands:
+            if not dirty[name]:
                 print('Reusing website ' + name, flush=True)
     else:
         print('Website media unchanged; reusing all exports.', flush=True)
-    if not dirty['portraits']:
-        if any(dirty.values()):
-            run([python, '-m', 'tools.build_restoration_data'], 'Refresh restoration inventory', env)
-        run([bun, ROOT/'tools/website/build.mjs', '--output', args.output], 'Compile static website', env)
+    if any(dirty.values()):
+        run([python, '-m', 'tools.build_restoration_data'], 'Refresh restoration inventory', env)
+    run([bun, ROOT/'tools/website/build.mjs', '--output', args.output], 'Compile static website', env)
     print(f'\nWebsite ready: {args.output.resolve()}', flush=True)
 
 

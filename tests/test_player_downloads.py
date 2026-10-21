@@ -31,7 +31,10 @@ class PlayerDownloadsTests(unittest.TestCase):
             (root/'assets/sounds/kick.mp3').write_bytes(b'audio')
             (root/'assets/site/home.webp').write_bytes(b'web')
             (root/'resources/config.json').write_text('{}')
-            windows, linux = build(root)
+            (root/'icons').mkdir()
+            (root/'icons/icon-256.png').write_bytes(b'icon')
+            with patch('tools.build_player_downloads.build_icons', return_value=root/'icons'):
+                windows, linux = build(root)
             with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
                 launcher = archive.read('Boufbowl/Jouer.cmd').decode()
                 self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
@@ -58,9 +61,12 @@ class PlayerDownloadsTests(unittest.TestCase):
             (root / 'bin/boufbowl-client-1.9.6.swf').write_bytes(b'client')
             (root / 'assets').mkdir()
             (root / 'resources').mkdir()
-            windows, linux = build(root, 'https://game.example')
+            (root/'icons').mkdir()
+            (root/'icons/icon-256.png').write_bytes(b'icon')
+            with patch('tools.build_player_downloads.build_icons', return_value=root/'icons'):
+                windows, linux = build(root, 'https://game.example')
             with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
-                self.assertEqual(set(archive.namelist()), {'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
+                self.assertEqual(set(archive.namelist()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
                 launcher = archive.read('Boufbowl/Jouer.cmd').decode()
                 self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
                 self.assertIn('FlashPlayerTrust', launcher)
@@ -68,7 +74,7 @@ class PlayerDownloadsTests(unittest.TestCase):
                 self.assertNotIn('wine', launcher)
                 self.assertNotIn('python', launcher)
             with tarfile.open(linux.with_suffix('.tar.gz')) as archive:
-                self.assertEqual(set(archive.getnames()), {'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/jouer.sh', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
+                self.assertEqual(set(archive.getnames()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/jouer.sh', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
                 launcher = archive.extractfile('Boufbowl/jouer.sh').read().decode()
                 command = shlex.split(launcher.splitlines()[-1])
                 self.assertEqual(command, ['exec', 'wine', 'cmd', '/d', '/c', 'Jouer.cmd'])

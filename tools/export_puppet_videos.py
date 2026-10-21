@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import threading
 
+from tools.build_parallel import cpu_run, parallel
 from tools.media_fingerprints import renderer_fingerprint, digest, file_hash, read_json
 from tools.game_config import load_config, startup_source
 from tools.build_tools import BuildError, ffdec_jar, java_binary
@@ -87,7 +88,7 @@ def main():
         fingerprint = hashlib.sha256(source.encode()+(ROOT/'bin/boufbowl-client-1.9.6.swf').read_bytes()).hexdigest()
         stamp = work/'capture.sha256'
         if not capture.exists() or not stamp.exists() or stamp.read_text()!=fingerprint:
-            subprocess.run([str(java), '-jar', str(ffdec), '-replace', str(ROOT/'bin/boufbowl-client-1.9.6.swf'),
+            cpu_run([str(java), '-jar', str(ffdec), '-replace', str(ROOT/'bin/boufbowl-client-1.9.6.swf'),
                             str(capture), 'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand', str(startup)], check=True, timeout=180)
             stamp.write_text(fingerprint)
 
@@ -115,26 +116,28 @@ def main():
     metadata = [read_json(work/task['id']/'capture.json') for task in pending]
     # Every original bone library declares 25 fps. Resample to 30 without changing playback speed.
     native_fps = int.from_bytes((ROOT/'assets/sprites/bones/0-deplacement.swl').read_bytes()[2:6], 'big')
-    for task in metadata:
+    def encode(task):
         count = task['frames']
         repeats = max(1, math.ceil(native_fps*2/count))
         while (count*repeats*OUTPUT_FPS) % native_fps:
             repeats += 1
         video = output/(task['id']+'.mp4')
         temporary = video.with_suffix('.building.mp4')
-        subprocess.run(['ffmpeg','-y','-v','error','-framerate',str(native_fps),'-i',str(work/task['id']/'%04d.png'),
+        cpu_run(['ffmpeg','-y','-v','error','-framerate',str(native_fps),'-i',str(work/task['id']/'%04d.png'),
                         '-vf',f'loop=loop=-1:size={count}:start=0,fps={OUTPUT_FPS},scale=-2:530,format=yuv420p',
                         '-frames:v',str(count*repeats*OUTPUT_FPS//native_fps),
-                        '-c:v','libsvtav1','-crf','35','-preset','8','-movflags','+faststart','-an',str(temporary)],check=True)
+                        '-c:v','libsvtav1','-svtav1-params','lp=1','-crf','35','-preset','8','-movflags','+faststart','-an',str(temporary)],check=True)
         temporary.replace(video)
         task.pop('images', None)
         task.update(path=video.relative_to(ROOT).as_posix(), width=454,height=530,fps=OUTPUT_FPS,native_fps=native_fps,
                     native_frames=count,cycles=repeats,seconds=count*repeats/native_fps,
                     codec='av1',crf=35,encoding=encoding,
                     sha256=hashlib.sha256(video.read_bytes()).hexdigest())
+        print('Exported', task['id'], task['seconds'], 'seconds, 454 × 530 AV1 CRF 35, 30 fps',flush=True)
+        return task
+    for task in parallel(encode, metadata):
         exports[task['character']] = task
         write_json(manifest_path, {'renderer':'Original Tiphon/BoufbowlerSprite', 'exports':[exports[c] for c, _, _ in ANIMATIONS if c in exports]})
-        print('Exported', task['id'], task['seconds'], 'seconds, 454 × 530 AV1 CRF 35, 30 fps',flush=True)
     exports.update({item['character']: item for item in metadata})
     complete = [exports[character] for character, _, _ in ANIMATIONS if character in exports]
     write_json(manifest_path, {'renderer':'Original Tiphon/BoufbowlerSprite', 'exports':complete})

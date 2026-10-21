@@ -21,7 +21,7 @@ if ! ready; then
     tail -n +@PAYLOAD_LINE@ -- "$0" > "$stage/payload.tar.gz"
     actual=$(sha256sum "$stage/payload.tar.gz")
     if [ "${actual%% *}" != "$revision" ]; then
-        echo "Le telechargement de Boufbowl est incomplet ou endommage." >&2
+        echo "Le telechargement de Boufbowl Fan est incomplet ou endommage." >&2
         exit 1
     fi
     tar -xzf "$stage/payload.tar.gz" -C "$stage"
@@ -33,12 +33,26 @@ if ! ready; then
     # -T avoids nesting files into another launch's already prepared cache.
     if ! mv -T -- "$stage/Boufbowl" "$target"; then
         if ! ready; then
-            echo "Impossible de preparer Boufbowl dans $target." >&2
+            echo "Impossible de preparer Boufbowl Fan dans $target." >&2
             exit 1
         fi
     fi
     rm -rf -- "$stage"
     trap - 0 INT TERM
+fi
+# Register the cached launcher with desktop environments after the first run.
+# Shell executables do not have a portable embedded application icon.
+data_dir=${XDG_DATA_HOME:-"$HOME/.local/share"}
+applications=$data_dir/applications
+icons=$data_dir/icons/hicolor/256x256/apps
+if mkdir -p -- "$applications" "$icons"; then
+    cp -- "$target/icon.png" "$icons/boufbowl-fan.png"
+    desktop_exec=$(printf '%s' "$target/jouer.sh" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g; s/\$/\\$/g; s/%/%%/g')
+    {
+        printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Boufbowl Fan'
+        printf 'Exec="%s"\n' "$desktop_exec"
+        printf '%s\n' 'Icon=boufbowl-fan' 'Terminal=false' 'Categories=Game;'
+    } > "$applications/boufbowl-fan.desktop"
 fi
 cd -- "$target"
 exec ./jouer.sh

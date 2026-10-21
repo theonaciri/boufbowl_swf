@@ -13,15 +13,17 @@ import sys
 import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tools.build_parallel import build_budget, cpu_run, parallel
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 from tools.player_server import player_server
+from tools.player_branding import build_icons
 from tools.player_assets import ignore_website_stadium_previews
 
 
 def run(command, *, env=None, timeout=600):
     try:
-        subprocess.run([str(arg) for arg in command], check=True, env=env, timeout=timeout)
+        cpu_run([str(arg) for arg in command], check=True, env=env, timeout=timeout)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         # Packaging arguments contain the signing password.
         raise RuntimeError("Build command failed: " + Path(command[0]).name) from None
@@ -50,6 +52,7 @@ def local_signing_password(certificate):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--jobs", type=int, help="Maximum CPU jobs (default: available CPUs)")
     parser.add_argument("--air-sdk", type=Path, required=True)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--ffdec", type=Path, required=True)
@@ -62,6 +65,13 @@ def main():
     parser.add_argument('--bun', default='bun', help='Bun executable for refreshing the website')
     parser.add_argument('--no-website', action='store_true', help='Build the APK only; defer website generation')
     args = parser.parse_args()
+    if args.jobs is not None and args.jobs < 1:
+        parser.error('--jobs must be positive')
+    with build_budget(args.jobs):
+        build(args, parser)
+
+
+def build(args, parser):
     android = Path(__file__).resolve().parent
     root = android.parent
     try:
@@ -83,12 +93,13 @@ def main():
             set(ignore_website_stadium_previews(directory, names))
             | ({"site"} & set(names) if Path(directory) == root / "assets" else set())
         ))
+    build_icons(root, stage/"icons")
     apply_resources(stage / "resources", game_config)
     # Android's VP6 decoder produces artifacts on these legacy FLV clips.
     # Cache H.264/AAC copies; all original media stays intact in the desktop tree.
     video_cache = build / "video-cache"
     video_cache.mkdir(exist_ok=True)
-    for source in (root / "assets/videos").glob("*.flv"):
+    def encode_video(source):
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         cached = video_cache / (source.stem + ".mp4")
         stamp = video_cache / (source.stem + ".sha256")
@@ -102,6 +113,8 @@ def main():
         target = stage / "assets/videos" / cached.name
         shutil.copyfile(cached, target)
         (stage / "assets/videos" / source.name).unlink()
+    for _ in parallel(encode_video, (root/"assets/videos").glob("*.flv")):
+        pass
     # AIR uses application URLs rather than the desktop HTTP server.
     for file in (stage / "resources").glob("*.json"):
         data = file.read_text(encoding="utf-8-sig")
@@ -160,18 +173,18 @@ def main():
         except ValueError as error:
             parser.error(str(error))
         if not certificate.exists():
-            run([java, "-jar", adt, "-certificate", "-cn", "BoufbowlOffline",
+            run([java, "-jar", adt, "-certificate", "-cn", "Boufbowl Fan",
                  "2048-RSA", certificate, password], env=env)
         certificate.chmod(0o600)
     suffix = "" if args.arch == "armv8" else "-emulator-x64"
     if args.debug:
         suffix += "-debug"
-    output = build / ("BoufbowlOffline" + suffix + ".apk")
+    output = build / ("Boufbowl Fan" + suffix + ".apk")
     temporary_output = output.with_name("." + output.stem + ".building.apk")
     run([java, "-Xmx2g", "-jar", adt, "-package", "-target", "apk-debug" if args.debug else "apk",
          "-arch", args.arch, "-storetype", "pkcs12", "-keystore", certificate,
          "-storepass", password, temporary_output, android / "application.xml",
-         "-C", stage, "bin/" + swf_name, "assets", "resources",
+         "-C", stage, "bin/" + swf_name, "assets", "resources", "icons",
          "-platformsdk", args.android_sdk.resolve()], env=env)
     temporary_output.replace(output)
     print("Built", output, "— default server:", args.server_url, flush=True)

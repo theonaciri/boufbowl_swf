@@ -25,7 +25,9 @@ Arch Linux:
 sudo pacman -S --needed python jre17-openjdk ffmpeg libavif
 ```
 
-FFmpeg and `avifenc` are needed only for website media, not the game build.
+FFmpeg is needed for website media and application icon generation when packaging
+players. `avifenc` is needed only for website media. Neither is needed for the
+game SWF build.
 FFmpeg must support libx264, libaom-av1, libsvtav1, and libwebp; `avifenc` must
 support `--qcolor`. Distribution packages on current systems normally provide them.
 
@@ -103,13 +105,14 @@ and the extracted `protocol/*.json` contracts are preserved inputs.
 python3 -m tools.build_player_downloads --server-url https://YOUR_SERVER
 ```
 
-Outputs `windows/build/Boufbowl-windows.exe` and
-`linux/build/Boufbowl-linux.run`: one executable download per platform.
+Outputs `windows/build/Boufbowl Fan.exe` and
+`linux/build/Boufbowl Fan.run`: one executable download per platform.
 Both embed the local SWF, game assets, resources, and Flash player. Website
 stadium previews (`assets/textures/stadiums/*.avif`) are excluded from desktop
 and Android packaging; the PNG textures remain included for the game.
 
-Build prerequisites: Java/FFDec and NSIS (`sudo apt-get install nsis` on Ubuntu).
+Build prerequisites: Java/FFDec, FFmpeg, and NSIS
+(`sudo apt-get install ffmpeg nsis` on Ubuntu).
 Use the Java/FFDec paths printed by the game build when overrides are needed;
 `--ffdec`, `--java`, and `--makensis` can specify custom tool locations. Separate cached SWFs contain each platform's defaults;
 the hosted browser SWF is unchanged. Only the game API uses the remote server.
@@ -120,8 +123,8 @@ the hosted browser SWF is unchanged. Only the game API uses the remote server.
 - Linux x86-64: install Wine with 32-bit support, then run:
 
   ```sh
-  chmod +x Boufbowl-linux.run
-  ./Boufbowl-linux.run
+  chmod +x "Boufbowl Fan.run"
+  ./"Boufbowl Fan.run"
   ```
 
   The executable verifies and extracts its embedded payload on first launch under
@@ -145,8 +148,8 @@ python3 linux/build.py --archive-only
 python3 linux/build.py
 ```
 
-Outputs `linux/build/BoufbowlOffline-linux.tar.gz` and
-`BoufbowlOffline-linux-amd64.deb`. These include the backend and Bun.
+Outputs `linux/build/Boufbowl Fan-development-linux.tar.gz` and
+`Boufbowl Fan-linux-amd64.deb`. These include the backend and Bun.
 Build the website first; packaging copies current files without compiling Flash. `--rebuild-worker` requires the external simulator sources.
 
 ## Android
@@ -160,7 +163,7 @@ python3 android/build.py \
   --server-url https://YOUR_SERVER
 ```
 
-Output: `android/build/BoufbowlOffline.apk`, ARM64. `--arch x64` builds for an
+Output: `android/build/Boufbowl Fan.apk`, ARM64. `--arch x64` builds for an
 emulator; `--debug` includes AIR debugging. The APK bundles game assets, applies
 shared/Android overrides to the desktop SWF, and converts FLVs to MP4. It connects
 to a separate backend. On ARM build hosts, Android/AAPT2 tools need compatible
@@ -190,3 +193,50 @@ Python changes need a backend restart; AS3 changes need an SWF rebuild and clien
 restart; simulator changes need a worker rebuild and backend restart. Rebuild
 packages after changing their client/assets or hosted URL. Generated outputs
 stay ignored; commit the sources and generators.
+
+### Application name and icons
+
+Player downloads are named `Boufbowl Fan.exe`, `Boufbowl Fan.run`, and
+`Boufbowl Fan.apk`. The shared icon source is `assets/branding/logo.png`.
+Package builds generate the required sizes automatically using FFmpeg.
+Windows embeds a multi-size ICO in the launcher; Android includes PNG launcher
+icons. The Linux launcher registers a **Boufbowl Fan** application menu entry
+and icon on first launch. Linux `.run` files themselves use the file manager's
+generic executable icon; use the application menu entry for the custom icon.
+The Android application ID and existing signing certificate are preserved so
+installed copies can still receive updates.
+
+## Parallel builds
+
+Builds automatically use all available logical CPUs, accounting for CPU affinity
+and Linux container CPU quotas. Python and Bun share one job budget across child
+processes; idle slots are reused by queued work. Encoders are limited to one CPU
+thread per job rather than each encoder starting a full-machine thread pool.
+
+Website media stages run concurrently; images, video encodes, and independent
+character captures also run in parallel. Inventory generation and the final static
+website compilation happen after every media stage succeeds. The shared game SWF
+must finish building before its consumers start.
+
+To limit concurrency explicitly:
+
+```sh
+bun run build:website --jobs 4
+python3 -m tools.build_player_downloads --jobs 4
+```
+
+`BOUFBOWL_BUILD_CPUS=4` applies the same ceiling to individual advanced tools.
+
+To build Windows, Linux, and Android together with one shared CPU budget:
+
+```sh
+bun run build:players \
+  --air-sdk /path/to/AIRSDK \
+  --android-sdk /path/to/Android/Sdk \
+  --jdk /path/to/jdk-17
+```
+
+`AIR_SDK` and `ANDROID_HOME` can supply SDK paths. Java/FFDec use normal automatic
+discovery, with `--jdk` and `--ffdec` available as overrides. The Android SDK must
+already be installed. The shared game client is prepared first if missing, then
+all three downloads are built before the website is refreshed once. `--jobs N` limits their combined concurrency; `--no-website` defers the refresh.

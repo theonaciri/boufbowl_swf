@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from tools.build_parallel import available_cpus, cpu_run
 from tools.site_delivery import delivery, write_json
 from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size, renderer_inputs, render_fingerprint, reusable, capture_source
 from tools.game_config import load_config, startup_source
@@ -29,13 +30,17 @@ def main():
     parser.add_argument('--ffdec', type=Path, default=os.environ.get('FFDEC_JAR') or None)
     parser.add_argument('--java', default=os.environ.get('JAVA', 'java'))
     parser.add_argument('--bun', default=os.environ.get('BUN', 'bun'))
-    parser.add_argument('--jobs', type=int, choices=range(1,5), default=1, help='Independent render pages (default: 1; software rendering benchmark winner)')
+    parser.add_argument('--jobs', type=int, default=available_cpus(), help='Independent render pages (default: available CPUs)')
     parser.add_argument('--pose', action='append', choices=list(POSES), help='Render only this pose (repeatable)')
     parser.add_argument('--character', action='append', help='Render only this character ID (repeatable)')
     parser.add_argument('--force', action='store_true', help='Re-render every portrait')
+    parser.add_argument('--assets-only', action='store_true', help='Defer inventory and static compilation until all media stages finish')
     parser.add_argument('--skip-images', action='store_true', help='Images already prepared by the website build')
     parser.add_argument('--check', action='store_true', help='Verify existing exports without rendering')
     args = parser.parse_args()
+    if args.jobs < 1:
+        parser.error('--jobs must be positive')
+    args.jobs = min(args.jobs, available_cpus())
     try:
         args.ffdec = ffdec_jar(args.ffdec)
         args.java = str(java_binary(args.java))
@@ -97,7 +102,7 @@ def main():
                 shutil.copyfile(capture_cache,capture)
                 print('Reusing compiled capture SWF',flush=True)
             else:
-                subprocess.run([args.java,'-jar',str(Path(args.ffdec).resolve()),'-replace',
+                cpu_run([args.java,'-jar',str(Path(args.ffdec).resolve()),'-replace',
                     str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),
                     'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
                 capture_cache.parent.mkdir(parents=True,exist_ok=True)
@@ -180,7 +185,10 @@ if(result.character_initializations!==result.characters.length)throw Error('Char
     timings['rendering_seconds']=round(time.perf_counter()-rendering_started,3)
     inventory_started=time.perf_counter()
     data=manifest()
-    old_path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+    write_json(old_path, data)
+    if args.assets_only:
+        print(f'Portraits ready: {len(pending)} rendered; static compilation deferred.', flush=True)
+        return
     inventory=audit()
     write_json(directory/'inventory.json',inventory)
     timings['inventory_seconds']=round(time.perf_counter()-inventory_started,3)

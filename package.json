@@ -5,6 +5,7 @@
     "build:website": "bun tools/build.mjs",
     "check:site": "bun tools/website/build.mjs --check",
     "build:game": "bun tools/build.mjs --game-only --rebuild-game",
-    "serve:website": "bun tools/website/serve.mjs"
+    "serve:website": "bun tools/website/serve.mjs",
+    "build:players": "bun tools/build-players.mjs"
   }
 }

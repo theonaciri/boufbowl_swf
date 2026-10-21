@@ -1,7 +1,8 @@
+import { cpuCount, cpuJob } from './cpu-budget.mjs';
 import { chromium } from 'playwright';
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-const jobs=Number(process.argv[3] || 2);
-const server=await chromium.launchServer({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding']});
+const jobs=Math.min(Number(process.argv[3] || cpuCount()),cpuCount());
+const server=await chromium.launchServer({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding','--num-raster-threads=1']});
 const browser=await chromium.connect(server.wsEndpoint());
 let peakRSS=0;
 function sampleMemory(){
@@ -19,7 +20,7 @@ function sampleMemory(){
 const timer=setInterval(sampleMemory,1000);
 const started=performance.now();
 try {
-  const results=await Promise.all(Array.from({length:jobs},async()=>{
+  const results=await Promise.all(Array.from({length:jobs},()=>cpuJob(async()=>{
     const page=await browser.newPage({viewport:{width:2048,height:1200},deviceScaleFactor:1});
     await page.goto(process.argv[2]);
     await page.waitForFunction(()=>window.result!==undefined,null,{timeout:7200000});
@@ -27,7 +28,7 @@ try {
     if(result.errors.length)throw Error(JSON.stringify(result.errors));
     await page.close();
     return result;
-  }));
+  })));
   sampleMemory();
   const report={jobs,portraits:results.reduce((n,r)=>n+r.done,0),seconds:(performance.now()-started)/1000,peak_browser_rss_mib:Math.round(peakRSS),workers:results};
   writeFileSync(process.argv[4],JSON.stringify(report));

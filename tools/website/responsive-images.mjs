@@ -1,3 +1,4 @@
+import { cpuJob, cpuCount } from './cpu-budget.mjs';
 import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -9,20 +10,34 @@ const recipes = [
 ];
 
 async function command(args) {
-  const process = Bun.spawn(args, { stdout: "ignore", stderr: "pipe" });
-  const stderr = await new Response(process.stderr).text();
-  if (await process.exited !== 0) throw new Error(`Responsive image conversion failed: ${args[0]}\n${stderr}`);
+  if (args[0] === 'ffmpeg') {
+    args.splice(1, 0, '-threads', '1', '-filter_threads', '1');
+    args.splice(-1, 0, '-threads', '1');
+  }
+  return cpuJob(async () => {
+    const process = Bun.spawn(args, { stdout: "ignore", stderr: "pipe" });
+    const stderr = await new Response(process.stderr).text();
+    if (await process.exited !== 0) throw new Error(`Responsive image conversion failed: ${args[0]}\n${stderr}`);
+  });
 }
 
+async function completeAll(promises) {
+  const results = await Promise.allSettled(promises);
+  const failed = results.find(result => result.status === 'rejected');
+  if (failed) throw failed.reason;
+  return results.map(result => result.value);
+}
+
+// Wait for active conversions before the caller removes the temporary directory.
 // Cache generated media under .local; source images and templates stay untouched.
 export async function responsiveImages(root, temporary) {
-  const outputs = [];
-  for (const recipe of recipes) {
+  const results = await completeAll(recipes.map(async recipe => {
+    const outputs = [];
     let source;
     for (const candidate of recipe.sources) {
       if (await exists(path.join(root, candidate))) { source = candidate; break; }
     }
-    if (!source) continue;
+    if (!source) return outputs;
     const key = createHash("sha256")
       .update(await fs.readFile(path.join(root, source)))
       .update(JSON.stringify({ ...recipe, quality: 80, alphaQuality: 80, speed: 4, revision: 1 }))
@@ -36,22 +51,27 @@ export async function responsiveImages(root, temporary) {
       outputs.push([`assets/site/responsive/${filename}`, cached]);
       if (!await exists(cached)) missing.push([width, cached]);
     }
-    if (!missing.length) continue;
+    if (!missing.length) return outputs;
     console.log(`Generating ${missing.length} responsive ${recipe.name} images (AVIF quality 80)`);
     const master = path.join(temporary, `${recipe.name}-master.png`);
     await command(["ffmpeg", "-y", "-v", "error", ...(source.endsWith(".flv") ? ["-ss", "1"] : []),
       "-i", path.join(root, source), "-frames:v", "1", master]);
-    for (const [width, cached] of missing) {
-      const png = path.join(temporary, `${recipe.name}-${width}.png`);
-      const avif = path.join(temporary, `${recipe.name}-${width}.avif`);
-      await command(["ffmpeg", "-y", "-v", "error", "-i", master,
-        "-vf", `scale=${width}:-1:flags=lanczos`, "-frames:v", "1", png]);
-      await command(["avifenc", "--qcolor", "80", "--qalpha", "80", "--speed", "4", "--jobs", "2",
-        "--yuv", recipe.yuv, png, avif]);
-      // A failed encoder never leaves a reusable partial cache entry.
-      await fs.copyFile(avif, cached + ".building");
-      await fs.rename(cached + ".building", cached);
-    }
-  }
-  return outputs;
+    let next = 0;
+    await completeAll(Array.from({length: Math.min(cpuCount(), missing.length)}, async () => {
+      while (next < missing.length) {
+        const [width, cached] = missing[next++];
+        const png = path.join(temporary, `${recipe.name}-${width}.png`);
+        const avif = path.join(temporary, `${recipe.name}-${width}.avif`);
+        await command(["ffmpeg", "-y", "-v", "error", "-i", master,
+          "-vf", `scale=${width}:-1:flags=lanczos`, "-frames:v", "1", png]);
+        await command(["avifenc", "--qcolor", "80", "--qalpha", "80", "--speed", "4", "--jobs", "1",
+          "--yuv", recipe.yuv, png, avif]);
+        // A failed encoder never leaves a reusable partial cache entry.
+        await fs.copyFile(avif, cached + ".building");
+        await fs.rename(cached + ".building", cached);
+      }
+    }));
+    return outputs;
+  }));
+  return results.flat();
 }

@@ -12,7 +12,7 @@ class SiteDeliveryTests(unittest.TestCase):
     def fixture(self, root):
         for name in (*PAGES, *FRONTEND, 'bin/boufbowl-client-1.9.6.swf',
                      'assets/site/logo.avif', 'resources/site.json',
-                     'android/build/BoufbowlOffline.apk', '.local/private.sqlite'):
+                     'android/build/Boufbowl Fan.apk', '.local/private.sqlite'):
             path=root/name
             path.parent.mkdir(parents=True,exist_ok=True)
             path.write_text('{}' if name.endswith('.json') else name)
@@ -46,10 +46,10 @@ class SiteDeliveryTests(unittest.TestCase):
             self.assertRegex(html,r'js/home\.[a-z0-9]+\.js')
             self.assertFalse((output/'home.css').exists())
             self.assertTrue(output.stat().st_mode & 0o005)
-            self.assertTrue((output/'downloads/BoufbowlOffline.apk').is_file())
+            self.assertTrue((output/'downloads/Boufbowl Fan.apk').is_file())
             self.assertTrue((output/'website-activity.html').is_file())
             self.assertIn('url=website-activity.html',(output/'website-tracking.html').read_text())
-            self.assertEqual(result['downloads']['android']['size'],len('android/build/BoufbowlOffline.apk'))
+            self.assertEqual(result['downloads']['android']['size'],len('android/build/Boufbowl Fan.apk'))
             self.assertFalse((output/'.local/private.sqlite').exists())
             self.assertEqual(delivery(root,output,check=True),result)
             (output/'unexpected.txt').write_text('extra')
@@ -81,12 +81,12 @@ class SiteDeliveryTests(unittest.TestCase):
             (unrelated/'keep.txt').write_text('keep')
             with self.assertRaises(ValueError):delivery(root,unrelated)
             self.assertEqual((unrelated/'keep.txt').read_text(),'keep')
-            package=root/'android/build/BoufbowlOffline.apk'
+            package=root/'android/build/Boufbowl Fan.apk'
             package.unlink()
             package.symlink_to(root/'.local/private.sqlite')
             result=delivery(root,Path(temporary)/'safe-output')
             self.assertIsNone(result['downloads']['android']['url'])
-            self.assertFalse((Path(temporary)/'safe-output/downloads/BoufbowlOffline.apk').exists())
+            self.assertFalse((Path(temporary)/'safe-output/downloads/Boufbowl Fan.apk').exists())
 
     def test_source_script_changes_generate_a_new_bundle_name(self):
         with tempfile.TemporaryDirectory() as temporary:

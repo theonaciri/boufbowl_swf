@@ -2,9 +2,9 @@
 <application xmlns="http://ns.adobe.com/air/application/51.4">
   <id>org.boufbowl.offline</id>
   <versionNumber>1.0.0</versionNumber>
-  <filename>BoufbowlOffline</filename>
-  <name>Boufbowl Offline</name>
-  <description>Offline Boufbowl menus, character customization and tutorial.</description>
+  <filename>Boufbowl Fan</filename>
+  <name>Boufbowl Fan</name>
+  <description>Boufbowl Fan: restored game, online matches, character customization and tutorial.</description>
   <initialWindow>
     <content>bin/boufbowl-client-1.9.6.swf</content>
     <visible>true</visible>
@@ -15,6 +15,15 @@
     <aspectRatio>landscape</aspectRatio>
     <renderMode>cpu</renderMode>
   </initialWindow>
+  <icon>
+    <image36x36>icons/icon-36.png</image36x36>
+    <image48x48>icons/icon-48.png</image48x48>
+    <image72x72>icons/icon-72.png</image72x72>
+    <image96x96>icons/icon-96.png</image96x96>
+    <image144x144>icons/icon-144.png</image144x144>
+    <image192x192>icons/icon-192.png</image192x192>
+    <image512x512>icons/icon-512.png</image512x512>
+  </icon>
   <supportedProfiles>mobileDevice</supportedProfiles>
   <android>
     <manifestAdditions><![CDATA[

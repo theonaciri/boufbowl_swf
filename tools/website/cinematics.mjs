@@ -1,3 +1,4 @@
+import { renderTasks } from './cpu-budget.mjs';
 import {chromium} from 'playwright';
 import {readFileSync,writeFileSync,mkdirSync,renameSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -6,8 +7,9 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 const directory=process.argv[3];
 const tasks=JSON.parse(readFileSync(join(directory,'pending.json')));
-const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding']});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-background-timer-throttling','--disable-renderer-backgrounding','--num-raster-threads=1']});
 try{
+ await renderTasks(tasks, async()=>{
  const page=await browser.newPage({viewport:{width:2560,height:1500}});
  await page.goto(process.argv[2]);
  await page.evaluate(async()=>{
@@ -16,14 +18,17 @@ try{
   const p=window.RufflePlayer.newest().createPlayer();p.style.cssText='width:2560px;height:1500px;display:block';document.querySelector('#mount').append(p);window.p=p;
   await p.load({url:'/bin/capture-home.swf',quality:'high',backgroundColor:'#111111',allowScriptAccess:true,autoplay:'on',unmuteOverlay:'hidden',parameters:{lang:'fr',server:'0',mock:'0',tuto:'0'}});
  });
+
+ return page;
+ }, async(task,page)=>{
  const flush=()=>page.evaluate(()=>new Promise(requestAnimationFrame));
- for(const task of tasks){
+
   await page.evaluate(()=>window.p.ruffle().resume());
   const data={name:task.name,actors:JSON.stringify(task.actors)};
   await page.waitForFunction(d=>{try{const s=window.p.ruffle().callExternalInterface('cinemaCreate',d.name,d.actors);if(String(s).startsWith('ERROR'))throw Error(s);return Number(s)>0}catch(e){if(String(e).includes('ERROR:'))throw e;return false}},data,{timeout:90000,polling:100});
   const count=Number(await page.evaluate(d=>window.p.ruffle().callExternalInterface('cinemaCreate',d.name,d.actors),data));
   const folder=join(directory,task.slug);mkdirSync(folder,{recursive:true});
-  const encoder=spawn('ffmpeg',['-y','-v','error','-f','image2pipe','-framerate','25','-c:v','png','-i','pipe:0','-an','-c:v','ffv1','-level','3','-threads','2',join(folder,'native.building.mkv')],{stdio:['pipe','inherit','inherit']});
+  const encoder=spawn('ffmpeg',['-y','-v','error','-threads','1','-filter_threads','1','-f','image2pipe','-framerate','25','-c:v','png','-i','pipe:0','-an','-c:v','ffv1','-level','3','-threads','1',join(folder,'native.building.mkv')],{stdio:['pipe','inherit','inherit']});
   const completion=once(encoder,'close');
   const slots=new Set();const heroes=new Set();
   const started=performance.now();
@@ -66,5 +71,5 @@ try{
   const metadata={...task,native_sha256,frames:count,seconds:count/25,verified_skin_labels:[...heroes],actor_slots:[...slots]};
   writeFileSync(join(folder,'capture.json'),JSON.stringify(metadata,null,2));
   console.log('Captured',task.slug,count,'native vector frames');
- }
+ });
 }finally{await browser.close()}

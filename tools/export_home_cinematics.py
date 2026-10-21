@@ -7,9 +7,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import threading
+from tools.build_parallel import cpu_run, parallel
 from tools.media_fingerprints import renderer_fingerprint, read_json, file_hash
 from tools.game_config import load_config, startup_source
 from tools.build_tools import ffdec_jar, java_binary
+from tools.site_delivery import write_json
 from tools.site_portraits import ROOT, export_plan
 
 # Eighteen legendary actors, each appearing in exactly one carousel movie.
@@ -38,7 +40,7 @@ ENCODING = {'width': 1015, 'height': 595, 'fps': 60, 'codec': 'libaom-av1', 'crf
 def write_media_sources(clips):
     path=ROOT/'docs/site/media-sources.json'
     path.parent.mkdir(parents=True,exist_ok=True)
-    path.write_text(json.dumps({'version':2,'source':'assets/artworks/cutscene-illustration.swf','capture':'Original Flash vectors and native palettes, deterministic frame capture through Ruffle','clips':clips},ensure_ascii=False,indent=2)+'\n')
+    write_json(path, {'version':2,'source':'assets/artworks/cutscene-illustration.swf','capture':'Original Flash vectors and native palettes, deterministic frame capture through Ruffle','clips':clips})
 
 
 def main():
@@ -86,7 +88,7 @@ def main():
         if not capture.exists() or not stamp.exists() or stamp.read_text()!=fingerprint:
             java=java_binary()
             ffdec=ffdec_jar()
-            subprocess.run([str(java),'-jar',str(ffdec),'-replace',str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
+            cpu_run([str(java),'-jar',str(ffdec),'-replace',str(ROOT/'bin/boufbowl-client-1.9.6.swf'),str(capture),'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand',str(startup)],check=True,timeout=180)
             stamp.write_text(fingerprint)
         (work/'pending.json').write_text(json.dumps(pending))
         class Handler(SimpleHTTPRequestHandler):
@@ -103,7 +105,7 @@ def main():
             subprocess.run([shutil.which('bun'),str(ROOT/'tools/website/cinematics.mjs'),f'http://127.0.0.1:{server.server_port}/capture.html',str(work)],check=True,timeout=10800)
         finally:server.shutdown();server.server_close();thread.join()
     if args.capture_only:return
-    for task in tasks:
+    def encode(task):
         folder=work/task['slug'];metadata=json.loads((folder/'capture.json').read_text())
         if (metadata['fingerprint']!=task['fingerprint'] or not (folder/'native.mkv').is_file()
                 or metadata.get('native_sha256')!=file_hash(folder/'native.mkv')):
@@ -119,19 +121,21 @@ def main():
                 saved.pop('poster_frame',None)
                 (folder/'export.json').write_text(json.dumps(saved,ensure_ascii=False,indent=2)+'\n')
                 print('Reusing encoded',task['slug'],flush=True)
-                continue
+                return
         print('Encoding',task['slug'],flush=True)
         metadata.pop('poster_frame',None)
         scale=f'scale={ENCODING["width"]}:{ENCODING["height"]}:flags=lanczos:out_color_matrix=bt709:out_range=tv,setsar=1'
         # libaom supports the requested odd width; SVT-AV1 requires even dimensions.
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(native),'-vf',f'fps=60,{scale},format=yuv420p10le','-an','-c:v',ENCODING['codec'],'-cpu-used','6','-crf',str(ENCODING['crf']),'-b:v','0','-row-mt','1','-threads','3','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(av1)],check=True)
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(av1),'-map','0:v:0','-c:v','copy','-loop','0',str(avif)],check=True)
+        cpu_run(['ffmpeg','-y','-v','error','-i',str(native),'-vf',f'fps=60,{scale},format=yuv420p10le','-an','-c:v',ENCODING['codec'],'-cpu-used','6','-crf',str(ENCODING['crf']),'-b:v','0','-row-mt','1','-threads','1','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(av1)],check=True)
+        cpu_run(['ffmpeg','-y','-v','error','-i',str(av1),'-map','0:v:0','-c:v','copy','-loop','0',str(avif)],check=True)
         # H.264 4:2:0 needs even dimensions: add one pixel at the right and bottom.
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(native),'-vf',f'fps=60,{scale},pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p','-an','-c:v','libx264','-preset','fast','-crf','16','-threads','3','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(fallback)],check=True)
+        cpu_run(['ffmpeg','-y','-v','error','-i',str(native),'-vf',f'fps=60,{scale},pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p','-an','-c:v','libx264','-preset','fast','-crf','16','-threads','1','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(fallback)],check=True)
         metadata.update(capture_width=task['width'],capture_height=task['height'],width=ENCODING['width'],height=ENCODING['height'],base=target.name,encoding=ENCODING)
         metadata['exports']={key:{'path':p.relative_to(ROOT).as_posix(),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for key,p in [('avif',avif),('av1',av1),('h264',fallback)]}
         (folder/'export.json').write_text(json.dumps(metadata,ensure_ascii=False,indent=2)+'\n')
         print('Exported',task['slug'],flush=True)
+    for _ in parallel(encode, tasks):
+        pass
     complete=[]
     for slug,_,_ in CAST:
         p=work/slug/'export.json'

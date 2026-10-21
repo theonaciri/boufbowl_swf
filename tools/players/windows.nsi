@@ -1,6 +1,11 @@
 ; Single-download launcher; the payload stays cached between launches.
 Unicode true
-Name "Boufbowl"
+Name "Boufbowl Fan"
+Icon "${APP_ICON}"
+VIProductVersion "1.0.0.0"
+VIAddVersionKey "ProductName" "Boufbowl Fan"
+VIAddVersionKey "FileDescription" "Boufbowl Fan"
+VIAddVersionKey "FileVersion" "1.0.0"
 OutFile "${OUTPUT_FILE}"
 RequestExecutionLevel user
 SilentInstall silent
@@ -34,11 +39,11 @@ launch:
   Pop $0
   Pop $1
   StrCmp $0 "0" done
-  MessageBox MB_OK|MB_ICONSTOP "Impossible de lancer Boufbowl ($0).$\r$\n$1"
+  MessageBox MB_OK|MB_ICONSTOP "Impossible de lancer Boufbowl Fan ($0).$\r$\n$1"
   SetErrorLevel 1
   Goto done
 failed:
-  MessageBox MB_OK|MB_ICONSTOP "Impossible de preparer les fichiers de Boufbowl dans $INSTDIR."
+  MessageBox MB_OK|MB_ICONSTOP "Impossible de preparer les fichiers de Boufbowl Fan dans $INSTDIR."
   SetErrorLevel 1
 done:
 SectionEnd

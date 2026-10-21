@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import struct
 import subprocess
+from tools.build_parallel import cpu_run
 import tempfile
 import zlib
 from tools.heraldry import tags
@@ -65,7 +66,7 @@ def build(root, characters, ffdec=None, java='java', force=False, check=False):
         raise ValueError('Grid icon export needs --ffdec /path/to/ffdec.jar (and --java if Java is not on PATH)')
     directory.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='boufbowl-grid-icons-') as temporary:
-        completed = subprocess.run([java, '-jar', str(Path(ffdec).resolve()), '-selectid', str(identity),
+        completed = cpu_run([java, '-jar', str(Path(ffdec).resolve()), '-selectid', str(identity),
             '-select', f'{identity}:1-{max(mapping.values())}', '-zoom', '4', '-ignorebackground',
             '-format', 'sprite:png', '-export', 'sprite', temporary, str(source)],
             capture_output=True, text=True, timeout=120)

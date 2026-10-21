@@ -39,9 +39,9 @@ STATIC_PAGES = ("index.html", "play.html", "home.js", "site-activity.js", "resto
 
 
 DOWNLOAD_FILES = {
-    '/downloads/BoufbowlOffline.apk': ('android/build/BoufbowlOffline.apk', 'android'),
-    '/downloads/Boufbowl-linux.run': ('linux/build/Boufbowl-linux.run', 'desktop'),
-    '/downloads/Boufbowl-windows.exe': ('windows/build/Boufbowl-windows.exe', 'windows'),
+    '/downloads/Boufbowl%20Fan.apk': ('android/build/Boufbowl Fan.apk', 'android'),
+    '/downloads/Boufbowl%20Fan.run': ('linux/build/Boufbowl Fan.run', 'desktop'),
+    '/downloads/Boufbowl%20Fan.exe': ('windows/build/Boufbowl Fan.exe', 'windows'),
 }
 
 
@@ -319,8 +319,11 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             return None
         legacy_downloads = {
-            '/downloads/Boufbowl-windows.zip': '/downloads/Boufbowl-windows.exe',
-            '/downloads/Boufbowl-linux.tar.gz': '/downloads/Boufbowl-linux.run',
+            '/downloads/Boufbowl-windows.zip': '/downloads/Boufbowl%20Fan.exe',
+            '/downloads/Boufbowl-linux.tar.gz': '/downloads/Boufbowl%20Fan.run',
+            '/downloads/Boufbowl-windows.exe': '/downloads/Boufbowl%20Fan.exe',
+            '/downloads/Boufbowl-linux.run': '/downloads/Boufbowl%20Fan.run',
+            '/downloads/BoufbowlOffline.apk': '/downloads/Boufbowl%20Fan.apk',
         }
         if route in legacy_downloads:
             self.send_response(302)

@@ -9,9 +9,9 @@ import { responsiveImages } from "./responsive-images.mjs";
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const PAGES = ["index.html", "play.html", "browser.html", "admin.html", "website-activity.html", "moderation.html", "tournaments.html", "assets-admin.html"];
 const DOWNLOADS = {
-  android: ["android/build/BoufbowlOffline.apk", "downloads/BoufbowlOffline.apk"],
-  desktop: ["linux/build/Boufbowl-linux.run", "downloads/Boufbowl-linux.run"],
-  windows: ["windows/build/Boufbowl-windows.exe", "downloads/Boufbowl-windows.exe"],
+  android: ["android/build/Boufbowl Fan.apk", "downloads/Boufbowl Fan.apk"],
+  desktop: ["linux/build/Boufbowl Fan.run", "downloads/Boufbowl Fan.run"],
+  windows: ["windows/build/Boufbowl Fan.exe", "downloads/Boufbowl Fan.exe"],
 };
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const exists = async (name) => fs.access(name).then(() => true, () => false);
@@ -67,7 +67,7 @@ async function siteManifest(root, files) {
     const external = publicUrl(`${platform}_download_url`);
     const artifact = local && files.get(target);
     downloads[platform] = {
-      url: external || (artifact ? `/${target}?v=${artifact.sha256.slice(0, 16)}` : null), local: Boolean(artifact && !external),
+      url: external || (artifact ? `${encodeURI("/" + target)}?v=${artifact.sha256.slice(0, 16)}` : null), local: Boolean(artifact && !external),
       size: artifact && !external ? artifact.bytes : null,
       description: platform === "android" ? "APK · Android 6+ · ARM64" : platform === "windows" ? "Windows" : external ? "Desktop · client Flash" : "Linux x86-64",
     };

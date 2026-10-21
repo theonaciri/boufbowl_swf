@@ -29,6 +29,11 @@ First website builds can take a long time; later builds automatically refresh ch
 Serve that folder with a static web server; [Hosting](docs/HOSTING.md) explains
 Nginx and the separate game API. No manual file copies or legal-page build needed.
 
+Website media builds automatically share all available CPUs between independent
+jobs. Use `--jobs N` to lower the ceiling. `bun run build:players` can package all
+three platforms in parallel; see [Distribute players](docs/BUILD.md#distribute-players)
+and [Parallel builds](docs/BUILD.md#parallel-builds) for SDK options.
+
 For native desktop development (with Wine and the standalone Flash player):
 
 ```sh

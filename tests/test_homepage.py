@@ -17,14 +17,14 @@ class HomepageTests(unittest.TestCase):
             root=Path(directory)
             self.assertIsNone(site_manifest(root)['downloads']['android']['url'])
             (root/'android/build').mkdir(parents=True)
-            (root/'android/build/BoufbowlOffline.apk').write_bytes(b'apk')
+            (root/'android/build/Boufbowl Fan.apk').write_bytes(b'apk')
             data=site_manifest(root)
-            self.assertRegex(data['downloads']['android']['url'],r'^/downloads/BoufbowlOffline\.apk\?v=[a-f0-9]{16}$')
+            self.assertRegex(data['downloads']['android']['url'],r'^/downloads/Boufbowl%20Fan\.apk\?v=[a-f0-9]{16}$')
             self.assertEqual(data['downloads']['android']['size'],3)
             (root/'windows/build').mkdir(parents=True)
-            (root/'windows/build/Boufbowl-windows.exe').write_bytes(b'windows')
+            (root/'windows/build/Boufbowl Fan.exe').write_bytes(b'windows')
             data=site_manifest(root)
-            self.assertRegex(data['downloads']['windows']['url'],r'^/downloads/Boufbowl-windows\.exe\?v=[a-f0-9]{16}$')
+            self.assertRegex(data['downloads']['windows']['url'],r'^/downloads/Boufbowl%20Fan\.exe\?v=[a-f0-9]{16}$')
             self.assertEqual(data['downloads']['windows']['size'],7)
             self.assertEqual(data['downloads']['windows']['description'],'Windows')
             (root/'resources').mkdir()
@@ -42,9 +42,9 @@ class HomepageTests(unittest.TestCase):
             root=Path(directory)
             for name in STATIC_PAGES: (root/name).write_text(name)
             (root/'android/build').mkdir(parents=True)
-            (root/'android/build/BoufbowlOffline.apk').write_bytes(b'build')
+            (root/'android/build/Boufbowl Fan.apk').write_bytes(b'build')
             (root/'windows/build').mkdir(parents=True)
-            (root/'windows/build/Boufbowl-windows.exe').write_bytes(b'windows')
+            (root/'windows/build/Boufbowl Fan.exe').write_bytes(b'windows')
             (root/'private.txt').write_text('secret')
             class QuietHandler(Handler):
                 def log_message(self,*args):pass
@@ -58,20 +58,20 @@ class HomepageTests(unittest.TestCase):
                         if method=='GET':self.assertEqual(response.read(),b'index.html')
                     with urlopen(Request(origin+'/browser.html',method=method)) as response:
                         self.assertTrue(response.url.endswith('/play.html'))
-                    with urlopen(Request(origin+'/downloads/BoufbowlOffline.apk',method=method)) as response:
+                    with urlopen(Request(origin+'/downloads/Boufbowl%20Fan.apk',method=method)) as response:
                         self.assertEqual(response.status,200)
                         if method=='GET':self.assertEqual(response.read(),b'build')
-                    with urlopen(Request(origin+'/downloads/Boufbowl-windows.exe',method=method)) as response:
+                    with urlopen(Request(origin+'/downloads/Boufbowl%20Fan.exe',method=method)) as response:
                         self.assertEqual(response.headers['Content-Length'],'7')
                         if method=='GET':self.assertEqual(response.read(),b'windows')
                 with urlopen(origin+'/api/site') as response:self.assertTrue(json.load(response)['ok'])
-                for route in ('/downloads/private.txt','/downloads/../private.txt','/android/build/BoufbowlOffline.apk'):
+                for route in ('/downloads/private.txt','/downloads/../private.txt','/android/build/Boufbowl%20Fan.apk'):
                     with self.assertRaises(HTTPError) as error:urlopen(origin+route)
                     error.exception.close()
-                (root/'android/build/BoufbowlOffline.apk').unlink()
-                (root/'android/build/BoufbowlOffline.apk').symlink_to(root/'private.txt')
+                (root/'android/build/Boufbowl Fan.apk').unlink()
+                (root/'android/build/Boufbowl Fan.apk').symlink_to(root/'private.txt')
                 self.assertIsNone(site_manifest(root)['downloads']['android']['url'])
-                with self.assertRaises(HTTPError) as error:urlopen(origin+'/downloads/BoufbowlOffline.apk')
+                with self.assertRaises(HTTPError) as error:urlopen(origin+'/downloads/Boufbowl%20Fan.apk')
                 error.exception.close()
             finally:
                 server.shutdown();server.server_close();thread.join(timeout=5)

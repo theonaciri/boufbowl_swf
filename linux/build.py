@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import apply_resources, load_config
 from tools.player_assets import ignore_website_stadium_previews
+from tools.player_branding import build_icons
 from backend.server import STATIC_PAGES
 
 
@@ -28,10 +29,12 @@ def main():
     root = Path(__file__).resolve().parent.parent
     config = load_config()
     build = root / "linux/build"
-    bundle = build / "BoufbowlOffline"
+    bundle = build / "Boufbowl Fan"
     if bundle.exists():
         shutil.rmtree(bundle)
     bundle.mkdir(parents=True)
+    icons = build_icons(root, build/"icons")
+    shutil.copyfile(icons/"icon-256.png", bundle/"icon.png")
     bun = shutil.which("bun") or str(Path.home() / ".bun/bin/bun")
     if args.rebuild_worker:
         subprocess.run([bun, str(root / "backend/build-worker.ts")], check=True)
@@ -50,7 +53,7 @@ def main():
     for name in ("play.py", "play.sh", "README.md", *STATIC_PAGES):
         shutil.copy2(root / name, bundle / name)
     (bundle / "README.txt").write_text(
-        "Boufbowl Offline for Linux\n\n"
+        "Boufbowl Fan for Linux\n\n"
         "Requires Python 3, Wine (including 32-bit support), and X11/XWayland.\n"
         "Run ./play.sh from a graphical desktop.\n"
         "Use ./play.sh --mode tutorial to enter the tutorial directly.\n"
@@ -65,7 +68,7 @@ def main():
         with (bundle / 'README.txt').open('a') as instructions:
             instructions.write('\nOnline play: run ./play-online.sh to connect to '+args.server_url+'\n')
 
-    archive = build / "BoufbowlOffline-linux.tar.gz"
+    archive = build / "Boufbowl Fan-development-linux.tar.gz"
     temporary_archive = archive.with_name("." + archive.name + ".building")
     with tarfile.open(temporary_archive, "w:gz") as output:
         output.add(bundle, arcname=bundle.name)
@@ -83,16 +86,16 @@ def main():
     (package / "DEBIAN/control").write_text(
         "Package: boufbowl-offline\nVersion: 1.0.0\nSection: games\n"
         "Priority: optional\nArchitecture: amd64\n"
-        "Maintainer: Boufbowl Offline <boufbowl@localhost>\n"
+        "Maintainer: Boufbowl Fan <boufbowl@localhost>\n"
         "Depends: python3, wine, wine32\n"
         "Description: Boufbowl client and persistent replacement game server\n"
         " Runs the original patched Flash client through Wine.\n")
     applications = package / "usr/share/applications"
     applications.mkdir(parents=True)
     (applications / "boufbowl-offline.desktop").write_text(
-        "[Desktop Entry]\nType=Application\nName=Boufbowl Offline\n"
-        "Exec=/opt/boufbowl-offline/play.sh\nTerminal=false\nCategories=Game;\n")
-    deb = build / "BoufbowlOffline-linux-amd64.deb"
+        "[Desktop Entry]\nType=Application\nName=Boufbowl Fan\n"
+        "Icon=/opt/boufbowl-offline/icon.png\nExec=/opt/boufbowl-offline/play.sh\nTerminal=false\nCategories=Game;\n")
+    deb = build / "Boufbowl Fan-linux-amd64.deb"
     subprocess.run(["dpkg-deb", "--root-owner-group", "--build", package, deb], check=True)
     print("Built", archive)
     print("Built", deb)

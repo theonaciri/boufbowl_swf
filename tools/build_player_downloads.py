@@ -8,7 +8,9 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+from tools.build_parallel import build_budget, cpu_job, cpu_run, parallel
 from tools.player_server import player_server
+from tools.player_branding import build_icons
 from tools.player_assets import website_stadium_preview
 from tools.build_tools import ffdec_jar, java_binary
 import zipfile
@@ -45,7 +47,7 @@ def desktop_client(root, platform, server_url, ffdec=None, java=None):
     ffdec = ffdec_jar(ffdec, download=True)
     java = java_binary(java)
     temporary = cache / 'client.building.swf'
-    subprocess.run([str(java), '-jar', str(Path(ffdec).resolve()), '-replace', str(client), str(temporary),
+    cpu_run([str(java), '-jar', str(Path(ffdec).resolve()), '-replace', str(client), str(temporary),
                     'com.ankamagames.xgaming.utils.flashvars.FlashVarsManager', str(patch)],
                    check=True, timeout=600)
     temporary.replace(output)
@@ -80,6 +82,7 @@ def windows_executable(archive, makensis=None):
     makensis = makensis or shutil.which('makensis')
     if not makensis:
         raise FileNotFoundError('Install NSIS (makensis) or pass --makensis to build the Windows executable')
+    icons = build_icons(ROOT, archive.parent/'icons')
     revision = hashlib.sha256(archive.read_bytes()).hexdigest()
     output = archive.with_suffix('.exe')
     temporary = output.with_suffix('.building.exe')
@@ -87,9 +90,10 @@ def windows_executable(archive, makensis=None):
         stage = Path(directory)
         with zipfile.ZipFile(archive) as payload:
             payload.extractall(stage)
-        subprocess.run([str(makensis), '-V2', '-NOCD',
+        cpu_run([str(makensis), '-V2', '-NOCD',
                         '-DPAYLOAD_DIR=' + str((stage/'Boufbowl').resolve()),
                         '-DBUNDLE_REVISION=' + revision,
+                        '-DAPP_ICON=' + str((icons/'icon.ico').resolve()),
                         '-DOUTPUT_FILE=' + str(temporary.resolve()),
                         str(ROOT/'tools/players/windows.nsi')], check=True, timeout=600)
     temporary.replace(output)
@@ -101,7 +105,7 @@ def linux_executable(archive):
     revision = hashlib.sha256(archive.read_bytes()).hexdigest()
     header = (ROOT/'tools/players/linux.run.sh').read_text().replace('@REVISION@', revision)
     header = header.replace('@PAYLOAD_LINE@', str(header.count('\n') + 1)).encode()
-    output = archive.with_name('Boufbowl-linux.run')
+    output = archive.with_name('Boufbowl Fan.run')
     temporary = output.with_suffix('.building.run')
     with temporary.open('wb') as target, archive.open('rb') as source:
         target.write(header)
@@ -114,6 +118,7 @@ def linux_executable(archive):
 def build(root, server_url=None, ffdec=None, java=None, makensis=None):
     root = Path(root)
     server_url = player_server(root, server_url)
+    icons = build_icons(root, root/'.local/player-icons')
     player = (root / 'bin/flashplayer_32_sa.exe').read_bytes()
     bundled_files = []
     for folder in ('assets', 'resources'):
@@ -124,28 +129,28 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None):
             if (path.is_file() and not website_stadium_preview(path)
                     and not (folder == 'assets' and path.is_relative_to(base / 'site'))):
                 bundled_files.append((f'Boufbowl/{path.relative_to(root).as_posix()}', path))
+    bundled_files.append(('Boufbowl/icon.png', icons/'icon-256.png'))
     readme = (
-        'BOUFBOWL — CLIENT DESKTOP\n\n'
+        'BOUFBOWL FAN — CLIENT DESKTOP\n\n'
         'Le client du jeu et ses assets sont inclus dans les dossiers bin/, assets/ et resources/. '
         'Une connexion Internet reste nécessaire pour rejoindre le serveur du jeu. '
         'Aucun serveur local, Python, Bun ou base de données ne sont nécessaires.\n'
         'Le lanceur configure ce dossier dans FlashPlayerTrust pour autoriser les fichiers '
         'locaux et la connexion au serveur distant.\n\n'
-        'Windows : lancer Boufbowl-windows.exe ; les fichiers sont prepares dans LocalAppData.\n'
+        'Windows : lancer Boufbowl Fan.exe ; les fichiers sont prepares dans LocalAppData.\n'
         'Linux x86-64 : installer Wine avec la prise en charge des applications Windows '
-        '32 bits, rendre Boufbowl-linux.run executable puis le lancer. Les fichiers sont '
+        '32 bits, rendre Boufbowl Fan.run executable puis le lancer. Les fichiers sont '
         'prepares dans le cache utilisateur. Aucun droit administrateur requis.\n\n'
         f'Serveur : {server_url}\n'
     ).encode('utf-8')
-    outputs = []
-    for platform in ('windows', 'linux'):
+    def package(platform):
         client = desktop_client(root, platform, server_url, ffdec=ffdec, java=java)
         folder = root / platform / 'build'
         folder.mkdir(parents=True, exist_ok=True)
         if platform == 'windows':
-            output = folder / 'Boufbowl-windows.zip'
+            output = folder / 'Boufbowl Fan.zip'
             launchers = {'Jouer.cmd': windows_launcher()}
-            with zipfile.ZipFile(output.with_suffix('.building'), 'w', zipfile.ZIP_DEFLATED) as archive:
+            with cpu_job(), zipfile.ZipFile(output.with_suffix('.building'), 'w', zipfile.ZIP_DEFLATED) as archive:
                 for name, content in {'flashplayer.exe': player, **{name: launcher.encode('ascii') for name, launcher in launchers.items()},
                                       'LIRE-MOI.txt': readme}.items():
                     archive.writestr('Boufbowl/' + name, content)
@@ -153,11 +158,11 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None):
                 for name, path in bundled_files:
                     archive.write(path, name)
         else:
-            output = folder / 'Boufbowl-linux.tar.gz'
+            output = folder / 'Boufbowl Fan.tar.gz'
             launcher = '#!/bin/sh\nset -eu\ncd -- "$(dirname -- "$0")"\n'
             launcher += 'if ! command -v wine >/dev/null 2>&1; then\n  echo "Installez Wine avec la prise en charge 32 bits pour jouer." >&2\n  exit 1\nfi\n'
             launcher += 'exec wine cmd /d /c Jouer.cmd\n'
-            with tarfile.open(output.with_suffix('.building'), 'w:gz') as archive:
+            with cpu_job(), tarfile.open(output.with_suffix('.building'), 'w:gz') as archive:
                 for name, content in {'flashplayer.exe': player, 'Jouer.cmd': windows_launcher().encode('ascii'), 'jouer.sh': launcher.encode(), 'LIRE-MOI.txt': readme}.items():
                     info = tarfile.TarInfo('Boufbowl/' + name)
                     info.size = len(content)
@@ -167,12 +172,14 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None):
                 for name, path in bundled_files:
                     archive.add(path, name)
         output.with_suffix('.building').replace(output)
-        outputs.append(windows_executable(output, makensis) if platform == 'windows' else linux_executable(output))
-    return outputs
+        return windows_executable(output, makensis) if platform == 'windows' else linux_executable(output)
+    outputs = dict(parallel(lambda platform: (platform, package(platform)), ('windows', 'linux')))
+    return [outputs['windows'], outputs['linux']]
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--jobs', type=int, help='Maximum concurrent CPU jobs (default: available CPUs)')
     parser.add_argument('--server-url', help='Override resources/site.json hosted server')
     parser.add_argument('--ffdec', type=Path, help='Path to ffdec.jar (or set FFDEC_JAR)')
     parser.add_argument('--java', help='Java executable (default: java on PATH)')
@@ -180,8 +187,11 @@ if __name__ == '__main__':
     parser.add_argument('--bun', default='bun', help='Bun executable for refreshing the website')
     parser.add_argument('--no-website', action='store_true', help='Build bundles only; defer website generation')
     args = parser.parse_args()
-    for output in build(ROOT, args.server_url, ffdec=args.ffdec, java=args.java, makensis=args.makensis):
-        print(f'Built {output} ({output.stat().st_size} bytes)', flush=True)
-    if not args.no_website:
-        from tools.refresh_website import refresh_website
-        refresh_website(ROOT, args.bun)
+    if args.jobs is not None and args.jobs < 1:
+        parser.error('--jobs must be positive')
+    with build_budget(args.jobs):
+        for output in build(ROOT, args.server_url, ffdec=args.ffdec, java=args.java, makensis=args.makensis):
+            print(f'Built {output} ({output.stat().st_size} bytes)', flush=True)
+        if not args.no_website:
+            from tools.refresh_website import refresh_website
+            refresh_website(ROOT, args.bun)
