@@ -122,8 +122,15 @@ from canonical URLs of pages without `noindex` or a refresh redirect. Private
 consoles and draft legal pages retain their `noindex` tags and are omitted from
 the sitemap; their HTML remains crawlable so search engines can read those tags.
 `GET /api/site` discovers local builds at `android/build/BoufbowlOffline.apk`,
-`windows/build/Boufbowl-windows.zip`, and `linux/build/Boufbowl-linux.tar.gz`.
+`windows/build/Boufbowl-windows.exe`, and `linux/build/Boufbowl-linux.run`.
 [Build packages](BUILD.md#distribute-players) before the final website build.
+Desktop/Android bundle commands refresh the website automatically unless passed
+`--no-website`. Download URLs include a content revision and size labels are
+generated from the published bytes (for example `Linux x86-64 · 48,9 Mo`),
+including in static HTML before the browser fetches the live manifest.
+Windows and Linux downloads load the included desktop SWF and game assets from
+the extracted folder; only the game API uses `server_url`. They do not download
+the browser SWF or its assets at startup.
 When changing hosts, update `site_url` and `server_url`, rebuild the website,
 and rebuild clients with the new server URL. Asset revisions and script hashes
 are generated automatically; do not add manual cache versions to source pages.

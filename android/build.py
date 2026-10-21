@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 from tools.player_server import player_server
+from tools.player_assets import ignore_website_stadium_previews
 
 
 def run(command, *, env=None, timeout=600):
@@ -58,6 +59,8 @@ def main():
     parser.add_argument("--server-url", help="Override resources/site.json hosted server")
     parser.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime")
     parser.add_argument("--keystore", type=Path, help="Optional PKCS12 signing certificate")
+    parser.add_argument('--bun', default='bun', help='Bun executable for refreshing the website')
+    parser.add_argument('--no-website', action='store_true', help='Build the APK only; defer website generation')
     args = parser.parse_args()
     android = Path(__file__).resolve().parent
     root = android.parent
@@ -76,7 +79,10 @@ def main():
         if target.exists():
             shutil.rmtree(target)
         # Website portraits and promotional media are not used by the game.
-        shutil.copytree(root / name, target, ignore=shutil.ignore_patterns("site") if name == "assets" else None)
+        shutil.copytree(root / name, target, ignore=lambda directory, names: (
+            set(ignore_website_stadium_previews(directory, names))
+            | ({"site"} & set(names) if Path(directory) == root / "assets" else set())
+        ))
     apply_resources(stage / "resources", game_config)
     # Android's VP6 decoder produces artifacts on these legacy FLV clips.
     # Cache H.264/AAC copies; all original media stays intact in the desktop tree.
@@ -168,7 +174,10 @@ def main():
          "-C", stage, "bin/" + swf_name, "assets", "resources",
          "-platformsdk", args.android_sdk.resolve()], env=env)
     temporary_output.replace(output)
-    print("Built", output, "— default server:", args.server_url)
+    print("Built", output, "— default server:", args.server_url, flush=True)
+    if not args.no_website:
+        from tools.refresh_website import refresh_website
+        refresh_website(root, args.bun)
 
 
 if __name__ == "__main__":

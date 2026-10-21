@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Serve the original client assets and authenticated replacement backend."""
 import argparse
-from functools import partial
+from functools import partial, lru_cache
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import hashlib
@@ -40,8 +40,8 @@ STATIC_PAGES = ("index.html", "play.html", "home.js", "site-activity.js", "resto
 
 DOWNLOAD_FILES = {
     '/downloads/BoufbowlOffline.apk': ('android/build/BoufbowlOffline.apk', 'android'),
-    '/downloads/Boufbowl-linux.tar.gz': ('linux/build/Boufbowl-linux.tar.gz', 'desktop'),
-    '/downloads/Boufbowl-windows.zip': ('windows/build/Boufbowl-windows.zip', 'windows'),
+    '/downloads/Boufbowl-linux.run': ('linux/build/Boufbowl-linux.run', 'desktop'),
+    '/downloads/Boufbowl-windows.exe': ('windows/build/Boufbowl-windows.exe', 'windows'),
 }
 
 
@@ -49,6 +49,16 @@ def download_path(root, relative):
     path = root / relative
     # Only known build artifacts may be served; symlinks cannot escape their build folder.
     return path if path.is_file() and path.resolve().is_relative_to(root / Path(relative).parent) else None
+
+
+@lru_cache(maxsize=12)
+def download_revision(filename, modified_ns, size, inode):
+    # The stat fields invalidate the cache when a bundle is replaced atomically.
+    digest = hashlib.sha256()
+    with open(filename, 'rb') as source:
+        for block in iter(lambda: source.read(1024 * 1024), b''):
+            digest.update(block)
+    return digest.hexdigest()[:16]
 
 
 def site_manifest(root):
@@ -68,13 +78,15 @@ def site_manifest(root):
     for route, (relative, platform) in DOWNLOAD_FILES.items():
         path = download_path(root, relative)
         external = public_url(platform + '_download_url')
+        stat = path.stat() if path and not external else None
+        revision = download_revision(str(path.resolve()), stat.st_mtime_ns, stat.st_size, stat.st_ino) if stat else None
         downloads[platform] = {
-            'url': external or (route if path else None),
+            'url': external or (route + '?v=' + revision if revision else None),
             'local': bool(path and not external),
-            'size': path.stat().st_size if path and not external else None,
+            'size': stat.st_size if stat else None,
             'description': ('APK · Android 6+ · ARM64' if platform == 'android' else
-                            'Windows · sans Wine ni Python' if platform == 'windows' else
-                            'Desktop · client Flash' if external else 'Linux x86-64 · Wine requis · sans Python'),
+                            'Windows' if platform == 'windows' else
+                            'Desktop · client Flash' if external else 'Linux x86-64'),
         }
     return {'ok': True, 'downloads': downloads, 'contact_url': public_url('contact_url'),
             'tot_quote_source_url': public_url('tot_quote_source_url')}
@@ -304,6 +316,16 @@ class Handler(SimpleHTTPRequestHandler):
         if route in ("/website-tracking.html", "/website-analytics.html"):
             self.send_response(308)
             self.send_header('Location', '/website-activity.html')
+            self.end_headers()
+            return None
+        legacy_downloads = {
+            '/downloads/Boufbowl-windows.zip': '/downloads/Boufbowl-windows.exe',
+            '/downloads/Boufbowl-linux.tar.gz': '/downloads/Boufbowl-linux.run',
+        }
+        if route in legacy_downloads:
+            self.send_response(302)
+            self.send_header('Location', legacy_downloads[route])
+            self.send_header('Cache-Control', 'no-cache')
             self.end_headers()
             return None
         if route in DOWNLOAD_FILES:

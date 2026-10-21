@@ -19,14 +19,14 @@ class HomepageTests(unittest.TestCase):
             (root/'android/build').mkdir(parents=True)
             (root/'android/build/BoufbowlOffline.apk').write_bytes(b'apk')
             data=site_manifest(root)
-            self.assertEqual(data['downloads']['android']['url'],'/downloads/BoufbowlOffline.apk')
+            self.assertRegex(data['downloads']['android']['url'],r'^/downloads/BoufbowlOffline\.apk\?v=[a-f0-9]{16}$')
             self.assertEqual(data['downloads']['android']['size'],3)
             (root/'windows/build').mkdir(parents=True)
-            (root/'windows/build/Boufbowl-windows.zip').write_bytes(b'windows')
+            (root/'windows/build/Boufbowl-windows.exe').write_bytes(b'windows')
             data=site_manifest(root)
-            self.assertEqual(data['downloads']['windows']['url'],'/downloads/Boufbowl-windows.zip')
+            self.assertRegex(data['downloads']['windows']['url'],r'^/downloads/Boufbowl-windows\.exe\?v=[a-f0-9]{16}$')
             self.assertEqual(data['downloads']['windows']['size'],7)
-            self.assertEqual(data['downloads']['windows']['description'],'Windows · sans Wine ni Python')
+            self.assertEqual(data['downloads']['windows']['description'],'Windows')
             (root/'resources').mkdir()
             (root/'resources/site.json').write_text(json.dumps({'contact_url':'javascript:alert(1)',
                 'desktop_download_url':'https://example.com/game.tar.gz'}))
@@ -44,7 +44,7 @@ class HomepageTests(unittest.TestCase):
             (root/'android/build').mkdir(parents=True)
             (root/'android/build/BoufbowlOffline.apk').write_bytes(b'build')
             (root/'windows/build').mkdir(parents=True)
-            (root/'windows/build/Boufbowl-windows.zip').write_bytes(b'windows')
+            (root/'windows/build/Boufbowl-windows.exe').write_bytes(b'windows')
             (root/'private.txt').write_text('secret')
             class QuietHandler(Handler):
                 def log_message(self,*args):pass
@@ -61,7 +61,7 @@ class HomepageTests(unittest.TestCase):
                     with urlopen(Request(origin+'/downloads/BoufbowlOffline.apk',method=method)) as response:
                         self.assertEqual(response.status,200)
                         if method=='GET':self.assertEqual(response.read(),b'build')
-                    with urlopen(Request(origin+'/downloads/Boufbowl-windows.zip',method=method)) as response:
+                    with urlopen(Request(origin+'/downloads/Boufbowl-windows.exe',method=method)) as response:
                         self.assertEqual(response.headers['Content-Length'],'7')
                         if method=='GET':self.assertEqual(response.read(),b'windows')
                 with urlopen(origin+'/api/site') as response:self.assertTrue(json.load(response)['ok'])

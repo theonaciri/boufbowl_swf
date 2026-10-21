@@ -10,8 +10,8 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const PAGES = ["index.html", "play.html", "browser.html", "admin.html", "website-activity.html", "moderation.html", "tournaments.html", "assets-admin.html"];
 const DOWNLOADS = {
   android: ["android/build/BoufbowlOffline.apk", "downloads/BoufbowlOffline.apk"],
-  desktop: ["linux/build/Boufbowl-linux.tar.gz", "downloads/Boufbowl-linux.tar.gz"],
-  windows: ["windows/build/Boufbowl-windows.zip", "downloads/Boufbowl-windows.zip"],
+  desktop: ["linux/build/Boufbowl-linux.run", "downloads/Boufbowl-linux.run"],
+  windows: ["windows/build/Boufbowl-windows.exe", "downloads/Boufbowl-windows.exe"],
 };
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const exists = async (name) => fs.access(name).then(() => true, () => false);
@@ -52,7 +52,7 @@ function versionUrl(value, revision) {
   return `${pathname}?${params}`;
 }
 
-async function siteManifest(root) {
+async function siteManifest(root, files) {
   const settingsPath = path.join(root, "resources/site.json");
   const settings = await exists(settingsPath) ? JSON.parse(await fs.readFile(settingsPath, "utf8")) : {};
   function publicUrl(key) {
@@ -65,10 +65,11 @@ async function siteManifest(root) {
   for (const [platform, [source, target]] of Object.entries(DOWNLOADS)) {
     const local = await downloadFile(root, source);
     const external = publicUrl(`${platform}_download_url`);
+    const artifact = local && files.get(target);
     downloads[platform] = {
-      url: external || (local ? `/${target}` : null), local: Boolean(local && !external),
-      size: local && !external ? (await fs.stat(local)).size : null,
-      description: platform === "android" ? "APK · Android 6+ · ARM64" : platform === "windows" ? "Windows · sans Wine ni Python" : external ? "Desktop · client Flash" : "Linux x86-64 · Wine requis · sans Python",
+      url: external || (artifact ? `/${target}?v=${artifact.sha256.slice(0, 16)}` : null), local: Boolean(artifact && !external),
+      size: artifact && !external ? artifact.bytes : null,
+      description: platform === "android" ? "APK · Android 6+ · ARM64" : platform === "windows" ? "Windows" : external ? "Desktop · client Flash" : "Linux x86-64",
     };
   }
   return { ok: true, downloads, contact_url: publicUrl("contact_url"), tot_quote_source_url: publicUrl("tot_quote_source_url") };
@@ -152,6 +153,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       }
       return versionUrl(url, revision);
     };
+    const manifest = await siteManifest(root, files);
     const pages = new Map(await Promise.all(PAGES.map(async (name) => [name, await fs.readFile(path.join(root, name), "utf8")])));
     for (const [name, html] of Object.entries(await legalPages(root))) pages.set(name, html);
     // Keep bookmarks working when the output is served by a generic static host.
@@ -179,6 +181,17 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
     const sitemapUrls = new Set();
     for (const [name, source] of pages) {
       let html = pageMetadata(source, name, origin);
+      if (name === "index.html") {
+        const escape = (text) => text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+        for (const [platform, item] of Object.entries(manifest.downloads)) {
+          if (!item.url) continue;
+          const link = new RegExp(`(<a\\b(?=[^>]*\\bid=["']download-${platform}["'])[^>]*\\bhref=["'])[^"']+`, "i");
+          html = html.replace(link, (_, prefix) => prefix + escape(item.url));
+          const detail = new RegExp(`(<small\\b(?=[^>]*\\bid=["']${platform}-detail["'])[^>]*>)[\\s\\S]*?(</small\\s*>)`, "i");
+          const size = item.size ? " · " + (item.size / 1048576).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " Mo" : "";
+          html = html.replace(detail, (_, opening, closing) => opening + escape(item.description + size) + closing);
+        }
+      }
       // Preserve stylesheet/inline-style order, then inline Bun's combined CSS.
       const cssTags = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>|<link\b(?=[^>]*\brel=["']stylesheet["'])[^>]*>/gi)];
       if (cssTags.length) {
@@ -246,7 +259,6 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       config["3dActivated"] = "true";
       await record("resources/config.json", JSON.stringify(config, null, 2) + "\n");
     }
-    const manifest = await siteManifest(root);
     await record("resources/site-manifest.json", JSON.stringify(manifest, null, 2) + "\n");
     await record("crossdomain.xml", '<cross-domain-policy><allow-access-from domain="*" secure="false"/><allow-http-request-headers-from domain="*" headers="Content-Type" secure="false"/></cross-domain-policy>');
     const entries = Object.fromEntries([...files].sort(([a], [b]) => a.localeCompare(b)));

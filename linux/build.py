@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import apply_resources, load_config
+from tools.player_assets import ignore_website_stadium_previews
 from backend.server import STATIC_PAGES
 
 
@@ -39,7 +40,10 @@ def main():
         parser.error("Compiled worker missing: update the checkout, or use --rebuild-worker with sibling server source available")
     for name in ("bin", "assets", "resources", "tools", "protocol", "backend", "docs"):
         shutil.copytree(root / name, bundle / name,
-                        ignore=shutil.ignore_patterns(".tutorial-build-*", "__pycache__"))
+                        ignore=lambda directory, names: (
+                            set(shutil.ignore_patterns(".tutorial-build-*", "__pycache__")(directory, names))
+                            | set(ignore_website_stadium_previews(directory, names))
+                        ))
     apply_resources(bundle / "resources", config)
     (bundle / "backend/runtime").mkdir(exist_ok=True)
     shutil.copy2(bun, bundle / "backend/runtime/bun")

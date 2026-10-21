@@ -8,10 +8,13 @@ import shlex
 import json
 from tools.player_server import player_server
 from tools.build_player_downloads import build
+from unittest.mock import patch
 
 
 class PlayerDownloadsTests(unittest.TestCase):
-    def test_hosted_server_default_is_shared_and_required(self):
+    @patch('tools.build_player_downloads.windows_executable', side_effect=lambda archive, *args: archive.with_suffix('.exe'))
+    @patch('tools.build_player_downloads.desktop_client', side_effect=lambda root, *args, **kwargs: root/'bin/boufbowl-client-1.9.6.swf')
+    def test_hosted_server_default_is_shared_and_required(self, compile_client, compile_wrapper):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             with self.assertRaisesRegex(ValueError, 'hosted server'):
@@ -29,20 +32,25 @@ class PlayerDownloadsTests(unittest.TestCase):
             (root/'assets/site/home.webp').write_bytes(b'web')
             (root/'resources/config.json').write_text('{}')
             windows, linux = build(root)
-            with zipfile.ZipFile(windows) as archive:
+            with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
                 launcher = archive.read('Boufbowl/Jouer.cmd').decode()
-                self.assertIn('https://hosted.example/bin/', launcher)
+                self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
+                self.assertNotIn('https://', launcher)
+                self.assertEqual(archive.read('Boufbowl/bin/boufbowl-client-1.9.6.swf'), b'client')
                 self.assertEqual({name for name in archive.namelist() if name.lower().endswith('.cmd')}, {'Boufbowl/Jouer.cmd'})
                 self.assertEqual(archive.read('Boufbowl/assets/sounds/kick.mp3'), b'audio')
                 self.assertEqual(archive.read('Boufbowl/resources/config.json'), b'{}')
                 self.assertNotIn('Boufbowl/assets/site/home.webp', archive.namelist())
-            with tarfile.open(linux) as archive:
-                self.assertIn('https://hosted.example/bin/', archive.extractfile('Boufbowl/jouer.sh').read().decode())
+            with tarfile.open(linux.with_suffix('.tar.gz')) as archive:
+                self.assertIn('exec wine cmd /d /c Jouer.cmd', archive.extractfile('Boufbowl/jouer.sh').read().decode())
+                self.assertEqual(archive.extractfile('Boufbowl/bin/boufbowl-client-1.9.6.swf').read(), b'client')
                 self.assertEqual(archive.extractfile('Boufbowl/assets/sounds/kick.mp3').read(), b'audio')
                 self.assertEqual(archive.extractfile('Boufbowl/resources/config.json').read(), b'{}')
                 self.assertNotIn('Boufbowl/assets/site/home.webp', archive.getnames())
 
-    def test_remote_player_packages_include_game_assets(self):
+    @patch('tools.build_player_downloads.windows_executable', side_effect=lambda archive, *args: archive.with_suffix('.exe'))
+    @patch('tools.build_player_downloads.desktop_client', side_effect=lambda root, *args, **kwargs: root/'bin/boufbowl-client-1.9.6.swf')
+    def test_remote_player_packages_include_game_assets(self, compile_client, compile_wrapper):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'bin').mkdir()
@@ -51,21 +59,20 @@ class PlayerDownloadsTests(unittest.TestCase):
             (root / 'assets').mkdir()
             (root / 'resources').mkdir()
             windows, linux = build(root, 'https://game.example')
-            with zipfile.ZipFile(windows) as archive:
-                self.assertEqual(set(archive.namelist()), {'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/LIRE-MOI.txt'})
+            with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
+                self.assertEqual(set(archive.namelist()), {'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
                 launcher = archive.read('Boufbowl/Jouer.cmd').decode()
-                self.assertIn('https://game.example/bin/boufbowl-client-1.9.6.swf?', launcher)
-                self.assertIn('backend=https%%3A%%2F%%2Fgame.example', launcher)
-                self.assertIn('server=1', launcher)
+                self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
+                self.assertIn('FlashPlayerTrust', launcher)
+                self.assertNotIn('https://', launcher)
                 self.assertNotIn('wine', launcher)
                 self.assertNotIn('python', launcher)
-            with tarfile.open(linux) as archive:
-                self.assertEqual(set(archive.getnames()), {'Boufbowl/flashplayer.exe', 'Boufbowl/jouer.sh', 'Boufbowl/LIRE-MOI.txt'})
+            with tarfile.open(linux.with_suffix('.tar.gz')) as archive:
+                self.assertEqual(set(archive.getnames()), {'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/jouer.sh', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
                 launcher = archive.extractfile('Boufbowl/jouer.sh').read().decode()
                 command = shlex.split(launcher.splitlines()[-1])
-                self.assertEqual(command[:3], ['exec', 'wine', './flashplayer.exe'])
-                self.assertTrue(command[3].startswith('https://game.example/bin/'))
-                self.assertIn('backend=https%3A%2F%2Fgame.example', command[3])
+                self.assertEqual(command, ['exec', 'wine', 'cmd', '/d', '/c', 'Jouer.cmd'])
+                self.assertIn('FlashPlayerTrust', archive.extractfile('Boufbowl/Jouer.cmd').read().decode())
                 self.assertNotIn('python', launcher)
                 self.assertEqual(archive.getmember('Boufbowl/jouer.sh').mode, 0o755)
             for url in ('http://game.example', 'https://user:pass@game.example', 'https://game.example?query=1'):

@@ -67,10 +67,39 @@ and the extracted `protocol/*.json` contracts are preserved inputs.
 python3 -m tools.build_player_downloads --server-url https://YOUR_SERVER
 ```
 
-Outputs `windows/build/Boufbowl-windows.zip` and
-`linux/build/Boufbowl-linux.tar.gz`. Both include game assets and the Flash player;
-they load the hosted SWF and use its server. Windows runs `Jouer.cmd`; Linux needs
-Wine with 32-bit support and runs `jouer.sh`. Players need no Python/Bun backend.
+Outputs `windows/build/Boufbowl-windows.exe` and
+`linux/build/Boufbowl-linux.run`: one executable download per platform.
+Both embed the local SWF, game assets, resources, and Flash player. Website
+stadium previews (`assets/textures/stadiums/*.avif`) are excluded from desktop
+and Android packaging; the PNG textures remain included for the game.
+
+Build prerequisites: Java/FFDec and NSIS (`sudo apt-get install nsis` on Ubuntu).
+Set `FFDEC_JAR`/Java on PATH or pass `--ffdec` and `--java`; `--makensis` can
+specify the NSIS compiler. Separate cached SWFs contain each platform's defaults;
+the hosted browser SWF is unchanged. Only the game API uses the remote server.
+
+- Windows: double-click the `.exe`. The NSIS launcher prepares a versioned cache
+  under `%LOCALAPPDATA%\Boufbowl\player`, configures FlashPlayerTrust, and starts
+  the game without a console or installer wizard. No administrator rights needed.
+- Linux x86-64: install Wine with 32-bit support, then run:
+
+  ```sh
+  chmod +x Boufbowl-linux.run
+  ./Boufbowl-linux.run
+  ```
+
+  The executable verifies and extracts its embedded payload on first launch under
+  `${XDG_CACHE_HOME:-$HOME/.cache}/boufbowl/player`, reuses it on later launches,
+  and starts the bundled client through Wine. Standard `tar`, `gzip`, `sha256sum`,
+  and GNU `mv` are required; Python and Bun are not required on players' machines.
+
+The local client and assets load from the cache; no local HTTP server is started.
+ZIP/tar.gz files remain intermediate build artifacts. Rebuild the packages and
+website after changing the server URL or game assets. Desktop and Android build
+commands automatically run the Bun website compiler after creating their bundles,
+refreshing published files, versioned download links, and French size labels. Use
+`--no-website` only to defer delivery (for example before the first media export);
+then run `bun run build` once those inputs are ready. `--bun` selects Bun’s path.
 
 For the separate Linux development bundle:
 
