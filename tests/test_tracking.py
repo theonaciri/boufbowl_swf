@@ -138,6 +138,9 @@ class TrackingTests(unittest.TestCase):
     def test_observed_online_time_splits_midnight_and_does_not_double_count_devices(self):
         boundary = datetime(2026, 10, 16, tzinfo=timezone.utc).timestamp()
         profile = self.identity(self.alice)
+        # Setup logs in at wall-clock time; begin a fresh observation window
+        # before simulating historical timestamps so this test is date-independent.
+        self.service.tracking.profile_seen.pop(profile,None)
         with patch('time.time', return_value=boundary - 10), self.service.store.lock:
             self.service.tracking.activity(profile, {'client_id': 'a'})
         with patch('time.time', return_value=boundary + 10), self.service.store.lock:
@@ -223,9 +226,9 @@ class TrackingTests(unittest.TestCase):
                 return json.load(response)
         try:
             with urlopen(origin + '/admin.html') as response:
-                self.assertIn('Server tracking', response.read().decode())
+                self.assertIn('Server activity', response.read().decode())
             denied = post('/api/metrics', {'session': self.bob['session']})
-            self.assertEqual(denied['code'], 'TRACKING_FORBIDDEN')
+            self.assertEqual(denied['code'], 'ACTIVITY_FORBIDDEN')
             accepted = post('/api/telemetry', {'session': self.alice['session'], 'events': [
                 {'id': 'http-client-error', 'kind': 'error', 'code': 'TEST_ERROR', 'message': 'network error'}]})
             self.assertEqual(accepted['accepted'], 1)

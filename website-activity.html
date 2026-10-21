@@ -7,13 +7,13 @@
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="admin.css" />
   <meta name="description" content="Administration privée des statistiques agrégées du site Boufbowl.">
-<title>Boufbowl · Website tracking</title>
+<title>Boufbowl · Website activity</title>
 </head>
-<body data-console="analytics">
+<body data-console="activity">
   <section id="console-login" class="panel login-panel">
     <span class="eyebrow">Restricted access</span>
     <h2>Sign in to the admin console</h2>
-    <p>Website analytics are available to server administrators.</p>
+    <p>Website activity is available to server administrators.</p>
     <form id="console-account">
       <label class="field">Username<input id="console-username" autocomplete="username" value="KrissKrass" required /></label>
       <label class="field">Password<input id="console-password" type="password" autocomplete="current-password" required /></label>
@@ -30,7 +30,7 @@
   <p id="console-error" class="status" role="status" aria-live="polite"></p>
   <main id="console-main" hidden>
     <div class="page-heading">
-      <div><span class="eyebrow">Public site · Aggregate usage</span><h1>Website tracking</h1><p>Sections, restoration interests, downloads, web launches and assets loaded by the server.</p></div>
+      <div><span class="eyebrow">Public site · Aggregate usage</span><h1>Website activity</h1><p>Sections, restoration interests, downloads, web launches and assets loaded by the server.</p></div>
       <button id="website-refresh" class="secondary">Refresh</button>
     </div>
     <div class="filters">
@@ -51,6 +51,6 @@
     <p id="website-coverage" class="muted"></p>
   </main>
   <script src="admin.js" defer></script>
-  <script src="website-tracking.js?v=1" defer></script>
+  <script src="website-activity.js" defer></script>
 </body>
 </html>

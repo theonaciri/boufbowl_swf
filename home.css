@@ -1,18 +1,18 @@
 @font-face {
   font-family: Barlow;
-  src: url("assets/site/Barlow-Regular.ttf") format("truetype");
+  src: url("assets/site/Barlow-Regular.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
   font-family: Barlow;
-  src: url("assets/site/Barlow-SemiBold.ttf") format("truetype");
+  src: url("assets/site/Barlow-SemiBold.woff2") format("woff2");
   font-weight: 600 800;
   font-display: swap;
 }
 @font-face {
   font-family: Condensed;
-  src: url("assets/site/BarlowCondensed-ExtraBold.ttf") format("truetype");
+  src: url("assets/site/BarlowCondensed-ExtraBold.woff2") format("woff2");
   font-weight: 800;
   font-display: swap;
 }
@@ -20,6 +20,7 @@
   --paper: #f4f0e5;
   --ink: #24312b;
   --orange: #ed653b;
+  --on-orange: #18251f;
   --line: #cfcfc0;
   --muted: #657064;
   --green: #c9df77;
@@ -38,7 +39,7 @@
 }
 body {
   margin: 0;
-  background: #fff url("assets/site/splash.webp") center top / cover fixed no-repeat;
+  background: #fff url("assets/site/splash.avif") center top / cover fixed no-repeat;
 }
 .site-logo {
   display: block;
@@ -200,7 +201,7 @@ em {
   gap: 24px;
   padding: 19px 24px;
   background: var(--orange);
-  color: var(--ink);
+  color: var(--on-orange);
   font-size: 12px;
   line-height: 1.2;
   font-weight: 700;
@@ -445,7 +446,7 @@ em {
   left: 16%;
   bottom: 40px;
   font: 800 42px var(--heading);
-  color: var(--paper);
+  color: var(--on-orange);
   background: var(--orange);
   padding: 5px 23px;
   transform: rotate(-9deg);
@@ -1069,6 +1070,7 @@ em {
   font: 800 clamp(56px, 8vw, 130px)/1.2 var(--heading);
 }
 .final-cta > a > em {
+  color: #984018;
   margin-right: auto;
 }
 .final-cta > a > span {
@@ -1742,6 +1744,7 @@ dialog textarea {
 }
 .hero-art.game-carousel {
   height: auto;
+  min-height: 610px;
   width: 100%;
   overflow: hidden;
   clip-path: none;
@@ -1822,7 +1825,7 @@ dialog textarea {
 .carousel-controls button:hover,
 .carousel-controls button[aria-pressed="true"] {
   background: var(--orange);
-  color: var(--ink);
+  color: var(--on-orange);
 }
 #carousel-count {
   min-width: 65px;
@@ -1855,7 +1858,7 @@ dialog textarea {
 }
 .carousel-categories button[aria-pressed="true"] {
   background: var(--orange);
-  color: var(--ink);
+  color: var(--on-orange);
 }
 .hero-visual .brawl-button {
   bottom: 3%;
@@ -1895,6 +1898,9 @@ body:has(.carousel-stage.is-expanded) {
   object-fit: contain;
 }
 @media (max-width: 780px) {
+  .hero-art.game-carousel {
+    min-height: 460px;
+  }
   .hero-visual {
     height: auto;
     margin: 0;

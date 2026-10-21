@@ -1,3 +1,5 @@
+import { assetUrl } from "./tools/website/asset-url.js";
+
 (() => {
   const $ = (id) => document.getElementById(id);
   if (!$("restauration")) return;
@@ -41,8 +43,7 @@
     draw: "Match nul",
     alternate: "Accroupi",
   };
-  const portraitURL = (path) => path && inventory?.portrait_revision
-    ? `${path}?v=${inventory.portrait_revision}-2x` : path;
+  const portraitURL = assetUrl;
   // Original sheets supplied by the project owner: female, then male, per class.
   // Coordinates crop the sheets in the browser; the original bitmaps stay intact.
   const fieldReferences = [
@@ -124,7 +125,7 @@
     }
     const img = $("character-field-image");
     frame.style.aspectRatio = `${width} / ${height}`;
-    img.src = path;
+    img.src = assetUrl(path);
     img.alt = `Référence visuelle ${individual ? c.name : c.class_name}, ${sex.toLowerCase()}, orientée vers la gauche${c.hero && !individual ? " ; référence de sa classe, pas du personnage spécial" : ""}`;
     img.style.width = `${sourceWidth / width * 100}%`;
     img.style.left = `${-x / width * 100}%`;
@@ -144,9 +145,9 @@
     inventory.characters.find((c) => c.id === state.id) ||
     inventory.characters[0];
   function trackCharacterInterest(character) {
-    if (!character || !window.SiteTracking) return;
-    if (character.hero) window.SiteTracking.characterInterest(character.name);
-    else window.SiteTracking.classInterest(character.class_name);
+    if (!character || !window.SiteActivity) return;
+    if (character.hero) window.SiteActivity.characterInterest(character.name);
+    else window.SiteActivity.classInterest(character.class_name);
   }
   function choices() {
     return inventory.characters.filter(
@@ -180,7 +181,7 @@
       b.title = `${c.name} · ${c.gender === 1 ? "H" : "F"}`;
       b.setAttribute("aria-pressed", String(c.id === state.id));
       const image = el("img");
-      image.src = c.icon;
+      image.src = assetUrl(c.icon);
       image.alt = "";
       image.width = 133;
       image.height = 160;
@@ -381,7 +382,8 @@
   function renderStadium() {
     const s = inventory.stadiums[state.stadium];
     $("stadium-name").textContent = s.name;
-    $("stadium-image").src = s.image;
+    $("stadium-image").loading = "lazy";
+    $("stadium-image").src = assetUrl(s.image);
     $("stadium-image").alt = `Fond tactique original du stade ${s.name}`;
     $("stadium-position").textContent =
       `${state.stadium + 1} / ${inventory.stadiums.length}`;
@@ -559,7 +561,7 @@
       ...track,
       stadium: ["Tactique", "Résolution", "Ambiance"].includes(role),
     };
-    audio.src = track.path;
+    audio.src = assetUrl(track.path);
     $("restoration-now-playing").textContent =
       `${audioName(track)} · ${role || groups[track.category] || "Archive"}`;
     $("restoration-audio-status").textContent =
@@ -737,7 +739,7 @@
         b.type = "button";
         b.setAttribute("aria-label", `Explorer ${c.name}`);
         const img = el("img");
-        img.src = c.icon;
+        img.src = assetUrl(c.icon);
         img.alt = "";
         img.loading = "lazy";
         b.append(img);
@@ -766,7 +768,7 @@
         b.dataset.index = index;
         b.setAttribute("aria-label", `Stade ${s.name}`);
         const img = el("img");
-        img.src = s.image;
+        img.src = assetUrl(s.image);
         img.alt = "";
         img.loading = "lazy";
         img.width = 120;

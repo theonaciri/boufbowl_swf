@@ -1,4 +1,4 @@
-/* Aggregate-only public-site analytics; no visitor identifier is sent. */
+/* Aggregate-only public-site activity; no visitor identifier is sent. */
 (() => {
   const endpoint = "api/site-events";
   const pending = [];
@@ -32,7 +32,7 @@
     else if (!timer) timer = setTimeout(flush, 1200);
   }
 
-  window.SiteTracking = {
+  window.SiteActivity = {
     classInterest(name) { record("class_interest", name); },
     characterInterest(name) { record("character_interest", name); },
   };

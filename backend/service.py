@@ -910,7 +910,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         with self.store.lock:
             profile = self.store.authenticate(body.get('session'))
             if self.role(profile) != 'admin':
-                raise ServiceError('TRACKING_FORBIDDEN', 'Server administrator access required')
+                raise ServiceError('ACTIVITY_FORBIDDEN', 'Server administrator access required')
             self.tracking.sample()
             self.tracking.flush(force=True)
             result = metrics_report(self.store, body.get('days', 30))

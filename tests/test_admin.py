@@ -43,6 +43,17 @@ class AdminTests(unittest.TestCase):
             with self.assertRaises(ServiceError): self.api(action,settings=self.settings())
         with self.assertRaises(ServiceError): self.api('suspend',nickname='Bob',duration=0)
 
+    def test_website_activity_requires_admin_and_accepts_legacy_action(self):
+        for role in ('player', 'moderator'):
+            self.grant(self.alice,role)
+            with self.assertRaises(ServiceError): self.api('website_activity')
+        self.grant(self.alice)
+        current=self.api('website_activity',days=7)
+        legacy=self.api('website_tracking',days=7)
+        self.assertTrue(current['ok'])
+        self.assertEqual(current['sections'],legacy['sections'])
+        self.assertEqual(current['role'],'admin')
+
     def test_private_context_is_bidirectional_and_ignores_other_filters(self):
         self.grant(self.alice)
         carol=self.service.hello({'nickname':'Carol','clubs':[initial_club()]})

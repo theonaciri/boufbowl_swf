@@ -29,7 +29,8 @@ CAST = [
     ('skunk-lancer', 'Illustration_lancer', [518]),
 ]
 VERSION = 'legends-v2'
-POSTER_FRAME_OVERRIDES = {'feu-terre': 10}
+EXPORT_VERSION = 'legends-v3'
+ENCODING = {'width': 1015, 'height': 595, 'fps': 60, 'codec': 'libaom-av1', 'crf': 35}
 
 
 def write_media_sources(clips):
@@ -99,23 +100,28 @@ def main():
     for task in tasks:
         folder=work/task['slug'];metadata=json.loads((folder/'capture.json').read_text())
         if metadata['fingerprint']!=task['fingerprint']:raise ValueError('Stale capture: '+task['slug'])
-        target=output/task['base'];av1=target.with_suffix('.av1.mp4');fallback=target.with_suffix('.mp4');avif=target.with_suffix('.avif');poster=target.with_suffix('.webp')
+        target=output/f'cinematic-{task["slug"]}-{EXPORT_VERSION}';av1=target.with_suffix('.av1.mp4');fallback=target.with_suffix('.mp4');avif=target.with_suffix('.avif')
         native=folder/'native.mkv'
         prior=folder/'export.json'
         if not args.force and prior.exists():
             saved=json.loads(prior.read_text())
-            if saved.get('fingerprint')==task['fingerprint'] and all((ROOT/e['path']).is_file() and (ROOT/e['path']).stat().st_size==e['bytes'] for e in saved.get('exports',{}).values()):
+            exports={k:v for k,v in saved.get('exports',{}).items() if k in ('avif','av1','h264')}
+            if saved.get('fingerprint')==task['fingerprint'] and saved.get('encoding')==ENCODING and saved.get('base')==target.name and set(exports)=={'avif','av1','h264'} and all((ROOT/e['path']).is_file() and (ROOT/e['path']).stat().st_size==e['bytes'] for e in exports.values()):
+                saved['exports']=exports
+                saved.pop('poster_frame',None)
+                (folder/'export.json').write_text(json.dumps(saved,ensure_ascii=False,indent=2)+'\n')
                 print('Reusing encoded',task['slug'],flush=True)
                 continue
-        if task['slug'] in POSTER_FRAME_OVERRIDES:
-            metadata['poster_frame']=POSTER_FRAME_OVERRIDES[task['slug']]
-            subprocess.run(['ffmpeg','-y','-v','error','-ss',str((metadata['poster_frame']-1)/25),'-i',str(native),'-frames:v','1',str(folder/'poster.png')],check=True)
         print('Encoding',task['slug'],flush=True)
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(native),'-vf','fps=60,scale=out_color_matrix=bt709:out_range=tv,format=yuv420p10le','-an','-c:v','libsvtav1','-preset','8','-crf','20','-svtav1-params','lp=3:film-grain=0','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(av1)],check=True)
+        metadata.pop('poster_frame',None)
+        scale=f'scale={ENCODING["width"]}:{ENCODING["height"]}:flags=lanczos:out_color_matrix=bt709:out_range=tv,setsar=1'
+        # libaom supports the requested odd width; SVT-AV1 requires even dimensions.
+        subprocess.run(['ffmpeg','-y','-v','error','-i',str(native),'-vf',f'fps=60,{scale},format=yuv420p10le','-an','-c:v',ENCODING['codec'],'-cpu-used','6','-crf',str(ENCODING['crf']),'-b:v','0','-row-mt','1','-threads','3','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(av1)],check=True)
         subprocess.run(['ffmpeg','-y','-v','error','-i',str(av1),'-map','0:v:0','-c:v','copy','-loop','0',str(avif)],check=True)
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(native),'-vf','fps=60,scale=out_color_matrix=bt709:out_range=tv,format=yuv420p','-an','-c:v','libx264','-preset','fast','-crf','16','-threads','3','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(fallback)],check=True)
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(folder/'poster.png'),'-frames:v','1','-c:v','libwebp','-quality','95',str(poster)],check=True)
-        metadata['exports']={key:{'path':p.relative_to(ROOT).as_posix(),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for key,p in [('avif',avif),('av1',av1),('h264',fallback),('poster',poster)]}
+        # H.264 4:2:0 needs even dimensions: add one pixel at the right and bottom.
+        subprocess.run(['ffmpeg','-y','-v','error','-i',str(native),'-vf',f'fps=60,{scale},pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p','-an','-c:v','libx264','-preset','fast','-crf','16','-threads','3','-color_primaries','bt709','-color_trc','bt709','-colorspace','bt709','-movflags','+faststart',str(fallback)],check=True)
+        metadata.update(capture_width=task['width'],capture_height=task['height'],width=ENCODING['width'],height=ENCODING['height'],base=target.name,encoding=ENCODING)
+        metadata['exports']={key:{'path':p.relative_to(ROOT).as_posix(),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for key,p in [('avif',avif),('av1',av1),('h264',fallback)]}
         (folder/'export.json').write_text(json.dumps(metadata,ensure_ascii=False,indent=2)+'\n')
         print('Exported',task['slug'],flush=True)
     complete=[]
@@ -123,6 +129,8 @@ def main():
         p=work/slug/'export.json'
         if p.exists():complete.append(json.loads(p.read_text()))
     write_media_sources(complete)
+    for poster in output.glob('cinematic-*.webp'):
+        poster.unlink()
 
 
 if __name__=='__main__':main()

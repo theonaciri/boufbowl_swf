@@ -3,6 +3,7 @@
   "textures": {
     "grass": {
       "path": "assets/textures/stadiums/grass.png",
+      "web_path": "assets/textures/stadiums/grass.avif",
       "region": [
         30,
         185,
@@ -14,6 +15,7 @@
     },
     "brakmar": {
       "path": "assets/textures/stadiums/brakmar.png",
+      "web_path": "assets/textures/stadiums/brakmar.avif",
       "region": [
         0,
         184,
@@ -25,6 +27,7 @@
     },
     "sand": {
       "path": "assets/textures/stadiums/sand.png",
+      "web_path": "assets/textures/stadiums/sand.avif",
       "region": [
         28,
         185,
@@ -36,6 +39,7 @@
     },
     "prairies": {
       "path": "assets/textures/stadiums/prairies.png",
+      "web_path": "assets/textures/stadiums/prairies.avif",
       "region": [
         0,
         184,
@@ -47,6 +51,7 @@
     },
     "kara": {
       "path": "assets/textures/stadiums/kara.png",
+      "web_path": "assets/textures/stadiums/kara.avif",
       "region": [
         28,
         184,
@@ -58,6 +63,7 @@
     },
     "meadow": {
       "path": "assets/textures/stadiums/meadow.png",
+      "web_path": "assets/textures/stadiums/meadow.avif",
       "region": [
         0,
         165,
@@ -69,6 +75,7 @@
     },
     "clouds": {
       "path": "assets/textures/stadiums/clouds.png",
+      "web_path": "assets/textures/stadiums/clouds.avif",
       "region": [
         0,
         165,
@@ -80,6 +87,7 @@
     },
     "wabbits": {
       "path": "assets/textures/stadiums/wabbits.png",
+      "web_path": "assets/textures/stadiums/wabbits.avif",
       "region": [
         0,
         165,
@@ -91,6 +99,7 @@
     },
     "frigost": {
       "path": "assets/textures/stadiums/frigost.png",
+      "web_path": "assets/textures/stadiums/frigost.avif",
       "region": [
         28,
         185,

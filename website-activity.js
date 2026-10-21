@@ -61,7 +61,7 @@
     $("website-refresh").disabled = true;
     $("website-status").textContent = "Loading…";
     try {
-      const data = await api("website_tracking", { days: Number($("website-days").value) });
+      const data = await api("website_activity", { days: Number($("website-days").value) });
       render(data);
       $("website-status").textContent = "";
     } catch (error) {

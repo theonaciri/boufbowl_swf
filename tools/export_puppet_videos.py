@@ -1,4 +1,4 @@
-"""Export five native Tiphon character animations as 700 px, 60 fps website loops."""
+"""Export five native Tiphon character animations as 530 px, 60 fps website loops."""
 import argparse
 import hashlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -19,6 +19,7 @@ ANIMATIONS = [
     ('eniripsa-2', 'AnimEsquive', 'Esquive'),
     ('iop-1', 'AnimLancer', 'Lancer'),
 ]
+OUTPUT_FPS = 30
 
 
 def main():
@@ -87,31 +88,32 @@ def main():
     for task in metadata:
         count = task['frames']
         repeats = max(1, math.ceil(native_fps*2/count))
-        while (count*repeats*60) % native_fps:
+        while (count*repeats*OUTPUT_FPS) % native_fps:
             repeats += 1
         video = output/(task['id']+'.mp4')
         subprocess.run(['ffmpeg','-y','-v','error','-framerate',str(native_fps),'-i',str(work/task['id']/'%04d.png'),
-                        '-vf',f'loop=loop=-1:size={count}:start=0,fps=60,format=yuv420p',
-                        '-frames:v',str(count*repeats*60//native_fps),
-                        '-c:v','libx264','-crf','18','-preset','slow','-movflags','+faststart','-an',str(video)],check=True)
-        subprocess.run(['ffmpeg','-y','-v','error','-i',str(work/task['id']/'0000.png'),'-frames:v','1',
-                        '-c:v','libwebp','-quality','90',str(output/(task['id']+'.webp'))],check=True)
-        task.update(path=video.relative_to(ROOT).as_posix(), width=600,height=700,fps=60,native_fps=native_fps,
+                        '-vf',f'loop=loop=-1:size={count}:start=0,fps={OUTPUT_FPS},scale=-2:530,format=yuv420p',
+                        '-frames:v',str(count*repeats*OUTPUT_FPS//native_fps),
+                        '-c:v','libsvtav1','-crf','35','-preset','8','-movflags','+faststart','-an',str(video)],check=True)
+        task.update(path=video.relative_to(ROOT).as_posix(), width=454,height=530,fps=OUTPUT_FPS,native_fps=native_fps,
                     native_frames=count,cycles=repeats,seconds=count*repeats/native_fps,
+                    codec='av1',crf=35,
                     sha256=hashlib.sha256(video.read_bytes()).hexdigest())
-        print('Exported', task['id'], task['seconds'], 'seconds, 600 × 700, 60 fps',flush=True)
+        print('Exported', task['id'], task['seconds'], 'seconds, 454 × 530 AV1 CRF 35, 30 fps',flush=True)
     manifest_path = output/'videos.json'
     previous = json.loads(manifest_path.read_text()).get('exports', []) if manifest_path.exists() else []
     exports = {item['character']: item for item in previous}
     exports.update({item['character']: item for item in metadata})
     complete = [exports[character] for character, _, _ in ANIMATIONS if character in exports]
     manifest_path.write_text(json.dumps({'renderer':'Original Tiphon/BoufbowlerSprite', 'exports':complete},ensure_ascii=False,indent=2)+'\n')
-    # Remove replaced animations only after their new videos and posters exist.
+    # Remove obsolete poster images after replacing the video exports.
     current_ids = {item['id'] for item in complete}
     for old in previous:
         if old['character'] in {item['character'] for item in metadata} and old['id'] not in current_ids:
             for extension in ('.mp4', '.webp'):
                 (output/(old['id']+extension)).unlink(missing_ok=True)
+    for poster in output.glob('*.webp'):
+        poster.unlink()
 
 
 if __name__=='__main__':

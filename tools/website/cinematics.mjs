@@ -53,7 +53,6 @@ try{
     }
     const png=Buffer.from(result.png,'base64');
     if(!encoder.stdin.write(png))await once(encoder.stdin,'drain');
-    if(frame===Math.max(1,Math.floor(count*.55)))writeFileSync(join(folder,'poster.png'),png);
     if(frame%25===0)console.log(task.slug,frame+'/'+count,((performance.now()-started)/1000).toFixed(1)+'s');
    }
    encoder.stdin.end();

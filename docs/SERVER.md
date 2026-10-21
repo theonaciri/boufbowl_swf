@@ -66,6 +66,7 @@ and arranged challenges use separate result ledgers.
 
 ```sh
 python3 -m backend.manage --database /path/to/backend.sqlite role "Nickname" admin
+python3 -m backend.manage --database /path/to/backend.sqlite role --account "Username" admin
 python3 -m backend.manage --database /path/to/backend.sqlite stats --days 30
 python3 -m backend.manage --database /path/to/backend.sqlite reports --limit 50
 ```
@@ -73,12 +74,16 @@ python3 -m backend.manage --database /path/to/backend.sqlite reports --limit 50
 | Page | Use |
 | --- | --- |
 | `/admin.html` | Server activity and diagnostics |
-| `/website-tracking.html` | Website interest, assets, and download counts |
+| `/website-activity.html` | Website interest, assets, and download counts |
 | `/moderation.html` | Chat/report review, audited suspensions |
 | `/tournaments.html` | Schedules, rules, standings, prizes |
 | `/assets-admin.html` | Private resource-proposal review |
 
 Sign in with an account/device session; server-side roles control access.
+The role command looks up a game nickname by default. Use `--account` to look
+up the profile linked to an account username; these names can differ when an
+account is registered using an existing device session. The account/profile
+must already exist in the running server's database. No server restart is needed.
 Only administrators manage tournaments and resource approvals. Publishing a
 tournament schedule replaces upcoming occurrences, while current events/results
 remain. Match rules are frozen per match; rewards require eligible human results.

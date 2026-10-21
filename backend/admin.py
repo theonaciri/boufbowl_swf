@@ -52,7 +52,7 @@ class Admin:
                     for watcher in self.store.db.execute('SELECT profile_id FROM tournament_watchers').fetchall():
                         self.send_tournaments(watcher[0])
                 result = self.admin_tournaments()
-            elif action == 'website_tracking':
+            elif action in ('website_activity', 'website_analytics', 'website_tracking'):
                 if self.role(actor) != 'admin':
                     raise ServiceError('ADMIN_FORBIDDEN', 'Administrator role required')
                 result = website_metrics_report(self.store, body.get('days', 30))

@@ -17,7 +17,10 @@ def main():
     backup=sub.add_parser('backup'); backup.add_argument('output',type=Path)
     replay=sub.add_parser('replay'); replay.add_argument('match',type=int); replay.add_argument('output',type=Path); replay.add_argument('--verify',action='store_true')
     reports=sub.add_parser('reports'); reports.add_argument('--limit',type=int,default=50)
-    role=sub.add_parser('role');role.add_argument('nickname');role.add_argument('role',choices=('player','moderator','admin'))
+    role=sub.add_parser('role',help='Assign a role to a game nickname or account username')
+    role.add_argument('nickname',metavar='NAME',help='Game nickname, or account username with --account')
+    role.add_argument('role',choices=('player','moderator','admin'))
+    role.add_argument('--account',action='store_true',help='Find the profile linked to this account username')
     stats=sub.add_parser('stats',help='Usage, history, online players and diagnostics (JSON)')
     stats.add_argument('--days',type=int,default=30)
     args=parser.parse_args()
@@ -37,16 +40,31 @@ def main():
         finally:store.close()
         return
     if args.operation=='role':
-        store=Store(args.database)
-        try:
-            with store.transaction():
-                row=store.db.execute('SELECT id FROM profiles WHERE nickname=?',(args.nickname,)).fetchone()
-                if not row:parser.error('Unknown player nickname')
-                store.db.execute('INSERT INTO profile_roles VALUES(?,?) ON CONFLICT(profile_id) DO UPDATE SET role=excluded.role',(row[0],args.role))
+        if not args.database.is_file():
+            parser.error('Database does not exist: '+str(args.database)+'; use --database to select the running server database')
+        # Never create/reset a database while granting privileges.
+        with closing(sqlite3.connect('file:'+quote(str(args.database.resolve()))+'?mode=rw',uri=True,timeout=10)) as db:
+            db.row_factory=sqlite3.Row
+            exists=db.execute("SELECT 1 FROM sqlite_master WHERE name='schema_versions'").fetchone()
+            version=db.execute('SELECT MAX(version) FROM schema_versions').fetchone()[0] if exists else None
+            if version!=8:parser.error('Role assignment requires schema 8; this database was left unchanged')
+            db.execute('PRAGMA foreign_keys=ON')
+            with db:
+                name=args.nickname.strip()
+                if args.account:
+                    row=db.execute('SELECT p.id,p.nickname,a.username FROM accounts a JOIN profiles p ON p.id=a.profile_id WHERE a.username=?',(name,)).fetchone()
+                else:
+                    row=db.execute('SELECT id,nickname FROM profiles WHERE nickname=?',(name,)).fetchone()
+                if not row:
+                    if not args.account and db.execute('SELECT 1 FROM accounts WHERE username=?',(name,)).fetchone():
+                        parser.error('That name is an account username, not a game nickname; add --account after role')
+                    parser.error(('Unknown account username' if args.account else 'Unknown player nickname')+' in '+str(args.database))
+                db.execute('INSERT INTO profile_roles VALUES(?,?) ON CONFLICT(profile_id) DO UPDATE SET role=excluded.role',(row['id'],args.role))
                 import time
-                store.db.execute('INSERT INTO moderation_audit(actor,target,action,reason,created) VALUES(NULL,?,?,?,?)',(row[0],'role','Local operator assigned '+args.role,time.time()))
-            print(args.nickname+': '+args.role)
-        finally:store.close()
+                reason='Local operator assigned '+args.role+(' via account '+row['username'] if args.account else '')
+                db.execute('INSERT INTO moderation_audit(actor,target,action,reason,created) VALUES(NULL,?,?,?,?)',(row['id'],'role',reason,time.time()))
+            label=row['username']+' (game nickname: '+row['nickname']+')' if args.account else row['nickname']
+            print(label+': '+args.role)
         return
     if args.operation=='reports':
         store=Store(args.database)

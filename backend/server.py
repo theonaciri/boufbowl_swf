@@ -32,9 +32,9 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
-STATIC_PAGES = ("index.html", "play.html", "home.css", "home.js", "site-tracking.js", "restoration.css", "restoration.js", "browser.html", "admin.html", "website-tracking.html", "website-tracking.js", "moderation.html", "tournaments.html",
-                "admin.css", "admin.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js", "contributions.js", "contributions.css",
-                "legal.html", "legal.css", "confidentialite.html", "conditions-utilisation.html",
+STATIC_PAGES = ("index.html", "play.html", "home.js", "site-activity.js", "restoration.js", "browser.html", "admin.html", "website-activity.html", "website-activity.js", "moderation.html", "tournaments.html",
+                "admin.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js",
+                "legal.html", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
 
 
@@ -81,6 +81,13 @@ def site_manifest(root):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        cache_control = getattr(self, "_static_cache_control", None)
+        if cache_control:
+            self.send_header("Cache-Control", cache_control)
+            self._static_cache_control = None
+        super().end_headers()
+
     def json_response(self, response):
         if response.get('ok') is False:
             self._tracking_error = response.get('code', 'REQUEST_ERROR')
@@ -283,6 +290,9 @@ class Handler(SimpleHTTPRequestHandler):
     def send_head(self):
         # Apply the static-file allowlist to both GET and HEAD requests.
         route = urlsplit(self.path).path
+        # Static resources are safe to retain for a month. HTML is revalidated
+        # so deploys can switch visitors to the current asset versions.
+        self._static_cache_control = None
         if route == "/":
             self.path = "/index.html"
             route = "/index.html"
@@ -291,11 +301,17 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header('Location', '/play.html')
             self.end_headers()
             return None
+        if route in ("/website-tracking.html", "/website-analytics.html"):
+            self.send_response(308)
+            self.send_header('Location', '/website-activity.html')
+            self.end_headers()
+            return None
         if route in DOWNLOAD_FILES:
             path = download_path(Path(self.directory).resolve(), DOWNLOAD_FILES[route][0])
             if path is None:
                 self.send_error(404)
                 return None
+            self._static_cache_control = "public, max-age=2592000"
             self.path = '/' + DOWNLOAD_FILES[route][0]
             return super().send_head()
         if route.lstrip("/") not in STATIC_PAGES and not any(route.startswith(prefix) for prefix in ("/bin/", "/assets/", "/resources/", "/vendor/ruffle/")):
@@ -307,6 +323,13 @@ class Handler(SimpleHTTPRequestHandler):
         if resolved not in tuple(root / name for name in STATIC_PAGES) and not any(resolved.is_relative_to(directory) for directory in allowed):
             self.send_error(404)
             return
+        if not resolved.is_file():
+            self.send_error(404)
+            return
+        if route.endswith(".html") or route == "/":
+            self._static_cache_control = "no-cache"
+        else:
+            self._static_cache_control = "public, max-age=2592000"
         return super().send_head()
 
 

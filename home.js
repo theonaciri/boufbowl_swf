@@ -1,5 +1,22 @@
+import { assetUrl } from "./tools/website/asset-url.js";
+
 (() => {
   const $ = (id) => document.getElementById(id);
+  // Cover crops can paint an image wider than its box. Include that hidden
+  // width in source selection so a narrow, tall card does not upscale a small image.
+  const coverImages = document.querySelectorAll("img[data-responsive-cover]");
+  const sizeCoverImage = (image) => {
+    const ratio = Number(image.getAttribute("width")) / Number(image.getAttribute("height"));
+    const sizes = `${Math.ceil(Math.max(image.clientWidth, image.clientHeight * ratio))}px`;
+    if (image.sizes !== sizes) image.sizes = sizes;
+  };
+  const coverObserver = new ResizeObserver((entries) => {
+    for (const { target } of entries) sizeCoverImage(target);
+  });
+  for (const image of coverImages) {
+    sizeCoverImage(image);
+    coverObserver.observe(image);
+  }
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   if (!reducedMotion.matches)
     document.documentElement.classList.add("js-motion");
@@ -67,7 +84,7 @@
           }
           continue;
         }
-        if (!video.hasAttribute("src")) video.src = video.dataset.puppetSrc;
+        if (!video.hasAttribute("src")) video.src = assetUrl(video.dataset.puppetSrc);
         video.muted = true;
         video.play().catch(() => {});
       }
@@ -92,7 +109,7 @@
     });
     syncPuppets();
   }
-  const cinematicMediaVersion = "legends-v2";
+  const cinematicMediaVersion = "legends-v3";
   const cinematicScenes = [
     [
       "terre-terre",
@@ -173,7 +190,6 @@
     category: "cinematic",
     title,
     description,
-    image: `assets/site/cinematic-${id}-${cinematicMediaVersion}.webp`,
     video: `assets/site/cinematic-${id}-${cinematicMediaVersion}.mp4`,
     videoAv1: `assets/site/cinematic-${id}-${cinematicMediaVersion}.av1.mp4`,
   }));
@@ -240,7 +256,7 @@
   const failedAv1 = new Set();
   function preferredCarouselVideo(scene) {
     return scene.videoAv1 && !failedAv1.has(scene.videoAv1) &&
-      carouselVideo.canPlayType('video/mp4; codecs="av01.0.13M.10"')
+      carouselVideo.canPlayType('video/mp4; codecs="av01.0.08M.10"')
       ? scene.videoAv1 : scene.video;
   }
   function syncCarousel() {
@@ -249,7 +265,7 @@
     if (source && carouselInView) {
       if (carouselVideo.dataset.source !== source) {
         carouselVideo.pause();
-        carouselVideo.src = source;
+        carouselVideo.src = assetUrl(source);
         carouselVideo.dataset.source = source;
         carouselVideo.load();
       }
@@ -275,14 +291,16 @@
     sceneIndex = (index + scenes.length) % scenes.length;
     const scene = scenes[sceneIndex];
     carouselVideo.pause();
-    $("carousel-image").hidden = false;
-    $("carousel-image").src = scene.image;
-    $("carousel-image").alt = scene.description;
-    carouselVideo.hidden = true;
-    if (scene.video) {
-      carouselVideo.poster = scene.image;
-      carouselVideo.setAttribute("aria-label", scene.description);
+    $("carousel-image").hidden = !scene.image;
+    if (scene.image) {
+      $("carousel-image").src = assetUrl(scene.image);
+      $("carousel-image").alt = scene.description;
+    } else {
+      $("carousel-image").removeAttribute("src");
+      $("carousel-image").alt = "";
     }
+    carouselVideo.hidden = true;
+    if (scene.video) carouselVideo.setAttribute("aria-label", scene.description);
     $("carousel-title").textContent = scene.title;
     $("carousel-description").textContent = scene.description;
     $("carousel-count").textContent =
@@ -305,7 +323,7 @@
     $("carousel-image").hidden = true;
   });
   carouselVideo.addEventListener("loadstart", () => {
-    $("carousel-image").hidden = false;
+    $("carousel-image").hidden = !scenes[sceneIndex].image;
   });
   carouselVideo.addEventListener("error", () => {
     const scene = scenes[sceneIndex];
@@ -315,7 +333,7 @@
       return;
     }
     carouselVideo.hidden = true;
-    $("carousel-image").hidden = false;
+    $("carousel-image").hidden = !scene.image;
   });
   $("carousel-prev").onclick = () => showScene(sceneIndex - 1, true);
   $("carousel-next").onclick = () => showScene(sceneIndex + 1, true);
@@ -472,7 +490,7 @@
       tab.tabIndex = selected ? 0 : -1;
     }
     const screen = screens[button.dataset.screen];
-    $("screen-image").src = screen.src;
+    $("screen-image").src = assetUrl(screen.src);
     $("screen-image").alt = screen.alt;
     $("screen-description").textContent = screen.description;
     $("game-screen").setAttribute("aria-labelledby", button.id);
@@ -507,9 +525,9 @@
     button.onclick = () => {
       const field = button.dataset.archive === "field";
       video.pause();
-      video.src = field
+      video.src = assetUrl(field
         ? "assets/site/tutorial-field.mp4"
-        : "assets/site/tutorial-archive.mp4";
+        : "assets/site/tutorial-archive.mp4");
       video.loop = field;
       video.load();
       video.play().catch(() => {});

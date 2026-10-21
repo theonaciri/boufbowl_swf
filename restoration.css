@@ -1,11 +1,11 @@
 @font-face {
   font-family: GameCopper;
-  src: url("assets/site/restoration/game-heading.ttf") format("truetype");
+  src: url("assets/site/restoration/game-heading.woff2") format("woff2");
   font-display: swap;
 }
 @font-face {
   font-family: GameVerdana;
-  src: url("assets/site/restoration/game-body.ttf") format("truetype");
+  src: url("assets/site/restoration/game-body.woff2") format("woff2");
   font-display: swap;
 }
 .restoration-explorer {
@@ -583,19 +583,19 @@
   right: 0;
 }
 .facet-illustration {
-  background: #557fa9;
+  background: #456b91;
 }
 .facet-body {
-  background: #79913d;
+  background: #576d2c;
 }
 .facet-body.is-missing {
-  background: #b57537;
+  background: #8b5728;
 }
 .facet-colors {
-  background: #9965a0;
+  background: #83538a;
 }
 .asset-hexes button[aria-pressed="true"] {
-  filter: brightness(1.2);
+  box-shadow: inset 0 0 0 5px #ecbd24;
   outline: 3px solid #ecbd24;
   outline-offset: -5px;
 }
@@ -846,7 +846,7 @@
 }
 .asset-state.missing {
   background: #efe0cb;
-  color: #89602e;
+  color: #754c21;
 }
 .asset-state.review {
   background: #e3d8e8;

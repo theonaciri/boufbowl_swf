@@ -1,4 +1,4 @@
-"""Generate website portraits from native Flash vectors, then refresh restoration data."""
+"""Generate website assets and deliver a complete static site."""
 import argparse
 from collections import deque
 import hashlib
@@ -13,12 +13,11 @@ import tempfile
 import threading
 import time
 from tools.site_delivery import delivery, write_json
-from tools.build_legal_pages import outputs as legal_outputs
-from backend.server import site_manifest
 from tools.site_portraits import ROOT, POSES, export_plan, manifest, webp_size, renderer_inputs, render_fingerprint, reusable, capture_source
 from tools.game_config import load_config, startup_source
 from tools.build_restoration_data import audit
 from tools.site_grid_icons import build as build_grid_icons
+from tools.convert_site_avif import main as convert_site_avif
 
 
 def main():
@@ -35,6 +34,7 @@ def main():
     parser.add_argument('--force', action='store_true', help='Re-render every portrait')
     parser.add_argument('--check', action='store_true', help='Verify existing exports without rendering')
     args = parser.parse_args()
+    convert_site_avif()
     directory = ROOT/'assets/site/restoration'
     settings = json.loads((ROOT/'resources/palettes.json').read_text())
     tasks = export_plan(audit()['characters'], settings)
@@ -65,13 +65,7 @@ def main():
         expected_inventory['inventory_date']=current_inventory.get('inventory_date')
         if current_inventory != expected_inventory:
             raise SystemExit('Restoration status and completion statistics are stale')
-        for name, content in legal_outputs().items():
-            if (ROOT/name).read_text()!=content:
-                raise SystemExit('Legal page is stale: '+name)
-        snapshot=ROOT/'resources/site-manifest.json'
-        if not snapshot.is_file() or json.loads(snapshot.read_text())!=site_manifest(ROOT):
-            raise SystemExit('Download availability snapshot is stale')
-        report=delivery(ROOT,args.output,check=True)
+        report=delivery(ROOT,args.output,check=True,bun=args.bun)
         print(f"Verified {len(tasks)} portraits, all restoration statistics and {report['file_count']} delivered files in {time.perf_counter()-started:.2f}s")
         return
     timings['planning_seconds']=round(time.perf_counter()-started,3)
@@ -181,12 +175,9 @@ if(result.character_initializations!==result.characters.length)throw Error('Char
     old_path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
     inventory=audit()
     write_json(directory/'inventory.json',inventory)
-    for name, content in legal_outputs().items():
-        (ROOT/name).write_text(content)
-    write_json(ROOT/'resources/site-manifest.json',site_manifest(ROOT))
     timings['inventory_seconds']=round(time.perf_counter()-inventory_started,3)
     delivery_started=time.perf_counter()
-    report=delivery(ROOT,args.output)
+    report=delivery(ROOT,args.output,bun=args.bun)
     timings['delivery_seconds']=round(time.perf_counter()-delivery_started,3)
     timings['total_seconds']=round(time.perf_counter()-started,3)
     write_json(ROOT/'.local/website/build-report.json',{
