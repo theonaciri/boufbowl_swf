@@ -74,6 +74,32 @@ async function siteManifest(root) {
   return { ok: true, downloads, contact_url: publicUrl("contact_url"), tot_quote_source_url: publicUrl("tot_quote_source_url") };
 }
 
+// Source templates use the production origin; deployment metadata comes from one setting.
+async function siteOrigin(root) {
+  const settings = path.join(root, "resources/site.json");
+  const config = await exists(settings) ? JSON.parse(await fs.readFile(settings, "utf8")) : {};
+  const url = new URL(config.site_url ?? "https://boufbowl-fan.fr");
+  if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+    throw new Error("site_url must be an HTTPS origin without credentials, a path, query, or fragment");
+  }
+  return url.origin;
+}
+
+function pageMetadata(html, name, origin) {
+  return html.replace(/<head\b[^>]*>[\s\S]*?<\/head>/i, (head) => {
+    head = head.replace(/https:\/\/(?:boufbowl-fan\.fr|[a-z0-9-]+\.trycloudflare\.com)(?=[/:#?"'<>\s]|$)/gi, origin);
+    const canonical = /<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>/gi;
+    if (canonical.test(head)) {
+      return head.replace(canonical, (tag) => tag.replace(/\bhref=(["'])([^"']+)\1/i, (_, quote, value) => {
+        const url = new URL(value, origin + "/");
+        return `href=${quote}${origin}${url.pathname}${url.search}${url.hash}${quote}`;
+      }));
+    }
+    const route = name === "index.html" ? "/" : `/${name}`;
+    return head.replace(/<\/head>/i, `<link rel="canonical" href="${origin}${route}">\n</head>`);
+  });
+}
+
 export async function buildSite({ root = ROOT, output = path.join(root, ".local/website/dist"), check = false } = {}) {
   root = await fs.realpath(path.resolve(root));
   output = await canonicalPath(path.resolve(output));
@@ -86,6 +112,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
   if (await exists(output) && (await fs.readdir(output)).length && !await exists(path.join(output, "delivery.json"))) {
     throw new Error("Refusing to replace an output folder without delivery.json");
   }
+  const origin = await siteOrigin(root);
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "boufbowl-web-"));
   await fs.mkdir(path.dirname(output), { recursive: true });
   const stage = await fs.mkdtemp(path.join(path.dirname(output), ".website-stage-"));
@@ -149,8 +176,9 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       scripts.set(key, entry);
       return entry;
     };
+    const sitemapUrls = new Set();
     for (const [name, source] of pages) {
-      let html = source;
+      let html = pageMetadata(source, name, origin);
       // Preserve stylesheet/inline-style order, then inline Bun's combined CSS.
       const cssTags = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>|<link\b(?=[^>]*\brel=["']stylesheet["'])[^>]*>/gi)];
       if (cssTags.length) {
@@ -201,7 +229,17 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
         return `srcset=${quote}${candidates.join(", ")}${quote}`;
       });
       await record(name, html);
+      const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] || "";
+      const meta = [...head.matchAll(/<meta\b[^>]*>/gi)].map((match) => match[0]);
+      const noindex = meta.some((tag) => /\bname=["'](?:robots|googlebot)["']/i.test(tag) && /\bcontent=["'][^"']*\bnoindex\b/i.test(tag));
+      const redirect = meta.some((tag) => /\bhttp-equiv=["']refresh["']/i.test(tag));
+      const canonical = head.match(/<link\b(?=[^>]*\brel=["']canonical["'])[^>]*\bhref=["']([^"']+)["']/i)?.[1];
+      if (!noindex && !redirect && canonical) sitemapUrls.add(canonical);
     }
+    const xmlEscape = (value) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]);
+    await record("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+      [...sitemapUrls].sort().map((url) => `  <url><loc>${xmlEscape(url)}</loc></url>`).join("\n") + "\n</urlset>\n");
+    await record("robots.txt", `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`);
     const configPath = path.join(stage, "resources/config.json");
     if (await exists(configPath)) {
       const config = JSON.parse(await fs.readFile(configPath, "utf8"));

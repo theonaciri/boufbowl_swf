@@ -113,11 +113,18 @@ python3 -m tools.build_website --check --ffdec "$FFDEC_JAR"
 The carousel loads only its active film, prefers AV1 with H.264 fallback, and
 pauses/unloads outside the viewport. Reduced motion and pause controls apply.
 
-Configure contact/download/server URLs in `resources/site.json`.
+Configure contact/download/server URLs in `resources/site.json`. Set `site_url`
+to the public HTTPS origin (currently `https://boufbowl-fan.fr`). Bun uses it for
+canonical links, Open Graph/Twitter image and page URLs, and structured data.
+Generated legal and redirect pages also receive absolute canonical links.
+Bun also generates `robots.txt` (allows crawling except `/api/`) and `sitemap.xml`
+from canonical URLs of pages without `noindex` or a refresh redirect. Private
+consoles and draft legal pages retain their `noindex` tags and are omitted from
+the sitemap; their HTML remains crawlable so search engines can read those tags.
 `GET /api/site` discovers local builds at `android/build/BoufbowlOffline.apk`,
 `windows/build/Boufbowl-windows.zip`, and `linux/build/Boufbowl-linux.tar.gz`.
 [Build packages](BUILD.md#distribute-players) before the final website build.
-When changing hosts, also update canonical/OpenGraph/schema URLs in `index.html`
+When changing hosts, update `site_url` and `server_url`, rebuild the website,
 and rebuild clients with the new server URL. Asset revisions and script hashes
 are generated automatically; do not add manual cache versions to source pages.
 
