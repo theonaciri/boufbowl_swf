@@ -808,13 +808,11 @@ function resolveGoals(cfg, state, tick) {
   const e = state.entities.find((e) => e.id === state.ball.holder_entity_id);
   if (!e || !active(e))
     return [];
-  const p = point(e), x = 2 * p.q + p.r;
-  const goalLine = (cfg.ball.goal_line_half_width ?? 12.5) * 2 * SCALE;
-  const attacksRight = e.team_id === 0 !== (state.sides_swapped ?? false);
-  if (attacksRight ? x >= goalLine : x <= -goalLine) {
-    e.status.carrying_ball = false;
+  const p = point(e), x = 2 * p.q + p.r, goalLine = (cfg.ball.goal_line_half_width ?? 15.5) * 2 * SCALE, cellX = (2 * e.position.q + e.position.r) * SCALE;
+  if (e.team_id === 0 !== (state.sides_swapped ?? !1) ? x > goalLine && cellX > goalLine : x < -goalLine && cellX < -goalLine) {
+    e.status.carrying_ball = !1;
     state.ball.holder_entity_id = null;
-    state.ball.in_flight = false;
+    state.ball.in_flight = !1;
     state.ball.position = { ...e.position };
     return [
       {
@@ -1428,7 +1426,7 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
         action.params.elements = { TERRE: 0, FEU: 0, AIR: 2, EAU: 1 };
     return order;
   }
-  const ai = cfg.ai, levelName = settings.level ?? ai.default_level, personalityName = settings.personality ?? ai.default_personality, level = ai.levels[levelName], personality = ai.personalities[personalityName], team = world.entities.filter((e) => e.team_id === order.team_index).sort((a, b) => a.id - b.id), available = team.filter(cpuActive), enemies = world.entities.filter((e) => e.team_id !== order.team_index && cpuActive(e)).sort((a, b) => a.id - b.id), direction = order.team_index === 0 !== Boolean(world.sides_swapped) ? 1 : -1, goal = cfg.ball.goal_line_half_width ?? 12.5, dt = cfg.tick_system.tick_dt_seconds, slots = cfg.general.actions_per_character, allocation = (names) => {
+  const ai = cfg.ai, levelName = settings.level ?? ai.default_level, personalityName = settings.personality ?? ai.default_personality, level = ai.levels[levelName], personality = ai.personalities[personalityName], team = world.entities.filter((e) => e.team_id === order.team_index).sort((a, b) => a.id - b.id), available = team.filter(cpuActive), enemies = world.entities.filter((e) => e.team_id !== order.team_index && cpuActive(e)).sort((a, b) => a.id - b.id), direction = order.team_index === 0 !== Boolean(world.sides_swapped) ? 1 : -1, goal = cfg.ball.goal_line_half_width ?? 15.5, dt = cfg.tick_system.tick_dt_seconds, slots = cfg.general.actions_per_character, allocation = (names) => {
     const e = { TERRE: 0, FEU: 0, AIR: 0, EAU: 0 };
     for (let i = 0;i < slots; i++)
       e[names[Math.min(i, names.length - 1)]]++;
@@ -1496,7 +1494,7 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
   }
   const crowd = (p) => [...used.values()].reduce((n, r) => n + Math.max(0, 3 - cpuDistance(p, r.target)), 0);
   function terminal(run, origin, fromSeconds = 0) {
-    const gain = forward(run.target) - forward(origin), scoring = forward(run.target) >= goal, value = 36 + gain * 3.5 * personality.progress / 20 + (scoring ? 100 : 0) - pressure(run.actor, run.elements, run.target) * 6;
+    const gain = forward(run.target) - forward(origin), scoring = forward(run.target) > goal, value = 36 + gain * 3.5 * personality.progress / 20 + (scoring ? 100 : 0) - pressure(run.actor, run.elements, run.target) * 6;
     return survival(run, fromSeconds) * value - 36 - (run.path.length - 1) * 0.035 - run.risk * 12 * (personality.risk / 18 - 1);
   }
   function select(actor, allocations, score) {
@@ -1526,7 +1524,7 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
     const range = cfg.ball.base_range + thrower.elements.AIR * cfg.actions.element_effects.air.range_modifier, ballStep = cfg.ball.throw_speed_cells_per_sec * dt;
     for (let release = cfg.simulation.throw_delay_ticks;release < cfg.tick_system.max_ticks_per_turn; release++) {
       const origin = position(thrower, (release + 1) * dt);
-      if (forward(origin) >= goal)
+      if (forward(origin) > goal && forward(cpuRound(origin)) > goal)
         return null;
       let landing, duration = 0;
       const latest = Math.ceil((cpuDistance(origin, receiver.actor.position) + receiver.path.length + 1) / ballStep);
@@ -1818,6 +1816,7 @@ for await (const line of createInterface({ input: process.stdin })) {
     const warnings = [];
     const result = simulateTurn4(cfg, request.world, orders[0], orders[1], request.turn, request.seed, (warning) => warnings.push(warning.code === "RECEPTION_REQUIRES_FEU" ? { ...warning, code: "RECEPTION_REQUIRES_AIR" } : warning));
     result.simulation_version += "+client-ball-2";
+    result.simulation_version += "+goal-zones-1";
     if (cfg.ball.action_limited_attempts)
       result.simulation_version += "+ball-attempts-1";
     if (Object.values(cfg.abilities ?? {}).some((r) => r.target))

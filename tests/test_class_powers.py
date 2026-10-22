@@ -150,7 +150,9 @@ class ClassPowerTests(unittest.TestCase):
                 reproduced=self.engine.simulate(record['initial'],record['orders'],expected['turn_number'],expected['seed'],record['rules'],(False,False))['result']
                 self.assertEqual(reproduced['events'],expected['events'])
                 self.assertEqual(reproduced['final_state_hash'],expected['final_state_hash'])
-                self.assertEqual(reproduced['simulation_version'],expected['simulation_version'])
+                # Events and state remain reproducible with their saved line;
+                # the current worker explicitly identifies its corrected goal checks.
+                self.assertEqual(reproduced['simulation_version'],expected['simulation_version']+'+goal-zones-1')
 
     def test_distinct_balanced_base_stats_and_localized_descriptions(self):
         classes=load_config()['rules']['classes'];profiles=[]

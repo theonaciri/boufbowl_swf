@@ -32,7 +32,7 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
   const team=world.entities.filter((e: any)=>e.team_id===order.team_index).sort((a: any,b: any)=>a.id-b.id);
   const available=team.filter(cpuActive), enemies=world.entities.filter((e: any)=>e.team_id!==order.team_index && cpuActive(e)).sort((a: any,b: any)=>a.id-b.id);
   const direction=(order.team_index===0)!==Boolean(world.sides_swapped)?1:-1;
-  const goal=cfg.ball.goal_line_half_width ?? 12.5, dt=cfg.tick_system.tick_dt_seconds;
+  const goal=cfg.ball.goal_line_half_width ?? 15.5, dt=cfg.tick_system.tick_dt_seconds;
   const slots=cfg.general.actions_per_character;
   const allocation=(names: string[]): Elements => {
     const e: any={TERRE:0,FEU:0,AIR:0,EAU:0};
@@ -124,7 +124,7 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
   }
   const crowd=(p: Cell)=>[...used.values()].reduce((n,r)=>n+Math.max(0,3-cpuDistance(p,r.target)),0);
   function terminal(run: Run,origin: Cell,fromSeconds=0): number {
-    const gain=forward(run.target)-forward(origin), scoring=forward(run.target)>=goal;
+    const gain=forward(run.target)-forward(origin), scoring=forward(run.target)>goal;
     const value=36+gain*3.5*personality.progress/20+(scoring?100:0)-pressure(run.actor,run.elements,run.target)*6;
     return survival(run,fromSeconds)*value-36-(run.path.length-1)*.035-run.risk*12*(personality.risk/18-1);
   }
@@ -149,7 +149,7 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
     const ballStep=cfg.ball.throw_speed_cells_per_sec*dt;
     for (let release=cfg.simulation.throw_delay_ticks;release<cfg.tick_system.max_ticks_per_turn;release++) {
       const origin=position(thrower,(release+1)*dt);
-      if (forward(origin)>=goal) return null;
+      if (forward(origin)>goal && forward(cpuRound(origin))>goal) return null;
       let landing: Cell|undefined, duration=0;
       const latest=Math.ceil((cpuDistance(origin,receiver.actor.position)+receiver.path.length+1)/ballStep);
       for (let ticks=1;ticks<=latest;ticks++) {

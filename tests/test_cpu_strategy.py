@@ -75,7 +75,7 @@ class CPUStrategyTests(unittest.TestCase):
     def test_risky_scoring_run_is_allowed_but_ordinary_carry_prefers_safe_range(self):
         safe = self.cpu(self.tactical_world([(0,0)]))
         self.assertEqual(safe['orders'][0]['cpu_plan']['roles'][0]['movement_risk'], 0)
-        scoring = self.tactical_world([(2,0)])
+        scoring = self.tactical_world([(5,0)])
         success, failure = self.cpu(scoring), self.cpu(scoring, seed=4)
         self.assertGreater(success['orders'][0]['cpu_plan']['roles'][0]['movement_risk'], 0)
         self.assertEqual(success['orders'], failure['orders'])
@@ -83,7 +83,7 @@ class CPUStrategyTests(unittest.TestCase):
         self.assertIn('fall', [e['type'] for e in failure['result']['events']])
 
     def test_runs_then_passes_to_parallel_teammate_who_catches_and_scores(self):
-        world = self.tactical_world([(0,0,{'precision':25}), (3,3,{'precision':25})])
+        world = self.tactical_world([(3,0,{'precision':25}), (6,3,{'precision':25})])
         response = self.cpu(world)
         actions = response['orders'][0]['actions']
         self.assertTrue(all(any(a['entity_id']==identity and a['action_type']=='move' for a in actions) for identity in (11,12)))
@@ -152,7 +152,7 @@ class CPUStrategyTests(unittest.TestCase):
     def test_moving_passes_work_on_opposite_side_and_after_halftime(self):
         for team in (0, 1):
             for swapped in (False, True):
-                world = self.tactical_world([(0,0,{'precision':25}), (3,3,{'precision':25})])
+                world = self.tactical_world([(3,0,{'precision':25}), (6,3,{'precision':25})])
                 world['sides_swapped'] = swapped
                 right = (team == 0) != swapped
                 for actor in world['entities']:

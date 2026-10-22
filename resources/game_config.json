@@ -274,7 +274,7 @@
         "intercept_height_threshold": 1.5,
         "reception_requires_air": true,
         "action_limited_attempts": true,
-        "goal_line_half_width": 12.5
+        "goal_line_half_width": 15.5
       },
       "combat": {
         "duel": {

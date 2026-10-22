@@ -26,8 +26,8 @@ def records():
                 selected=[{'entity_id':11,'action_type':'move','params':{'target_position':{'q':1,'r':0},'elements':{'TERRE':1,'FEU':0,'AIR':0,'EAU':2}}}]
             elif name=='ability': selected=[{'entity_id':11,'action_type':'ability','params':{}}]
             elif name=='goal':
-                actor['position']={'q':12,'r':0}
-                selected=[{'entity_id':11,'action_type':'move','params':{'target_position':{'q':13,'r':0},'elements':{'TERRE':0,'FEU':0,'AIR':0,'EAU':3}}}]
+                actor['position']={'q':15,'r':0}
+                selected=[{'entity_id':11,'action_type':'move','params':{'target_position':{'q':16,'r':0},'elements':{'TERRE':0,'FEU':0,'AIR':0,'EAU':3}}}]
             else:
                 actor['stats']['precision']=100; receiver['stats']['precision']=100; receiver['stats']['agility']=100
                 if name=='interception':

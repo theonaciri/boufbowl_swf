@@ -13,6 +13,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Popup geometry/layers | `MessageBoxView.as` → `MessageBox.as`, `ResizableTextBox.as`, `ServerSupport.as.inc` | browser probe, popup bounds |
 | CPU roles and risk | `backend/engine.ts` → `cpu-orders.ts`, `cpu-powers.ts` → retained simulator | `verify_client --area cpu` |
 | CPU roster/appearance | `backend/service.py` → `backend/cpu_team.py` | `test_backend.py` |
+| Goal zones and scoring | `resources/game_config.json` → `backend/simulator/ball.ts` → `turn_adapter.py`; CPU uses the same line | `test_gameplay_fixes.py`, `verify_client --area cpu`; [geometry](GOAL_ZONES.md) |
 | Resolution ordering | `backend/turn_adapter.py` → `ScriptBuilder.as`, interaction builders → `ScriptRunner` | resolution-flow tests + 3D fixture |
 | Scene updates | `ResolutionMediator.as` → `SceneController.as` → UI, scripts, model | shared smoke + ResolutionDone/MATCH_END |
 | Sprite redraw | `BoufbowlerPresenter.positionUpdated` → `MovieClipSpritePresenter.as` → shared Away3D vertex | shared smoke; move/no-op/invalidate/swap |

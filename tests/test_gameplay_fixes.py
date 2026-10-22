@@ -19,9 +19,9 @@ class GameplayFixTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.engine.close()
 
-    def simulate(self, world, actions=None, rules=None):
+    def simulate(self, world, actions=None, rules=None, acting_team=0):
         orders = [{'player_id':str(t),'turn_number':1,'team_index':t,'nonce':'probe',
-                   'actions':(actions or []) if t == 0 else []} for t in (0,1)]
+                   'actions':(actions or []) if t == acting_team else []} for t in (0,1)]
         return self.engine.simulate(world, orders, 1, 12345, rules or self.rules, (False,False))['result']
 
     def test_ball_pickup_covers_all_six_adjacent_cells_but_not_two_cells(self):
@@ -65,8 +65,8 @@ class GameplayFixTests(unittest.TestCase):
                 for row in (-3,-2,2,3):
                     right = (team == 0) != swapped
                     for past in (False,True):
-                        # Logical x is q+r/2; choose either side of 12.5 on each row.
-                        q = (13 if past else 12) - row//2
+                        # Logical x is q+r/2; the line itself is not inside the end zone.
+                        q = (16 if past else 15) - row//2
                         if not right: q = -q-row
                         with self.subTest(team=team,swapped=swapped,row=row,past=past):
                             world = deepcopy(self.baseline)
@@ -77,10 +77,57 @@ class GameplayFixTests(unittest.TestCase):
                             actor['status']['carrying_ball']=True
                             events = self.simulate(world)['events']
                             goals = [e for e in events if e['type']=='goal']
-                            # On odd rows q+row/2 equals 12.5 for the nearer sample.
-                            expected = abs(q+row/2) >= 12.5
+                            expected = abs(q+row/2) > 15.5
                             self.assertEqual(bool(goals),expected)
                             if goals: self.assertEqual(goals[0]['params']['team'],team)
+
+    def test_end_zones_contain_exactly_two_outer_columns_on_even_and_odd_rows(self):
+        self.assertEqual(self.rules['simulation']['ball']['goal_line_half_width'],15.5)
+        for row in (-10,-9,0,1,9,10):
+            for team in (0,1):
+                scoring=[]
+                for column in range(12,18):
+                    horizontal=column+(row%2)/2
+                    if team==1: horizontal=-horizontal
+                    world=deepcopy(self.baseline)
+                    actor=next(e for e in world['entities'] if e['team_id']==team)
+                    actor['position']={'q':int(horizontal-row/2),'r':row}
+                    world['ball'].update(holder_entity_id=actor['id'],position=deepcopy(actor['position']))
+                    actor['status']['carrying_ball']=True
+                    if any(e['type']=='goal' for e in self.simulate(world)['events']): scoring.append(column)
+                with self.subTest(row=row,team=team): self.assertEqual(scoring,[16,17])
+
+    def test_running_carrier_crosses_end_zone_boundary_before_goal_animation(self):
+        from backend.turn_adapter import adapt_turn
+        for row in (0,1,-1):
+            for team in (0,1):
+                for swapped in (False,True):
+                    world=deepcopy(self.baseline)
+                    actor=next(e for e in world['entities'] if e['team_id']==team)
+                    world['entities']=[actor]
+                    world['sides_swapped']=swapped
+                    direction=1 if (team==0)!=swapped else -1
+                    q=15-row//2
+                    if direction<0: q=-q-row
+                    actor['position']={'q':q,'r':row}
+                    actor['status']['carrying_ball']=True
+                    world['ball'].update(holder_entity_id=actor['id'],position=deepcopy(actor['position']))
+                    action={'entity_id':actor['id'],'action_type':'move','params':{
+                        'target_position':{'q':q+direction,'r':row},'elements':{'TERRE':0,'FEU':0,'AIR':0,'EAU':3}}}
+                    result=self.simulate(world,[action],acting_team=team)
+                    goal=next(e for e in result['events'] if e['type']=='goal')
+                    moves=[e for e in result['events'] if e['type']=='move' and e['actor']==actor['id'] and e['tick']<=goal['tick']]
+                    point=moves[-1]['params']['precise_position']
+                    with self.subTest(row=row,team=team,swapped=swapped):
+                        self.assertGreater(direction*(point['q']+point['r']/2)/point['scale'],15.5)
+                        self.assertGreater(direction*(goal['params']['position']['q']+row/2),15.5)
+                        orders=[{'actions':[action] if side==team else []} for side in (0,1)]
+                        scenario=adapt_turn({'initial':world,'orders':orders,'result':result,'rules':self.rules})
+                        touchdown=next(i['interactionDetails'] for i in scenario['interaction'] if i['interactionDetails']['type']==12)
+                        track=next(t for t in scenario['boufbowlerTracks'] if t['boufbowlerId']==str(actor['id']))
+                        arrival=next(i['movement'] for i in track['item'] if i['type']==1 and i['movement']['positions'][-1]=={
+                            'x':goal['params']['position']['q'],'y':row})
+                        self.assertLessEqual(arrival['endTick'],touchdown['startTick'])
 
     def test_crossing_without_ball_or_crossing_own_line_does_not_score(self):
         world = deepcopy(self.baseline)
@@ -100,6 +147,8 @@ class GameplayFixTests(unittest.TestCase):
             if actor['team_id'] == 1:
                 actor['position']['r'] = 8
         next(e for e in record['initial']['entities'] if e['id']==12)['position'] = {'q':4,'r':3}
+        # Keep this passing situation the same distance from the corrected goal.
+        for actor in record['initial']['entities']: actor['position']['q'] += 3
         response = self.engine.simulate(record['initial'], [None, None], 1, 12345, self.rules, (True, False))
         actions = response['orders'][0]['actions']
         throw = next(a for a in actions if a['action_type']=='throw')

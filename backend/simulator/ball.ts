@@ -309,11 +309,14 @@ export function resolveGoals(
   const e = state.entities.find((e) => e.id === state.ball.holder_entity_id);
   if (!e || !active(e)) return [];
   const p = point(e), x = 2 * p.q + p.r;
-  // Client spacePoint.x = q + r/2: goal lines are fixed vertical lines,
-  // inside the reserve columns, independent of row parity.
-  const goalLine = ((cfg.ball as any).goal_line_half_width ?? 12.5) * 2 * SCALE;
+  // Client spacePoint.x = q + r/2. Its outer edge is +/-17.5;
+  // crossing +/-15.5 enters the two-column end zone on either row parity.
+  const goalLine = ((cfg.ball as any).goal_line_half_width ?? 15.5) * 2 * SCALE;
+  // The replay settles onto a hex center. Do not score while its rounded
+  // position is still on the line, even if the continuous position is past it.
+  const cellX = (2 * e.position.q + e.position.r) * SCALE;
   const attacksRight = (e.team_id === 0) !== (state.sides_swapped ?? false);
-  if (attacksRight ? x >= goalLine : x <= -goalLine) {
+  if (attacksRight ? x > goalLine && cellX > goalLine : x < -goalLine && cellX < -goalLine) {
     e.status.carrying_ball = false;
     state.ball.holder_entity_id = null;
     state.ball.in_flight = false;
