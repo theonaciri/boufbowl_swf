@@ -30,3 +30,12 @@ A finished FrameController now returns immediately and reports completion once.
 Unobserved frame/completion events no longer allocate Event objects. The smoke
 test sends 1,000 updates past the end and requires exactly one completion, while
 also checking scheduled starts, timed loops and incremental non-skipping frames.
+
+## Cycle 3: compose text only when dirty
+
+TextZone tracks pending content/layout work, registers its frame listener once
+per batch and makes unchanged updateNow calls cheap. Size/padding changes still
+invalidate layout; a failed composition can be retried explicitly. The smoke
+test requires no extra change notifications for 500 unchanged refreshes, and
+requires composition after resizing or changing padding. Identical dimensions
+no longer update the TLF controller or recreate a browser clipping rectangle.

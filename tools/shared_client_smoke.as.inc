@@ -88,6 +88,18 @@
             smokeAssert(changes == 1,"Chat recomposed before its explicit batch update");
             smokeAssert(zone.canScroll() && zone.viewportRatio > 0 && zone.viewportRatio < 1 && zone.scrollRatio == 1,
                "Long chat content cannot scroll to the bottom");
+            for(i=0;i<500;i++) zone.updateNow();
+            smokeAssert(changes == 1,"Unchanged chat content was recomposed");
+            var previousViewport:Number = zone.viewportRatio;
+            zone.setSize(240,120);
+            zone.updateNow();
+            smokeAssert(changes == 2 && zone.viewportRatio > previousViewport,"Resizing chat did not recompose its layout");
+            zone.setSize(240,120);
+            zone.updateNow();
+            smokeAssert(changes == 2,"Unchanged chat dimensions triggered composition");
+            zone.setPaddings(10,10,10,10);
+            zone.updateNow();
+            smokeAssert(changes == 3,"Changed chat padding did not recompose its layout");
             zone.scrollRatio = NaN;
             smokeAssert(zone.scrollRatio == 0,"NaN reached chat scroll state");
             zone.scrollRatio = Number.POSITIVE_INFINITY;

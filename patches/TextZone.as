@@ -68,6 +68,10 @@ package com.ankamagames.xgaming.ui.components
 
       private var _scrollRatio:Number;
 
+      private var _textUpdatePending:Boolean = false;
+
+      private var _compositionFailed:Boolean = false;
+
       public function TextZone(param1:Number = 5)
       {
          super();
@@ -177,10 +181,13 @@ package com.ankamagames.xgaming.ui.components
 
       public function setPaddings(param1:int, param2:int, param3:int, param4:int) : void
       {
+         if(this._paddings.top == param1 && this._paddings.right == param2 &&
+            this._paddings.bottom == param3 && this._paddings.left == param4) return;
          this._paddings = new Padding(param1,param2,param3,param4);
          if(this._textFlow)
          {
             this.applyPaddings(this._textFlow);
+            this.registerForTextFlowUpdate();
          }
       }
 
@@ -238,12 +245,15 @@ package com.ankamagames.xgaming.ui.components
 
       public function setSize(param1:Number, param2:Number) : void
       {
+         var changed:Boolean = this._width != param1 || this._height != param2;
          this._width = param1;
          this._height = param2;
-         if(BoufbowlClient.ruffleRuntime) scrollRect = new Rectangle(0,0,param1,param2);
-         if(this._controller != null)
+         if(BoufbowlClient.ruffleRuntime && (changed || scrollRect == null))
+            scrollRect = new Rectangle(0,0,param1,param2);
+         if(this._controller != null && changed)
          {
             this._controller.setCompositionSize(this._width,this._height);
+            this.registerForTextFlowUpdate();
          }
       }
 
@@ -284,6 +294,8 @@ package com.ankamagames.xgaming.ui.components
       {
          // Every runtime composes a batch only once on its next frame. Explicit
          // updateNow() remains synchronous and cancels this pending update.
+         if(this._textUpdatePending) return;
+         this._textUpdatePending = true;
          addEventListener(Event.ENTER_FRAME,this.textUpdate,false,0,true);
       }
 
@@ -325,6 +337,9 @@ package com.ankamagames.xgaming.ui.components
 
       private function updateTextFlow() : void
       {
+         if(!this._textUpdatePending && !this._compositionFailed) return;
+         this._textUpdatePending = false;
+         this._compositionFailed = false;
          try
          {
             removeEventListener(Event.ENTER_FRAME,this.textUpdate);
@@ -336,6 +351,7 @@ package com.ankamagames.xgaming.ui.components
          }
          catch(error:Error)
          {
+            this._compositionFailed = true;
             this._allowScrollDispatching = true;
             LOGGER.error("TextZone::setContent : {}",error.message);
          }
