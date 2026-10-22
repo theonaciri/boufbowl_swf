@@ -181,6 +181,7 @@
       private static function serverMetadata(response:Object) : void
       {
          if(response.hasOwnProperty("telemetry"))serverTelemetryEnabled=response.telemetry === true;
+         com.ankamagames.boufbowl.BoufbowlClient.setRuntimeMeasurementSink(serverTelemetryEnabled ? serverRecordTelemetry : null);
          if(response.hasOwnProperty("poll_wait_ms"))serverPollWait=uint(Math.min(20000,Math.max(0,Number(response.poll_wait_ms))));
          if(response.hasOwnProperty("spectating")) serverSpectating = response.spectating;
          if(response.subscriptions != null) serverSubscriptions=response.subscriptions;

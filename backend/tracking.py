@@ -1,4 +1,5 @@
 """Buffered usage and diagnostic aggregates; independent of gameplay statistics."""
+from backend import game_measurements
 from collections import Counter
 from datetime import datetime, timezone, timedelta
 import hashlib
@@ -70,6 +71,8 @@ def init_schema(db):
           duration_seconds REAL NOT NULL DEFAULT 0,PRIMARY KEY(day,kind,name));
         CREATE INDEX IF NOT EXISTS website_analytics_day ON website_analytics(day,kind);
     ''')
+
+    game_measurements.init_schema(db)
 
 
 def backfill(store):
@@ -270,8 +273,10 @@ class Tracking:
         accepted = duplicates = limited = 0
         # Caller owns a transaction; receipts make reconnect retries idempotent.
         for event in events:
-            if not isinstance(event, dict) or event.get('kind') not in ('error', 'reconnect', 'latency'):
+            if not isinstance(event, dict) or event.get('kind') not in ('error', 'reconnect', 'latency', 'game_frames', 'game_startup'):
                 raise ValueError('Unknown diagnostic event')
+            if event['kind'] in ('game_frames','game_startup'):
+                game_measurements.validate_event(event)
             identity = event.get('id')
             if not isinstance(identity, str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}', identity):
                 raise ValueError('Diagnostic events need an ID')
@@ -289,7 +294,13 @@ class Tracking:
                 self.store.db.execute('INSERT INTO tracking_receipts VALUES(?,?,?,?)', (profile, device, event['id'], now))
                 count += 1
                 accepted += 1
-                if event['kind'] == 'error':
+                if event['kind'] == 'game_frames':
+                    game_measurements.record_client(self.store.db,day_at(now),self.metadata.get((profile,device),{}),event)
+                elif event['kind'] == 'game_startup':
+                    metadata = self.metadata.get((profile,device),{})
+                    runtime = metadata.get('runtime') if metadata.get('runtime') in ('ruffle','flash','air') else 'unknown'
+                    self.observe('game_startup',runtime,event['elapsed_ms'])
+                elif event['kind'] == 'error':
                     self.error('client', event.get('code', 'RUNTIME_ERROR'), event.get('message'), event.get('stack'))
                 elif event['kind'] == 'reconnect':
                     row = self.activity_rows.setdefault((day_at(now), profile), [now, now, 0, 0, 0, 0, 0.0])
@@ -357,6 +368,8 @@ class Tracking:
                                (day, kind, name, *row))
                 db.execute("INSERT OR REPLACE INTO tracking_meta VALUES('runtime',?)", (json.dumps(self.resources()),))
                 db.execute('DELETE FROM tracking_receipts WHERE created<?', (time.time() - 7 * 86400,))
+                db.execute('DELETE FROM game_frame_measurements WHERE day<?', (day_at(time.time() - 400 * 86400),))
+                db.execute('DELETE FROM game_turn_measurements WHERE day<?', (day_at(time.time() - 400 * 86400),))
                 db.execute('DELETE FROM website_analytics WHERE day<?', (day_at(time.time() - 400 * 86400),))
             self.activity_rows.clear(); self.visits.clear(); self.clients.clear()
             self.performance.clear(); self.errors.clear(); self.samples.clear()
@@ -476,6 +489,7 @@ def metrics_report(store, days=30):
             'usage': {'active_users': len(active), 'returning_users': len(returning), 'visits': visits[0],
                       'mean_visit_seconds': visits[1], 'estimated_online_seconds': sum(d['online_seconds'] or 0 for d in daily.values())},
             'daily': list(daily.values()), 'matches': matches, 'platforms': platforms, 'versions': versions,
+            'game': game_measurements.report(db,str(start)),
             'diagnostics': diagnostics, 'performance': list(performance.values()), 'errors': errors,
             'resources': json.loads(meta['runtime']) if 'runtime' in meta else None}
 

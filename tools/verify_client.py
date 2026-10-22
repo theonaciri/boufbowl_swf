@@ -17,7 +17,7 @@ def check_commands(area):
         return [('cpu', [python,'-m','unittest','discover','-s','tests','-p','test_cpu_strategy.py']),
                 ('resolution', [python,'-m','unittest','discover','-s','tests','-p','test_resolution_flow.py'])]
     if area == 'web':
-        return [('web', ['bun','test','tests/web_player.test.js'])]
+        return [('web', ['bun','test','tests/web_player.test.js','tests/admin_game.test.js'])]
     if area == 'compile':
         return [('compile', [python,'-m','tools.smoke_shared_client','--compile-only'])]
     if area == 'native':

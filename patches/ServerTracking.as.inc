@@ -39,6 +39,7 @@
          }
          serverClientId=String(storage.data.clientId);
          serverTelemetryEnabled=false;serverTelemetryQueue=[];serverTelemetrySending=false;
+         com.ankamagames.boufbowl.BoufbowlClient.setRuntimeMeasurementSink(null);
          serverTelemetryFailures=0;serverConnectionLostAt=-1;serverLastLatencyReport=-30000;clearTimeout(serverTelemetryTimer);
          try {
             var stage:Stage=Stage(app.contextInjector.getInstance(Stage));

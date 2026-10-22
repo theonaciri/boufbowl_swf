@@ -749,6 +749,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
                 if match["phase"] != "simulating" or match["turn"] != snapshot["turn"]:
                     return
                 self.store.db.execute("INSERT INTO turns VALUES(?,?,?)", (match["id"], match["turn"], json.dumps(record)))
+                from backend.game_measurements import record_turn
+                record_turn(self.store.db,match["id"],match["turn"],record,match["profiles"])
                 match["pending"] = result["result"]
                 match["scenario"] = scenario
                 match["phase"] = "resolution"

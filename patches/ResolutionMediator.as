@@ -64,6 +64,7 @@ package com.ankamagames.boufbowl.client.match.resolution.view
             LOGGER.warn("There\'s already a script running. Cleaning... (this should not happen)");
             this.cleanScript();
          }
+         com.ankamagames.boufbowl.BoufbowlClient.setMeasurementPhase("3d");
          this._currentRunner = new ScriptRunner(event.tree,this._sceneController);
          LOGGER.debug("Running {}",event.tree.toString());
          this._sceneController.endCallback = this.scriptEnded;
@@ -81,6 +82,7 @@ package com.ankamagames.boufbowl.client.match.resolution.view
 
       private function cleanScript() : void
       {
+         com.ankamagames.boufbowl.BoufbowlClient.setMeasurementPhase("ui");
          this._sceneController.endCallback = null;
          this._sceneController.reset();
          this._currentRunner.destroy();

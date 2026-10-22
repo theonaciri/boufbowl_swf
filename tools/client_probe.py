@@ -68,6 +68,18 @@ def probe_root(platform, native=False, root=ROOT):
             flash.external.ExternalInterface.addCallback("probeStats",function():Object {
                return {fps:stage.frameRate,ruffle:ruffleRuntime,preferred:preferredFrameRate};
             });
+            var measuredEvents:Array = [];
+            flash.external.ExternalInterface.addCallback("probeMeasurements",function(action:String):Object {
+               if(action == "start") {
+                  measuredEvents=[];setMeasurementActive(true);
+                  setRuntimeMeasurementSink(function(sample:Object):void { measuredEvents.push(sample); });
+                  setMeasurementPhase("3d");
+               }
+               if(action == "pause") setMeasurementActive(false);
+               if(action == "resume") setMeasurementActive(true);
+               if(action == "stop") {setMeasurementPhase("ui");setRuntimeMeasurementSink(null);}
+               return {events:measuredEvents};
+            });
          }''')
     position = source.rfind('   }')
     if position < 0:

@@ -8,6 +8,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Patch selection/build | `tools/client_patches.py` → `patches/rebuild.py` / `android/build.py` | `verify_client --area shared` |
 | FPS/preferences | both `BoufbowlClient.as` roots → `ClientRuntime.as.inc` → `OptionsView.as`, `ResolutionMediator.as` | shared smoke, both roots |
 | Browser launch/quality | `play.html` → `web-player.js` → root `setWebDisplay` | `verify_client --area web` |
+| Game measurements/admin charts | `ClientRuntime.as.inc` / `Service.run_resolution` → `backend/game_measurements.py` → `admin-game.js` | `verify_client --area all`; [coverage](GAME_MEASUREMENTS.md) |
 | Chat layout/scroll | `ChatMediator.as` → `TextZone.as` → TLF controller | shared smoke; empty, long, resized chat |
 | Popup geometry/layers | `MessageBoxView.as` → `MessageBox.as`, `ResizableTextBox.as`, `ServerSupport.as.inc` | browser probe, popup bounds |
 | CPU roles and risk | `backend/engine.ts` → `cpu-orders.ts`, `cpu-powers.ts` → retained simulator | `verify_client --area cpu` |

@@ -126,6 +126,11 @@ if (typeof document !== "undefined") (async () => {
       },
     });
     status.hidden = true;
+    const reportVisibility = () => {
+      try { player.ruffle().callExternalInterface("setMeasurementActive", !document.hidden); } catch {}
+    };
+    document.addEventListener("visibilitychange", reportVisibility);
+    reportVisibility();
     fullscreenButton.hidden = false;
     document.getElementById("display-options").hidden = false;
     qualityChoice.addEventListener("change", () => {
