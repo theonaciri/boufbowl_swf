@@ -52,19 +52,19 @@ package com.ankamagames.boufbowl.resolution.display.script.runner
       
       private var _endCallback:Function;
       
-      public function SceneController(param1:SceneModel, param2:IScenePresenter, param3:ITimeProvider, param4:TiphonProxy, param5:IAudioController, param6:IUIController, param7:IBoufbowlConfig)
+      public function SceneController(model:SceneModel, presenter:IScenePresenter, timeProvider:ITimeProvider, tiphonProxy:TiphonProxy, audioController:IAudioController, uiController:IUIController, config:IBoufbowlConfig)
       {
          super();
-         this._model = param1;
-         this._presenter = param2;
-         this._timeProvider = param3;
-         this._tiphonProxy = param4;
-         this._audioController = param5;
-         this._config = param7;
+         this._model = model;
+         this._presenter = presenter;
+         this._timeProvider = timeProvider;
+         this._tiphonProxy = tiphonProxy;
+         this._audioController = audioController;
+         this._config = config;
          this._updatables = new LinkedList();
          // The UI is updated explicitly before scripts, including after reset.
          // Registering it here as well advanced cutscenes twice per scene tick.
-         this._uiController = param6;
+         this._uiController = uiController;
          active=this;this.applyReplayTiming();
       }
       
@@ -192,15 +192,15 @@ package com.ankamagames.boufbowl.resolution.display.script.runner
       
       public function update() : void
       {
-         var _loc2_:IUpdatable = null;
+         var updatable:IUpdatable = null;
          this._currentTime = this._timeProvider.current;
          this._realTime = this._timeProvider.realTime;
          this._uiController.update(this._currentTime,this._realTime);
-         var _loc1_:IIterator = this._updatables.getIterator();
-         while(_loc1_.hasNext())
+         var iterator:IIterator = this._updatables.getIterator();
+         while(iterator.hasNext())
          {
-            _loc2_ = IUpdatable(_loc1_.getNext());
-            _loc2_.update(this._currentTime,this._realTime);
+            updatable = IUpdatable(iterator.getNext());
+            updatable.update(this._currentTime,this._realTime);
          }
          this._model.update(this._currentTime,this._realTime);
          this.updateSceneViewMove(this._realTime);

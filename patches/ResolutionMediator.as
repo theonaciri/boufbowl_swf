@@ -30,22 +30,19 @@ package com.ankamagames.boufbowl.client.match.resolution.view
 
       private var _currentRunner:IScriptRunner;
 
-      public function ResolutionMediator(param1:ISceneController, param2:IStageWrapper, param3:ResolutionView)
+      public function ResolutionMediator(sceneController:ISceneController, stageWrapper:IStageWrapper, view:ResolutionView)
       {
          super();
-         this._sceneController = param1;
-         this._stage = param2;
-         this._view = param3;
+         this._sceneController = sceneController;
+         this._stage = stageWrapper;
+         this._view = view;
       }
 
       override public function onRegister() : void
       {
          super.onRegister();
          addContextListener(MatchModel.PLAY_SCRIPT,this.playScript);
-         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime ?
-            com.ankamagames.boufbowl.BoufbowlClient.browserFrameRate :
-            (com.ankamagames.boufbowl.BoufbowlClient.preferredFrameRate > 0 ?
-               Math.min(RESOLUTION_FPS,com.ankamagames.boufbowl.BoufbowlClient.preferredFrameRate) : RESOLUTION_FPS);
+         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.sceneFrameRate(RESOLUTION_FPS);
       }
 
       override public function onRemove() : void
@@ -56,22 +53,19 @@ package com.ankamagames.boufbowl.client.match.resolution.view
             LOGGER.debug("Mediator::onRemove called with a script running. Cleaning...");
             this.cleanScript();
          }
-         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime ?
-            com.ankamagames.boufbowl.BoufbowlClient.browserFrameRate :
-            (com.ankamagames.boufbowl.BoufbowlClient.preferredFrameRate > 0 ?
-               Math.min(STANDARD_FPS,com.ankamagames.boufbowl.BoufbowlClient.preferredFrameRate) : STANDARD_FPS);
+         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.sceneFrameRate(STANDARD_FPS);
          this._stage = null;
       }
 
-      private function playScript(param1:PlayScriptEvent) : void
+      private function playScript(event:PlayScriptEvent) : void
       {
          if(this._currentRunner != null)
          {
             LOGGER.warn("There\'s already a script running. Cleaning... (this should not happen)");
             this.cleanScript();
          }
-         this._currentRunner = new ScriptRunner(param1.tree,this._sceneController);
-         LOGGER.debug("Running {}",param1.tree.toString());
+         this._currentRunner = new ScriptRunner(event.tree,this._sceneController);
+         LOGGER.debug("Running {}",event.tree.toString());
          this._sceneController.endCallback = this.scriptEnded;
          this._sceneController.addUpdatable(this._currentRunner);
          this._sceneController.update();

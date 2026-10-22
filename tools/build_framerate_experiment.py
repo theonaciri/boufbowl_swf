@@ -6,6 +6,10 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tools.client_runtime_codegen import client_root_source
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -44,7 +48,7 @@ def main() -> None:
         parser.error("Java not found; pass --java or add Java to PATH")
 
     fps = f"{args.fps:g}"
-    source = CLIENT_CLASS.read_text(encoding="utf-8")
+    source = client_root_source(CLIENT_CLASS.read_text(encoding="utf-8"))
     marker = "addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));"
     if source.count(marker) != 1:
         parser.error("Expected one MainApp creation in BoufbowlClient.as")

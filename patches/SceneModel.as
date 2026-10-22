@@ -81,69 +81,69 @@ package com.ankamagames.boufbowl.resolution.display.model
          return _loc1_;
       }
 
-      public function addBoufbowler(param1:Int64, param2:IBoufbowlerSprite, param3:BoufbowlTeam) : IBoufbowler
+      public function addBoufbowler(id:Int64, sprite:IBoufbowlerSprite, team:BoufbowlTeam) : IBoufbowler
       {
-         var _loc4_:IBoufbowler = this.createBoufbowler(param2,param3);
-         this._boufbowlers.addItem(param1,_loc4_);
-         delete this._boufbowlerLookup[this.boufbowlerKey(param1)];
-         dispatchEvent(BoufbowlerChangeEvent.boufbowlerAdded(_loc4_));
-         return _loc4_;
+         var boufbowler:IBoufbowler = this.createBoufbowler(sprite,team);
+         this._boufbowlers.addItem(id,boufbowler);
+         delete this._boufbowlerLookup[this.boufbowlerKey(id)];
+         dispatchEvent(BoufbowlerChangeEvent.boufbowlerAdded(boufbowler));
+         return boufbowler;
       }
 
-      public function removeBoufbowler(param1:Int64) : IBoufbowler
+      public function removeBoufbowler(id:Int64) : IBoufbowler
       {
-         delete this._boufbowlerLookup[this.boufbowlerKey(param1)];
-         var _loc4_:Int64 = null;
-         var _loc2_:IBoufbowler = this._boufbowlers.getItem(param1);
-         if(_loc2_ != null)
+         delete this._boufbowlerLookup[this.boufbowlerKey(id)];
+         var storedId:Int64 = null;
+         var boufbowler:IBoufbowler = this._boufbowlers.getItem(id);
+         if(boufbowler != null)
          {
-            this._boufbowlers.removeKey(param1);
-            _loc2_.removeAllFxs();
-            dispatchEvent(BoufbowlerChangeEvent.boufbowlerRemoved(_loc2_));
-            return _loc2_;
+            this._boufbowlers.removeKey(id);
+            boufbowler.removeAllFxs();
+            dispatchEvent(BoufbowlerChangeEvent.boufbowlerRemoved(boufbowler));
+            return boufbowler;
          }
-         var _loc3_:IIterator = this._boufbowlers.getKeyIterator();
-         while(_loc3_.hasNext())
+         var keys:IIterator = this._boufbowlers.getKeyIterator();
+         while(keys.hasNext())
          {
-            _loc4_ = _loc3_.getNext();
-            if(_loc4_.equals(param1))
+            storedId = keys.getNext();
+            if(storedId.equals(id))
             {
-               _loc2_ = this._boufbowlers.getItem(_loc4_);
-               this._boufbowlers.removeKey(_loc4_);
-               _loc2_.removeAllFxs();
-               dispatchEvent(BoufbowlerChangeEvent.boufbowlerRemoved(_loc2_));
-               return _loc2_;
+               boufbowler = this._boufbowlers.getItem(storedId);
+               this._boufbowlers.removeKey(storedId);
+               boufbowler.removeAllFxs();
+               dispatchEvent(BoufbowlerChangeEvent.boufbowlerRemoved(boufbowler));
+               return boufbowler;
             }
          }
          return null;
       }
 
-      public function getBoufbowler(param1:Int64) : IBoufbowler
+      public function getBoufbowler(id:Int64) : IBoufbowler
       {
-         var _loc4_:Int64 = null;
-         var _loc2_:IBoufbowler = this._boufbowlers.getItem(param1);
-         if(_loc2_ != null)
+         var storedId:Int64 = null;
+         var boufbowler:IBoufbowler = this._boufbowlers.getItem(id);
+         if(boufbowler != null)
          {
-            return _loc2_;
+            return boufbowler;
          }
-         var lookupKey:String = this.boufbowlerKey(param1);
+         var lookupKey:String = this.boufbowlerKey(id);
          var cached:Int64 = this._boufbowlerLookup[lookupKey];
-         if(cached != null && cached.equals(param1))
+         if(cached != null && cached.equals(id))
          {
-            _loc2_ = this._boufbowlers.getItem(cached);
-            if(_loc2_ != null) return _loc2_;
+            boufbowler = this._boufbowlers.getItem(cached);
+            if(boufbowler != null) return boufbowler;
          }
-         var _loc3_:IIterator = this._boufbowlers.getKeyIterator();
-         while(_loc3_.hasNext())
+         var keys:IIterator = this._boufbowlers.getKeyIterator();
+         while(keys.hasNext())
          {
-            _loc4_ = _loc3_.getNext();
-            if(_loc4_.equals(param1))
+            storedId = keys.getNext();
+            if(storedId.equals(id))
             {
-               this._boufbowlerLookup[lookupKey] = _loc4_;
-               return this._boufbowlers.getItem(_loc4_);
+               this._boufbowlerLookup[lookupKey] = storedId;
+               return this._boufbowlers.getItem(storedId);
             }
          }
-         throw new IllegalStateError("Retrieving unknown boufbowler " + param1);
+         throw new IllegalStateError("Retrieving unknown boufbowler " + id);
       }
 
       public function addOnomatopeia(param1:Number, param2:Number, param3:String, param4:int, param5:Function) : Onomatopeia

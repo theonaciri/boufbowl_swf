@@ -6,6 +6,9 @@ The French website serves the browser client, downloads, and restoration tools.
 
 ## Start here
 
+For code changes, start with the [focused code map](docs/CODE_MAP.md) and
+[compact/native verification](docs/NATIVE_TESTING.md).
+
 - [Build](docs/BUILD.md): prerequisites, desktop SWF, Android, packages, and checks.
 - [Website](docs/WEBSITE.md): assets, portraits, video exports, and delivery.
 - [Binary](docs/BINARY.md): find functions, export AS3/assets, and patch the SWF.

@@ -24,11 +24,8 @@ package com.ankamagames.boufbowl
    [SWF(frameRate="25",backgroundColor="#000000",width="1024",height="600")]
    public class BoufbowlClient extends Sprite
    {
-      // Shared UI/rendering patches use the same runtime flags on AIR.
-      public static const ruffleRuntime:Boolean = false;
-      public static var browserFrameRate:Number = 30;
-      public static var preferredFrameRate:Number = 0;
-      
+      // @shared-client-runtime
+
       private static var embeddedVersionClass:Class = BoufbowlClient_embeddedVersionClass;
       
       private static const LOGGER:ILogger = LoggerFactory.getLogger(BoufbowlClient);
@@ -44,6 +41,7 @@ package com.ankamagames.boufbowl
       public function BoufbowlClient()
       {
          super();
+         this.initializeClientRuntime(false);
          LogManager.logFileURL = "app:/resources/logback.xml";
          LogManager(LogManager.getInstance()).init();
          this._uncaughtErrorsHandler = new UncaughtErrorsHandler(loaderInfo.uncaughtErrorEvents);
@@ -93,14 +91,7 @@ package com.ankamagames.boufbowl
          stage.align = StageAlign.TOP;
          stage.scaleMode = StageScaleMode.SHOW_ALL;
          var preferences:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
-         var frameRateTarget:Number = Number(preferences.data.frameRateTarget);
-         preferredFrameRate = frameRateTarget >= 25 && frameRateTarget <= 240 ? frameRateTarget :
-            (Boolean(preferences.data.limitFrameRate25) ? 25 : 0);
-         if(isNaN(frameRateTarget) || frameRateTarget < 25 || frameRateTarget > 240)
-         {
-            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 60;
-         }
-         stage.frameRate = frameRateTarget;
+         stage.frameRate = this.restoreFrameRate(preferences.data);
          Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
          this._gameView = new Sprite();
          addChild(this._gameView);

@@ -49,15 +49,15 @@ package com.ankamagames.boufbowl.resolution.display.presenter
          }
       }
 
-      public function set position(param1:Point3) : void
+      public function set position(point:Point3) : void
       {
-         if(this._movieClipSprite.x == param1.x &&
-            this._movieClipSprite.y == param1.z && this._movieClipSprite.z == param1.y) return;
-         if(isNaN(param1.x) || isNaN(param1.y) || isNaN(param1.z))
+         if(this._movieClipSprite.x == point.x &&
+            this._movieClipSprite.y == point.z && this._movieClipSprite.z == point.y) return;
+         if(isNaN(point.x) || isNaN(point.y) || isNaN(point.z))
             throw new Error("Invalid sprite position");
          // Sprite3D and the renderer share this vertex. Update all axes before
          // invalidating its geometry, without transient extreme coordinates.
-         this._movieClipSprite.vertices[0].setValue(param1.x,param1.z,param1.y);
+         this._movieClipSprite.vertices[0].setValue(point.x,point.z,point.y);
       }
 
       public function get sprite() : Sprite

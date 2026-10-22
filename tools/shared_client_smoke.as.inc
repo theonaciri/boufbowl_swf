@@ -8,12 +8,28 @@
          Object(getDefinitionByName("flash.desktop.NativeApplication")).nativeApplication.exit(code);
       }
 
-      private function runSharedSmoke() : void
+      private function runSharedSmoke(nativeExit:Boolean = false) : Object
       {
          try
          {
-            smokeAssert(!ruffleRuntime,"Expected the native AIR runtime path");
+            if(nativeExit) smokeAssert(!ruffleRuntime,"Expected the native AIR runtime path");
             smokeAssert(stage.frameRate <= 30,"Saved FPS limit was exceeded");
+            smokeAssert(readFrameRatePreference({}) == 0,"Unset FPS preference became an explicit cap");
+            smokeAssert(readFrameRatePreference({frameRateTarget:30}) == 30,"Saved FPS preference was lost");
+            smokeAssert(readFrameRatePreference({frameRateTarget:240}) == 240,"Valid high FPS preference was lost");
+            smokeAssert(readFrameRatePreference({frameRateTarget:NaN,limitFrameRate25:true}) == 25,"Legacy FPS cap was lost");
+            smokeAssert(readFrameRatePreference({frameRateTarget:300}) == 0,"Invalid FPS preference was accepted");
+            var wasRuffle:Boolean = ruffleRuntime;
+            var savedPreferred:Number = preferredFrameRate;
+            ruffleRuntime = false;
+            preferredFrameRate = 30;
+            smokeAssert(sceneFrameRate(50) == 30 && sceneFrameRate(25) == 25,"Native scene FPS caps changed");
+            preferredFrameRate = 0;
+            smokeAssert(sceneFrameRate(50) == 50 && sceneFrameRate(25) == 25,"Native default scene rates changed");
+            ruffleRuntime = true;
+            smokeAssert(sceneFrameRate(50) == browserFrameRate,"Browser scene FPS cap changed");
+            ruffleRuntime = wasRuffle;
+            preferredFrameRate = savedPreferred;
             var presenter:com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter =
                new com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter(1);
             presenter.sprite = new Sprite();
@@ -135,10 +151,12 @@
             benchmark = lookupBenchmark();
             trace("SHARED_SMOKE LOOKUP lookups=" + benchmark.lookups + " previousMs=" + benchmark.previousMs + " indexedMs=" + benchmark.indexedMs);
             trace("SHARED_SMOKE PASS: movement, invalidation, chat batching and scroll boundaries");
+            return {ok:true,runtime:ruffleRuntime ? "ruffle" : "native-path",fps:stage.frameRate,lookup:benchmark};
          }
          catch(error:Error)
          {
             trace("SHARED_SMOKE FAIL: " + error.toString());
-            smokeExit(1);
+            if(nativeExit) smokeExit(1);
+            return {ok:false,error:error.toString()};
          }
       }

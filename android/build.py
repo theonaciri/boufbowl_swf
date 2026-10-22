@@ -13,6 +13,8 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.build_parallel import build_budget, cpu_run, parallel
+from tools.client_patches import client_patches
+from tools.client_runtime_codegen import client_root_source
 from tools.build_tools import BuildError, air_sdk, android_sdk, jdk_directory, ffdec_jar, remember_build_tools
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
@@ -106,6 +108,8 @@ def build_locked(args, parser):
                 'resources': inputs.tree(root/'resources'), 'config': inputs.file(args.config),
                 'client': inputs.file(root/'bin/boufbowl-client-1.9.6.swf'),
                 'patches': inputs.tree(android/'patches'),
+                'patch_registry': inputs.file(root/'tools/client_patches.py'),
+                'runtime_codegen': inputs.file(root/'tools/client_runtime_codegen.py'),
                 'common_patches': {p.name: inputs.file(p) for p in sorted((root/'patches').iterdir()) if p.is_file()},
                 'helpers': {name: inputs.file(root/('tools/'+name+'.py')) for name in tools},
                 'descriptor': inputs.file(android/'application.xml'), 'server_url': args.server_url,
@@ -174,14 +178,14 @@ def build_locked(args, parser):
 
     swf_name = "boufbowl-client-1.9.6.swf"
     replacements = []
-    sources_by_name = {source.name: source for source in (root / "patches").glob("*.as")}
-    sources_by_name.update({source.name: source for source in (android / "patches").glob("*.as")})
-    sources = sorted(sources_by_name.values())
-    for source in sources:
-        text = source.read_text()
-        package = re.search(r"\bpackage\s+([\w.]+)", text).group(1)
-        replacements.extend([package + "." + source.stem, source])
+    for patch in client_patches(root, 'android'):
+        replacements.extend([patch.class_name, patch.source])
     with tempfile.TemporaryDirectory(prefix=".configured-patches-", dir=build) as temporary:
+        client_root = Path(temporary) / "BoufbowlClient.as"
+        client_root.write_text(client_root_source((android / "patches/BoufbowlClient.as").read_text(), root))
+        for index in range(0, len(replacements), 2):
+            if replacements[index] == "com.ankamagames.boufbowl.BoufbowlClient":
+                replacements[index + 1] = client_root
         palette = Path(temporary) / "BoufbowlerPaletteItem.as"
         palette.write_text(palette_item_source((root / "patches/BoufbowlerPaletteItem.as").read_text()))
         startup = Path(temporary) / "StartUpApplicationCommand.as"

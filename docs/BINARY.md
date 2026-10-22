@@ -60,6 +60,12 @@ or replacing the pass's link to its eventual catch or rebound.
 Copy the exported class and edit the target method while preserving its package,
 imports, signatures, constructors, and metadata:
 
+For maintained overrides, put the class in `patches/`; both client builds discover
+it through `tools/client_patches.py`. Android can replace the same named class in
+`android/patches/`. Application roots must pass through `client_root_source` to
+expand `ClientRuntime.as.inc`; use the cached diagnostic builder in
+[CODE_MAP.md](CODE_MAP.md) instead of compiling a raw root template directly.
+
 ```sh
 cp .local/reverse/one/scripts/com/ankamagames/xgaming/utils/flashvars/FlashVarsManager.as \
   .local/reverse/FlashVarsManager.as

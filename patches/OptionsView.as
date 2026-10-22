@@ -218,13 +218,10 @@ package com.ankamagames.boufbowl.client.options.view
       private function updateFrameRateChoice() : void
       {
          var saved:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
-         this._frameRateTarget = Number(saved.data.frameRateTarget);
+         this._frameRateTarget = com.ankamagames.boufbowl.BoufbowlClient.readFrameRatePreference(saved.data);
+         if(this._frameRateTarget == 0) this._frameRateTarget = 60;
          if(com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
             this._frameRateTarget = com.ankamagames.boufbowl.BoufbowlClient.browserFrameRate;
-         if(isNaN(this._frameRateTarget) || this._frameRateTarget < 25 || this._frameRateTarget > 240)
-         {
-            this._frameRateTarget = Boolean(saved.data.limitFrameRate25) ? 25 : 60;
-         }
          var labels:Object = {
             fr:["Limite FPS","25–240 FPS · réglage en jeu","L’écran ou le moteur peut plafonner la cadence."],
             en:["FPS limit","25–240 FPS · adjustable in game","The display or runtime may cap the actual rate."],

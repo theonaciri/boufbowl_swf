@@ -20,11 +20,8 @@ package com.ankamagames.boufbowl
    [SWF(width="1920", height="1125", backgroundColor="#000000", frameRate="60")]
    public class BoufbowlClient extends Sprite
    {
-      // Only the web launcher opts in. Projector and AIR retain native settings.
-      public static var ruffleRuntime:Boolean = false;
-      public static var browserFrameRate:Number = 30;
-      public static var preferredFrameRate:Number = 0;
-      
+      // @shared-client-runtime
+
       private static var embeddedVersionClass:Class = BoufbowlClient_embeddedVersionClass;
       
       private static const LOGGER:ILogger = LoggerFactory.getLogger(BoufbowlClient);
@@ -37,12 +34,7 @@ package com.ankamagames.boufbowl
       public function BoufbowlClient()
       {
          super();
-         ruffleRuntime = loaderInfo.parameters.clientRuntime == "ruffle";
-         if(ruffleRuntime && loaderInfo.parameters.webFps != null)
-         {
-            var requested:Number = Number(loaderInfo.parameters.webFps);
-            if(requested >= 25 && requested <= 60) browserFrameRate = requested;
-         }
+         this.initializeClientRuntime(true);
          LogManager.logFileURL = "../resources/logback.xml";
          LogManager(LogManager.getInstance()).init();
          this._uncaughtErrorsHandler = new UncaughtErrorsHandler(loaderInfo.uncaughtErrorEvents);
@@ -85,17 +77,9 @@ package com.ankamagames.boufbowl
          stage.align = StageAlign.TOP;
          stage.scaleMode = StageScaleMode.SHOW_ALL;
          var preferences:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
-         var frameRateTarget:Number = Number(preferences.data.frameRateTarget);
-         preferredFrameRate = frameRateTarget >= 25 && frameRateTarget <= 240 ? frameRateTarget :
-            (Boolean(preferences.data.limitFrameRate25) ? 25 : 0);
-         if(isNaN(frameRateTarget) || frameRateTarget < 25 || frameRateTarget > 240)
-         {
-            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 60;
-         }
-         stage.frameRate = frameRateTarget;
+         stage.frameRate = this.restoreFrameRate(preferences.data);
          if(ruffleRuntime)
          {
-            stage.frameRate = browserFrameRate;
             if(flash.external.ExternalInterface.available)
                flash.external.ExternalInterface.addCallback("setWebDisplay",this.setWebDisplay);
          }

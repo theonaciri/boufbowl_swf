@@ -224,14 +224,22 @@ sprites, explicit animation invalidation, batched chat composition, scroll
 boundaries and a complete 3D fixture at a saved FPS cap:
 
 ```sh
-python3 -m tools.smoke_shared_client
+python3 -m tools.verify_client --area compile
+python3 -m tools.verify_client --area native
 ```
 
 This requires an AIR SDK containing a host-compatible `bin/adl`, its native shared
 libraries, a developer license where the runtime requires one, and Xvfb on
 headless Linux. `--air-sdk`, `--runtime-libs`, `--root` and
 `--fixture` select overrides. Logs are written under `.local/shared-client`;
-test application ids isolate their preferences from installed clients.
+test application ids isolate their preferences from installed clients. Compilation
+can run without AIR. Native execution returns exit 77 when blocked by licensing;
+it never counts that condition as a pass. Probes reuse compilation by content.
+
+The [code map](CODE_MAP.md) gives focused entry points and compact checks. The
+[native validation workflow](NATIVE_TESTING.md) documents runner provisioning and
+saved evidence. Both desktop and Android use `tools/client_patches.py`; generated
+application roots share the policy in `patches/ClientRuntime.as.inc`.
 
 See [shared client performance work](PERFORMANCE.md) for the five optimization
 cycles, regression coverage and focused benchmark results.

@@ -1,98 +1,106 @@
-"""Exercise shared client optimizations and a 3D fixture in native Adobe AIR."""
+"""Compile or run shared regressions against desktop/Android roots in native AIR."""
 import argparse
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import time
-from tools.build_tools import air_sdk, ffdec_jar, java_binary
-from tools.game_config import ROOT, load_config, startup_source, flashvars_source
+
+from tools.build_tools import air_sdk
+from tools.client_probe import build_probe
+from tools.game_config import ROOT
+
+LICENSE_ERROR = 'Linux runtime is limited to use by commercially licensed developers'
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', choices=('desktop', 'android', 'both'), default='both')
-    parser.add_argument('--air-sdk', type=Path)
-    parser.add_argument('--fixture', type=Path, default=ROOT/'resources/mock_match.json')
-    parser.add_argument('--runtime-libs', type=Path, help='Optional directory for native AIR shared-library dependencies')
-    parser.add_argument('--timeout', type=int, default=120)
-    args = parser.parse_args()
-    sdk = air_sdk(args.air_sdk)
-    adl = sdk/'bin/adl'
-    if not adl.is_file():
-        raise RuntimeError('The AIR SDK does not contain a native ADL executable')
-    evidence = ROOT/'.local/shared-client'
-    evidence.mkdir(parents=True, exist_ok=True)
-    modes = ('desktop', 'android') if args.root == 'both' else (args.root,)
-    for mode in modes:
-        with tempfile.TemporaryDirectory(prefix='native-'+mode+'-', dir=evidence) as work:
-            work = Path(work)
-            (work/'bin').mkdir()
-            (work/'assets').symlink_to(ROOT/'assets', target_is_directory=True)
-            shutil.copytree(ROOT/'resources', work/'resources')
-            shutil.copyfile(args.fixture, work/'resources/mock_match.json')
-            root = ROOT/('android/patches' if mode == 'android' else 'patches')/'BoufbowlClient.as'
-            source = root.read_text()
-            source = source.replace('\n{', '\n{\n   import flash.utils.getDefinitionByName;\n   import flash.utils.setTimeout;', 1)
-            # The application id below isolates this test's preferences.
-            source = source.replace('var frameRateTarget:Number = Number(preferences.data.frameRateTarget);',
-                                    'preferences.data.frameRateTarget = 30;\n         var frameRateTarget:Number = Number(preferences.data.frameRateTarget);', 1)
-            source = source.replace('stage.frameRate = frameRateTarget;',
-                                    'stage.frameRate = frameRateTarget;\n         setTimeout(runSharedSmoke,4000);', 1)
-            pos = source.rfind('   }')
-            source = source[:pos] + (ROOT/'tools/shared_client_smoke.as.inc').read_text() + (ROOT/'tools/shared_client_bench.as.inc').read_text() + source[pos:]
-            root_patch = work/'BoufbowlClient.as'
-            root_patch.write_text(source)
-            config = load_config()
-            startup = startup_source((ROOT/'patches/StartUpApplicationCommand.as').read_text(), config, android=True)
-            startup = startup.replace('private static function mockStatus(text:String, showToast:Boolean = false) : void\n      {',
-                                      'private static function mockStatus(text:String, showToast:Boolean = false) : void\n      {\n'
-                                      '         trace("SHARED_SMOKE REPLAY fps=" + Stage(app.contextInjector.getInstance(Stage)).frameRate + " " + text);\n'
-                                      '         if(text.indexOf("ERROR:") == 0) setTimeout(function():void { Object(getDefinitionByName("flash.desktop.NativeApplication")).nativeApplication.exit(1); },100);\n'
-                                      '         if(text.indexOf("Fixture delivered") == 0) setTimeout(function():void { trace("SHARED_SMOKE REPLAY PASS"); Object(getDefinitionByName("flash.desktop.NativeApplication")).nativeApplication.exit(0); },1000);', 1)
-            startup_patch = work/'StartUpApplicationCommand.as'
-            startup_patch.write_text(startup)
-            flashvars = flashvars_source((ROOT/'patches/FlashVarsManager.as').read_text(), config)
-            marker = '      public function getValue(param1:String) : String\n      {'
-            flashvars = flashvars.replace(marker, marker+'\n         if(param1 == "mock" || param1 == "scene3d") return "1";\n         if(param1 == "server") return "0";', 1)
-            flashvars_patch = work/'FlashVarsManager.as'
-            flashvars_patch.write_text(flashvars)
-            changes = ['com.ankamagames.boufbowl.BoufbowlClient', root_patch,
-                       'com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand', startup_patch,
-                       'com.ankamagames.xgaming.utils.flashvars.FlashVarsManager', flashvars_patch,
-                       'com.ankamagames.jerakine.resources.adapters.impl.SwlAdapter', ROOT/'android/patches/SwlAdapter.as']
-            compile_log = evidence/('native-'+mode+'-compile.log')
-            with compile_log.open('w') as output:
-                subprocess.run([str(java_binary()), '-jar', str(ffdec_jar()), '-replace',
-                                str(ROOT/'bin/boufbowl-client-1.9.6.swf'), str(work/'bin/client.swf'),
-                                *map(str, changes)], check=True, stdout=output, stderr=subprocess.STDOUT, timeout=600)
-            descriptor = work/'application.xml'
-            descriptor.write_text(f'''<application xmlns="http://ns.adobe.com/air/application/51.1">
+def inspect_native_result(text, returncode):
+    if LICENSE_ERROR in text:
+        return 'blocked', 'AIR requires a commercial developer license; no application code ran'
+    if 'Error loading the runtime' in text or 'error while loading shared libraries' in text:
+        return 'blocked', text.strip().splitlines()[0][:240]
+    required = ('SHARED_SMOKE PASS:', 'SHARED_SMOKE REPLAY PASS',
+                'fps=30 Playback mode 3D', 'Outgoing ResolutionDoneMessage', 'Incoming MATCH_END')
+    missing = [marker for marker in required if marker not in text]
+    if returncode or missing or 'SHARED_SMOKE FAIL:' in text:
+        return 'failed', 'Native smoke failed; missing: '+', '.join(missing)
+    return 'passed', None
+
+
+def run_native(client, mode, args, sdk, evidence):
+    log = evidence/('native-'+mode+'.log')
+    with tempfile.TemporaryDirectory(prefix='native-'+mode+'-', dir=evidence) as temporary:
+        work = Path(temporary)
+        (work/'bin').mkdir()
+        (work/'assets').symlink_to(ROOT/'assets', target_is_directory=True)
+        shutil.copytree(ROOT/'resources', work/'resources')
+        shutil.copyfile(args.fixture, work/'resources/mock_match.json')
+        shutil.copyfile(client, work/'bin/client.swf')
+        descriptor = work/'application.xml'
+        descriptor.write_text(f'''<application xmlns="http://ns.adobe.com/air/application/51.1">
 <id>org.boufbowl.sharedsmoke.{mode}{time.time_ns()}</id><versionNumber>1.0.0</versionNumber><filename>Shared Client Smoke</filename>
 <initialWindow><content>bin/client.swf</content><visible>true</visible><width>1024</width><height>600</height><renderMode>cpu</renderMode></initialWindow>
 <supportedProfiles>desktop</supportedProfiles></application>''')
-            env = dict(os.environ)
-            if args.runtime_libs:
-                env['LD_LIBRARY_PATH'] = str(args.runtime_libs.resolve()) + (':'+env['LD_LIBRARY_PATH'] if env.get('LD_LIBRARY_PATH') else '')
-            command = [str(adl), '-profile', 'desktop', str(descriptor), str(work)]
-            if not env.get('DISPLAY'):
-                command = ['xvfb-run', '-a', *command]
-            log = evidence/('native-'+mode+'.log')
-            with log.open('w') as output:
-                result = subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT, timeout=args.timeout)
-            text = log.read_text()
-            if 'Linux runtime is limited to use by commercially licensed developers' in text:
-                raise RuntimeError('Native AIR requires a commercial developer license on this host; no application code ran. See '+str(log))
-            if result.returncode or 'SHARED_SMOKE PASS:' not in text or 'SHARED_SMOKE REPLAY PASS' not in text or 'SHARED_SMOKE FAIL:' in text:
-                raise RuntimeError('Native '+mode+' smoke failed; see '+str(log))
-            if 'fps=30 Playback mode 3D' not in text or 'Outgoing ResolutionDoneMessage' not in text:
-                raise RuntimeError('Native '+mode+' did not complete 3D playback at the saved FPS limit; see '+str(log))
-            print('Native '+mode+' root: shared optimization checks and 3D playback passed ('+str(log)+')', flush=True)
+        env = dict(os.environ)
+        if args.runtime_libs:
+            env['LD_LIBRARY_PATH'] = str(args.runtime_libs.resolve())+(os.pathsep+env['LD_LIBRARY_PATH'] if env.get('LD_LIBRARY_PATH') else '')
+        command = [str(sdk/'bin/adl'), '-profile', 'desktop', str(descriptor), str(work)]
+        if not env.get('DISPLAY'):
+            command = ['xvfb-run', '-a', *command]
+        try:
+            with log.open('w') as stream:
+                result = subprocess.run(command, env=env, stdout=stream, stderr=subprocess.STDOUT, timeout=args.timeout)
+        except subprocess.TimeoutExpired:
+            return {'status':'failed', 'reason':'Native playback timed out', 'log':str(log)}
+        status, reason = inspect_native_result(log.read_text(), result.returncode)
+        return {'status':status, 'reason':reason, 'log':str(log)}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', choices=('desktop','android','both'), default='both')
+    parser.add_argument('--compile-only', action='store_true', help='Compile both roots without running or requiring AIR')
+    parser.add_argument('--air-sdk', type=Path)
+    parser.add_argument('--fixture', type=Path, default=ROOT/'resources/mock_match.json')
+    parser.add_argument('--runtime-libs', type=Path)
+    parser.add_argument('--timeout', type=int, default=120)
+    parser.add_argument('--output', type=Path, default=ROOT/'.local/shared-client/report.json')
+    args = parser.parse_args(argv)
+    if args.timeout <= 0:
+        parser.error('--timeout must be positive')
+    evidence = args.output.parent
+    evidence.mkdir(parents=True, exist_ok=True)
+    modes = ('desktop','android') if args.root == 'both' else (args.root,)
+    results = []
+    sdk = None
+    try:
+        if not args.compile_only:
+            sdk = air_sdk(args.air_sdk)
+            if not (sdk/'bin/adl').is_file():
+                raise RuntimeError('AIR SDK has no host-compatible bin/adl')
+        runtime_blocked = None
+        for mode in modes:
+            started = time.monotonic()
+            client, reused = build_probe(mode, native=True)
+            result = {'root':mode,'client':str(client),'reused':reused,'status':'compiled'}
+            if not args.compile_only:
+                outcome = ({'status':'blocked','reason':runtime_blocked} if runtime_blocked else
+                           run_native(client, mode, args, sdk, evidence))
+                result.update(outcome)
+                if result['status'] == 'blocked':
+                    runtime_blocked = result['reason']
+            result['seconds'] = round(time.monotonic()-started,2)
+            results.append(result)
+    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
+        results.append({'status':'failed','reason':str(error)})
+    statuses = {result['status'] for result in results}
+    status = 'failed' if 'failed' in statuses else 'blocked' if 'blocked' in statuses else 'compiled' if args.compile_only else 'passed'
+    report = {'status':status,'results':results,'report':str(args.output)}
+    args.output.write_text(json.dumps(report, indent=2)+'\n')
+    print(json.dumps(report), flush=True)
+    return 1 if status == 'failed' else 77 if status == 'blocked' else 0
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except (RuntimeError, subprocess.TimeoutExpired) as error:
-        raise SystemExit(str(error))
+    raise SystemExit(main())

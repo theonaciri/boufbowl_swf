@@ -179,11 +179,11 @@ package com.ankamagames.xgaming.ui.components
          return this._controller;
       }
 
-      public function setPaddings(param1:int, param2:int, param3:int, param4:int) : void
+      public function setPaddings(top:int, right:int, bottom:int, left:int) : void
       {
-         if(this._paddings.top == param1 && this._paddings.right == param2 &&
-            this._paddings.bottom == param3 && this._paddings.left == param4) return;
-         this._paddings = new Padding(param1,param2,param3,param4);
+         if(this._paddings.top == top && this._paddings.right == right &&
+            this._paddings.bottom == bottom && this._paddings.left == left) return;
+         this._paddings = new Padding(top,right,bottom,left);
          if(this._textFlow)
          {
             this.applyPaddings(this._textFlow);
@@ -243,13 +243,13 @@ package com.ankamagames.xgaming.ui.components
          }
       }
 
-      public function setSize(param1:Number, param2:Number) : void
+      public function setSize(widthValue:Number, heightValue:Number) : void
       {
-         var changed:Boolean = this._width != param1 || this._height != param2;
-         this._width = param1;
-         this._height = param2;
+         var changed:Boolean = this._width != widthValue || this._height != heightValue;
+         this._width = widthValue;
+         this._height = heightValue;
          if(BoufbowlClient.ruffleRuntime && (changed || scrollRect == null))
-            scrollRect = new Rectangle(0,0,param1,param2);
+            scrollRect = new Rectangle(0,0,widthValue,heightValue);
          if(this._controller != null && changed)
          {
             this._controller.setCompositionSize(this._width,this._height);
@@ -290,7 +290,7 @@ package com.ankamagames.xgaming.ui.components
          return _loc2_ + (">" + param1 + "</TextFlow>");
       }
 
-      private function registerForTextFlowUpdate(param1:Event = null) : void
+      private function registerForTextFlowUpdate(event:Event = null) : void
       {
          // Every runtime composes a batch only once on its next frame. Explicit
          // updateNow() remains synchronous and cancels this pending update.
@@ -357,16 +357,16 @@ package com.ankamagames.xgaming.ui.components
          }
       }
 
-      private function applyScrollRatio(param1:Number) : void
+      private function applyScrollRatio(ratio:Number) : void
       {
          // Empty content must never feed negative or NaN positions into TLF.
-         param1 = isNaN(param1) ? 0 : Math.max(0,Math.min(1,param1));
-         this._scrollRatio = param1;
+         ratio = isNaN(ratio) ? 0 : Math.max(0,Math.min(1,ratio));
+         this._scrollRatio = ratio;
          this._allowScrollDispatching = false;
          if(this._controller != null)
          {
             var extent:Number = this._controller.getContentBounds().height - this._controller.compositionHeight;
-            this._controller.verticalScrollPosition = param1 * (isFinite(extent) ? Math.max(0,extent) : 0);
+            this._controller.verticalScrollPosition = ratio * (isFinite(extent) ? Math.max(0,extent) : 0);
          }
          this._allowScrollDispatching = true;
       }
