@@ -53,6 +53,7 @@ classes = [
     "com.ankamagames.xgaming.ui.components.MessageBox",
     "com.ankamagames.boufbowl.client.application.messagebox.view.MessageBoxView",
     "com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter",
+    "com.ankamagames.boufbowl.utils.FrameController",
     "com.ankamagames.boufbowl.resolution.display.camera.BoufbowlCamera",
     "com.ankamagames.boufbowl.client.match.controller.StopSpectatingCommand",
     "com.ankamagames.boufbowl.protocol.ClassOrderTarget",

@@ -23,3 +23,10 @@ redraws, replacement sprites, rejected NaN coordinates, and chat scroll state.
 Run `python3 -m tools.smoke_shared_client` on a host with a compatible, licensed
 AIR runtime. Native AIR application execution on this development host is
 license gated; browser probes exercise both runtime branches in Ruffle.
+
+## Cycle 2: retire completed frame controllers
+
+A finished FrameController now returns immediately and reports completion once.
+Unobserved frame/completion events no longer allocate Event objects. The smoke
+test sends 1,000 updates past the end and requires exactly one completion, while
+also checking scheduled starts, timed loops and incremental non-skipping frames.

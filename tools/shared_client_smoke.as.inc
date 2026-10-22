@@ -41,6 +41,30 @@
             smokeAssert(rejected && presenter.sprite3d.x == 4,"Invalid coordinates changed the sprite");
             presenter.destroy();
 
+            var frame:com.ankamagames.boufbowl.utils.FrameController = new com.ankamagames.boufbowl.utils.FrameController(0);
+            frame.totalFrames = 3;
+            var completions:int = 0;
+            frame.addEventListener(com.ankamagames.boufbowl.utils.FrameController.LAST_FRAME_REACHED,
+               function(event:Event):void { completions++; });
+            frame.update(0,0);
+            smokeAssert(frame.currentFrame == 0 && !frame.lastFrameReached,"Animation did not start at frame zero");
+            for(i=0;i<1000;i++) frame.update(1000+i,1000+i);
+            smokeAssert(frame.lastFrameReached && completions == 1,"Finished animation repeatedly dispatched completion");
+            frame = new com.ankamagames.boufbowl.utils.FrameController(0,-1,false,false);
+            frame.totalFrames = 20;
+            frame.update(100,100);
+            frame.update(100,100);
+            smokeAssert(frame.currentFrame == 1,"An animation that forbids skipping stopped advancing");
+            frame = new com.ankamagames.boufbowl.utils.FrameController(100);
+            frame.totalFrames = 20;
+            frame.update(99,99);
+            smokeAssert(frame.currentFrame == -1,"Animation started before its scheduled time");
+            frame = new com.ankamagames.boufbowl.utils.FrameController(0,1000);
+            frame.totalFrames = 20;
+            frame.setLoop(3,7);
+            frame.update(500,500);
+            smokeAssert(!frame.lastFrameReached && frame.currentFrame >= 3 && frame.currentFrame <= 7,"Animation loop timing changed");
+
             var zone:com.ankamagames.xgaming.ui.components.TextZone = new com.ankamagames.xgaming.ui.components.TextZone();
             zone.defaultFontFamily = "VerdanaCFF";
             zone.defaultFontSize = 12;
@@ -72,7 +96,8 @@
             zone.updateNow();
             smokeAssert(zone.viewportRatio == 1 && zone.controller.verticalScrollPosition == 0,
                "Clearing chat left an invalid text offset");
-            trace("SHARED_SMOKE BENCHMARK " + JSON.stringify(performanceBenchmark()));
+            var benchmark:Object = performanceBenchmark();
+            trace("SHARED_SMOKE BENCHMARK moves=" + benchmark.moves + " previousMs=" + benchmark.previousMs + " batchedMs=" + benchmark.batchedMs);
             trace("SHARED_SMOKE PASS: movement, invalidation, chat batching and scroll boundaries");
          }
          catch(error:Error)
