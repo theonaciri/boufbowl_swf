@@ -134,7 +134,17 @@ package com.ankamagames.xgaming.ui.components
                || grid.left < bounds.left || grid.right > bounds.right
                || grid.top < bounds.top || grid.bottom > bounds.bottom) return false;
             var texture:BitmapData=new BitmapData(Math.ceil(bounds.width*2),Math.ceil(bounds.height*2),true,0);
-            texture.draw(host,new Matrix(2,0,0,2,-bounds.x*2,-bounds.y*2),null,null,null,true);
+            try
+            {
+               texture.draw(host,new Matrix(2,0,0,2,-bounds.x*2,-bounds.y*2),null,null,null,true);
+            }
+            catch(error:Error)
+            {
+               // Basic Ruffle renderers cannot draw to a bitmap. Keep the
+               // vector skin instead of aborting initialization every frame.
+               texture.dispose();
+               return false;
+            }
             var columns:Array=[bounds.left,grid.left,grid.right,bounds.right];
             var rows:Array=[bounds.top,grid.top,grid.bottom,bounds.bottom];
             var tiles:Array=[];

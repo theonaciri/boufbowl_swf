@@ -1406,21 +1406,328 @@ class OpponentAI {
   }
 }
 
+// backend/cpu-orders.ts
+const directions = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]], cpuDistance = (a, b) => Math.max(Math.abs(a.q - b.q), Math.abs(a.r - b.r), Math.abs(a.q + a.r - b.q - b.r)), cpuColumn = (p) => p.q + p.r / 2, cpuActive = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned, cpuCellKey = (p) => `${p.q},${p.r}`;
+function cpuRound(p) {
+  let q = Math.round(p.q), r = Math.round(p.r), s = Math.round(-p.q - p.r);
+  const dq = Math.abs(q - p.q), dr = Math.abs(r - p.r), ds = Math.abs(s + p.q + p.r);
+  if (dq > dr && dq > ds)
+    q = -r - s;
+  else if (dr > ds)
+    r = -q - s;
+  return { q, r };
+}
+function cpuPlanningConfig(cfg) {
+  return cfg;
+}
+function prepareCPUOrder(cfg, world, order, settings = {}) {
+  if (!cfg.client_ranges || cfg.movement.overextension === void 0) {
+    const receivers = new Set(order.actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id));
+    for (const action of order.actions)
+      if (action.action_type === "wait" && receivers.has(action.entity_id))
+        action.params.elements = { TERRE: 0, FEU: 0, AIR: 2, EAU: 1 };
+    return order;
+  }
+  const ai = cfg.ai, levelName = settings.level ?? ai.default_level, personalityName = settings.personality ?? ai.default_personality, level = ai.levels[levelName], personality = ai.personalities[personalityName], team = world.entities.filter((e) => e.team_id === order.team_index).sort((a, b) => a.id - b.id), available = team.filter(cpuActive), enemies = world.entities.filter((e) => e.team_id !== order.team_index && cpuActive(e)).sort((a, b) => a.id - b.id), direction = order.team_index === 0 !== Boolean(world.sides_swapped) ? 1 : -1, goal = cfg.ball.goal_line_half_width ?? 12.5, dt = cfg.tick_system.tick_dt_seconds, slots = cfg.general.actions_per_character, allocation = (names) => {
+    const e = { TERRE: 0, FEU: 0, AIR: 0, EAU: 0 };
+    for (let i = 0;i < slots; i++)
+      e[names[Math.min(i, names.length - 1)]]++;
+    return e;
+  }, water = allocation(["EAU"]), runner = allocation(["FEU", "EAU", "EAU"]), receive = allocation(["AIR", "EAU", "EAU"]), accurate = allocation(["AIR", "AIR", "EAU"]), brute = allocation(["TERRE", "TERRE", "EAU"]), evade = allocation(["FEU", "FEU", "EAU"]), intercept = allocation(["FEU", "FEU", "EAU"]), width = cfg.pitch.width ?? 2 * cfg.pitch.width_half + 1, height = cfg.pitch.height ?? 2 * cfg.pitch.height_half + 1, minColumn = -Math.floor(width / 2), minRow = -Math.floor(height / 2), inBounds = (p) => p.r >= minRow && p.r < minRow + height && p.q + Math.floor(p.r / 2) >= minColumn && p.q + Math.floor(p.r / 2) < minColumn + width, at = (x, r) => cpuRound({ q: x - r / 2, r }), forward = (p) => direction * cpuColumn(p), safeRange = (e) => e.TERRE * cfg.client_ranges.earth_distance_bonus + e.FEU * cfg.client_ranges.fire_distance_bonus + e.AIR * cfg.client_ranges.air_distance_bonus + e.EAU * cfg.client_ranges.water_distance_bonus, speed = (actor, e) => Math.max(0.1, cfg.movement.base_speed_cells_per_sec + actor.stats.endurance * cfg.movement.speed_per_endurance + e.EAU * cfg.movement.eau_speed_bonus_per_action + e.AIR * cfg.movement.air_speed_bonus_per_action - e.TERRE * cfg.movement.terre_speed_penalty_per_action), probability = (p) => Math.max(cfg.simulation.probability_min, Math.min(cfg.simulation.probability_max, p)), used = new Map, roles = [], protectedIds = new Set, reserved = new Set, paths = new Map;
+  function pathsFor(actor) {
+    if (paths.has(actor.id))
+      return paths.get(actor.id);
+    const maximum = Math.floor(Math.max(safeRange(water), safeRange(receive), safeRange(brute), safeRange(evade)) * cfg.client_ranges.max_distance_factor), occupied = new Set(world.entities.filter((e) => e.hp > 0 && e.id !== actor.id).map((e) => cpuCellKey(e.position))), result = [];
+    for (let dq = -maximum;dq <= maximum; dq++)
+      for (let dr = -maximum;dr <= maximum; dr++) {
+        const target = { q: actor.position.q + dq, r: actor.position.r + dr };
+        if (!inBounds(target) || cpuDistance(actor.position, target) > maximum || occupied.has(cpuCellKey(target)))
+          continue;
+        const path = [actor.position];
+        let current = actor.position;
+        while (cpuDistance(current, target) > 0 && path.length <= maximum) {
+          const next = directions.map(([q, r]) => ({ q: current.q + q, r: current.r + r })).find((p) => inBounds(p) && !occupied.has(cpuCellKey(p)) && cpuDistance(p, target) < cpuDistance(current, target));
+          if (!next)
+            break;
+          path.push(next);
+          current = next;
+        }
+        if (cpuDistance(current, target) === 0)
+          result.push({ target, path });
+      }
+    paths.set(actor.id, result);
+    return result;
+  }
+  function runs(actor, elements) {
+    const safe = safeRange(elements), maximum = safe * cfg.client_ranges.max_distance_factor, budget = Math.min(Math.floor(maximum), levelName === "beginner" ? level.search_radius : Math.floor(maximum)), rule = cfg.movement.overextension;
+    return pathsFor(actor).filter((p) => p.path.length - 1 <= budget).map((p) => {
+      const d = Math.max(...p.path.map((c) => cpuDistance(actor.position, c))), ratio = maximum > safe ? Math.max(0, Math.min(1, (d - safe) / (maximum - safe))) : 0, risk = rule.enabled && d > safe && maximum > safe ? rule.fall_probability_at_max * Math.pow(ratio, rule.exponent) : 0;
+      return { actor, target: p.target, elements, path: p.path, speed: speed(actor, elements), risk };
+    });
+  }
+  function position(run, seconds) {
+    const traveled = Math.max(0, Math.min(run.path.length - 1, seconds * run.speed)), index = Math.min(run.path.length - 1, Math.floor(traveled)), a = run.path[index], b = run.path[Math.min(index + 1, run.path.length - 1)];
+    return { q: a.q + (b.q - a.q) * (traveled - index), r: a.r + (b.r - a.r) * (traveled - index) };
+  }
+  function stand(actor, elements) {
+    return { actor, target: actor.position, path: [actor.position], elements, speed: speed(actor, elements), risk: 0 };
+  }
+  function combatLoss(actor, elements, enemy) {
+    const own = actor.stats.strength + elements.TERRE * cfg.actions.element_effects.terre.attack_bonus_per, opposing = enemy.stats.strength + cfg.actions.element_effects.terre.attack_bonus_per, damage = cfg.combat.duel.damage_on_win + 1;
+    if (own > opposing)
+      return 0.025;
+    if (own === opposing)
+      return actor.hp <= cfg.combat.duel.damage_on_tie + 1 ? 0.95 : 0.06;
+    if (elements.FEU > 1 && actor.stats.agility >= enemy.stats.agility)
+      return 0.08;
+    if (actor.hp <= damage)
+      return 0.98;
+    return Math.min(0.99, Math.min(0.95, cfg.simulation.fall_base + (opposing - own) * cfg.simulation.fall_per_power) + 0.08 * (1 - actor.hp / actor.max_hp));
+  }
+  function survival(run, fromSeconds = 0, toSeconds = 1 / 0) {
+    let result = 1 - run.risk;
+    for (const enemy of enemies)
+      if (run.path.some((p, i) => i / run.speed >= fromSeconds && i / run.speed <= toSeconds && cpuDistance(i === 0 ? position(run, dt) : p, enemy.position) <= cfg.combat.trigger_distance_cells + 0.05))
+        result *= 1 - combatLoss(run.actor, run.elements, enemy);
+    return result;
+  }
+  function pressure(actor, elements, p) {
+    return enemies.reduce((sum, e) => sum + Math.max(0, 4 - cpuDistance(e.position, p)) * (0.12 + combatLoss(actor, elements, e)), 0);
+  }
+  const crowd = (p) => [...used.values()].reduce((n, r) => n + Math.max(0, 3 - cpuDistance(p, r.target)), 0);
+  function terminal(run, origin, fromSeconds = 0) {
+    const gain = forward(run.target) - forward(origin), scoring = forward(run.target) >= goal, value = 36 + gain * 3.5 * personality.progress / 20 + (scoring ? 100 : 0) - pressure(run.actor, run.elements, run.target) * 6;
+    return survival(run, fromSeconds) * value - 36 - (run.path.length - 1) * 0.035 - run.risk * 12 * (personality.risk / 18 - 1);
+  }
+  function select(actor, allocations, score) {
+    let best = stand(actor, allocations[0]), value = -1 / 0;
+    for (const e of allocations)
+      for (const run of runs(actor, e)) {
+        if (reserved.has(cpuCellKey(run.target)))
+          continue;
+        const v = score(run);
+        if (v > value + 0.00000001) {
+          best = run;
+          value = v;
+        }
+      }
+    return best;
+  }
+  function assign(run, role, protect = !1) {
+    used.set(run.actor.id, run);
+    reserved.add(cpuCellKey(run.target));
+    roles.push({ entity_id: run.actor.id, role, movement_risk: run.risk });
+    if (protect)
+      protectedIds.add(run.actor.id);
+  }
+  const carrier = available.find((e) => e.id === world.ball.holder_entity_id), enemyCarrier = enemies.find((e) => e.id === world.ball.holder_entity_id);
+  let strategy = "recover", pass = null;
+  function projectPass(thrower, receiver) {
+    const range = cfg.ball.base_range + thrower.elements.AIR * cfg.actions.element_effects.air.range_modifier, ballStep = cfg.ball.throw_speed_cells_per_sec * dt;
+    for (let release = cfg.simulation.throw_delay_ticks;release < cfg.tick_system.max_ticks_per_turn; release++) {
+      const origin = position(thrower, (release + 1) * dt);
+      if (forward(origin) >= goal)
+        return null;
+      let landing, duration = 0;
+      const latest = Math.ceil((cpuDistance(origin, receiver.actor.position) + receiver.path.length + 1) / ballStep);
+      for (let ticks = 1;ticks <= latest; ticks++) {
+        const target = cpuRound(position(receiver, (release + ticks + 1) * dt));
+        if (cpuDistance(origin, target) <= ballStep * ticks) {
+          landing = target;
+          duration = ticks;
+          break;
+        }
+      }
+      if (!landing || cpuDistance(origin, landing) > range)
+        continue;
+      if (release + duration >= cfg.tick_system.max_ticks_per_turn)
+        return null;
+      const d = cpuDistance(origin, landing), accuracy = probability(cfg.simulation.throw_base + thrower.actor.stats.precision * cfg.simulation.throw_stat + thrower.elements.AIR * cfg.probabilities.air_precision_per_action - d * cfg.simulation.distance_penalty);
+      let windows = 0, laneSurvival = 1;
+      const lowSamples = [];
+      for (let t = 1;t <= duration; t++) {
+        if (4 * cfg.ball.arc_height_cells * t * (duration - t) / (duration * duration) > cfg.ball.intercept_height_threshold)
+          continue;
+        const p = { q: origin.q + (landing.q - origin.q) * t / duration, r: origin.r + (landing.r - origin.r) * t / duration }, time = (release + t + 1) * dt;
+        lowSamples.push({ p, time });
+        if (cpuDistance(position(receiver, time), p) <= cfg.ball.catch_radius_cells)
+          windows++;
+      }
+      for (const enemy of enemies) {
+        let threat = 0;
+        for (const { p, time } of lowSamples) {
+          const distance = cpuDistance(enemy.position, p), reach = Math.min(safeRange(intercept), speed(enemy, intercept) * time);
+          if (distance > reach + cfg.ball.intercept_radius_cells)
+            continue;
+          const confidence = distance <= cfg.ball.intercept_radius_cells ? 1 : 0.35 * Math.max(0, 1 - (distance - cfg.ball.intercept_radius_cells) / (reach + 0.01));
+          threat = Math.max(threat, confidence * probability(cfg.simulation.catch_base + enemy.stats.precision * cfg.simulation.catch_stat + cfg.simulation.catch_feu));
+        }
+        laneSurvival *= 1 - threat;
+      }
+      const catchChance = probability(cfg.simulation.catch_base + receiver.actor.stats.precision * cfg.simulation.catch_stat + receiver.elements.AIR * cfg.simulation.catch_air), catches = 1 - Math.pow(1 - catchChance, Math.min(receiver.elements.AIR, windows)), arrival = (release + duration + 1) * dt, chance = accuracy * catches * laneSurvival * survival(thrower, 0, (release + 1) * dt);
+      return { release_tick: release, land_tick: release + duration, landing, chance, arrival };
+    }
+    return null;
+  }
+  if (carrier) {
+    strategy = "carry";
+    const carry = select(carrier, [water, brute, evade], (r) => terminal(r, carrier.position));
+    let chosen = carry, best = terminal(carry, carrier.position), chosenReceiver = null;
+    if (level.passes && slots > 0) {
+      const launches = [receive, accurate].flatMap((e) => {
+        const candidates = runs(carrier, e).sort((a, b) => terminal(b, carrier.position) - terminal(a, carrier.position));
+        return [stand(carrier, e), ...candidates.slice(0, 3)];
+      });
+      for (const receiver of available.filter((e) => e.id !== carrier.id)) {
+        const receptionRuns = [receive, accurate].flatMap((e) => runs(receiver, e).sort((a, b) => terminal(b, carrier.position) - terminal(a, carrier.position)).slice(0, 4));
+        for (const e of [receive, accurate])
+          for (const gain of [0, 3, 6]) {
+            const anchor = at(cpuColumn(receiver.position) + direction * gain, receiver.position.r);
+            receptionRuns.push(select(receiver, [e], (r) => -cpuDistance(r.target, anchor) * 4 - r.risk * 35 - pressure(receiver, e, r.target) * 4));
+          }
+        receptionRuns.push(stand(receiver, allocation(["AIR", "AIR", "AIR"])));
+        const towardsReceiver = [receive, accurate].map((e) => select(carrier, [e], (r) => -cpuDistance(r.target, receiver.position) * 3 - pressure(carrier, e, r.target) * 6 - r.risk * 40));
+        for (const r of receptionRuns)
+          for (const launch of [...launches, ...towardsReceiver]) {
+            if (cpuDistance(launch.target, r.target) < 1)
+              continue;
+            const flight = projectPass(launch, r);
+            if (!flight)
+              continue;
+            const value = flight.chance * (terminal(r, carrier.position, flight.arrival) + 36) - 36 - 1.5 + Math.max(0, personality.passing - 24) * 0.08;
+            if (value > best + 0.5) {
+              best = value;
+              chosen = launch;
+              chosenReceiver = r;
+              pass = { ...flight, thrower: carrier.id, receiver: receiver.id };
+            }
+          }
+      }
+    }
+    assign(chosen, "carrier", !0);
+    if (chosenReceiver) {
+      assign(chosenReceiver, "receiver", !0);
+      strategy = "pass";
+    } else if (forward(chosen.target) < forward(carrier.position) - 0.5)
+      strategy = "retreat";
+    else if (chosen.elements.TERRE > 0)
+      strategy = "breakthrough";
+    const focus = chosenReceiver?.target ?? chosen.target, support = available.filter((e) => !used.has(e.id)), screen = [...support].sort((a, b) => b.stats.strength + b.hp * 0.25 - cpuDistance(b.position, focus) - (a.stats.strength + a.hp * 0.25 - cpuDistance(a.position, focus)) || a.id - b.id)[0];
+    if (screen) {
+      const anchor = at(cpuColumn(focus) + direction * 1.5, focus.r + (focus.r > 0 ? -2 : 2));
+      assign(select(screen, [brute], (r) => -cpuDistance(r.target, anchor) * 3 - r.risk * 30 - crowd(r.target) * 5), "screen");
+    }
+    const rest = support.filter((e) => e.id !== screen?.id).sort((a, b) => b.stats.precision + b.stats.endurance - a.stats.precision - a.stats.endurance || a.id - b.id);
+    for (const [i, actor] of rest.entries()) {
+      const cover = i === rest.length - 1 && rest.length > 1, row = cover ? focus.r / 2 : Math.max(-8, Math.min(8, focus.r + (i % 2 === 0 ? -4 : 4))), anchor = at(cpuColumn(focus) + direction * (cover ? -5 : 1), row);
+      assign(select(actor, [cover ? runner : receive], (r) => -cpuDistance(r.target, anchor) * 3 - r.risk * 30 - pressure(actor, r.elements, r.target) * 2 - crowd(r.target) * 6), cover ? "cover" : "parallel_support");
+    }
+  } else if (enemyCarrier) {
+    strategy = "defend";
+    const press = [...available].sort((a, b) => {
+      const suitability = (e) => e.stats.strength * 0.9 + e.stats.agility * 0.1 + e.hp * 0.2 - e.stats.precision * 0.25 - cpuDistance(e.position, enemyCarrier.position) * 1.4;
+      return suitability(b) - suitability(a) || a.id - b.id;
+    })[0];
+    if (press) {
+      const enemyGoal = -direction * goal, anchor = at(cpuColumn(enemyCarrier.position) - direction * 2, enemyCarrier.position.r);
+      assign(select(press, [allocation(["TERRE", "TERRE", "FEU"]), allocation(["TERRE", "FEU", "EAU"]), evade], (r) => -cpuDistance(r.target, anchor) * 3 + (cpuDistance(r.target, enemyCarrier.position) <= 1 ? 10 * (1 - combatLoss(press, r.elements, enemyCarrier)) : 0) - r.risk * 24 - (Math.abs(cpuColumn(enemyCarrier.position) - enemyGoal) < 4 ? r.risk * -15 : 0)), "pressure", !0);
+    }
+    const options = [];
+    for (const receiver of enemies.filter((e) => e.id !== enemyCarrier.id)) {
+      const gain = -direction * (cpuColumn(receiver.position) - cpuColumn(enemyCarrier.position)), d = cpuDistance(enemyCarrier.position, receiver.position);
+      if (d > cfg.ball.base_range + 2 * cfg.actions.element_effects.air.range_modifier || d < 2)
+        continue;
+      const value = 6 + Math.max(0, gain) * 2 + receiver.stats.precision * 0.25, ticks = Math.max(1, Math.ceil(d / (cfg.ball.throw_speed_cells_per_sec * dt)));
+      for (let t = 1;t <= ticks; t++) {
+        if (4 * cfg.ball.arc_height_cells * t * (ticks - t) / (ticks * ticks) > cfg.ball.intercept_height_threshold)
+          continue;
+        const p = {
+          q: enemyCarrier.position.q + (receiver.position.q - enemyCarrier.position.q) * t / ticks,
+          r: enemyCarrier.position.r + (receiver.position.r - enemyCarrier.position.r) * t / ticks
+        };
+        options.push({ p, time: (cfg.simulation.throw_delay_ticks + t + 1) * dt, value, receiver: receiver.id });
+      }
+    }
+    const remaining = available.filter((e) => !used.has(e.id));
+    while (options.length && remaining.length > 1) {
+      let best = null;
+      for (const actor of remaining)
+        for (const run of runs(actor, intercept)) {
+          if (reserved.has(cpuCellKey(run.target)))
+            continue;
+          for (const option of options) {
+            if (cpuDistance(position(run, option.time), option.p) > cfg.ball.intercept_radius_cells)
+              continue;
+            const catchChance = probability(cfg.simulation.catch_base + actor.stats.precision * cfg.simulation.catch_stat + intercept.FEU * cfg.simulation.catch_feu), score = option.value * catchChance - cpuDistance(run.target, option.p) * 2 - run.risk * 25 - crowd(run.target) * 5;
+            if (!best || score > best.score)
+              best = { actor, run, option, score };
+          }
+        }
+      if (!best || best.score < 3)
+        break;
+      assign(best.run, "pass_interceptor", !0);
+      remaining.splice(remaining.indexOf(best.actor), 1);
+      for (let i = options.length - 1;i >= 0; i--)
+        if (options[i].receiver === best.option.receiver)
+          options.splice(i, 1);
+    }
+    for (const [i, actor] of remaining.entries()) {
+      const anchor = at(cpuColumn(enemyCarrier.position) - direction * (4 + i * 2), i % 2 === 0 ? -3 : 3);
+      assign(select(actor, [runner, intercept], (r) => -cpuDistance(r.target, anchor) * 3 - r.risk * 28 - crowd(r.target) * 6), "cover");
+    }
+  } else if (available.length) {
+    let collection = null;
+    for (const actor of available)
+      for (const e of [runner, evade, receive])
+        for (const run of runs(actor, e)) {
+          const gap = cpuDistance(run.target, world.ball.position), attempts = e.FEU + e.AIR, chance = 1 - Math.pow(1 - probability(cfg.simulation.catch_base + actor.stats.precision * cfg.simulation.catch_stat + e.AIR * cfg.simulation.catch_air + e.FEU * cfg.simulation.catch_feu), attempts), value = (gap <= cfg.ball.pickup_range ? 40 * chance : 0) - gap * 4 - (run.path.length - 1) / run.speed * 2 - run.risk * 32 - pressure(actor, e, run.target) * 3;
+          if (!collection || value > collection.value)
+            collection = { run, value };
+        }
+    if (collection)
+      assign(collection.run, "retriever", !0);
+    const focus = world.ball.position, rest = available.filter((e) => !used.has(e.id)).sort((a, b) => b.stats.precision + b.stats.endurance - a.stats.precision - a.stats.endurance || a.id - b.id);
+    for (const [i, actor] of rest.entries()) {
+      const cover = i === rest.length - 1 && rest.length > 1, anchor = at(cpuColumn(focus) + direction * (cover ? -5 : i === 0 ? 5 : 3), cover ? 0 : i % 2 === 0 ? -3 : 4);
+      assign(select(actor, i === 0 ? [water, receive] : [receive], (r) => -cpuDistance(r.target, anchor) * 3 - r.risk * 28 - crowd(r.target) * 6 - pressure(actor, r.elements, r.target) * 2 - (r.elements.AIR + r.elements.FEU === 0 && r.path.some((p) => cpuDistance(p, focus) <= cfg.ball.pickup_range) ? 25 : 0)), cover ? "cover" : i === 0 ? "forward_outlet" : "recovery_support");
+    }
+  }
+  const actions = [];
+  for (const actor of team) {
+    const run = used.get(actor.id);
+    if (!run) {
+      actions.push({ entity_id: actor.id, action_type: "wait", params: { elements: { ...water } } });
+      continue;
+    }
+    const moving = cpuDistance(actor.position, run.target) > 0;
+    actions.push({ entity_id: actor.id, action_type: moving ? "move" : "wait", params: { elements: { ...run.elements }, ...moving ? { target_position: run.target } : {} } });
+    if (pass?.thrower === actor.id)
+      actions.push({ entity_id: actor.id, action_type: "throw", params: { elements: { ...run.elements }, target_entity_id: pass.receiver } });
+  }
+  return { ...order, actions, cpu_plan: {
+    version: 2,
+    strategy,
+    roles,
+    protected_ids: [...protectedIds],
+    ...pass ? { pass: {
+      thrower: pass.thrower,
+      receiver: pass.receiver,
+      release_tick: pass.release_tick,
+      land_tick: pass.land_tick,
+      landing: pass.landing,
+      estimated_success: pass.chance
+    } } : {}
+  } };
+}
+
 // backend/cpu-powers.ts
 function addCPUPower(cfg, world, order, level) {
   if (level === "beginner" || !Object.values(cfg.abilities ?? {}).some((r) => r.target))
     return order;
-  const active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned;
-  const allies = world.entities.filter((e) => e.team_id === order.team_index && active(e));
-  const enemies = world.entities.filter((e) => e.team_id !== order.team_index && active(e));
-  const receivers = new Set(order.actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id));
-  const nearest = [...allies].sort((a, b) => hexDistance(a.position, world.ball.position) - hexDistance(b.position, world.ball.position) || a.id - b.id)[0];
-  const movements = new Map(order.actions.filter((a) => ["move", "follow"].includes(a.action_type)).map((a) => [a.entity_id, a]));
-  const moving = (e) => {
+  const active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned, allies = world.entities.filter((e) => e.team_id === order.team_index && active(e)), enemies = world.entities.filter((e) => e.team_id !== order.team_index && active(e)), receivers = new Set(order.actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id)), nearest = [...allies].sort((a, b) => hexDistance(a.position, world.ball.position) - hexDistance(b.position, world.ball.position) || a.id - b.id)[0], movements = new Map(order.actions.filter((a) => ["move", "follow"].includes(a.action_type)).map((a) => [a.entity_id, a])), moving = (e) => {
     const a = movements.get(e.id);
     return a && (a.action_type === "follow" || hexDistance(e.position, a.params.target_position) > 0);
-  };
-  const threatened = (e) => enemies.some((other) => hexDistance(e.position, other.position) <= 3);
+  }, threatened = (e) => enemies.some((other) => hexDistance(e.position, other.position) <= 3);
   function value(rule, targets, hostile) {
     let score = 0;
     for (const target of targets) {
@@ -1439,16 +1746,16 @@ function addCPUPower(cfg, world, order, level) {
     }
     return score;
   }
-  const choices = [];
+  const choices = [], protectedIds = new Set(order.cpu_plan?.protected_ids ?? []);
   for (const caster of allies) {
     const rule = cfg.abilities?.[caster.class_name];
-    if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id))
+    if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id) || protectedIds.has(caster.id))
       continue;
     if (world.ball.holder_entity_id === null && caster.id === nearest?.id && hexDistance(caster.position, world.ball.position) <= 3)
       continue;
     if (rule.target === "allies" && rule.hp < 0 && allies.some((e) => e.hp <= -rule.hp))
       continue;
-    let score = rule.enemy_chance !== undefined ? (1 - rule.enemy_chance) * value(rule, allies, false) + rule.enemy_chance * value({ elements: rule.enemy_elements }, enemies, true) : value(rule, rule.target === "enemies" ? enemies : allies, rule.target === "enemies");
+    let score = rule.enemy_chance !== void 0 ? (1 - rule.enemy_chance) * value(rule, allies, !1) + rule.enemy_chance * value({ elements: rule.enemy_elements }, enemies, !0) : value(rule, rule.target === "enemies" ? enemies : allies, rule.target === "enemies");
     const params = {};
     if (rule.change_mask) {
       if (moving(caster) || order.turn_number % 4 !== 0)
@@ -1457,8 +1764,8 @@ function addCPUPower(cfg, world, order, level) {
       score = 2;
     }
     if (rule.target === "allies" && !rule.change_mask) {
-      const ownBenefit = value({ ...rule, hp: 0 }, [caster], false);
-      score -= Math.max(0, ownBenefit) * (rule.enemy_chance === undefined ? 1 : 1 - rule.enemy_chance);
+      const ownBenefit = value({ ...rule, hp: 0 }, [caster], !1);
+      score -= Math.max(0, ownBenefit) * (rule.enemy_chance === void 0 ? 1 : 1 - rule.enemy_chance);
     }
     score -= moving(caster) ? 1.5 : 0;
     if (score >= 2)
@@ -1468,10 +1775,14 @@ function addCPUPower(cfg, world, order, level) {
   const selected = choices[0];
   if (!selected)
     return order;
-  return { ...order, actions: [
-    ...order.actions.filter((a) => a.entity_id !== selected.caster.id && a.action_type !== "ability"),
-    { entity_id: selected.caster.id, action_type: "ability", params: selected.params }
-  ] };
+  return {
+    ...order,
+    ...order.cpu_plan ? { cpu_plan: { ...order.cpu_plan, roles: order.cpu_plan.roles.map((r) => r.entity_id === selected.caster.id ? { ...r, role: "class_power" } : r) } } : {},
+    actions: [
+      ...order.actions.filter((a) => a.entity_id !== selected.caster.id && a.action_type !== "ability"),
+      { entity_id: selected.caster.id, action_type: "ability", params: selected.params }
+    ]
+  };
 }
 
 // backend/engine.ts
@@ -1497,18 +1808,11 @@ for await (const line of createInterface({ input: process.stdin })) {
       cfg.abilities = request.rules.abilities;
     cfg.pitch.width_half = Math.floor(cfg.pitch.width / 2);
     cfg.pitch.height_half = Math.floor(cfg.pitch.height / 2);
-    const orders = request.orders.map((order, team) => order ?? (request.cpu?.[team] ? new OpponentAI(cfg, request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world) : defaultOrder(`player-${team}`, request.turn, team, request.world.entities.filter((entity) => entity.team_id === team))));
-    for (let team = 0;team < orders.length; team++) {
-      if (request.cpu?.[team] && request.orders[team] == null)
+    const orders = request.orders.map((order, team) => order ?? (request.cpu?.[team] ? new OpponentAI(cpuPlanningConfig(cfg), request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world) : defaultOrder(`player-${team}`, request.turn, team, request.world.entities.filter((entity) => entity.team_id === team))));
+    for (let team = 0; team < orders.length; team++) {
+      if (request.cpu?.[team] && request.orders[team] == null) {
+        orders[team] = prepareCPUOrder(cfg, request.world, orders[team], request.ai ?? {});
         orders[team] = addCPUPower(cfg, request.world, orders[team], request.ai?.level ?? cfg.ai?.default_level ?? "normal");
-    }
-    for (let team = 0;team < orders.length; team++) {
-      if (!request.cpu?.[team])
-        continue;
-      const receivers = new Set(orders[team].actions.filter((a) => a.action_type === "throw").map((a) => a.params.target_entity_id));
-      for (const action of orders[team].actions) {
-        if (action.action_type === "wait" && receivers.has(action.entity_id))
-          action.params.elements = { TERRE: 0, FEU: 0, AIR: 2, EAU: 1 };
       }
     }
     const warnings = [];

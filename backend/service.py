@@ -29,6 +29,7 @@ from backend.matchmaking import Matchmaking
 from tools.power_descriptions import client_abilities
 from backend.results import POLICY_VERSION, result_kind
 from backend.placement import placement_zones
+from backend.cpu_team import default_cpu_club
 
 CLASS_NAMES = ("Cra", "Ecaflip", "Eniripsa", "Enutrof", "Feca", "Iop", "Osamodas", "Pandawa",
                "Rogue", "Sacrier", "Sadida", "Sram", "Xelor", "Zobal")
@@ -357,8 +358,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         if tournament is not None:
             rules["match"].update(self.tournament_config(tournament).get("match_rules", {}))
         left_club = self.club(left)
-        right_club = self.club(right) if right else deepcopy(left_club)
-        team_colors = [deepcopy(left_club['firstColor']), deepcopy(right_club['firstColor']) if right else {'r':210,'g':80,'b':60}]
+        right_club = self.club(right) if right else default_cpu_club(left_club['firstColor'])
+        team_colors = [deepcopy(left_club['firstColor']), deepcopy(right_club['firstColor'])]
         difference = lambda a,b: sum(abs(a[k]-b[k]) for k in ('r','g','b'))
         if difference(*team_colors)<90:
             team_colors[1]=deepcopy(right_club['secondColor'])

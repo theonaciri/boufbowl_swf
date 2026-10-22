@@ -29,9 +29,10 @@ export function addCPUPower(cfg: any, world: any, order: any, level: string): an
     return score;
   }
   const choices: any[] = [];
+  const protectedIds = new Set(order.cpu_plan?.protected_ids ?? []);
   for (const caster of allies) {
     const rule = cfg.abilities?.[caster.class_name];
-    if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id)) continue;
+    if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id) || protectedIds.has(caster.id)) continue;
     // Preserve the immediate ball pickup rather than freezing the designated retriever.
     if (world.ball.holder_entity_id === null && caster.id === nearest?.id && hexDistance(caster.position,world.ball.position) <= 3) continue;
     if (rule.target === "allies" && rule.hp < 0 && allies.some((e: any) => e.hp <= -rule.hp)) continue;
@@ -56,6 +57,8 @@ export function addCPUPower(cfg: any, world: any, order: any, level: string): an
   choices.sort((a,b) => b.score-a.score || a.caster.id-b.caster.id);
   const selected = choices[0];
   if (!selected) return order;
-  return {...order, actions: [...order.actions.filter((a: any) => a.entity_id !== selected.caster.id && a.action_type !== "ability"),
+  return {...order, ...(order.cpu_plan ? {cpu_plan: {...order.cpu_plan, roles: order.cpu_plan.roles.map((r: any) =>
+    r.entity_id === selected.caster.id ? {...r, role:"class_power"} : r)}} : {}),
+    actions: [...order.actions.filter((a: any) => a.entity_id !== selected.caster.id && a.action_type !== "ability"),
     {entity_id:selected.caster.id,action_type:"ability",params:selected.params}]};
 }

@@ -47,6 +47,14 @@ The server computes outcomes; the client builds and plays resolution scenarios,
 then acknowledges with `ResolutionDoneMessage`. A 2D run can acknowledge without
 playing the 3D script.
 
+The turn adapter reserves interaction time only on participants' tracks. Other
+runners stretch their next step across that window, keeping their next action's
+cell and arrival tick. `ScriptBuilder` also joins each interaction to the previous
+outcome, so differing animation lengths cannot reorder actions. Field camera
+effects keep game time advancing; fullscreen cinematics retain their pause.
+Failed catches use the original `FxSprites.MISS` cloud without taking possession
+or replacing the pass's link to its eventual catch or rebound.
+
 ## Patch one method through its class
 
 Copy the exported class and edit the target method while preserving its package,

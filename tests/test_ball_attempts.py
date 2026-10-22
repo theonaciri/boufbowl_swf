@@ -170,3 +170,22 @@ class BallAttemptTests(unittest.TestCase):
         codec = Codec()
         decoded = codec.open_envelope(codec.envelope('RESOLUTION_SCENARIO',scenario))['payload']
         self.assertEqual(len(decoded['interaction']),3)
+
+    def test_failed_catch_retries_render_before_the_final_reception(self):
+        rules = self.successful_throw_failed_catches()
+        rules['simulation']['simulation']['catch_base'] = .5
+        for seed in range(1, 101):
+            record = self.run_turn(self.world(passing=True), [(3, 0), (3, 0)], rules, seed=seed, passing=True)
+            attempts = [e for e in record['result']['events'] if e['type'] in ('catch', 'catch_fail')]
+            if len(attempts) < 2 or attempts[0]['type'] != 'catch_fail' or attempts[-1]['type'] != 'catch':
+                continue
+            scenario = adapt_turn(record)
+            receptions = [i for i in scenario['interaction'] if i['interactionDetails']['type'] == 14]
+            self.assertEqual([i['interactionDetails']['maneuverTest']['success'] for i in receptions],
+                             [e['type'] == 'catch' for e in attempts])
+            passed = next(i['interactionDetails'] for i in scenario['interaction'] if i['interactionDetails']['type'] == 21)
+            self.assertEqual(passed['passDetails']['nextInteractionId'], receptions[-1]['interactionId'])
+            self.assertEqual(record['result']['final_ball_state']['holder_entity_id'], 12)
+            Codec().encode('ResolutionScenarioMessage', scenario)
+            return
+        self.fail('No failed-then-successful catch across 100 seeds')

@@ -99,6 +99,17 @@ This applies local `backend/simulator/` overlays and copies `engine_base.json`.
 The TypeScript movement probe also needs the external tree; its saved fixture
 and the extracted `protocol/*.json` contracts are preserved inputs.
 
+CPU tactics and power selection can be refreshed independently, using their local
+TypeScript sources and the retained simulator bundle:
+
+```sh
+bun backend/refresh-cpu-worker.ts
+```
+
+This updates the CPU sections of `backend/build/engine.js` without changing the
+simulation rules or requiring the external archive. Restart the backend to load
+the updated worker. The full worker build also includes these CPU sources.
+
 ## Distribute players
 
 ```sh
@@ -206,6 +217,21 @@ playback, with Wine, Flash Player, and Xvfb available:
 xvfb-run -a -s '-screen 0 1280x800x24' python3 tools/smoke_mock.py \
   --fixture tests/fixtures/interactions/goal.json --require-cinematic
 ```
+
+The shared rendering/chat regression can also run in native Adobe AIR, without
+Wine. It checks both desktop and Android application roots, stationary/moving
+sprites, explicit animation invalidation, batched chat composition, scroll
+boundaries and a complete 3D fixture at a saved FPS cap:
+
+```sh
+python3 -m tools.smoke_shared_client
+```
+
+This requires an AIR SDK containing a host-compatible `bin/adl`, its native shared
+libraries, a developer license where the runtime requires one, and Xvfb on
+headless Linux. `--air-sdk`, `--runtime-libs`, `--root` and
+`--fixture` select overrides. Logs are written under `.local/shared-client`;
+test application ids isolate their preferences from installed clients.
 
 Python changes need a backend restart; AS3 changes need an SWF rebuild and client
 restart; simulator changes need a worker rebuild and backend restart. Rebuild

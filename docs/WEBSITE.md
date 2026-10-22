@@ -7,6 +7,14 @@ Media URLs receive an automatic revision derived from the media contents.
 The build leaves source pages untouched; generated output stays out of Git.
 `restoration.*` implements character/stadium/audio previews;
 `contributions.*` handles resource proposals. `/play.html` hosts Ruffle.
+Its `web-player.js` launcher offers live balanced (30 FPS, medium quality), high
+(60 FPS) and performance (25 FPS, low quality) presets. The choice is saved only
+in browser storage. The `clientRuntime=ruffle` launch parameter enables the web
+frame budget, chat clipping and popup skins. Chat batching/scroll calculations,
+redundant 3D position suppression and modal layering are shared with desktop and
+Android. Native scene changes also respect saved FPS caps; Android defaults to
+60 FPS before a preference is saved. Use the default Ruffle renderer selection: the legacy
+`webgl` backend lacks the bitmap drawing required by the UI skin repair.
 ## Build
 
 After installing the [system prerequisites](BUILD.md#tools-and-inputs), run:

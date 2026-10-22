@@ -99,136 +99,42 @@
       #game:fullscreen ~ #fullscreen {
         display: none;
       }
+      :fullscreen #fullscreen { display: none; }
       #status {
         position: fixed;
         max-width: calc(100% - 2rem);
         text-align: center;
         padding: 1rem;
       }
+      #display-options {
+        position: fixed;
+        z-index: 3;
+        right: max(0.5rem, env(safe-area-inset-right));
+        bottom: max(0.5rem, env(safe-area-inset-bottom));
+        border: 1px solid #777;
+        border-radius: 6px;
+        background: rgb(23 23 23 / 94%);
+        padding: 0.45rem 0.6rem;
+        font-size: 12px;
+      }
+      #display-options summary { cursor: pointer; }
+      #display-options label { display: block; margin-top: 0.6rem; }
+      #display-options select { margin-left: 0.5rem; font: inherit; }
     </style>
   </head>
   <body>
     <div id="game"></div>
     <button id="fullscreen" type="button" hidden aria-label="Passer en plein écran">⛶ Plein écran</button>
+    <details id="display-options" hidden>
+      <summary>Affichage</summary>
+      <label>Qualité <select id="web-quality" aria-label="Qualité du rendu">
+        <option value="balanced">Équilibré · 30 FPS</option>
+        <option value="quality">Élevée · 60 FPS</option>
+        <option value="performance">Performance · 25 FPS</option>
+      </select></label>
+    </details>
     <p id="status" role="status">Chargement de Boufbowl…</p>
     <script src="vendor/ruffle/ruffle.js"></script>
-    <script>
-      (async () => {
-        const status = document.getElementById("status");
-        const game = document.getElementById("game");
-        const fullscreenButton = document.getElementById("fullscreen");
-        const launchOptions = new URLSearchParams(location.search);
-        let drag = null;
-        let suppressClickUntil = 0;
-        fullscreenButton.addEventListener("pointerdown", (event) => {
-          if (event.button !== 0) return;
-          const rect = fullscreenButton.getBoundingClientRect();
-          drag = {
-            pointerId: event.pointerId,
-            startX: event.clientX,
-            startY: event.clientY,
-            left: rect.left,
-            top: rect.top,
-            moved: false,
-          };
-          fullscreenButton.setPointerCapture(event.pointerId);
-        });
-        fullscreenButton.addEventListener("pointermove", (event) => {
-          if (!drag || drag.pointerId !== event.pointerId) return;
-          const dx = event.clientX - drag.startX;
-          const dy = event.clientY - drag.startY;
-          if (!drag.moved && Math.hypot(dx, dy) < 6) return;
-          drag.moved = true;
-          fullscreenButton.classList.add("is-dragging");
-          fullscreenButton.style.left = `${Math.max(0, Math.min(innerWidth - fullscreenButton.offsetWidth, drag.left + dx))}px`;
-          fullscreenButton.style.top = `${Math.max(0, Math.min(innerHeight - fullscreenButton.offsetHeight, drag.top + dy))}px`;
-          fullscreenButton.style.right = "auto";
-        });
-        const finishDrag = (event) => {
-          if (!drag || drag.pointerId !== event.pointerId) return;
-          if (drag.moved) suppressClickUntil = Date.now() + 400;
-          drag = null;
-          fullscreenButton.classList.remove("is-dragging");
-        };
-        fullscreenButton.addEventListener("pointerup", finishDrag);
-        fullscreenButton.addEventListener("pointercancel", finishDrag);
-        fullscreenButton.addEventListener("click", async (event) => {
-          if (Date.now() < suppressClickUntil) {
-            event.preventDefault();
-            return;
-          }
-          try {
-            if (game.requestFullscreen) {
-              await game.requestFullscreen();
-            } else if (document.documentElement.requestFullscreen) {
-              await document.documentElement.requestFullscreen();
-            } else {
-              status.hidden = false;
-              status.textContent =
-                "Le plein écran n’est pas disponible dans ce navigateur. Sur iPhone, ouvrez cette page depuis l’écran d’accueil pour masquer les barres du navigateur.";
-            }
-          } catch (error) {
-            status.hidden = false;
-            status.textContent =
-              "Le plein écran n’a pas pu être activé. Sur iPhone, ajoutez cette page à l’écran d’accueil pour une expérience sans barres du navigateur.";
-            console.error(error);
-          }
-        });
-        try {
-          if (!window.RufflePlayer) {
-            throw new Error(
-              "Ruffle is missing. Install its self-hosted release in vendor/ruffle/.",
-            );
-          }
-          const response = await fetch("api/client", { cache: "no-store" });
-          if (!response.ok) {
-            throw new Error(
-              "Restart the updated backend server, then reload this page.",
-            );
-          }
-          const client = await response.json();
-          const player = window.RufflePlayer.newest().createPlayer();
-          game.appendChild(player);
-          await player.load({
-            url: client.url,
-            backgroundExecutionMode: "none",
-            scale: "showAll",
-            forceScale: true,
-            parameters: {
-              lang: "fr",
-              tuto: launchOptions.get("tuto") === "1" ? "1" : "0",
-              mock: launchOptions.get("mock") === "1" ? "1" : "0",
-              server: launchOptions.get("server") === "0" ? "0" : "1",
-              scene3d: launchOptions.get("scene3d") === "0" ? "0" : "1",
-              backend: location.origin,
-              clientPlatform: "browser",
-              clientRuntime: "ruffle",
-              clientOS:
-                navigator.userAgentData?.platform || navigator.platform || "",
-              clientBrowser: (() => {
-                for (const [token, name] of [
-                  ["Edg", "Edge"],
-                  ["OPR", "Opera"],
-                  ["Firefox", "Firefox"],
-                  ["Chrome", "Chrome"],
-                  ["Version", "Safari"],
-                ]) {
-                  const match = navigator.userAgent.match(
-                    new RegExp(token + "/([\\d.]+)"),
-                  );
-                  if (match) return name + " " + match[1];
-                }
-                return "unknown";
-              })(),
-            },
-          });
-          status.hidden = true;
-          fullscreenButton.hidden = false;
-        } catch (error) {
-          status.textContent = "Unable to load Boufbowl: " + error.message;
-          console.error(error);
-        }
-      })();
-    </script>
+    <script type="module" src="web-player.js"></script>
   </body>
 </html>

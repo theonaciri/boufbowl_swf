@@ -93,6 +93,13 @@ class GameplayFixTests(unittest.TestCase):
 
     def test_cpu_receivers_assign_air(self):
         record = json.loads((ROOT/'tests/fixtures/interactions/reception-record.json').read_text())
+        # Give the CPU a useful, open passing option rather than forcing it to
+        # throw through the stationary opponents in the animation fixture.
+        for actor in record['initial']['entities']:
+            actor['stats']['precision'] = 25
+            if actor['team_id'] == 1:
+                actor['position']['r'] = 8
+        next(e for e in record['initial']['entities'] if e['id']==12)['position'] = {'q':4,'r':3}
         response = self.engine.simulate(record['initial'], [None, None], 1, 12345, self.rules, (True, False))
         actions = response['orders'][0]['actions']
         throw = next(a for a in actions if a['action_type']=='throw')

@@ -24,6 +24,10 @@ package com.ankamagames.boufbowl
    [SWF(frameRate="25",backgroundColor="#000000",width="1024",height="600")]
    public class BoufbowlClient extends Sprite
    {
+      // Shared UI/rendering patches use the same runtime flags on AIR.
+      public static const ruffleRuntime:Boolean = false;
+      public static var browserFrameRate:Number = 30;
+      public static var preferredFrameRate:Number = 0;
       
       private static var embeddedVersionClass:Class = BoufbowlClient_embeddedVersionClass;
       
@@ -90,9 +94,11 @@ package com.ankamagames.boufbowl
          stage.scaleMode = StageScaleMode.SHOW_ALL;
          var preferences:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
          var frameRateTarget:Number = Number(preferences.data.frameRateTarget);
+         preferredFrameRate = frameRateTarget >= 25 && frameRateTarget <= 240 ? frameRateTarget :
+            (Boolean(preferences.data.limitFrameRate25) ? 25 : 0);
          if(isNaN(frameRateTarget) || frameRateTarget < 25 || frameRateTarget > 240)
          {
-            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 240;
+            frameRateTarget = Boolean(preferences.data.limitFrameRate25) ? 25 : 60;
          }
          stage.frameRate = frameRateTarget;
          Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;

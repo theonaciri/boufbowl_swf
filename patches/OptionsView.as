@@ -219,6 +219,8 @@ package com.ankamagames.boufbowl.client.options.view
       {
          var saved:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
          this._frameRateTarget = Number(saved.data.frameRateTarget);
+         if(com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
+            this._frameRateTarget = com.ankamagames.boufbowl.BoufbowlClient.browserFrameRate;
          if(isNaN(this._frameRateTarget) || this._frameRateTarget < 25 || this._frameRateTarget > 240)
          {
             this._frameRateTarget = Boolean(saved.data.limitFrameRate25) ? 25 : 60;
@@ -274,6 +276,8 @@ package com.ankamagames.boufbowl.client.options.view
          stage.removeEventListener(MouseEvent.MOUSE_UP,this.frameRatePointerUp);
          var saved:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
          saved.data.frameRateTarget = this._frameRateTarget;
+         if(!com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
+            com.ankamagames.boufbowl.BoufbowlClient.preferredFrameRate = this._frameRateTarget;
          delete saved.data.limitFrameRate25;
          saved.flush();
          dispatchEvent(new InterfaceSoundEvent(InterfaceSoundEvents.OPTIONS_CHECKBOX_CHANGED));
@@ -285,6 +289,11 @@ package com.ankamagames.boufbowl.client.options.view
          var normalized:Number = Math.max(0,Math.min(1,local.x / 150));
          this._frameRateTarget = 25 + Math.round(normalized * 43) * 5;
          this._frameRateTarget = Math.min(240,this._frameRateTarget);
+         if(com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
+         {
+            this._frameRateTarget = Math.min(60,this._frameRateTarget);
+            com.ankamagames.boufbowl.BoufbowlClient.browserFrameRate = this._frameRateTarget;
+         }
          this._frameRateThumb.x = (this._frameRateTarget - 25) / 215 * 150;
          this._frameRateValue.text = Math.round(this._frameRateTarget) + " FPS";
          if(stage != null)

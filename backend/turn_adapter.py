@@ -1,7 +1,8 @@
 """Translate authoritative engine outcomes into the original resolution contract.
 
-Presentation ticks include pauses for original interaction animations. Authority,
-probability draws and final states always remain in the recorded engine result.
+Presentation ticks reserve time for original interaction animations. Only their
+participants stop; other runners spread their next step across that time.
+Authority, probability draws and final states remain in the recorded result.
 """
 from copy import deepcopy
 import math
@@ -133,15 +134,12 @@ def adapt_turn(record):
         start = max(start, max(clocks.values(), default=0))
         end = start + duration
         identity = len(interactions) + 1
-        for actor in tracks:
-            move(actor, start)
         for actor_data in participants:
             actor = int(actor_data["boufbowlerId"])
+            move(actor, start)
             tracks[actor]["item"].append({"type": 2, "interactionId": identity,
                                          "movement": {"positions": [deepcopy(positions[actor])], "startTick": start, "endTick": end}})
             clocks[actor] = end
-        for actor in tracks:
-            move(actor, end)
         entry = {"interactionId": identity, "interactionDetails": {"type": kind, "startTick": start, "endTick": end,
                  "isCutscene": bool(record.get("presentation",{}).get("interactions",False) and kind in (12,13,14,15,20,21)), "participants": participants, **details}}
         interactions.append(entry)
@@ -255,6 +253,16 @@ def adapt_turn(record):
             pending_passes.append({"entry": entry, "thrower": actor, "target": target,
                                    "origin": deepcopy(positions[actor]), "destination": destination})
             holder = None
+        elif kind == "catch_fail":
+            # Show each failed attempt without consuming the pending flight or
+            # granting possession. Its pass still links to the eventual catch/land.
+            origin = pending_passes[0]["origin"] if pending_passes else deepcopy(ball_position)
+            intercepted = params.get("interception", False)
+            details = {"interceptionDetails" if intercepted else "receptionDetails":
+                       {"ballOriginPosition": origin}}
+            entry = interaction(15 if intercepted else 14, start, 12,
+                                [participant(actor, has_ball=False)], maneuverTest=maneuver(False), **details)
+            entry["interactionDetails"]["isCutscene"] = False
         elif kind in ("catch", "ball_land"):
             flight = pending_passes.pop(0) if pending_passes else None
             if kind == "catch":
@@ -279,9 +287,7 @@ def adapt_turn(record):
         elif kind == "goal":
             interaction(12, start, 40, [participant(actor, has_ball=True)], touchdownDetails={"touchdownDuringRun": True})
             holder = None
-        # ball_move is expressed by the original pass arc. Failed candidate
-        # catches are retained in the authoritative audit, while the rendered
-        # flight links to its eventual catch/rebound outcome.
+        # ball_move is expressed by the original pass arc.
     for flight in pending_passes:
         entry = interaction(13, max(clocks.values()), 12, [], onGroundDetails={"ballOriginPosition": flight["origin"],
                                                                             "groundPosition": flight["destination"]})

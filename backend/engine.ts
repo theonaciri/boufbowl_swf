@@ -3,6 +3,7 @@ import { simulateTurn } from "../../boufbowl_server/src/simulator/engine";
 import { OpponentAI } from "../../boufbowl_server/src/ai";
 import { defaultOrder } from "../../boufbowl_server/src/rules";
 import { addCPUPower } from "./cpu-powers";
+import { cpuPlanningConfig, prepareCPUOrder } from "./cpu-orders";
 import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 const base = JSON.parse(readFileSync(new URL("./engine_base.json", import.meta.url), "utf8"));
@@ -22,21 +23,13 @@ for await (const line of createInterface({ input: process.stdin })) {
     cfg.pitch.width_half = Math.floor(cfg.pitch.width / 2);
     cfg.pitch.height_half = Math.floor(cfg.pitch.height / 2);
     const orders = request.orders.map((order: any, team: number) => order ??
-      (request.cpu?.[team] ? new OpponentAI(cfg, request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world)
+      (request.cpu?.[team] ? new OpponentAI(cpuPlanningConfig(cfg), request.ai ?? {}).buildOrder(`cpu-${team}`, request.turn, team, request.world)
         : defaultOrder(`player-${team}`, request.turn, team, request.world.entities.filter((entity: any) => entity.team_id === team))));
     // Replace generated CPU actions only; recorded/submitted orders remain immutable.
     for (let team = 0; team < orders.length; team++) {
-      if (request.cpu?.[team] && request.orders[team] == null)
+      if (request.cpu?.[team] && request.orders[team] == null) {
+        orders[team] = prepareCPUOrder(cfg,request.world,orders[team],request.ai ?? {});
         orders[team] = addCPUPower(cfg,request.world,orders[team],request.ai?.level ?? cfg.ai?.default_level ?? "normal");
-    }
-    // CPU receivers must allocate AIR under the client's reception rules.
-    for (let team = 0; team < orders.length; team++) {
-      if (!request.cpu?.[team]) continue;
-      const receivers = new Set(orders[team].actions.filter((a: any) => a.action_type === "throw")
-        .map((a: any) => a.params.target_entity_id));
-      for (const action of orders[team].actions) {
-        if (action.action_type === "wait" && receivers.has(action.entity_id))
-          action.params.elements = { TERRE: 0, FEU: 0, AIR: 2, EAU: 1 };
       }
     }
     const warnings: unknown[] = [];

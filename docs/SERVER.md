@@ -45,9 +45,24 @@ existing matches and replays keep their saved rule snapshots. Five active player
 per side, ten-player rosters, and three regular-order elements are protocol limits.
 
 Class powers/probabilities are experimental replacements, not recovered historical
-balance. AIR enables airborne reception/interception attempts; a live, unstunned
+balance. AIR enables intended airborne receptions, and FEU enables opposing
+interception attempts; a live, unstunned
 ball carrier scores beyond the opponent's line. Regeneration restores one HP at
 the configured interval. Missing bodies/stadiums use the fallbacks in the README.
+
+CPU teams coordinate carries, moving passes, switches, screens, wide support and
+defensive cover. Roles account for strength, agility, precision, endurance and
+current health. Movement risk is allowed when the tactical reward justifies it;
+it is charged as a possession/recovery risk rather than treated as free range.
+Defenders estimate reachable low parts of likely enemy passes from public field
+state. They never read submitted opposing orders or future random draws.
+Generated orders include a `cpu_plan` audit with roles and estimated pass timing;
+these are predictions, not guaranteed outcomes. Saved orders are replayed as
+recorded rather than replanned with a newer CPU policy.
+Each CPU match uses the starter team with its first five characters shuffled,
+random kit and blazon colors, and a random blazon charge and background. The CPU
+primary color contrasts with the human team's color. These choices are saved
+with the match and remain stable for reconnects and replays.
 
 The default database is
 `$XDG_DATA_HOME/boufbowl-offline/backend.sqlite`, falling back to

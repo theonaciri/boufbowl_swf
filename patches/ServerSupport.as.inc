@@ -517,11 +517,24 @@
          if(serverPanel != null && serverPanel.parent != null) serverPanel.parent.removeChild(serverPanel);
       }
 
+      public static function dismissServerPanel() : void
+      {
+         serverClosePanel();
+      }
+
       private static function serverDialog(title:String, height:int) : void
       {
          serverClosePanel(); serverPanel = new Sprite();
          serverFrame(serverPanel,0,0,800,height);
          serverPanel.x = 110; serverPanel.y = Math.max(80,(600-height)/2);
+         if(com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
+         {
+            // Capture clicks behind a web popup; do not let a modal also
+            // activate the team editor or match buttons underneath it.
+            serverPanel.graphics.beginFill(0,0.3);
+            serverPanel.graphics.drawRect(-serverPanel.x,-serverPanel.y,1024,600);
+            serverPanel.graphics.endFill();
+         }
          serverHeading(serverPanel,title,24,10,650);
          serverAction(serverPanel,"Close",690,10,90,function():void { serverClosePanel(); });
          Stage(app.contextInjector.getInstance(Stage)).addChild(serverPanel);
@@ -552,6 +565,8 @@
 
       private static function serverAction(parent:Sprite, title:String, x:int, y:int, width:int, callback:Function) : Sprite
       {
+         if(com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
+            return browserServerAction(parent,title,x,y,width,callback);
          var button:Sprite = new Sprite(); button.x=x; button.y=y; button.buttonMode=true;button.mouseChildren=false;
          var skin:com.ankamagames.boufbowl.client.ui.SimpleButton=new com.ankamagames.boufbowl.client.ui.SimpleButton();
          skin.componentLabel="";skin.width=width;skin.height=28;button.addChild(skin);
@@ -566,6 +581,31 @@
          button.addEventListener(MouseEvent.MOUSE_DOWN,function(event:MouseEvent):void { skin.y=1;label.y=6; });
          button.addEventListener(MouseEvent.MOUSE_UP,function(event:MouseEvent):void { skin.y=0;label.y=5; });
          button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); });parent.addChild(button);return button;
+      }
+
+      private static function browserServerAction(parent:Sprite,title:String,x:int,y:int,width:int,callback:Function) : Sprite
+      {
+         var button:Sprite = new Sprite();button.x=x;button.y=y;
+         button.buttonMode=true;button.mouseChildren=false;
+         var draw:Function = function(active:Boolean):void {
+            button.graphics.clear();button.graphics.lineStyle(1,0x9b9c65);
+            button.graphics.beginFill(active ? 0xe2e8bb : 0xf8f9dd);
+            button.graphics.drawRoundRect(0,0,width,28,6);button.graphics.endFill();
+         };
+         draw(false);
+         var label:TextField=serverText(button,title,5,5,width-10);
+         var format:TextFormat=new TextFormat("Copperplate Gothic Bold",12,0x657e30);
+         format.align="center";label.defaultTextFormat=format;label.setTextFormat(format);
+         label.mouseEnabled=false;label.height=22;
+         while(label.textWidth>width-14 && Number(format.size)>9) {
+            format.size=Number(format.size)-1;label.setTextFormat(format);
+         }
+         button.addEventListener(MouseEvent.MOUSE_OVER,function(event:MouseEvent):void { draw(true); });
+         button.addEventListener(MouseEvent.MOUSE_OUT,function(event:MouseEvent):void { draw(false);label.y=5; });
+         button.addEventListener(MouseEvent.MOUSE_DOWN,function(event:MouseEvent):void { label.y=6; });
+         button.addEventListener(MouseEvent.MOUSE_UP,function(event:MouseEvent):void { label.y=5; });
+         button.addEventListener(MouseEvent.CLICK,function(event:MouseEvent):void { callback(); });
+         parent.addChild(button);return button;
       }
 
       private static function serverAccountPanel() : void

@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 from backend.service import Service
 from backend.storage import ServiceError
@@ -47,6 +48,33 @@ class BackendTests(unittest.TestCase):
     def identity(self, player):
         return self.service.store.authenticate(player["session"])
 
+    def test_cpu_uses_shuffled_starter_team_independently_of_custom_club(self):
+        club = initial_club()
+        club['clubName'] = 'Custom legends'
+        for player in club['boufbowler']:
+            player.update(boufbowlerClass=14, gender=2, uniqueCharacter=518)
+        self.command(self.alice, 'save_club', club=club)
+        saved = self.service.club(self.identity(self.alice))
+        # Two chosen shuffles verify roster slots, leader, field classes, and
+        # stable substitutes without making a probabilistic test.
+        for shift in (1, 2):
+            def rotate(players):
+                players[:] = players[shift:] + players[:shift]
+            with patch('backend.cpu_team.secrets.SystemRandom.shuffle', side_effect=rotate):
+                self.command(self.alice, 'cpu_match', stadium=1)
+            match = self.service.store.active_match(self.identity(self.alice))
+            roster = match['rosters'][1]['characters']
+            names = ['Aria', 'Baff', 'Cora', 'Dara', 'Elia']
+            self.assertEqual([p['name'] for p in roster[:5]], names[shift:] + names[:shift])
+            self.assertEqual([p['name'] for p in roster[5:]], ['Fara', 'Gust', 'Hana', 'Iris', 'Jora'])
+            self.assertEqual([p['id'] for p in roster], [str(i) for i in range(101, 111)])
+            self.assertFalse(any(p.get('uniqueCharacter') for p in roster))
+            self.assertEqual([e['class_name'] for e in match['world']['entities'] if e['team_id'] == 1],
+                             ['Cra', 'Cra', 'Enutrof', 'Eniripsa', 'Iop'][shift:] +
+                             ['Cra', 'Cra', 'Enutrof', 'Eniripsa', 'Iop'][:shift])
+            self.assertEqual(self.service.club(self.identity(self.alice)), saved)
+            self.protocol(self.alice, 'SURRENDER', {})
+
     def start(self):
         self.command(self.alice, "cpu_match", stadium=1)
         match = self.service.store.active_match(self.identity(self.alice))
@@ -54,6 +82,35 @@ class BackendTests(unittest.TestCase):
         positions = [{"id": p["id"], "position": z["defaultCell"]} for p, z in zip(match["rosters"][0]["characters"][:5], zones)]
         self.protocol(self.alice, "PLACEMENT", {"turn": 1, "boufbowlerPositions": positions})
         return match
+
+    def test_cpu_appearance_varies_per_match_and_survives_restart_and_wire(self):
+        saved = self.service.club(self.identity(self.alice))
+        appearances = []
+        fields = ('firstColor', 'secondColor', 'patternColor', 'sigilBackground', 'sigilCharge')
+        for index in (0, -1):
+            # Exercise both ends of the artwork inventory and color choices.
+            with patch('backend.cpu_team.secrets.SystemRandom.choice', side_effect=lambda values: values[index]):
+                self.command(self.alice, 'cpu_match', stadium=1)
+            match = self.service.store.active_match(self.identity(self.alice))
+            roster = match['rosters'][1]
+            appearance = {key: roster[key] for key in fields}
+            appearances.append(appearance)
+            distance = lambda a, b: sum(abs(a[k] - b[k]) for k in ('r', 'g', 'b'))
+            self.assertGreaterEqual(distance(roster['firstColor'], saved['firstColor']), 180)
+            for a, b in (('firstColor', 'secondColor'), ('firstColor', 'patternColor'), ('secondColor', 'patternColor')):
+                self.assertGreaterEqual(distance(roster[a], roster[b]), 180)
+            self.assertEqual(roster['firstColorIsDark'],
+                             sum(roster['firstColor'][key] * weight for key, weight in zip('rgb', (299, 587, 114))) < 128000)
+            self.service.close()
+            self.service = Service(self.path, self.config)
+            restored = self.service.store.match(match['id'])
+            wire = self.service.codec.envelope('MATCH_INFORMATION', self.service.match_information(restored, 1))
+            decoded = self.service.codec.open_envelope(wire)['payload']['rightRoster']
+            self.assertEqual({key: decoded[key] for key in fields}, appearance)
+            self.assertEqual(self.service.club(self.identity(self.alice)), saved)
+            self.protocol(self.alice, 'SURRENDER', {})
+        for key in fields:
+            self.assertNotEqual(appearances[0][key], appearances[1][key], key)
 
     def test_goal_restart_gives_ball_to_conceding_teams_center_player(self):
         for scoring_team in (0, 1):
