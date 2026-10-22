@@ -5,6 +5,9 @@ files. Bun generates the public website in `.local/website/dist`, including
 minified inline CSS and minified JavaScript with content hashes in its filenames.
 Media URLs receive an automatic revision derived from the media contents.
 The build leaves source pages untouched; generated output stays out of Git.
+Elements marked `data-source-only` stay as live HTML in source files and are
+removed by the Bun build before bundling page scripts. The GitHub build
+instructions and their stylesheet use this marker so neither enters the public bundle.
 `restoration.*` implements character/stadium/audio previews;
 `contributions.*` handles resource proposals. `/play.html` hosts Ruffle.
 Its `web-player.js` launcher offers live balanced (30 FPS, medium quality), high

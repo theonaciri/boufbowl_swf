@@ -181,6 +181,9 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
     const sitemapUrls = new Set();
     for (const [name, source] of pages) {
       let html = pageMetadata(source, name, origin);
+      html = await new HTMLRewriter().on("[data-source-only]", {
+        element(element) { element.remove(); },
+      }).transform(new Response(html)).text();
       if (name === "index.html") {
         const escape = (text) => text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
         for (const [platform, item] of Object.entries(manifest.downloads)) {

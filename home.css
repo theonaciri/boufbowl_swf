@@ -903,53 +903,6 @@ em {
 #download-windows {
   margin-top: 18px;
 }
-.source-build {
-  margin-top: 24px;
-  border: 1px solid var(--line);
-  background: #ebeade;
-  color: var(--ink);
-}
-.source-build summary {
-  padding: 20px 24px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.6px;
-}
-.source-build[open] summary {
-  border-bottom: 1px solid var(--line);
-}
-.source-build-content {
-  padding: 0 24px 20px;
-  font-size: 14px;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
-.source-build-content p {
-  margin: 18px 0 0;
-}
-.source-build-content ol {
-  padding-left: 22px;
-}
-.source-build-content li + li {
-  margin-top: 18px;
-}
-.source-build-content a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.source-build-content pre {
-  margin: 12px 0;
-  padding: 16px;
-  background: var(--ink);
-  color: var(--paper);
-  overflow-x: auto;
-  white-space: pre;
-  overflow-wrap: normal;
-}
-.source-build-content code {
-  font-size: 0.9em;
-}
 .volunteer-section {
   background: var(--orange);
   display: grid;
