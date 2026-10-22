@@ -117,6 +117,7 @@
         const status = document.getElementById("status");
         const game = document.getElementById("game");
         const fullscreenButton = document.getElementById("fullscreen");
+        const launchOptions = new URLSearchParams(location.search);
         let drag = null;
         let suppressClickUntil = 0;
         fullscreenButton.addEventListener("pointerdown", (event) => {
@@ -195,10 +196,10 @@
             forceScale: true,
             parameters: {
               lang: "fr",
-              tuto: "0",
-              mock: "0",
-              server: "1",
-              scene3d: "1",
+              tuto: launchOptions.get("tuto") === "1" ? "1" : "0",
+              mock: launchOptions.get("mock") === "1" ? "1" : "0",
+              server: launchOptions.get("server") === "0" ? "0" : "1",
+              scene3d: launchOptions.get("scene3d") === "0" ? "0" : "1",
               backend: location.origin,
               clientPlatform: "browser",
               clientRuntime: "ruffle",

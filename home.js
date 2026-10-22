@@ -335,19 +335,33 @@ import { assetUrl } from "./tools/website/asset-url.js";
     carouselVideo.hidden = true;
     $("carousel-image").hidden = !scene.image;
   });
-  $("carousel-prev").onclick = () => showScene(sceneIndex - 1, true);
-  $("carousel-next").onclick = () => showScene(sceneIndex + 1, true);
+  const sounds = ["POUF !", "PAF !", "FAUTE ?", "MÊME PAS MAL.", "ARBITRE !"];
+  let hits = 0;
+  const playCarouselPouf = (event, button) => {
+    const text = sounds[hits++ % sounds.length];
+    playPouf(event, button, carousel, text);
+  };
+  $("carousel-prev").onclick = (event) => {
+    playCarouselPouf(event, $("carousel-prev"));
+    showScene(sceneIndex - 1, true);
+  };
+  $("carousel-next").onclick = (event) => {
+    playCarouselPouf(event, $("carousel-next"));
+    showScene(sceneIndex + 1, true);
+  };
   $("carousel-pause").onclick = () => {
     carouselPaused = !carouselPaused;
     syncCarousel();
   };
   document.querySelectorAll("[data-scene]").forEach(
     (button) =>
-      (button.onclick = () =>
+      (button.onclick = (event) => {
+        playCarouselPouf(event, button);
         showScene(
           scenes.findIndex((scene) => scene.category === button.dataset.scene),
           true,
-        )),
+        );
+      }),
   );
   carousel.addEventListener("keydown", (event) => {
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
@@ -578,27 +592,21 @@ import { assetUrl } from "./tools/website/asset-url.js";
         "Sélectionnez et copiez le message avec les commandes de votre appareil.";
     }
   };
-  const sounds = ["POUF !", "PAF !", "FAUTE ?", "MÊME PAS MAL.", "ARBITRE !"];
-  let hits = 0;
-  $("brawl-button").onclick = (event) => {
-    const text = sounds[hits++ % sounds.length];
-    $("brawl-announcer").textContent =
-      text + " Le public approuve ce geste à peu près sportif.";
+  function playPouf(event, anchor, visual, text = "POUF !") {
     const tag = document.createElement("span");
     tag.className = "brawl-pop";
     tag.textContent = text;
-    const rect = $("brawl-button").getBoundingClientRect();
+    const rect = anchor.getBoundingClientRect();
     tag.style.left =
       Math.min(innerWidth - 180, Math.max(10, event.clientX || rect.left)) +
       "px";
     tag.style.top = (event.clientY || rect.top) + "px";
     document.body.append(tag);
-    const visual = document.querySelector(".hero-art");
     visual.classList.remove("brawl-hit");
     void visual.offsetWidth;
     visual.classList.add("brawl-hit");
     setTimeout(() => tag.remove(), 1100);
-  };
+  }
   function safeURL(url) {
     try {
       const parsed = new URL(url, location.origin);

@@ -76,10 +76,6 @@
   </head>
   <body>
     <a class="skip-link" href="#contenu">Aller au contenu</a>
-    <div class="topline">
-      <span>UN FAN GAME. ZÉRO PUB. BEAUCOUP DE PASSION.</span
-      ><span>CHANTIER OUVERT AUX BONNES VOLONTÉS</span>
-    </div>
     <header class="site-header">
       <a class="wordmark" href="#" aria-label="Boufbowl, accueil"
         ><img class="site-logo" src="assets/site/responsive/logo-240.avif"
@@ -110,18 +106,14 @@
     <main id="contenu">
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <div class="eyebrow">
-            <span class="status-dot"></span> LE BOUFBOWL REPREND DU SERVICE
-            <span class="tiny-line"></span>
-          </div>
           <h1 id="hero-title">
             LE BEAU JEU.<br />LES BEAUX<br /><em>BLEUS.</em
             ><span class="asterisk" aria-hidden="true">✳</span>
           </h1>
           <p>
-            Douze ans d’arrêt de jeu, ça suffisait.<br />Rechaussez les crampons
-            : le Boufbowl revient.<br />Le ballon a survécu. Pour vos dents, on
-            ne promet rien.
+            Après 12 ans au placard, le Boufbowl revient. Revivez les sensations
+            fortes avec le player Flash originel, une tactique de jeu 5 vs 5,
+            des cinématiques en 3D, et des tournois glorifiant les plus vicieux !
           </p>
           <div class="hero-actions">
             <a class="button" href="#telecharger"
@@ -163,13 +155,6 @@
                 hidden
                 aria-label="Animation originale du jeu"
               ></video>
-              <button
-                class="carousel-expand"
-                id="carousel-expand"
-                aria-label="Voir les images en grand"
-              >
-                ⤢ <span>PLEIN ÉCRAN</span>
-              </button>
             </div>
             <div class="carousel-caption">
               <span class="eyebrow"
@@ -193,6 +178,13 @@
               >
                 Ⅱ
               </button>
+              <button
+                class="carousel-expand"
+                id="carousel-expand"
+                aria-label="Voir les images en grand"
+              >
+                ⤢ <span>PLEIN ÉCRAN</span>
+              </button>
             </div>
             <div class="carousel-categories" aria-label="Choisir une scène">
               <button data-scene="cinematic" aria-pressed="true">
@@ -212,13 +204,6 @@
               aria-live="polite"
             ></span>
           </div>
-          <button
-            id="brawl-button"
-            class="brawl-button"
-            aria-label="Encourager les joueurs"
-          >
-            POUF ! <span>← CLIQUE, POUR VOIR</span>
-          </button>
         </div>
         <div class="hero-bottom">
           <span>FAN GAME INDÉPENDANT · NON AFFILIÉ À ANKAMA GAMES</span
@@ -250,7 +235,7 @@
             <h3>DESKTOP</h3>
             <p>
               Le client Desktop est recommandé pour jouer. Il se connecte au
-              serveur du jeu : aucun serveur local ni Python à installer.
+              serveur du jeu.
               Les builds Windows et Linux incluent les assets du jeu.
               Lancez le fichier .exe sous Windows ; sous Linux, autorisez
               l’exécution du fichier .run puis ouvrez-le.
@@ -279,10 +264,10 @@
               >BUILD DISPONIBLE</span>
             <h3>ANDROID</h3>
             <p>
-              L’application Android fait partie des façons recommandées de
-              jouer. La tactique au bout des doigts, les crampons en moins.
-              Tous les assets disponibles sont inclus dans l’APK ; les parties
-              utilisent le serveur distant.
+              Le jeu fonctionne très bien sur Android, tous les assets
+              disponibles sont inclus dans l'appli pour éviter de les
+              télécharger pendant les parties. Bonus: il est possible à tout
+              moment de zoomer avec deux doigts !
             </p>
             <a
               id="download-android"
@@ -302,10 +287,11 @@
               width="42"
               height="42"
               loading="lazy"
-            /><span class="platform-status">EXPÉRIMENTAL · RUFFLE</span>
+            /><span class="platform-status">EXPÉRIMENTAL</span>
             <h3>WEB</h3>
             <p>
-              Le client Flash tourne ici avec l’émulateur Ruffle.
+              Le client Flash tourne ici avec l’émulateur Ruffle. Pour retrouver
+              l'expérience originale.
             </p>
             <aside class="platform-warning" role="note">
               <strong>À savoir</strong> — La version Web est lente, présente
@@ -317,6 +303,52 @@
             ><small>Version expérimentale · lente, buguée et instable</small>
           </article>
         </div>
+        <details class="source-build">
+          <summary>CONSTRUIRE LE JEU DEPUIS GITHUB</summary>
+          <div class="source-build-content">
+            <p>
+              Vous pouvez aussi compiler Boufbowl Fan depuis les sources du
+              <a href="https://github.com/theonaciri/boufbowl_swf">projet sur GitHub</a>.
+              Voici les étapes sur une machine Linux.
+            </p>
+            <ol>
+              <li>
+                <strong>Installer les outils.</strong> Git, Bun, Python 3 et
+                Java 17 ou plus récent sont nécessaires pour compiler le jeu.
+              </li>
+              <li>
+                <strong>Récupérer les sources.</strong>
+                <pre><code>git clone https://github.com/theonaciri/boufbowl_swf.git
+cd boufbowl_swf</code></pre>
+              </li>
+              <li>
+                <strong>Compiler le client du jeu.</strong> FFDec est téléchargé
+                automatiquement si nécessaire.
+                <pre><code>bun run build</code></pre>
+                Le client compilé est créé dans <code>bin/boufbowl-client-1.9.6.swf</code>.
+              </li>
+              <li>
+                <strong>Créer une application pour la plateforme de votre choix.</strong>
+                <pre><code># Windows
+bun run build:players --platform windows
+# Linux
+bun run build:players --platform linux
+# Android
+bun run build:players --platform android</code></pre>
+                Pour Windows et Linux, ajoutez le lecteur Flash dans
+                <code>bin/flashplayer_32_sa.exe</code> et installez FFmpeg ;
+                Windows nécessite aussi NSIS. Pour Android, installez FFmpeg,
+                l’AIR SDK, l’Android SDK et un JDK 17 ou plus récent.
+                Les SDK installés sont recherchés automatiquement.
+              </li>
+            </ol>
+            <p>
+              Retrouvez les prérequis détaillés et les emplacements des fichiers
+              générés dans le
+              <a href="https://github.com/theonaciri/boufbowl_swf/blob/main/docs/BUILD.md">guide de compilation</a>.
+            </p>
+          </div>
+        </details>
         <p class="web-volunteer">
           On cherche aussi des bénévoles pour rendre le jeu fiable sur le Web :
           spécialiste de Ruffle, de Flash/AS3, du rendu ou des performances
@@ -332,13 +364,15 @@
           AIDER À RENDRE LE WEB JOUABLE
         </button>
       </section>
-      <div class="ticker" aria-hidden="true">
-        <div>
-          <span>LE FAIR-PLAY, OUI.</span><span>LES CROCHETTES, AUSSI.</span
-          ><span>✳</span><span>LE FAIR-PLAY, OUI.</span
-          ><span>LES CROCHETTES, AUSSI.</span><span>✳</span
-          ><span>LE FAIR-PLAY, OUI.</span><span>LES CROCHETTES, AUSSI.</span
-          ><span>✳</span>
+      <div class="ticker-wrap">
+        <div class="ticker" aria-hidden="true">
+          <div>
+            <span>LE FAIR-PLAY, OUI.</span><span>LES CROCHETTES, AUSSI.</span
+            ><span>✳</span><span>LE FAIR-PLAY, OUI.</span
+            ><span>LES CROCHETTES, AUSSI.</span><span>✳</span
+            ><span>LE FAIR-PLAY, OUI.</span><span>LES CROCHETTES, AUSSI.</span
+            ><span>✳</span>
+          </div>
         </div>
       </div>
       <section id="le-jeu" class="section game-section">
@@ -1095,7 +1129,10 @@
         srcset="assets/site/responsive/logo-240.avif 240w, assets/site/responsive/logo-630.avif 630w"
         sizes="(max-width: 750px) 120px, (max-width: 1250px) 16vw, 200px"
         alt="Boufbowl" width="630" height="232" /></a>
-      <p>RESSUSCITÉ PAR DES FANS.<br />PAS PAR UN ENIRIPSA. ENFIN, ON CROIT.</p>
+      <p>
+        RESSUSCITÉ PAR DES FANS.<br />Fan game, tous droits réservés à Ankama
+        Games<br />Artistes du jeu originel: Fabrice Nzini, Sephyka
+      </p>
       <div>
         <a href="legal.html">Informations juridiques</a
         ><a href="confidentialite.html">Confidentialité</a
@@ -1189,7 +1226,6 @@
       </p>
       <p id="copy-status" role="status" aria-live="polite"></p>
     </dialog>
-    <div id="brawl-announcer" aria-live="polite" class="sr-only"></div>
     <script src="tools/website/site-entry.js" defer></script>
   </body>
 </html>

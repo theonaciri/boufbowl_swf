@@ -127,7 +127,7 @@ const capture=await capturePortrait(p,task);
 const response=await fetch(location.pathname+'/'+task.id,{method:'POST',body:capture.blob});
 if(!response.ok)throw Error(await response.text());result.done++;
 }}
-result.character_initializations=p.ruffle().callExternalInterface('siteCharacterInitializations');
+result.character_initializations=result.characters.length ? p.ruffle().callExternalInterface('siteCharacterInitializations') : 0;
 if(result.character_initializations!==result.characters.length)throw Error('Character initialization was not reused');
 }catch(error){result.errors.push(String(error));}window.result=result;
 </script>'''

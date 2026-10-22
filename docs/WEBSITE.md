@@ -27,6 +27,12 @@ bun run serve:website
 
 Open **http://127.0.0.1:9900**. This serves the existing build without rebuilding it.
 The game API must run separately for interactive features. Stop with Ctrl+C.
+
+For a quick HTML, CSS, or JavaScript edit when all required media already exists,
+run `bun run build:website:quick`. It skips game preparation and media rendering,
+then recompiles the static site into the same output folder. Use the full
+`bun run build:website` command for a fresh checkout or after changing game/media
+inputs.
 Choose another port or expose it to your local network with:
 
 ```sh
@@ -70,13 +76,19 @@ or manually replaced client SWFs conservatively invalidate the rendering cache.
 
 Logo and stadium AVIFs are cached separately by source image and encoding recipe;
 character color changes do not reconvert them. Tutorial videos are independent.
-HTML/CSS/JavaScript-only changes compile the static site without rendering media.
+The default command skips media stages when their input and output contents match
+the completed build records. A Git pull that changes only HTML/CSS/JavaScript does
+not invalidate those records; output timestamp changes do not invalidate them either.
+When a stage needs updating, the build prints the reason. The quick command always
+skips media checks and rendering.
 
 Stage fingerprints live in `.local/website/media-stages.json`; individual render
 receipts and image fingerprints live alongside their capture caches under
 `.local/`. Puppet captures and encodes are cached separately, so encoding changes
 reuse native frames. Keep these caches between builds. The first build using the
 new fingerprints refreshes existing exports once; later builds reuse them.
+Missing stage records require one completed media build to establish which inputs
+produced the existing files. A Git pull does not transfer these local records.
 
 Media stages and independent images, captures, and encodes run concurrently with
 one CPU budget shared between Python and Bun. The default uses all available CPUs

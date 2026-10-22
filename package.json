@@ -3,6 +3,7 @@
   "scripts": {
     "build": "bun tools/build.mjs --game-only --rebuild-game",
     "build:website": "bun tools/build.mjs",
+    "build:website:quick": "bun tools/website/build.mjs",
     "check:site": "bun tools/website/build.mjs --check",
     "build:game": "bun tools/build.mjs --game-only --rebuild-game",
     "serve:website": "bun tools/website/serve.mjs",

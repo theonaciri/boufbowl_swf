@@ -19,13 +19,14 @@ the repository root:
 ```sh
 bun run build                 # Game client and runtime files only
 bun run build:website         # Static website and any missing website media
+bun run build:website:quick   # Rebuild pages without refreshing website media
 bun run serve:website         # Serve the built website at http://127.0.0.1:9900
 ```
 
 Both commands find/download FFDec when needed. The game build does not render
 website media or start Chromium. The website command reuses the game client,
 preparing it first only if missing, and generates **`.local/website/dist/`**.
-First website builds can take a long time; later builds automatically refresh changed media and reuse unchanged exports.
+First website builds can take a long time; later builds automatically refresh changed media and reuse unchanged exports. For HTML, CSS, or JavaScript edits when the media is already generated, use `bun run build:website:quick`; it only compiles and copies the existing site inputs.
 Serve that folder with a static web server; [Hosting](docs/HOSTING.md) explains
 Nginx and the separate game API. No manual file copies or legal-page build needed.
 

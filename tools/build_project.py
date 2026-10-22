@@ -101,25 +101,30 @@ def build(args):
                       ['assets/site/restoration/portraits.json', '.local/website/portrait-cache.json',
                        'assets/site/restoration/*-*.webp', 'assets/site/restoration/grid-icons/*.png']),
     }
-    dirty = {name: not cache.current(name, inputs, outputs) for name, (inputs, outputs) in stages.items()}
+    reasons = {name: cache.reason(name, inputs, outputs) for name, (inputs, outputs) in stages.items()}
     missing = [row['path'] for row in homepage_assets(ROOT) if not row['available']]
     # Also repair referenced files absent from an otherwise intact cached stage.
     for name in missing:
         if name.startswith('assets/site/cinematic-'):
-            dirty['cinematics'] = True
+            stage = 'cinematics'
         elif name.startswith('assets/site/restoration/puppets/'):
-            dirty['puppets'] = True
+            stage = 'puppets'
         elif name == 'assets/site/logo.avif' or name.startswith('assets/textures/stadiums/'):
-            dirty['images'] = True
+            stage = 'images'
         elif name.startswith('assets/site/tutorial-'):
-            dirty['tutorial'] = True
+            stage = 'tutorial'
         else:
-            dirty['portraits'] = True
-    required = [name for name in ('ffmpeg', 'avifenc') if not shutil.which(name)]
-    if required:
-        raise BuildError('Missing media tools: ' + ', '.join(required) + '. Ubuntu/Debian: sudo apt install ffmpeg libavif-bin. Arch: sudo pacman -S ffmpeg libavif.')
+            stage = 'portraits'
+        reasons[stage] = 'referenced asset missing: ' + name
+    dirty = {name: reason is not None for name, reason in reasons.items()}
     if any(dirty.values()):
         print('\nUpdating changed or missing website media; completed stages are cached.', flush=True)
+        for name, reason in reasons.items():
+            if reason:
+                print(f'  {name}: {reason}', flush=True)
+        required = [name for name in ('ffmpeg', 'avifenc') if not shutil.which(name)]
+        if required:
+            raise BuildError('Missing media tools: ' + ', '.join(required) + '. Ubuntu/Debian: sudo apt install ffmpeg libavif-bin. Arch: sudo pacman -S ffmpeg libavif.')
         if any(dirty[name] for name in ('cinematics', 'puppets', 'portraits')):
             tools()
             renderer = ROOT/'tools/website'

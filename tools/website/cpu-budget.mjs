@@ -47,7 +47,12 @@ const waiters = [];
 export async function cpuJob(work) {
   const address = process.env.BOUFBOWL_BUILD_BUDGET;
   if (address) {
-    const response = await fetch(address + '/acquire?pid=' + process.pid);
+    // Media tasks can hold every slot for longer than Bun's five-minute idle
+    // timeout. Waiting for a CPU slot is expected; match Python's 24-hour limit.
+    const response = await fetch(address + '/acquire?pid=' + process.pid, {
+      timeout: false,
+      signal: AbortSignal.timeout(86400000),
+    });
     if (!response.ok) throw Error('Build CPU budget is unavailable');
     const { token } = await response.json();
     try { return await work(); }

@@ -104,18 +104,6 @@ em {
   font-style: normal;
   color: var(--orange);
 }
-.topline {
-  height: 30px;
-  background: var(--ink);
-  color: var(--paper);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 4.5%;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.1px;
-}
 .site-header {
   height: 92px;
   display: flex;
@@ -441,30 +429,6 @@ em {
   text-align: center;
   margin: 8px 0;
 }
-.brawl-button {
-  position: absolute;
-  left: 16%;
-  bottom: 40px;
-  font: 800 42px var(--heading);
-  color: var(--on-orange);
-  background: var(--orange);
-  padding: 5px 23px;
-  transform: rotate(-9deg);
-  border: 2px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
-  z-index: 3;
-}
-.brawl-button > span {
-  position: absolute;
-  top: 62px;
-  left: 0;
-  color: var(--paper);
-  font:
-    600 8px Barlow,
-    sans-serif;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
 .visual-credit {
   position: absolute;
   right: 15px;
@@ -495,6 +459,10 @@ em {
 .hero-bottom > a > span {
   font-size: 22px;
 }
+.ticker-wrap {
+  overflow: hidden;
+  background: var(--paper);
+}
 .ticker {
   overflow: hidden;
   background: var(--orange);
@@ -502,7 +470,7 @@ em {
   transform: rotate(-1deg);
   width: 100%;
   border-block: 1px solid var(--ink);
-  margin: 8px 0 0;
+  margin: 12px 0 12px;
 }
 .ticker > div {
   display: flex;
@@ -866,7 +834,6 @@ em {
   background: var(--paper);
   padding-top: 76px;
   padding-bottom: 82px;
-  border-bottom: 1px solid var(--line);
 }
 .download-header {
   max-width: 740px;
@@ -936,6 +903,53 @@ em {
 #download-windows {
   margin-top: 18px;
 }
+.source-build {
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  background: #ebeade;
+  color: var(--ink);
+}
+.source-build summary {
+  padding: 20px 24px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.6px;
+}
+.source-build[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+.source-build-content {
+  padding: 0 24px 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.source-build-content p {
+  margin: 18px 0 0;
+}
+.source-build-content ol {
+  padding-left: 22px;
+}
+.source-build-content li + li {
+  margin-top: 18px;
+}
+.source-build-content a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.source-build-content pre {
+  margin: 12px 0;
+  padding: 16px;
+  background: var(--ink);
+  color: var(--paper);
+  overflow-x: auto;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.source-build-content code {
+  font-size: 0.9em;
+}
 .volunteer-section {
   background: var(--orange);
   display: grid;
@@ -1001,6 +1015,7 @@ em {
 .manifesto-section {
   text-align: center;
   padding: 90px 15%;
+  background: rgb(255 255 255 / 50%);
 }
 .manifesto-section .eyebrow {
   justify-content: center;
@@ -1382,13 +1397,6 @@ dialog textarea {
   }
 }
 @media (max-width: 780px) {
-  .topline {
-    height: 26px;
-    font-size: 7px;
-  }
-  .topline > span:last-child {
-    display: none;
-  }
   .site-header {
     height: 72px;
     padding: 0 5%;
@@ -1491,14 +1499,6 @@ dialog textarea {
   }
   .sticker {
     bottom: 55px;
-  }
-  .brawl-button {
-    font-size: 32px;
-    left: 7%;
-    bottom: 45px;
-  }
-  .brawl-button > span {
-    top: 50px;
   }
   .ticker span {
     font-size: 23px;
@@ -1773,15 +1773,14 @@ dialog textarea {
   display: none;
 }
 .carousel-expand {
-  position: absolute;
-  top: 12px;
-  right: 12px;
   border: 1px solid #fff8;
-  color: white;
-  background: #18211edd;
-  padding: 9px 11px;
+  color: var(--paper);
+  background: transparent;
+  padding: 0 9px;
+  width: auto !important;
+  height: 42px;
   font:
-    600 12px Barlow,
+    600 9px Barlow,
     sans-serif;
 }
 .carousel-expand span {
@@ -1810,6 +1809,7 @@ dialog textarea {
 }
 .carousel-controls {
   display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
   align-items: center;
   padding: 12px 26px 20px;
@@ -1860,16 +1860,6 @@ dialog textarea {
   background: var(--orange);
   color: var(--on-orange);
 }
-.hero-visual .brawl-button {
-  bottom: 3%;
-  left: auto;
-  right: 9%;
-  font-size: 25px;
-  padding: 3px 16px;
-}
-.hero-visual .brawl-button > span {
-  display: none;
-}
 .carousel-stage:fullscreen {
   width: 100%;
   height: 100%;
@@ -1918,8 +1908,5 @@ body:has(.carousel-stage.is-expanded) {
   }
   .carousel-expand span {
     display: none;
-  }
-  .hero-visual .brawl-button {
-    bottom: 8px;
   }
 }
