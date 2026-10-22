@@ -1,6 +1,7 @@
 package com.ankamagames.boufbowl.resolution.display.presenter
 {
    import away3d.core.base.Geometry;
+   import away3d.core.base.Vertex;
    import away3d.sprites.MovieClipSprite;
    import away3d.sprites.Sprite3D;
    import com.ankamagames.xgaming.utils.math.geom.Point3;
@@ -52,12 +53,11 @@ package com.ankamagames.boufbowl.resolution.display.presenter
       {
          if(this._movieClipSprite.x == param1.x &&
             this._movieClipSprite.y == param1.z && this._movieClipSprite.z == param1.y) return;
-         this._movieClipSprite.x = Number.MAX_VALUE;
-         this._movieClipSprite.y = Number.MAX_VALUE;
-         this._movieClipSprite.z = Number.MAX_VALUE;
-         this._movieClipSprite.x = param1.x;
-         this._movieClipSprite.y = param1.z;
-         this._movieClipSprite.z = param1.y;
+         if(isNaN(param1.x) || isNaN(param1.y) || isNaN(param1.z))
+            throw new Error("Invalid sprite position");
+         // Sprite3D and the renderer share this vertex. Update all axes before
+         // invalidating its geometry, without transient extreme coordinates.
+         this._movieClipSprite.vertices[0].setValue(param1.x,param1.z,param1.y);
       }
 
       public function get sprite() : Sprite
@@ -85,11 +85,8 @@ package com.ankamagames.boufbowl.resolution.display.presenter
 
       public function invalidate() : void
       {
-         var saved:Point3 = new Point3(this._movieClipSprite.x,this._movieClipSprite.z,this._movieClipSprite.y);
-         // Animation/provider changes can explicitly request a redraw without
-         // moving. Preserve that path while ordinary no-op moves stay cheap.
-         this._movieClipSprite.x = Number.MAX_VALUE;
-         this.position = saved;
+         var vertex:Vertex = this._movieClipSprite.vertices[0];
+         vertex.setValue(vertex.x,vertex.y,vertex.z);
       }
    }
 }

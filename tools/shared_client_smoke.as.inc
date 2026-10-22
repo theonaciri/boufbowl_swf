@@ -35,6 +35,10 @@
             presenter.sprite3d.vertexDirty = false;
             presenter.sprite = new Sprite();
             smokeAssert(presenter.sprite3d.x == 4 && presenter.sprite3d.vertexDirty,"Replacing a stationary sprite did not invalidate it");
+            var rejected:Boolean = false;
+            try { presenter.position = new com.ankamagames.xgaming.utils.math.geom.Point3(NaN,1,2); }
+            catch(invalid:Error) { rejected = true; }
+            smokeAssert(rejected && presenter.sprite3d.x == 4,"Invalid coordinates changed the sprite");
             presenter.destroy();
 
             var zone:com.ankamagames.xgaming.ui.components.TextZone = new com.ankamagames.xgaming.ui.components.TextZone();
@@ -68,6 +72,7 @@
             zone.updateNow();
             smokeAssert(zone.viewportRatio == 1 && zone.controller.verticalScrollPosition == 0,
                "Clearing chat left an invalid text offset");
+            trace("SHARED_SMOKE BENCHMARK " + JSON.stringify(performanceBenchmark()));
             trace("SHARED_SMOKE PASS: movement, invalidation, chat batching and scroll boundaries");
          }
          catch(error:Error)

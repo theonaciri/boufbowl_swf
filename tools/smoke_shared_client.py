@@ -42,7 +42,7 @@ def main():
             source = source.replace('stage.frameRate = frameRateTarget;',
                                     'stage.frameRate = frameRateTarget;\n         setTimeout(runSharedSmoke,4000);', 1)
             pos = source.rfind('   }')
-            source = source[:pos] + (ROOT/'tools/shared_client_smoke.as.inc').read_text() + source[pos:]
+            source = source[:pos] + (ROOT/'tools/shared_client_smoke.as.inc').read_text() + (ROOT/'tools/shared_client_bench.as.inc').read_text() + source[pos:]
             root_patch = work/'BoufbowlClient.as'
             root_patch.write_text(source)
             config = load_config()
