@@ -62,7 +62,8 @@ package com.ankamagames.boufbowl.resolution.display.script.runner
          this._audioController = param5;
          this._config = param7;
          this._updatables = new LinkedList();
-         this._updatables.addItem(param6);
+         // The UI is updated explicitly before scripts, including after reset.
+         // Registering it here as well advanced cutscenes twice per scene tick.
          this._uiController = param6;
          active=this;this.applyReplayTiming();
       }

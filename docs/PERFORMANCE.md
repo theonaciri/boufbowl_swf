@@ -39,3 +39,13 @@ invalidate layout; a failed composition can be retried explicitly. The smoke
 test requires no extra change notifications for 500 unchanged refreshes, and
 requires composition after resizing or changing padding. Identical dimensions
 no longer update the TLF controller or recreate a browser clipping rectangle.
+
+## Cycle 4: advance the scene UI once
+
+SceneController updated the UI explicitly and again through its updatable list.
+Remove the duplicate registration, retaining the explicit update before scripts
+and models and the same behavior after reset. Instrumented playback measured
+47 scene updates and 94 UI updates before this change; the corrected path must
+produce one UI update per scene update and still finish the resolution. The
+corrected replay completed with 143 scene updates and 143 UI updates, emitted
+ResolutionDoneMessage, and reached MATCH_END at the selected 30 FPS stage cap.
