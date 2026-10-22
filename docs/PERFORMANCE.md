@@ -49,3 +49,28 @@ and models and the same behavior after reset. Instrumented playback measured
 produce one UI update per scene update and still finish the resolution. The
 corrected replay completed with 143 scene updates and 143 UI updates, emitted
 ResolutionDoneMessage, and reached MATCH_END at the selected 30 FPS stage cap.
+
+## Cycle 5: cache equivalent character ids
+
+Keep the existing identity lookup and roster iteration order, but remember the
+original map key after matching a decoded Int64 by value. Repeated equivalent-id
+lookups then avoid allocating an iterator and scanning the roster. Add/remove
+operations invalidate the relevant cache entry; reset clears it. Cache keys keep
+both integer words separated, avoiding ambiguous Int64.toString values and
+Number precision loss. Cached keys are checked for equality before use.
+
+The smoke test covers fresh equivalent objects, high/low word collisions,
+negative/high-bit ids, removal and re-adding. With ten characters and 3,000
+preallocated decoded ids, three Ruffle samples took 27–28 ms on the former scan
+path and 6–7 ms with the cache. This remains a microbenchmark, not a claim of
+native or whole-game speedup. The benchmark sources are included in the native
+smoke harness for reproduction on supported hosts.
+
+## Combined validation
+
+The final combined browser replay reached ResolutionDoneMessage and MATCH_END
+with a 30 FPS stage limit and 141 scene/UI updates each. The shared smoke checks
+passed with both the native and Ruffle runtime branches selected in Ruffle.
+The Python suite passed 314 tests with one skipped; both browser-preset tests
+passed. Native application execution remains unverified on this host because
+its ARM64 AIR runtime requires a commercial developer license.

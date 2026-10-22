@@ -233,6 +233,9 @@ headless Linux. `--air-sdk`, `--runtime-libs`, `--root` and
 `--fixture` select overrides. Logs are written under `.local/shared-client`;
 test application ids isolate their preferences from installed clients.
 
+See [shared client performance work](PERFORMANCE.md) for the five optimization
+cycles, regression coverage and focused benchmark results.
+
 Python changes need a backend restart; AS3 changes need an SWF rebuild and client
 restart; simulator changes need a worker rebuild and backend restart. Rebuild
 packages after changing their client/assets or hosted URL. Generated outputs

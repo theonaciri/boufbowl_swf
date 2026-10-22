@@ -65,6 +65,28 @@
             frame.update(500,500);
             smokeAssert(!frame.lastFrameReached && frame.currentFrame >= 3 && frame.currentFrame <= 7,"Animation loop timing changed");
 
+            var scene:com.ankamagames.boufbowl.resolution.display.model.SceneModel = new com.ankamagames.boufbowl.resolution.display.model.SceneModel(
+               new com.ankamagames.boufbowl.resolution.display.model.MobileFactory(),null);
+            var ids:Array = [new com.netease.protobuf.Int64(23,1),new com.netease.protobuf.Int64(3,12),
+               new com.netease.protobuf.Int64(0xffffffff,-1),new com.netease.protobuf.Int64(0x7fffffff,-1)];
+            var actors:Array = [];
+            for(i=0;i<ids.length;i++) actors.push(scene.addBoufbowler(ids[i],null,null));
+            for(i=0;i<500;i++)
+            {
+               var id:com.netease.protobuf.Int64 = ids[i % ids.length];
+               smokeAssert(scene.getBoufbowler(new com.netease.protobuf.Int64(id.low,id.high)) === actors[i % ids.length],
+                  "Equivalent 64-bit ids resolved to different characters");
+            }
+            smokeAssert(scene.removeBoufbowler(new com.netease.protobuf.Int64(23,1)) === actors[0],"Removing by equivalent id failed");
+            rejected = false;
+            try { scene.getBoufbowler(new com.netease.protobuf.Int64(23,1)); }
+            catch(missing:Error) { rejected = true; }
+            smokeAssert(rejected,"Removed character remained in the lookup cache");
+            var replacement:Object = scene.addBoufbowler(new com.netease.protobuf.Int64(23,1),null,null);
+            smokeAssert(scene.getBoufbowler(new com.netease.protobuf.Int64(23,1)) === replacement,"Re-added character reused a stale cache entry");
+            for(i=0;i<ids.length;i++) scene.removeBoufbowler(ids[i]);
+            smokeAssert(scene.boufbowlers().numItems == 0,"Character removals left stale roster entries");
+
             var zone:com.ankamagames.xgaming.ui.components.TextZone = new com.ankamagames.xgaming.ui.components.TextZone();
             zone.defaultFontFamily = "VerdanaCFF";
             zone.defaultFontSize = 12;
@@ -110,6 +132,8 @@
                "Clearing chat left an invalid text offset");
             var benchmark:Object = performanceBenchmark();
             trace("SHARED_SMOKE BENCHMARK moves=" + benchmark.moves + " previousMs=" + benchmark.previousMs + " batchedMs=" + benchmark.batchedMs);
+            benchmark = lookupBenchmark();
+            trace("SHARED_SMOKE LOOKUP lookups=" + benchmark.lookups + " previousMs=" + benchmark.previousMs + " indexedMs=" + benchmark.indexedMs);
             trace("SHARED_SMOKE PASS: movement, invalidation, chat batching and scroll boundaries");
          }
          catch(error:Error)

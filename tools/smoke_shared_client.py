@@ -34,8 +34,7 @@ def main():
             shutil.copyfile(args.fixture, work/'resources/mock_match.json')
             root = ROOT/('android/patches' if mode == 'android' else 'patches')/'BoufbowlClient.as'
             source = root.read_text()
-            source = source.replace('   public class BoufbowlClient',
-                                    '   import flash.utils.getDefinitionByName;\n   import flash.utils.setTimeout;\n\n   public class BoufbowlClient', 1)
+            source = source.replace('\n{', '\n{\n   import flash.utils.getDefinitionByName;\n   import flash.utils.setTimeout;', 1)
             # The application id below isolates this test's preferences.
             source = source.replace('var frameRateTarget:Number = Number(preferences.data.frameRateTarget);',
                                     'preferences.data.frameRateTarget = 30;\n         var frameRateTarget:Number = Number(preferences.data.frameRateTarget);', 1)
