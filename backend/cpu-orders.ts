@@ -177,7 +177,8 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
           const distance=cpuDistance(enemy.position,p),reach=Math.min(safeRange(intercept),speed(enemy,intercept)*time);
           if (distance>reach+cfg.ball.intercept_radius_cells) continue;
           const confidence=distance<=cfg.ball.intercept_radius_cells?1:.35*Math.max(0,1-(distance-cfg.ball.intercept_radius_cells)/(reach+.01));
-          threat=Math.max(threat,confidence*probability(cfg.simulation.catch_base+enemy.stats.precision*cfg.simulation.catch_stat+cfg.simulation.catch_feu));
+          const interceptionStat=cfg.ball.interception_uses_fire_stat ? enemy.stats.agility : enemy.stats.precision;
+          threat=Math.max(threat,confidence*probability(cfg.simulation.catch_base+interceptionStat*cfg.simulation.catch_stat+cfg.simulation.catch_feu));
         }
         laneSurvival*=1-threat;
       }

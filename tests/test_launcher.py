@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 from urllib.request import Request, urlopen
 
 import play
-from tools.build_mock_fixture import build_fixture
+from tests.test_backend import initial_club
 
 
 class LauncherTests(unittest.TestCase):
@@ -29,11 +29,8 @@ class LauncherTests(unittest.TestCase):
                 origin = query['backend'][0]
                 parsed = urlsplit(command[-1])
                 self.assertEqual(origin, f'{parsed.scheme}://{parsed.netloc}')
-                roster = build_fixture()['steps'][0]['decoded']['leftRoster']
-                club = {'clubId': '1', 'clubName': 'Launch Club', 'boufbowler': roster['characters'],
-                        'paletteId': 1, 'firstColor': roster['firstColor'], 'secondColor': roster['secondColor'],
-                        'patternColor': roster['patternColor'], 'sigilBackground': 1, 'sigilCharge': 1,
-                        'isPredefinedClub': False}
+                club = initial_club()
+                club['clubName'] = 'Launch Club'
                 body = json.dumps({'nickname': 'Launcher Check', 'clubs': [club]}).encode()
                 with urlopen(Request(origin + '/api/hello', data=body,
                                      headers={'Content-Type': 'application/json'})) as response:

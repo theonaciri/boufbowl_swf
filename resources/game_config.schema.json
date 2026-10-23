@@ -429,6 +429,18 @@
             },
             "regenerate_between_turns": {
               "type": "boolean"
+            },
+            "restart_recovery": {
+              "type": "string",
+              "enum": [
+                "all",
+                "reserves"
+              ]
+            },
+            "roster_role_limit": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 10
             }
           },
           "additionalProperties": false,
@@ -1187,6 +1199,15 @@
                   "type": "number",
                   "exclusiveMinimum": 0,
                   "maximum": 17
+                },
+                "interception_uses_fire_stat": {
+                  "type": "boolean"
+                },
+                "require_arrival_before_turn_end": {
+                  "type": "boolean"
+                },
+                "contact_cancels_pending_throw": {
+                  "type": "boolean"
                 }
               },
               "additionalProperties": false,
@@ -1582,6 +1603,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -1671,6 +1704,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -1978,6 +2020,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -2067,6 +2121,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -2374,6 +2437,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -2463,6 +2538,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -2770,6 +2854,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -2859,6 +2955,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -3166,6 +3271,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -3255,6 +3372,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -3562,6 +3688,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -3651,6 +3789,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -3958,6 +4105,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -4047,6 +4206,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -4354,6 +4522,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -4443,6 +4623,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -4750,6 +4939,18 @@
                     },
                     "regenerate_between_turns": {
                       "type": "boolean"
+                    },
+                    "restart_recovery": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "reserves"
+                      ]
+                    },
+                    "roster_role_limit": {
+                      "type": "integer",
+                      "minimum": 3,
+                      "maximum": 10
                     }
                   },
                   "additionalProperties": false
@@ -4839,6 +5040,15 @@
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "maximum": 17
+                        },
+                        "interception_uses_fire_stat": {
+                          "type": "boolean"
+                        },
+                        "require_arrival_before_turn_end": {
+                          "type": "boolean"
+                        },
+                        "contact_cancels_pending_throw": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -5242,6 +5452,9 @@
               "maximum": 20
             }
           }
+        },
+        "redirect_enemy_heal": {
+          "type": "boolean"
         }
       }
     },
@@ -5337,6 +5550,9 @@
               "maximum": 20
             }
           }
+        },
+        "redirect_enemy_heal": {
+          "type": "boolean"
         }
       }
     }

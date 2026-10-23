@@ -82,11 +82,17 @@ export function resolveThrows(
     const predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
     const target = predicted?.target ?? action.params.target_position;
     if (!target || !throwInRange({...cfg, ball: {...cfg.ball, base_range: cfg.ball.base_range + ((e as any).range_bonus ?? 0)}}, start, target, e.elements)) continue;
+    const distance = hexDistance(start, target);
+    const landTick = tick + (predicted?.flightTicks ?? Math.max(1, Math.ceil(
+      distance / cfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds,
+    )));
+    // M05: test scheduling before changing possession, consuming the order or
+    // drawing randomness. The last executable tick is max_ticks_per_turn - 1.
+    if ((cfg.ball as any).require_arrival_before_turn_end && landTick >= cfg.tick_system.max_ticks_per_turn) continue;
     consumed.add(e.id);
     e.status.carrying_ball = false;
     state.ball.holder_entity_id = null;
     state.ball.in_flight = true;
-    const distance = hexDistance(start, target);
     const precision = clamp(
       cfg,
       cfg.simulation.throw_base +
@@ -95,16 +101,6 @@ export function resolveThrows(
         distance * cfg.simulation.distance_penalty,
     );
     const success = rng.chance(precision);
-    const landTick =
-      tick +
-      (predicted?.flightTicks ?? Math.max(
-        1,
-        Math.ceil(
-          distance /
-            cfg.ball.throw_speed_cells_per_sec /
-            cfg.tick_system.tick_dt_seconds,
-        ),
-      ));
     const landing = hexRound(target);
     events.push({
       tick,
@@ -209,7 +205,10 @@ export function resolveReceptions(
       const kind = intended ? "air" : "fire";
       if (limited && !attempt(state,e,tick,kind)) continue;
       f.attempted.push(e.id);
-      const base = cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat;
+      // M05: Fire interception and Air reception use different characteristics.
+      // Coefficients remain the recreation's provisional balance parameters.
+      const stat = !intended && (cfg.ball as any).interception_uses_fire_stat ? e.stats.agility : e.stats.precision;
+      const base = cfg.simulation.catch_base + stat * cfg.simulation.catch_stat;
       const bonus = intended ? e.elements.AIR * cfg.simulation.catch_air : e.elements.FEU * cfg.simulation.catch_feu;
       const chance = clamp(cfg, limited ? base + bonus
         : base + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);

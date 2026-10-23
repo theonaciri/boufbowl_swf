@@ -1,4 +1,31 @@
 /** Narrow source overlays keep the archived simulator source untouched. */
+export function guardContactThrows(source: string): string {
+  const before = "fightPlayers(context, tick);";
+  if (source.split(before).length !== 2) throw new Error("Expected one combat call before throws");
+  const replacement = `const carrierBeforeContact = state.ball.holder_entity_id;
+  const contactEventsStart = events.length;
+  fightPlayers(context, tick);
+  // M05: contact interrupts an unlaunched throwing action. No draw or flight
+  // occurs; a pass already airborne remains independent of later contacts.
+  if (cfg.ball.contact_cancels_pending_throw && carrierBeforeContact !== null &&
+      !consumedThrows.has(carrierBeforeContact) && context.actions.some(action =>
+        action.entity_id === carrierBeforeContact && action.action_type === "throw") &&
+      events.slice(contactEventsStart).some(event =>
+        (event.type === "duel" || event.type === "dodge") &&
+        (event.actor === carrierBeforeContact || event.params.defender === carrierBeforeContact))) {
+    consumedThrows.add(carrierBeforeContact);
+    events.push({tick, type: "throw_cancelled", actor: carrierBeforeContact, params: {reason: "contact"}});
+  }`;
+  const start = source.indexOf("const carrierBeforeContact =");
+  if (start >= 0) {
+    const end = source.indexOf("const thrown =", start);
+    if (end < 0 || source.indexOf("const carrierBeforeContact =", start + 1) >= 0)
+      throw new Error("Retained contact guard boundary changed");
+    return source.slice(0, start) + replacement + "\n  " + source.slice(end);
+  }
+  return source.replace(before, replacement);
+}
+
 export function overlay(name: string, source: string): string {
   function replace(before: string, after: string) {
     if (!source.includes(before)) throw new Error(`Simulator ${name} changed: missing ${before}`);
@@ -25,6 +52,7 @@ export function overlay(name: string, source: string): string {
   // max distance = base`);
   }
   if (name === "turnTick") {
+    source = guardContactThrows(source);
     source = 'import {resolveMovementRisk} from "boufbowl-movement-risk";\n' + source;
     replace("  resolvePickups,", "  resolvePickups,\n  hasPendingPickups,");
     replace("resolvePickups(cfg, state, tick, context.onBlockedPickup)", "resolvePickups(cfg, state, tick, context.onBlockedPickup, rng)");

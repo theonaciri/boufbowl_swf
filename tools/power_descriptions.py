@@ -19,7 +19,14 @@ def description(rule, language):
         if len(elements)==4 and len(set(values))==1:
             return f'{values[0]:+g} {each} → {target} ({turn})'
         return ', '.join(f'{amount:+g} {ELEMENTS[language][["TERRE","FEU","AIR","EAU"].index(element)]}' for element,amount in elements.items()) + f' → {target} ({turn})'
-    if rule.get('change_mask'):
+    if rule.get('redirect_enemy_heal'):
+        text = {
+            'fr': "Détourne les soins de l’Eniripsa adverse vers votre équipe. Sans soin adverse : aucun effet.",
+            'en': "Redirects the opposing Eniripsa’s healing to your team. No opposing heal: no effect.",
+            'de': "Lenkt die Heilung des gegnerischen Eniripsa auf dein Team um. Ohne gegnerische Heilung: kein Effekt.",
+            'es': "Redirige la curación del Eniripsa rival a tu equipo. Sin curación rival: ningún efecto.",
+        }[language]
+    elif rule.get('change_mask'):
         text=mask
     elif 'enemy_chance' in rule:
         chance=rule['enemy_chance']*100

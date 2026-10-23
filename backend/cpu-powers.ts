@@ -33,6 +33,9 @@ export function addCPUPower(cfg: any, world: any, order: any, level: string): an
   for (const caster of allies) {
     const rule = cfg.abilities?.[caster.class_name];
     if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id) || protectedIds.has(caster.id)) continue;
+    // Opposing orders are private. Do not choose a counterspell using hidden
+    // orders, or value its obsolete random stat bonus as if it still existed.
+    if (rule.redirect_enemy_heal) continue;
     // Preserve the immediate ball pickup rather than freezing the designated retriever.
     if (world.ball.holder_entity_id === null && caster.id === nearest?.id && hexDistance(caster.position,world.ball.position) <= 3) continue;
     if (rule.target === "allies" && rule.hp < 0 && allies.some((e: any) => e.hp <= -rule.hp)) continue;

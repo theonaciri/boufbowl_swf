@@ -14,6 +14,9 @@ from tools.game_config import load_config
 
 def initial_club():
     roster = build_fixture()["steps"][0]["decoded"]["leftRoster"]
+    # A post-1.0.7 club has ten players but at most three of each role.
+    for player, class_id in zip(roster["characters"], (1, 1, 4, 3, 6, 2, 5, 7, 8, 10)):
+        player["boufbowlerClass"] = class_id
     return {"clubId": "1", "clubName": "Test Club", "boufbowler": roster["characters"], "paletteId": 1,
             "firstColor": roster["firstColor"], "secondColor": roster["secondColor"], "patternColor": roster["patternColor"],
             "sigilBackground": 1, "sigilCharge": 1, "isPredefinedClub": False}
@@ -52,7 +55,9 @@ class BackendTests(unittest.TestCase):
         club = initial_club()
         club['clubName'] = 'Custom legends'
         for player in club['boufbowler']:
-            player.update(boufbowlerClass=14, gender=2, uniqueCharacter=518)
+            player.update(gender=2, uniqueCharacter=518)
+            if player['boufbowlerClass'] == 6:
+                player['boufbowlerClass'] = 14
         self.command(self.alice, 'save_club', club=club)
         saved = self.service.club(self.identity(self.alice))
         # Two chosen shuffles verify roster slots, leader, field classes, and

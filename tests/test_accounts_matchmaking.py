@@ -275,6 +275,7 @@ class AccountMatchmakingTests(unittest.TestCase):
     def test_match_request_uses_explicit_owned_team_and_preserves_roster(self):
         selected=deepcopy(initial_club());selected['clubId']='2';selected['clubName']='Selected second team'
         selected['boufbowler'][0]['boufbowlerClass']=14
+        selected['boufbowler'][4]['boufbowlerClass']=1  # exchange blocker/thrower slots; retain legal roles
         with self.s.store.transaction():
             collection=self.s.collection(self.pid(self.a));collection['clubs']['2']=selected
             self.s.store.save_club(self.pid(self.a),collection)

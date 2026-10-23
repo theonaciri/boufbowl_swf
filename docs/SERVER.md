@@ -45,7 +45,11 @@ existing matches and replays keep their saved rule snapshots. Five active player
 per side, ten-player rosters, and three regular-order elements are protocol limits.
 
 Class powers/probabilities are experimental replacements, not recovered historical
-balance. AIR enables intended airborne receptions, and FEU enables opposing
+balance. The default `forum-semantics-2012-1` profile adds supported role, restart,
+pass and Ecaflip corrections; see the [recovered rules audit](RECOVERED_RULES.md)
+for source IDs, compatibility switches and remaining gaps. New rosters allow at
+most three players per role across all ten members; older invalid clubs must be
+edited before entering a new match. AIR enables intended airborne receptions, and FEU enables opposing
 interception attempts; a live, unstunned
 ball carrier scores beyond the opponent's line. Regeneration restores one HP at
 the configured interval. Missing bodies/stadiums use the fallbacks in the README.

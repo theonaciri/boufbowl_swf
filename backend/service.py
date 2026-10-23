@@ -112,7 +112,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             raise ServiceError("INVALID_COLOR", "Colors require RGB values from 0 to 255")
         return deepcopy(value)
 
-    def normalize_club(self, club):
+    def normalize_club(self, club, *, check_roles=True):
         if not isinstance(club, dict):
             raise ServiceError("INVALID_CLUB", "Club data is required")
         for field,enum in (("sigilBackground","SigilBackground"),("sigilCharge","SigilCharge")):
@@ -139,8 +139,23 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             for field in ("hairColor", "eyeColor", "skinColor"):
                 if field in player:
                     player[field] = self.color(player[field])
+        if check_roles:
+            self.validate_roster_roles(players, self.config["rules"])
         normalized["isPredefinedClub"] = False
         return normalized
+
+    @staticmethod
+    def validate_roster_roles(players, rules):
+        # P10 (1.0.7): the limit applies to the ten-player roster by ROLE,
+        # not independently to each class or only to the five field players.
+        limit = rules["match"].get("roster_role_limit")
+        if limit is None:
+            return  # Preserve saved/custom pre-role rule snapshots.
+        overrides = rules["classes"]["overrides"]
+        roles = Counter(overrides.get(CLASSES[p["boufbowlerClass"] - 1], {}).get(
+            "role", 1 + p["boufbowlerClass"] % 4) for p in players)
+        if max(roles.values(), default=0) > limit:
+            raise ServiceError("ROSTER_ROLE_LIMIT", f"A ten-player roster may contain at most {limit} players of each role")
 
     def collection(self, profile):
         return self.store.profile(profile)["club"]
@@ -167,7 +182,11 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         clubs = body.get("clubs")
         if not isinstance(clubs, list) or not 1 <= len(clubs) <= 20:
             raise ServiceError("INVALID_CLUB", "Provide initial clubs")
-        normalized = {str(c["clubId"]): self.normalize_club(c) for c in clubs}
+        # Older clients submit every gallery/template on first login. Preserve
+        # inactive templates for editing even when their old composition is no
+        # longer playable. The active club and all match entries must be legal.
+        normalized = {str(c["clubId"]): self.normalize_club(c, check_roles=index == 0)
+                      for index, c in enumerate(clubs)}
         collection = {"active": next(iter(normalized)), "clubs": normalized}
         if not self.economy_settings()['free_customization']:
             for club in collection['clubs'].values():
@@ -359,6 +378,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             rules["match"].update(self.tournament_config(tournament).get("match_rules", {}))
         left_club = self.club(left)
         right_club = self.club(right) if right else default_cpu_club(left_club['firstColor'])
+        for club in (left_club, right_club):
+            self.validate_roster_roles(club["boufbowler"], rules)
         team_colors = [deepcopy(left_club['firstColor']), deepcopy(right_club['firstColor'])]
         difference = lambda a,b: sum(abs(a[k]-b[k]) for k in ('r','g','b'))
         if difference(*team_colors)<90:
@@ -594,9 +615,21 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         previous_masks.update(self.match_masks(match))
         previous_uses = match.setdefault("ability_uses", {})
         previous_uses.update({str(e["id"]): e.get("ability_uses_remaining", 0) for e in match["world"]["entities"]})
+        # M02: only reserves rested during the preceding action. Rebuilding the
+        # field must not heal returning players (or resurrect a dead player).
+        previous_hp = {e["id"]: e["hp"] for e in match["world"]["entities"]}
+        roster_health = match.setdefault("roster_health", {})
+        roster_health.update({str(identity): hp for identity, hp in previous_hp.items()})
         match["world"] = self.initial_world(selected_rosters, match["rules"], match["period"] % 2 == 0)
         for entity in match["world"]["entities"]:
             entity["position"] = all_positions[entity["id"]]
+            if match["rules"]["match"].get("restart_recovery") == "reserves":
+                entity["hp"] = previous_hp.get(entity["id"], entity["max_hp"])
+                # Full revival rules are unknown; resting must not implicitly
+                # resurrect a dead reserve. Keep death distinct from knockdown.
+                if roster_health.get(str(entity["id"])) == 0:
+                    entity["hp"] = 0
+                entity["status"]["knocked_down"] = entity["hp"] <= 0
             if entity["class_name"] == "Zobal": entity["zobal_mask"] = previous_masks.get(str(entity["id"]), 1)
             entity["ability_uses_remaining"] = previous_uses.get(str(entity["id"]), match["rules"]["match"]["class_ability_uses"])
         receiving_side = match.get("restart_side")
@@ -604,8 +637,10 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             center = next(z for z in self.match_information(match, receiving_side)["placementZone"] if z["type"] == 1)
             receiver = next(e for e in match["world"]["entities"]
                             if e["team_id"] == receiving_side - 1 and grid(e["position"]) in center["cell"])
-            receiver["status"]["carrying_ball"] = True
-            match["world"]["ball"].update(position=deepcopy(receiver["position"]), holder_entity_id=receiver["id"])
+            match["world"]["ball"]["position"] = deepcopy(receiver["position"])
+            if receiver["hp"] > 0:
+                receiver["status"]["carrying_ball"] = True
+                match["world"]["ball"]["holder_entity_id"] = receiver["id"]
         match["phase"] = "orders"
         match["orders"] = {}
         match["deadline"] = time.time() + match["rules"]["match"]["planning_seconds"]
@@ -816,8 +851,9 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         match["deadline"] = time.time() + match["rules"]["match"]["placement_seconds"]
         match["world"]["ball"] = {"position": {"q": 0, "r": 0}, "holder_entity_id": None, "in_flight": False}
         for entity in match["world"]["entities"]:
-            entity["hp"] = entity["max_hp"]
-            entity["status"] = {"stunned": False, "knocked_down": False, "carrying_ball": False}
+            if match["rules"]["match"].get("restart_recovery") != "reserves":
+                entity["hp"] = entity["max_hp"]
+            entity["status"] = {"stunned": False, "knocked_down": entity["hp"] <= 0, "carrying_ball": False}
         self.broadcast(match, "FIELD_STATE", self.field_state(match))
 
     def end_match(self, match, given_up=None):

@@ -95,7 +95,9 @@ class CPUStrategyTests(unittest.TestCase):
         self.assertIn('goal', [e['type'] for e in response['result']['events']])
 
     def test_switches_across_pitch_to_a_free_teammate(self):
-        enemy_stats = {'strength':22, 'agility':22}
+        # Strong blockers with moderate Fire leave a viable aerial lane.
+        # Fire is now the interception characteristic, separate from Air.
+        enemy_stats = {'strength':22, 'agility':10}
         world = self.tactical_world([(-5,9,{'precision':25,'strength':3,'agility':3}),
                                      (3,-3,{'precision':25,'endurance':5})],
                                     [(-3,9,enemy_stats),(-2,8,enemy_stats),(-4,10,enemy_stats),
@@ -105,6 +107,16 @@ class CPUStrategyTests(unittest.TestCase):
         self.assertGreaterEqual(thrown['params']['start_position']['r'] - thrown['params']['target_position']['r'], 3)
         self.assertEqual(thrown['params']['target_entity_id'], 12)
         self.assertTrue(any(e['type']=='catch' and e['actor']==12 for e in response['result']['events']))
+
+    def test_high_fire_defenders_change_pass_plan_without_reading_orders(self):
+        strategies = []
+        for fire in (10, 22):
+            enemies = [(q,r,{'strength':22,'agility':fire,'precision':10}) for q,r in
+                       [(-3,9),(-2,8),(-4,10),(-1,7),(0,9)]]
+            world = self.tactical_world([(-5,9,{'precision':25,'strength':3,'agility':3}),
+                                         (3,-3,{'precision':25,'endurance':5})], enemies)
+            strategies.append(self.cpu(world)['orders'][0]['cpu_plan']['strategy'])
+        self.assertEqual(strategies, ['pass', 'carry'])
 
     def test_carrier_retreats_or_forces_contact_according_to_stats(self):
         enemy_stats = {'strength':22, 'agility':22}

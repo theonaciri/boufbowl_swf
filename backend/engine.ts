@@ -41,6 +41,8 @@ for await (const line of createInterface({ input: process.stdin })) {
     if (cfg.ball.action_limited_attempts) result.simulation_version += "+ball-attempts-1";
     if (Object.values(cfg.abilities ?? {}).some((r: any) => r.target)) result.simulation_version += "+class-powers-1";
     if (cfg.movement.overextension?.enabled) result.simulation_version += "+movement-risk-1";
+    if (cfg.ball.interception_uses_fire_stat || cfg.ball.require_arrival_before_turn_end || cfg.ball.contact_cancels_pending_throw ||
+        Object.values(cfg.abilities ?? {}).some((r: any) => r.redirect_enemy_heal)) result.simulation_version += "+forum-semantics-2012-1";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + "\n");
   } catch (error) {
     process.stdout.write(JSON.stringify({ ok: false, error: String(error) }) + "\n");

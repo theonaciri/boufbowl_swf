@@ -1,7 +1,7 @@
 {
   "$schema": "./game_config.schema.json",
   "schema_version": 1,
-  "rules_version": "movement-risk-1",
+  "rules_version": "forum-semantics-2012-1",
   "general": {
     "language": "en",
     "server": {
@@ -120,8 +120,10 @@
       "class_ability_uses": 1,
       "placement_seconds": 60,
       "planning_seconds": 60,
-      "max_players_per_role": 5,
-      "regenerate_between_turns": true
+      "max_players_per_role": 3,
+      "regenerate_between_turns": true,
+      "restart_recovery": "reserves",
+      "roster_role_limit": 3
     },
     "client_ranges": {
       "max_distance_factor": 1.33,
@@ -141,7 +143,7 @@
       },
       "overrides": {
         "CRA": {
-          "role": 2,
+          "role": 4,
           "earth": 8,
           "air": 16,
           "fire": 8,
@@ -155,14 +157,14 @@
           "water": 9
         },
         "ENIRIPSA": {
-          "role": 4,
+          "role": 3,
           "earth": 7,
           "air": 12,
           "fire": 10,
           "water": 13
         },
         "ENUTROF": {
-          "role": 1,
+          "role": 4,
           "earth": 11,
           "air": 9,
           "fire": 8,
@@ -176,14 +178,14 @@
           "water": 8
         },
         "IOP": {
-          "role": 3,
+          "role": 1,
           "earth": 17,
           "air": 8,
           "fire": 9,
           "water": 8
         },
         "OSAMODAS": {
-          "role": 4,
+          "role": 2,
           "earth": 10,
           "air": 10,
           "fire": 10,
@@ -197,7 +199,7 @@
           "water": 10
         },
         "ROUBLARD": {
-          "role": 2,
+          "role": 4,
           "earth": 10,
           "air": 12,
           "fire": 14,
@@ -206,7 +208,7 @@
           "regeneration": 3
         },
         "SACRIEUR": {
-          "role": 3,
+          "role": 1,
           "earth": 16,
           "air": 6,
           "fire": 12,
@@ -215,7 +217,7 @@
           "regeneration": 4
         },
         "SADIDA": {
-          "role": 4,
+          "role": 3,
           "earth": 10,
           "air": 8,
           "fire": 9,
@@ -224,7 +226,7 @@
           "regeneration": 2
         },
         "SRAM": {
-          "role": 1,
+          "role": 2,
           "earth": 9,
           "air": 10,
           "fire": 17,
@@ -233,14 +235,14 @@
           "regeneration": 3
         },
         "XELOR": {
-          "role": 2,
+          "role": 4,
           "earth": 7,
           "air": 15,
           "fire": 12,
           "water": 8
         },
         "ZOBAL": {
-          "role": 3,
+          "role": 1,
           "earth": 12,
           "air": 10,
           "fire": 11,
@@ -274,7 +276,10 @@
         "intercept_height_threshold": 1.5,
         "reception_requires_air": true,
         "action_limited_attempts": true,
-        "goal_line_half_width": 15.5
+        "goal_line_half_width": 15.5,
+        "interception_uses_fire_stat": true,
+        "require_arrival_before_turn_end": true,
+        "contact_cancels_pending_throw": true
       },
       "combat": {
         "duel": {
@@ -407,19 +412,7 @@
         "name": "Ecaflip",
         "verified": false,
         "target": "allies",
-        "elements": {
-          "TERRE": 2,
-          "FEU": 2,
-          "AIR": 2,
-          "EAU": 2
-        },
-        "enemy_chance": 0.5,
-        "enemy_elements": {
-          "TERRE": 1,
-          "FEU": 1,
-          "AIR": 1,
-          "EAU": 1
-        }
+        "redirect_enemy_heal": true
       },
       "Zobal": {
         "name": "Zobal",

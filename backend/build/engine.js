@@ -593,11 +593,7 @@ function targetedThrow(cfg, start, receiver, movement) {
 }
 
 // ../../boufbowl_server/src/simulator/ball.ts
-var active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !e.power_locked;
-var point = (e) => e.precise_position ?? fixed(e.position);
-var clamp = (cfg, p) => Math.max(cfg.simulation.probability_min, Math.min(cfg.simulation.probability_max, p));
-var attemptBooks = new WeakMap;
-var actionLimited = (cfg) => cfg.ball.action_limited_attempts === true;
+const active = (e) => e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !e.power_locked, point = (e) => e.precise_position ?? fixed(e.position), clamp = (cfg, p) => Math.max(cfg.simulation.probability_min, Math.min(cfg.simulation.probability_max, p)), attemptBooks = new WeakMap, actionLimited = (cfg) => cfg.ball.action_limited_attempts === !0;
 function usedAttempts(state, id) {
   let book = attemptBooks.get(state);
   if (!book) {
@@ -617,10 +613,10 @@ function remaining(state, e, kind) {
 function attempt(state, e, tick, kind) {
   const used = usedAttempts(state, e.id);
   if (used.lastTick === tick || remaining(state, e, kind) <= 0)
-    return false;
+    return !1;
   used[kind]++;
   used.lastTick = tick;
-  return true;
+  return !0;
 }
 function groundCandidate(cfg, state, e) {
   return active(e) && withinRadius(point(e), fixed(state.ball.position), cfg.ball.pickup_range) && (remaining(state, e, "air") > 0 || remaining(state, e, "fire") > 0);
@@ -636,21 +632,17 @@ function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movem
     const e = state.entities.find((e) => e.id === action.entity_id);
     if (!e || !active(e) || state.ball.holder_entity_id !== e.id || !canThrow(e.elements))
       continue;
-    const targetEntity = state.entities.find((e) => e.id === action.params.target_entity_id);
-    const start = fractional(point(e));
-    const predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
-    const target = predicted?.target ?? action.params.target_position;
+    const targetEntity = state.entities.find((e) => e.id === action.params.target_entity_id), start = fractional(point(e)), predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : void 0, target = predicted?.target ?? action.params.target_position;
     if (!target || !throwInRange({ ...cfg, ball: { ...cfg.ball, base_range: cfg.ball.base_range + (e.range_bonus ?? 0) } }, start, target, e.elements))
       continue;
+    const distance = hexDistance(start, target), landTick = tick + (predicted?.flightTicks ?? Math.max(1, Math.ceil(distance / cfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds)));
+    if (cfg.ball.require_arrival_before_turn_end && landTick >= cfg.tick_system.max_ticks_per_turn)
+      continue;
     consumed.add(e.id);
-    e.status.carrying_ball = false;
+    e.status.carrying_ball = !1;
     state.ball.holder_entity_id = null;
-    state.ball.in_flight = true;
-    const distance = hexDistance(start, target);
-    const precision = clamp(cfg, cfg.simulation.throw_base + e.stats.precision * cfg.simulation.throw_stat + e.elements.AIR * cfg.probabilities.air_precision_per_action - distance * cfg.simulation.distance_penalty);
-    const success = rng.chance(precision);
-    const landTick = tick + (predicted?.flightTicks ?? Math.max(1, Math.ceil(distance / cfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds)));
-    const landing = hexRound(target);
+    state.ball.in_flight = !0;
+    const precision = clamp(cfg, cfg.simulation.throw_base + e.stats.precision * cfg.simulation.throw_stat + e.elements.AIR * cfg.probabilities.air_precision_per_action - distance * cfg.simulation.distance_penalty), success = rng.chance(precision), landing = hexRound(target);
     events.push({
       tick,
       type: "throw",
@@ -685,13 +677,10 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
   const f = flights.at(-1);
   if (!f || tick < f.startTick || tick > f.landTick)
     return events;
-  const duration = f.landTick - f.startTick, elapsed = tick - f.startTick;
-  const end = fixed(f.target);
-  const pos = {
+  const duration = f.landTick - f.startTick, elapsed = tick - f.startTick, end = fixed(f.target), pos = {
     q: f.start.q + Math.trunc((end.q - f.start.q) * elapsed / duration),
     r: f.start.r + Math.trunc((end.r - f.start.r) * elapsed / duration)
-  };
-  const height = Math.trunc(4 * Math.round(cfg.ball.arc_height_cells * SCALE) * elapsed * (duration - elapsed) / (duration * duration));
+  }, height = Math.trunc(4 * Math.round(cfg.ball.arc_height_cells * SCALE) * elapsed * (duration - elapsed) / (duration * duration));
   state.ball.position = hexRound(fractional(pos));
   events.push({
     tick,
@@ -699,10 +688,8 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
     params: { position: fractional(pos), height: height / SCALE }
   });
   if (elapsed > 0 && height <= Math.round(cfg.ball.intercept_height_threshold * SCALE) && (f.success || actionLimited(cfg))) {
-    const thrower = state.entities.find((e) => e.id === f.thrower);
-    const limited = actionLimited(cfg);
-    const reachable = state.entities.filter((e) => active(e) && e.id !== f.thrower && (!limited || e.id === f.targetEntityId || e.team_id !== thrower.team_id) && withinRadius(point(e), pos, (limited ? e.id === f.targetEntityId : e.team_id === thrower.team_id) ? cfg.ball.catch_radius_cells : cfg.ball.intercept_radius_cells)).sort((a, b) => distanceSquared(point(a), pos) - distanceSquared(point(b), pos) || a.id - b.id);
-    if (!limited && onBlockedReception && (cfg.ball.reception_requires_air ?? true)) {
+    const thrower = state.entities.find((e) => e.id === f.thrower), limited = actionLimited(cfg), reachable = state.entities.filter((e) => active(e) && e.id !== f.thrower && (!limited || e.id === f.targetEntityId || e.team_id !== thrower.team_id) && withinRadius(point(e), pos, (limited ? e.id === f.targetEntityId : e.team_id === thrower.team_id) ? cfg.ball.catch_radius_cells : cfg.ball.intercept_radius_cells)).sort((a, b) => distanceSquared(point(a), pos) - distanceSquared(point(b), pos) || a.id - b.id);
+    if (!limited && onBlockedReception && (cfg.ball.reception_requires_air ?? !0)) {
       const teams = new Set(reachable.map((e) => e.team_id));
       for (const team of teams) {
         const teammates = reachable.filter((e) => e.team_id === team);
@@ -710,20 +697,17 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
           onBlockedReception(teammates[0].id);
       }
     }
-    const candidates = reachable.filter((e) => limited ? e.id === f.targetEntityId ? f.success && remaining(state, e, "air") > 0 : remaining(state, e, "fire") > 0 : (!(cfg.ball.reception_requires_air ?? true) || e.elements.AIR >= 1) && !f.attempted.includes(e.id));
+    const candidates = reachable.filter((e) => limited ? e.id === f.targetEntityId ? f.success && remaining(state, e, "air") > 0 : remaining(state, e, "fire") > 0 : (!(cfg.ball.reception_requires_air ?? !0) || e.elements.AIR >= 1) && !f.attempted.includes(e.id));
     for (const e of candidates) {
-      const intended = e.id === f.targetEntityId;
-      const kind = intended ? "air" : "fire";
+      const intended = e.id === f.targetEntityId, kind = intended ? "air" : "fire";
       if (limited && !attempt(state, e, tick, kind))
         continue;
       f.attempted.push(e.id);
-      const base = cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat;
-      const bonus = intended ? e.elements.AIR * cfg.simulation.catch_air : e.elements.FEU * cfg.simulation.catch_feu;
-      const chance = clamp(cfg, limited ? base + bonus : base + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
+      const stat = !intended && cfg.ball.interception_uses_fire_stat ? e.stats.agility : e.stats.precision, base = cfg.simulation.catch_base + stat * cfg.simulation.catch_stat, bonus = intended ? e.elements.AIR * cfg.simulation.catch_air : e.elements.FEU * cfg.simulation.catch_feu, chance = clamp(cfg, limited ? base + bonus : base + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
       if (rng.chance(chance)) {
-        e.status.carrying_ball = true;
+        e.status.carrying_ball = !0;
         state.ball.holder_entity_id = e.id;
-        state.ball.in_flight = false;
+        state.ball.in_flight = !1;
         state.ball.position = { ...e.position };
         events.push({
           tick,
@@ -742,7 +726,7 @@ function resolveReceptions(cfg, state, rng, tick, flights, onBlockedReception) {
     }
   }
   if (tick === f.landTick) {
-    state.ball.in_flight = false;
+    state.ball.in_flight = !1;
     state.ball.position = { ...f.target };
     events.push({
       tick,
@@ -757,12 +741,12 @@ function resolvePickups(cfg, state, tick, onBlockedPickup, rng) {
     return [];
   const candidates = state.entities.filter((e) => {
     if (!active(e) || !withinRadius(point(e), fixed(state.ball.position), cfg.ball.pickup_range))
-      return false;
+      return !1;
     if (!canPickup(cfg, e.elements)) {
       onBlockedPickup?.(e.id);
-      return false;
+      return !1;
     }
-    return true;
+    return !0;
   }).sort((a, b) => distanceSquared(point(a), fixed(state.ball.position)) - distanceSquared(point(b), fixed(state.ball.position)) || a.id - b.id);
   if (actionLimited(cfg)) {
     const events = [];
@@ -772,7 +756,7 @@ function resolvePickups(cfg, state, tick, onBlockedPickup, rng) {
         continue;
       const chance = clamp(cfg, cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat + e.elements.AIR * cfg.simulation.catch_air + e.elements.FEU * cfg.simulation.catch_feu);
       if (!rng)
-        throw new Error("Pickup attempts require the turn RNG");
+        throw Error("Pickup attempts require the turn RNG");
       const success = rng.chance(chance);
       events.push({
         tick,
@@ -781,7 +765,7 @@ function resolvePickups(cfg, state, tick, onBlockedPickup, rng) {
         params: { position: { ...e.position }, pickup_chance: chance, attempt: usedAttempts(state, e.id).air + usedAttempts(state, e.id).fire, action: kind }
       });
       if (success) {
-        e.status.carrying_ball = true;
+        e.status.carrying_ball = !0;
         state.ball.holder_entity_id = e.id;
         state.ball.position = { ...e.position };
         break;
@@ -792,7 +776,7 @@ function resolvePickups(cfg, state, tick, onBlockedPickup, rng) {
   const e = candidates[0];
   if (!e)
     return [];
-  e.status.carrying_ball = true;
+  e.status.carrying_ball = !0;
   state.ball.holder_entity_id = e.id;
   state.ball.position = { ...e.position };
   return [
@@ -834,7 +818,20 @@ function executeTick(context, tick) {
   const pausedThisTick = new Set([...context.movements].filter(([, movement]) => movement.pause > 0).map(([id]) => id));
   const steps = movePlayers(context, tick);
   resolveMovementRisk(context, tick);
+  const carrierBeforeContact = state.ball.holder_entity_id;
+  const contactEventsStart = events.length;
   fightPlayers(context, tick);
+  // M05: contact interrupts an unlaunched throwing action. No draw or flight
+  // occurs; a pass already airborne remains independent of later contacts.
+  if (cfg.ball.contact_cancels_pending_throw && carrierBeforeContact !== null &&
+      !consumedThrows.has(carrierBeforeContact) && context.actions.some(action =>
+        action.entity_id === carrierBeforeContact && action.action_type === "throw") &&
+      events.slice(contactEventsStart).some(event =>
+        (event.type === "duel" || event.type === "dodge") &&
+        (event.actor === carrierBeforeContact || event.params.defender === carrierBeforeContact))) {
+    consumedThrows.add(carrierBeforeContact);
+    events.push({tick, type: "throw_cancelled", actor: carrierBeforeContact, params: {reason: "contact"}});
+  }
   const thrown = (context.throwResolver ?? resolveThrows)(cfg, state, actions, rng, tick, consumedThrows, context.movements);
   events.push(...thrown.events);
   flights.push(...thrown.flights);
@@ -912,16 +909,12 @@ function hasPendingWork(context, tick, steps, pausedThisTick) {
 // ../../boufbowl_server/src/simulator/abilities.ts
 function resolveAbilities(cfg, state, actions, rng) {
   const activations = actions.filter((a) => a.action_type === "ability").map((action) => {
-    const caster = state.entities.find((e) => e.id === action.entity_id);
-    const rule = caster && cfg.abilities?.[caster.class_name];
+    const caster = state.entities.find((e) => e.id === action.entity_id), rule = caster && cfg.abilities?.[caster.class_name];
     return caster && rule && caster.hp > 0 && !caster.status.knocked_down && !caster.status.stunned && (caster.ability_uses_remaining ?? 0) > 0 ? { caster, rule, action } : null;
-  }).filter((a) => a !== null);
-  const living = new Set(state.entities.filter((e) => e.hp > 0).map((e) => e.id));
-  const events = [];
-  const teams = new Set;
+  }).filter((a) => a !== null), living = new Set(state.entities.filter((e) => e.hp > 0).map((e) => e.id)), redirectors = activations.filter(({ rule }) => rule.redirect_enemy_heal), events = [], teams = new Set;
   for (const { caster, rule, action } of activations) {
     if (rule.target && teams.has(caster.team_id))
-      throw new Error("Only one class power per team per turn");
+      throw Error("Only one class power per team per turn");
     teams.add(caster.team_id);
     caster.ability_uses_remaining--;
     const targets = [];
@@ -944,7 +937,16 @@ function resolveAbilities(cfg, state, actions, rng) {
       } });
       continue;
     }
-    caster.power_locked = true;
+    caster.power_locked = !0;
+    if (rule.redirect_enemy_heal) {
+      events.push({ tick: 0, type: "ability", actor: caster.id, params: {
+        name: rule.name,
+        targets: [],
+        redirected_healers: activations.filter((a) => a.caster.team_id !== caster.team_id && a.caster.class_name === "Eniripsa" && a.rule.hp > 0).map((a) => a.caster.id),
+        uses_remaining: caster.ability_uses_remaining
+      } });
+      continue;
+    }
     if (rule.change_mask) {
       caster.zobal_mask = action.params.zobal_mask;
       events.push({ tick: 0, type: "ability", actor: caster.id, params: {
@@ -955,12 +957,9 @@ function resolveAbilities(cfg, state, actions, rng) {
       } });
       continue;
     }
-    const enemyRoll = rule.enemy_chance !== undefined ? rng.nextFloat() : undefined;
-    const enemy = enemyRoll !== undefined ? enemyRoll < rule.enemy_chance : rule.target === "enemies";
-    const bonus = enemyRoll !== undefined && enemy ? rule.enemy_elements : rule.elements;
-    const hpDeltas = {};
+    const enemyRoll = rule.enemy_chance !== void 0 ? rng.nextFloat() : void 0, enemy = enemyRoll !== void 0 ? enemyRoll < rule.enemy_chance : rule.target === "enemies", bonus = enemyRoll !== void 0 && enemy ? rule.enemy_elements : rule.elements, hpDeltas = {}, redirector = caster.class_name === "Eniripsa" && rule.hp > 0 ? redirectors.find((a) => a.caster.team_id !== caster.team_id) : void 0;
     for (const target of state.entities) {
-      if (!living.has(target.id) || target.team_id !== caster.team_id !== enemy)
+      if (!living.has(target.id) || (redirector ? target.team_id !== redirector.caster.team_id : target.team_id !== caster.team_id !== enemy))
         continue;
       targets.push(target.id);
       const before = target.hp;
@@ -982,8 +981,9 @@ function resolveAbilities(cfg, state, actions, rng) {
       range: rule.range ?? 0,
       attack: rule.attack ?? 0,
       target: enemy ? "enemies" : "allies",
-      ...enemyRoll !== undefined ? { random_draw: enemyRoll } : {},
-      uses_remaining: caster.ability_uses_remaining
+      ...enemyRoll !== void 0 ? { random_draw: enemyRoll } : {},
+      uses_remaining: caster.ability_uses_remaining,
+      ...redirector ? { redirected_by: redirector.caster.id } : {}
     } });
   }
   return events;
@@ -1557,8 +1557,8 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
           const distance = cpuDistance(enemy.position, p), reach = Math.min(safeRange(intercept), speed(enemy, intercept) * time);
           if (distance > reach + cfg.ball.intercept_radius_cells)
             continue;
-          const confidence = distance <= cfg.ball.intercept_radius_cells ? 1 : 0.35 * Math.max(0, 1 - (distance - cfg.ball.intercept_radius_cells) / (reach + 0.01));
-          threat = Math.max(threat, confidence * probability(cfg.simulation.catch_base + enemy.stats.precision * cfg.simulation.catch_stat + cfg.simulation.catch_feu));
+          const confidence = distance <= cfg.ball.intercept_radius_cells ? 1 : 0.35 * Math.max(0, 1 - (distance - cfg.ball.intercept_radius_cells) / (reach + 0.01)), interceptionStat = cfg.ball.interception_uses_fire_stat ? enemy.stats.agility : enemy.stats.precision;
+          threat = Math.max(threat, confidence * probability(cfg.simulation.catch_base + interceptionStat * cfg.simulation.catch_stat + cfg.simulation.catch_feu));
         }
         laneSurvival *= 1 - threat;
       }
@@ -1749,6 +1749,8 @@ function addCPUPower(cfg, world, order, level) {
     const rule = cfg.abilities?.[caster.class_name];
     if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id) || protectedIds.has(caster.id))
       continue;
+    if (rule.redirect_enemy_heal)
+      continue;
     if (world.ball.holder_entity_id === null && caster.id === nearest?.id && hexDistance(caster.position, world.ball.position) <= 3)
       continue;
     if (rule.target === "allies" && rule.hp < 0 && allies.some((e) => e.hp <= -rule.hp))
@@ -1823,6 +1825,8 @@ for await (const line of createInterface({ input: process.stdin })) {
       result.simulation_version += "+class-powers-1";
     if (cfg.movement.overextension?.enabled)
       result.simulation_version += "+movement-risk-1";
+    if (cfg.ball.interception_uses_fire_stat || cfg.ball.require_arrival_before_turn_end || cfg.ball.contact_cancels_pending_throw ||
+        Object.values(cfg.abilities ?? {}).some(r => r.redirect_enemy_heal)) result.simulation_version += "+forum-semantics-2012-1";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + `
 `);
   } catch (error) {

@@ -10,6 +10,9 @@ export function resolveAbilities(cfg: GameConfig, state: WorldState, actions: Ac
       (caster.ability_uses_remaining ?? 0) > 0 ? {caster, rule, action} : null;
   }).filter(a => a !== null);
   const living = new Set(state.entities.filter(e => e.hp > 0).map(e => e.id));
+  // Resolve the documented Ecaflip/Eniripsa pairing from both submitted orders,
+  // before processing actors by ID. Other inversion combinations are unknown.
+  const redirectors = activations.filter(({rule}) => rule.redirect_enemy_heal);
   const events: Event[] = [];
   const teams = new Set<number>();
   for (const {caster, rule, action} of activations) {
@@ -31,6 +34,14 @@ export function resolveAbilities(cfg: GameConfig, state: WorldState, actions: Ac
       continue;
     }
     caster.power_locked = true;
+    if (rule.redirect_enemy_heal) {
+      events.push({tick: 0, type: "ability", actor: caster.id, params: {
+        name: rule.name, targets: [], redirected_healers: activations.filter(a =>
+          a.caster.team_id !== caster.team_id && a.caster.class_name === "Eniripsa" && a.rule.hp > 0
+        ).map(a => a.caster.id), uses_remaining: caster.ability_uses_remaining,
+      }});
+      continue;
+    }
     if (rule.change_mask) {
       caster.zobal_mask = action.params.zobal_mask;
       events.push({tick: 0, type: "ability", actor: caster.id, params: {
@@ -42,8 +53,12 @@ export function resolveAbilities(cfg: GameConfig, state: WorldState, actions: Ac
     const enemy = enemyRoll !== undefined ? enemyRoll < rule.enemy_chance : rule.target === "enemies";
     const bonus = enemyRoll !== undefined && enemy ? rule.enemy_elements : rule.elements;
     const hpDeltas: Record<number, number> = {};
+    const redirector = caster.class_name === "Eniripsa" && rule.hp > 0
+      ? redirectors.find(a => a.caster.team_id !== caster.team_id) : undefined;
     for (const target of state.entities as any[]) {
-      if (!living.has(target.id) || (target.team_id !== caster.team_id) !== enemy) continue;
+      if (!living.has(target.id) || (redirector
+        ? target.team_id !== redirector.caster.team_id
+        : (target.team_id !== caster.team_id) !== enemy)) continue;
       targets.push(target.id);
       const before = target.hp;
       target.hp = Math.max(0, Math.min(target.max_hp, target.hp + (rule.hp ?? 0)));
@@ -62,6 +77,7 @@ export function resolveAbilities(cfg: GameConfig, state: WorldState, actions: Ac
       range: rule.range ?? 0, attack: rule.attack ?? 0, target: enemy ? "enemies" : "allies",
       ...(enemyRoll !== undefined ? {random_draw: enemyRoll} : {}),
       uses_remaining: caster.ability_uses_remaining,
+      ...(redirector ? {redirected_by: redirector.caster.id} : {}),
     }});
   }
   return events;

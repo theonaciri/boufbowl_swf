@@ -69,13 +69,18 @@ class ClassPowerTests(unittest.TestCase):
                     self.assertEqual(item['effectDeltas'],list(dict.fromkeys(expected_numbers)))
 
     def test_ecaflip_both_outcomes_and_reproducibility(self):
+        # Recorded experimental rules retain the former random stat ability.
+        rules = deepcopy(self.rules)
+        rules['abilities']['Ecaflip'] = {'name':'Ecaflip', 'verified':False, 'target':'allies',
+            'elements':dict.fromkeys(('TERRE','FEU','AIR','EAU'),2), 'enemy_chance':.5,
+            'enemy_elements':dict.fromkeys(('TERRE','FEU','AIR','EAU'),1)}
         world=self.world('Ecaflip');outcomes=set()
         for seed in range(1,100):
-            response=self.run_power(world,seed=seed);result=response['result']
+            response=self.run_power(world,seed=seed,rules=rules);result=response['result']
             event=result['events'][0]['params'];outcomes.add(event['target'])
             self.assertEqual(event['elements'],dict.fromkeys(('TERRE','FEU','AIR','EAU'),1 if event['target']=='enemies' else 2))
-            self.assertEqual(self.rules['abilities']['Ecaflip']['enemy_chance'],.5)
-            repeated=self.engine.simulate(world,response['orders'],1,seed,self.rules,(False,False))['result']
+            self.assertEqual(rules['abilities']['Ecaflip']['enemy_chance'],.5)
+            repeated=self.engine.simulate(world,response['orders'],1,seed,rules,(False,False))['result']
             self.assertEqual(result,repeated)
         self.assertEqual(outcomes,{'allies','enemies'})
 
