@@ -130,3 +130,42 @@ Wine/GPU measurements or a promise to fix 12 FPS on a player's machine. See the
 trace, limitations and reproduction. `play.sh --fps-probe 240` now isolates a
 blank counter through the user's standalone Flash/Wine path without game/backend
 startup, allowing its steady 60 FPS ceiling to be investigated separately.
+
+## 2D possession animation speed
+
+`BoufbowlerFieldRepresentationMediator.boufbowlerUpdated` passes the model to
+`BoufbowlerFieldRepresentationView.updateBoufbowler`, which sets `hasBall`.
+Previously every true assignment called `gotoAndPlay(1)`. The embedded field
+sprite therefore advanced at the stage rate and restarted on unrelated character
+updates. Its 24-frame timeline took 960 ms at the authored 25 FPS, but only
+400 ms at 60 FPS and 100 ms at 240 FPS. The front/back ball children each have
+one frame; the parent timeline supplies the animation.
+
+The shared view override stops automatic playback and selects the authored frame
+from elapsed milliseconds. Its loop remains 960 ms at every requested display
+rate. Repeated possession assignments preserve phase; possession loss hides both
+halves and removes the frame listener. Removal from the stage pauses the clock,
+and reattachment resumes it. Offstage assignments wait for attachment to start.
+Both desktop/web and Android select this same override. Match state and
+resolution clocks remain owned by their existing paths.
+
+Run `python3 -m tools.smoke_possession_client --serve --port 9919`, open the
+printed `/probe.html?replay=1` URL, and call
+`document.querySelector('ruffle-player').ruffle().callExternalInterface('probePossession')`.
+This tests the real tactical view and embedded asset with a temporary controlled
+clock, checking two loops at 25/30/50/60/90/120/144/240 Hz, the 39/40 ms frame
+boundary, repeated assignments, possession loss and stage removal/reattachment.
+The test hooks exist only in disposable diagnostic SWFs under `.local/client-probes`.
+`probePossessionLive(rate)` resets the real-time marker and requests that stage
+rate asynchronously; subsequent calls with zero return elapsed time and the
+current frame. After the field loads, run
+`await import('/tools/possession_client_timing.js').then(m => m.checkPossessionTiming())`
+in the browser console for live-clock checks at 25/60/120/240 FPS. All 12 recorded
+samples selected the correct frame for their last update time. The software
+browser host left samples 291–308 ms behind that update, so these are
+clock correctness checks, not achieved display-rate measurements. The live
+probe schedules stage changes outside ExternalInterface; changing it directly
+inside the callback caused a recursive Ruffle core-lock error during diagnosis.
+Browser execution is Ruffle validation, not native Wine/Flash or Android device
+validation. Timing results are recorded in
+[`studies/framerate/possession-results.json`](../studies/framerate/possession-results.json).

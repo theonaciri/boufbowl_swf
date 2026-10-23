@@ -1,0 +1,220 @@
+{
+  "date": "2026-10-23",
+  "runtime": "Ruffle 0.8.0-nightly.2026.10.13, wgpu-webgl",
+  "scope": "Real tactical view and embedded 24-frame asset; diagnostic clock hooks are not shipped",
+  "controlled": {
+    "asset": {
+      "back": false,
+      "backFrames": 1,
+      "elapsed": 0,
+      "frame": 1,
+      "front": false,
+      "frontFrames": 1,
+      "hasBall": false,
+      "running": false,
+      "started": 0,
+      "totalFrames": 24
+    },
+    "detachResume": true,
+    "frameBoundary": true,
+    "loss": true,
+    "offstageAssignment": true,
+    "ok": true,
+    "rates": [
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 25,
+        "updates": 49
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 30,
+        "updates": 59
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 50,
+        "updates": 97
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 60,
+        "updates": 117
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 90,
+        "updates": 174
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 120,
+        "updates": 232
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 144,
+        "updates": 278
+      },
+      {
+        "finalFrame": 1,
+        "periodMs": 960,
+        "target": 240,
+        "updates": 462
+      }
+    ],
+    "ready": true,
+    "repeatedAssignment": true
+  },
+  "checks": {
+    "sharedPython": "8 passed",
+    "gameRebuild": "passed",
+    "desktopRoot": "compiled",
+    "androidRoot": "compiled",
+    "sharedSmokeRuffle": "passed",
+    "sharedSmokeNativeBranchInRuffle": "passed"
+  },
+  "nativeRuntime": "Not executed: Wine unavailable on this host. AIR execution previously license gated.",
+  "liveClock": {
+    "status": "passed",
+    "rates": [
+      {
+        "target": 25,
+        "samples": [
+          {
+            "elapsedMs": 910,
+            "stageRate": 25,
+            "frame": 16,
+            "expectedFrame": 16,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 98107,
+            "renderAgeMs": 291
+          },
+          {
+            "elapsedMs": 1550,
+            "stageRate": 25,
+            "frame": 8,
+            "expectedFrame": 8,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 98737,
+            "renderAgeMs": 301
+          },
+          {
+            "elapsedMs": 2184,
+            "stageRate": 25,
+            "frame": 24,
+            "expectedFrame": 24,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 99378,
+            "renderAgeMs": 294
+          }
+        ]
+      },
+      {
+        "target": 60,
+        "samples": [
+          {
+            "elapsedMs": 1196,
+            "stageRate": 60,
+            "frame": 23,
+            "expectedFrame": 23,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 100613,
+            "renderAgeMs": 297
+          },
+          {
+            "elapsedMs": 1499,
+            "stageRate": 60,
+            "frame": 7,
+            "expectedFrame": 7,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 100916,
+            "renderAgeMs": 297
+          },
+          {
+            "elapsedMs": 2103,
+            "stageRate": 60,
+            "frame": 22,
+            "expectedFrame": 22,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 101522,
+            "renderAgeMs": 295
+          }
+        ]
+      },
+      {
+        "target": 120,
+        "samples": [
+          {
+            "elapsedMs": 897,
+            "stageRate": 120,
+            "frame": 15,
+            "expectedFrame": 15,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 109786,
+            "renderAgeMs": 306
+          },
+          {
+            "elapsedMs": 1506,
+            "stageRate": 120,
+            "frame": 7,
+            "expectedFrame": 7,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 110405,
+            "renderAgeMs": 296
+          },
+          {
+            "elapsedMs": 2116,
+            "stageRate": 120,
+            "frame": 22,
+            "expectedFrame": 22,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 111008,
+            "renderAgeMs": 303
+          }
+        ]
+      },
+      {
+        "target": 240,
+        "samples": [
+          {
+            "elapsedMs": 1203,
+            "stageRate": 240,
+            "frame": 23,
+            "expectedFrame": 23,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 112240,
+            "renderAgeMs": 299
+          },
+          {
+            "elapsedMs": 1817,
+            "stageRate": 240,
+            "frame": 14,
+            "expectedFrame": 14,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 112845,
+            "renderAgeMs": 308
+          },
+          {
+            "elapsedMs": 2121,
+            "stageRate": 240,
+            "frame": 22,
+            "expectedFrame": 22,
+            "frameSelectionCorrect": true,
+            "lastUpdateTime": 113159,
+            "renderAgeMs": 299
+          }
+        ]
+      }
+    ],
+    "limitation": "Requested rates are not achieved presentation FPS. Last update was 291–308 ms before sampling on this software browser host.",
+    "bridge": "Stage changes are deferred outside ExternalInterface. Direct changes during the callback caused a recursive Ruffle core-lock error during diagnosis."
+  }
+}

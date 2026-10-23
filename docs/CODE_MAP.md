@@ -20,6 +20,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Sprite redraw | `BoufbowlerPresenter.positionUpdated` → `MovieClipSpritePresenter.as` → shared Away3D vertex | shared smoke; move/no-op/invalidate/swap |
 | High-refresh/interpolation study | isolated `studies/framerate/study.py` → diagnostic SWFs, optional production-policy validation | [study and reproduction](../studies/framerate/REPORT.md) |
 | Animation timing | `FrameController.as` → frame/completion events → controlled movie clips | shared smoke; loop, completion, no-skip |
+| 2D possession marker | `BoufbowlerUpdatedEvent` → field representation mediator/view → elapsed-time 25 Hz timeline | `tools.smoke_possession_client`; [timing and reproduction](PERFORMANCE.md#2d-possession-animation-speed) |
 | Character lookup | `SceneModel.getBoufbowler` → identity map / equivalent-ID cache | shared smoke; full 64-bit IDs and removal |
 | Downloads/publication | `tools/build_players.py` → platform packages → `tools/website/build.mjs` | `bun run check:site` + package inspection |
 
