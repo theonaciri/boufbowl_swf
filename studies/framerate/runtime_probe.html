@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>Blank Flash runtime probe</title>
+<style>body{margin:0;background:#17231f;color:white;font:14px system-ui}#game{width:640px;height:375px}</style><div id="game"></div><pre id="out"></pre>
+<script src="/vendor/ruffle/ruffle.js"></script><script>
+const query=new URLSearchParams(location.search),player=RufflePlayer.newest().createPlayer();document.getElementById('game').append(player);player.style.cssText='width:100%;height:100%';
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const call=()=>player.ruffle().callExternalInterface('fpsProbeStats');
+const ready=(async()=>{await player.ruffle().load({url:query.get('swf'),autoplay:'on',splashScreen:false,allowScriptAccess:true,quality:'low',unmuteOverlay:'hidden'});for(let i=0;i<100;i++){try{if(call())return}catch{}await sleep(100)}throw Error('Probe did not initialize')})();
+async function runRuntimeProbe(){await ready;await sleep(500);const before=call(),begin=performance.now();let callbacks=0,active=true;function frame(){callbacks++;if(active)requestAnimationFrame(frame)}requestAnimationFrame(frame);await sleep(3000);active=false;const after=call(),wallMs=performance.now()-begin;const result={before,after,wallMs,frameEventHz:(after.frames-before.frames)*1000/wallMs,rafHz:callbacks*1000/wallMs,userAgent:navigator.userAgent,note:'Ruffle browser result, not Wine or physical display presentation'};document.getElementById('out').textContent=JSON.stringify(result,null,2);return result}
+</script>

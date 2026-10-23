@@ -1,0 +1,22 @@
+{
+  "stats": {
+    "fps": 60,
+    "preferred": 0,
+    "ruffle": false
+  },
+  "smoke": {
+    "fps": 30,
+    "lookup": {
+      "indexedMs": 6,
+      "lookups": 3000,
+      "previousMs": 28
+    },
+    "ok": true,
+    "runtime": "native-path",
+    "session": {
+      "additions": 5,
+      "ok": true,
+      "removals": 4
+    }
+  }
+}

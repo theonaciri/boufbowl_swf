@@ -115,3 +115,6 @@ Use a fresh trace for each replay. `runtime=flash` exercises the native policy
 branch inside Ruffle; it is not a native-runtime test. These probes count the
 actual stage rates seen by SceneController, not just the requested rate. Native
 hardware and high-refresh display validation remain necessary before publication.
+
+The running-player follow-up and blank Wine runtime probe are documented in
+[RENDERING.md](RENDERING.md); its artifacts are under `rendering/`.

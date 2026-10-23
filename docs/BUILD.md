@@ -84,6 +84,11 @@ explains individual patches.
 `play.sh` launches existing files without compiling them. Useful options:
 `--mode tutorial`, `--mode menus`, `--mode mock --scene-3d`,
 `--lang fr`, `--profile Alice`, and `--show-fps`.
+`--fps-probe 240` launches a cached blank counter through the same Wine prefix
+and driver path without starting the game or local backend. This isolates the
+runtime ceiling from scene performance; it is mutually exclusive with
+`--fps-experiment`. Its build uses the normal installed Java/FFDec tools.
+
 The in-game FPS slider requests 25–240 FPS; runtime/display limits still apply.
 The overlay displays `FPS: measured / target`, so `FPS: 35 / 120` means the
 120 FPS setting is active but the runtime is delivering fewer updates. A target

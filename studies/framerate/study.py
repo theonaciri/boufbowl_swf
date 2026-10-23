@@ -10,7 +10,7 @@ from tools.client_probe import compile_probe, probe_root, replace_once, ROOT_CLA
 from tools.game_config import ROOT
 
 
-def build(production_policy=False):
+def build(production_policy=False, extra_changes=None, extra_root=''):
     from tools.visual_assets import prepare_stadiums
     prepare_stadiums(ROOT)
     from tools.build_interaction_fixtures import fixture
@@ -20,10 +20,12 @@ def build(production_policy=False):
     generated.write_text(json.dumps(fixture('reception',record),indent=2)+'\n')
     source=probe_root('desktop')
     source=replace_once(source,'this.initializeClientRuntime(true);','this.initializeClientRuntime(true);\n         this.initializeStudy();\n         if(loaderInfo.parameters.studyBare == \"1\") return;')
+    if extra_root:
+        source=replace_once(source,'this.initializeStudy();','this.initializeStudy(); this.initializeRenderingStudy();')
     if not production_policy:
         source=replace_once(source,'return ruffleRuntime ? browserFrameRate :\n','if(studyPolicyEnabled && studyRate > 0) return studyRate;\n         return ruffleRuntime ? browserFrameRate :\n')
     position=source.rfind('   }')
-    source=source[:position]+(ROOT/'studies/framerate/probe.as.inc').read_text()+source[position:]
+    source=source[:position]+(ROOT/'studies/framerate/probe.as.inc').read_text()+extra_root+source[position:]
     changes=[(ROOT_CLASS,source)]
     for filename,marker,code in [
       ('SceneController.as','      public function update() : void\n      {','\n         com.ankamagames.boufbowl.BoufbowlClient.studyRecordScene();'),
@@ -36,16 +38,22 @@ def build(production_policy=False):
             if not match: raise ValueError('UI update anchor missing')
             marker=match.group()
         text=replace_once(text,marker,marker+code)
+        if extra_root and filename=='SceneController.as':
+            text=replace_once(text,'\n{','\n{\n   import flash.utils.getTimer;')
+            text=replace_once(text,marker,marker+'\n         var studyUpdateStart:int = getTimer();')
+            text=replace_once(text,'this.updateSceneViewMove(this._realTime);','this.updateSceneViewMove(this._realTime);\n         com.ankamagames.boufbowl.BoufbowlClient.studyProfile("scene",studyUpdateStart);')
         import re
         package=re.search(r'package ([^\s]+)',text).group(1)
         changes.append((package+'.'+filename[:-3],text))
-    return compile_probe(ROOT/'bin/boufbowl-client-1.9.6.swf',changes)
+    return compile_probe(ROOT/'bin/boufbowl-client-1.9.6.swf',changes+(extra_changes or []))
 
 
-def serve(client,port,production_policy=False):
+def serve(client,port,production_policy=False,results_dir=None,logs_dir=None,fixture_path=None):
     directory=client.parent
     results=ROOT/'studies/framerate/applied' if production_policy else ROOT/'studies/framerate'
     logs=ROOT/'.local/framerate-study/applied' if production_policy else ROOT/'.local/framerate-study'
+    results=results_dir or results
+    logs=logs_dir or logs
     results.mkdir(parents=True,exist_ok=True)
     logs.mkdir(parents=True,exist_ok=True)
     class Handler(SimpleHTTPRequestHandler):
@@ -55,7 +63,7 @@ def serve(client,port,production_policy=False):
             path=urlsplit(self.path).path
             referer=self.headers.get('Referer','')
             rate=parse_qs(urlsplit(referer).query).get('fps',['none'])[0]
-            files={'/study.html':ROOT/'studies/framerate/study.html','/client.swf':client,'/resources/mock_match.json':ROOT/'.local/framerate-study/reception.json'}
+            files={'/study.html':ROOT/'studies/framerate/study.html','/client.swf':client,'/resources/mock_match.json':fixture_path or ROOT/'.local/framerate-study/reception.json'}
             if path in files:
                 body=files[path].read_bytes();self.send_response(200)
                 self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)

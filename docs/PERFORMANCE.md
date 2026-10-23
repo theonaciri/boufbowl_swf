@@ -110,3 +110,23 @@ the overlay in both UI and resolution. A retained target of 120 with an actual
 rate of 12–50 needs runtime profiling; unlocking a setting does not remove the
 cost of scene updates, sprite generation and drawing. Browser/native-branch
 probes and compilation do not establish performance of the user's Wine runtime.
+
+## Retain the 3D display list
+
+Away3D SpriteSession formerly removed all display children on each update, then
+reattached them during drawing. The shared override retains existing children,
+reconciles painter order and removes stale children after rendering. Shape pools,
+clipping, filters, alpha and the unchanged-frame cache policy remain in place.
+Shared smoke covers ordering, duplicate draws, shape interleaving, visibility
+changes and cached frames. Ten-runner and pass/catch replays preserve ordered
+completion and scene/UI update counts at the requested targets.
+
+The isolated benchmark reduced session-loop time from a median 327 ms to 82 ms
+for 300 draws of ten synthetic trees. One real replay reduced instrumented AS3
+View3D.render time from 1,017 ms to 720 ms over 70 calls, but whole-probe frame
+events changed only 5.33/s to 5.53/s on the software browser host. These are not
+Wine/GPU measurements or a promise to fix 12 FPS on a player's machine. See the
+[focused renderer study](../studies/framerate/RENDERING.md) for evidence, source
+trace, limitations and reproduction. `play.sh --fps-probe 240` now isolates a
+blank counter through the user's standalone Flash/Wine path without game/backend
+startup, allowing its steady 60 FPS ceiling to be investigated separately.

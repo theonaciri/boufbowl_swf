@@ -1,20 +1,61 @@
 """Cross-platform patch selection, generated roots, caches and honest reports."""
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
+import play
 
 from tools.client_patches import client_patches
 from tools.client_runtime_codegen import client_root_source
 from tools.client_probe import compile_probe, probe_root, replace_once
 from tools.smoke_shared_client import LICENSE_ERROR, inspect_native_result
 from tools.verify_client import run_checks
+from tools.runtime_fps_probe import runtime_probe_source, build_runtime_probe
 
 
 class ClientToolingTests(unittest.TestCase):
+    def test_blank_probe_launcher_requires_no_backend_import_or_service(self):
+        root=Path(play.__file__).resolve().parent
+        server=SimpleNamespace(server_address=('127.0.0.1',9919),serve_forever=lambda:None,
+                               shutdown=lambda:None,server_close=lambda:None)
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.dict(os.environ,{'XDG_DATA_HOME':directory,'XDG_STATE_HOME':directory}), \
+             patch.dict(sys.modules,{'backend.server':None,'backend.service':None}), \
+             patch('sys.argv',['play.py','--mode','server','--fps-probe','240']), \
+             patch('tools.runtime_fps_probe.build_runtime_probe',return_value=(root/'bin/base/boufbowl-client-1.9.6.swf',True)), \
+             patch.object(play.shutil,'which',return_value='/tools/wine'), \
+             patch.object(play,'ThreadingHTTPServer',return_value=server), \
+             patch.object(play.threading,'Thread'), \
+             patch.object(play.subprocess,'run'), \
+             patch.object(play.subprocess,'call',return_value=0) as launch:
+            self.assertEqual(play.main(),0)
+            self.assertIsNone(server.service)
+            self.assertIn('server=0',launch.call_args.args[0][-1])
+
+    def test_blank_runtime_probe_validates_target_and_does_not_boot_the_game(self):
+        for invalid in (24,1001,float('nan'),float('inf'),-float('inf')):
+            with self.assertRaises(ValueError):
+                runtime_probe_source(invalid)
+        for target in (25,60,120,240,1000):
+            source = runtime_probe_source(target)
+            self.assertNotIn('MainApp',source)
+            self.assertNotIn('Service',source)
+            self.assertIn('fpsProbeStats',source)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            with patch('tools.runtime_fps_probe.compile_probe',return_value=('probe.swf',True)) as compiler:
+                build_runtime_probe(240,root)
+                self.assertEqual(compiler.call_args.args[0],root/'bin/base/boufbowl-client-1.9.6.swf')
+                (root/'bin').mkdir()
+                (root/'bin/boufbowl-client-1.9.6.swf').write_bytes(b'client')
+                build_runtime_probe(240,root)
+                self.assertEqual(compiler.call_args.args[0],root/'bin/boufbowl-client-1.9.6.swf')
+
     def test_shared_additions_reach_both_builds_and_android_overrides_only_its_copy(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -1,0 +1,74 @@
+{
+  "results": [
+    {
+      "before": {
+        "elapsedMs": 31433,
+        "frames": 5902,
+        "requested": 240,
+        "runtime": "WIN 32,0,0,0",
+        "stage": 240,
+        "text": "Runtime FPS: 185 / 240\nWIN 32,0,0,0\nBlank probe: no game, animation or 3D scene"
+      },
+      "after": {
+        "elapsedMs": 34443,
+        "frames": 6480,
+        "requested": 240,
+        "runtime": "WIN 32,0,0,0",
+        "stage": 240,
+        "text": "Runtime FPS: 190 / 240\nWIN 32,0,0,0\nBlank probe: no game, animation or 3D scene"
+      },
+      "wallMs": 3009.5,
+      "frameEventHz": 192.05848147532814,
+      "rafHz": 47.183917594284765,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "note": "Ruffle browser result, not Wine or physical display presentation"
+    },
+    {
+      "before": {
+        "elapsedMs": 34965,
+        "frames": 6581,
+        "requested": 240,
+        "runtime": "WIN 32,0,0,0",
+        "stage": 240,
+        "text": "Runtime FPS: 192 / 240\nWIN 32,0,0,0\nBlank probe: no game, animation or 3D scene"
+      },
+      "after": {
+        "elapsedMs": 37987,
+        "frames": 7166,
+        "requested": 240,
+        "runtime": "WIN 32,0,0,0",
+        "stage": 240,
+        "text": "Runtime FPS: 197 / 240\nWIN 32,0,0,0\nBlank probe: no game, animation or 3D scene"
+      },
+      "wallMs": 3022.399999976158,
+      "frameEventHz": 193.5547908961801,
+      "rafHz": 47.64425622059817,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "note": "Ruffle browser result, not Wine or physical display presentation"
+    },
+    {
+      "before": {
+        "elapsedMs": 38516,
+        "frames": 7268,
+        "requested": 240,
+        "runtime": "WIN 32,0,0,0",
+        "stage": 240,
+        "text": "Runtime FPS: 192 / 240\nWIN 32,0,0,0\nBlank probe: no game, animation or 3D scene"
+      },
+      "after": {
+        "elapsedMs": 41538,
+        "frames": 7852,
+        "requested": 240,
+        "runtime": "WIN 32,0,0,0",
+        "stage": 240,
+        "text": "Runtime FPS: 195 / 240\nWIN 32,0,0,0\nBlank probe: no game, animation or 3D scene"
+      },
+      "wallMs": 3022.100000023842,
+      "frameEventHz": 193.24310909479922,
+      "rafHz": 47.64898580419707,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "note": "Ruffle browser result, not Wine or physical display presentation"
+    }
+  ],
+  "note": "Three samples after background compilation completed; software browser, not Wine"
+}

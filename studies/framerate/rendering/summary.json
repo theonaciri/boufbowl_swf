@@ -1,0 +1,36 @@
+{
+  "session": {
+    "baseline": 327,
+    "retained": 82
+  },
+  "render": {
+    "baseline": 14.528571428571428,
+    "retained": 10.285714285714286
+  },
+  "replays": [
+    {
+      "mode": "baseline",
+      "target": 60,
+      "scene": 72,
+      "ui": 72
+    },
+    {
+      "mode": "retained",
+      "target": 60,
+      "scene": 72,
+      "ui": 72
+    },
+    {
+      "mode": "retained",
+      "target": 240,
+      "scene": 71,
+      "ui": 71
+    },
+    {
+      "mode": "retained-reception",
+      "target": 240,
+      "scene": 128,
+      "ui": 128
+    }
+  ]
+}

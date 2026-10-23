@@ -1,0 +1,45 @@
+{
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 4,
+    "dpr": 2,
+    "runtimePath": "ruffle",
+    "productionPolicy": true,
+    "target": 60,
+    "visibility": "visible",
+    "mode": "bare",
+    "ruffle": "0.8.0-nightly.2026.10.13"
+  },
+  "samples": [],
+  "sessionCheck": {
+    "additions": 5,
+    "ok": true,
+    "removals": 4
+  },
+  "benchmarks": [
+    {
+      "actors": 10,
+      "elapsedMs": 82,
+      "iterations": 300,
+      "leavesPerActor": 30,
+      "stageAdditions": 300,
+      "stageRemovals": 0
+    },
+    {
+      "actors": 10,
+      "elapsedMs": 82,
+      "iterations": 300,
+      "leavesPerActor": 30,
+      "stageAdditions": 300,
+      "stageRemovals": 0
+    },
+    {
+      "actors": 10,
+      "elapsedMs": 82,
+      "iterations": 300,
+      "leavesPerActor": 30,
+      "stageAdditions": 300,
+      "stageRemovals": 0
+    }
+  ]
+}

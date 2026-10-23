@@ -41,6 +41,7 @@
             ruffleRuntime = wasRuffle;
             preferredFrameRate = savedPreferred;
             browserFrameRate = savedBrowser;
+            var sessionCheck:Object = sessionSmoke();
             var presenter:com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter =
                new com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter(1);
             presenter.sprite = new Sprite();
@@ -162,7 +163,7 @@
             benchmark = lookupBenchmark();
             trace("SHARED_SMOKE LOOKUP lookups=" + benchmark.lookups + " previousMs=" + benchmark.previousMs + " indexedMs=" + benchmark.indexedMs);
             trace("SHARED_SMOKE PASS: movement, invalidation, chat batching and scroll boundaries");
-            return {ok:true,runtime:ruffleRuntime ? "ruffle" : "native-path",fps:stage.frameRate,lookup:benchmark};
+            return {ok:true,runtime:ruffleRuntime ? "ruffle" : "native-path",fps:stage.frameRate,lookup:benchmark,session:sessionCheck};
          }
          catch(error:Error)
          {
@@ -170,4 +171,68 @@
             if(nativeExit) smokeExit(1);
             return {ok:false,error:error.toString()};
          }
+      }
+
+      private function sessionSmoke() : Object
+      {
+         var session:away3d.core.session.SpriteSession = new away3d.core.session.SpriteSession();
+         var view:away3d.containers.View3D = new away3d.containers.View3D({session:session,forceUpdate:true,mouseEvents:false});
+         view.visible = false;
+         addChild(view);
+         view.render();
+         var additions:int = 0;
+         var removals:int = 0;
+         var actors:Array = [];
+         for(var index:int=0;index<4;index++)
+         {
+            var actor:Sprite = new Sprite();
+            actor.addEventListener(Event.ADDED_TO_STAGE,function(event:Event):void { additions++; });
+            actor.addEventListener(Event.REMOVED_FROM_STAGE,function(event:Event):void { removals++; });
+            actors.push(actor);
+         }
+         var container:Sprite = Sprite(session.getContainer(view));
+         try
+         {
+            sessionDraw(session,view,[actors[0],actors[1],actors[2]]);
+            for(index=0;index<20;index++) sessionDraw(session,view,[actors[0],actors[1],actors[2]]);
+            smokeAssert(additions == 3 && removals == 0,"Stable scene children were detached during redraw");
+            sessionDraw(session,view,[actors[2],actors[1],actors[0]]);
+            smokeAssert(container.getChildAt(0) == actors[2] && container.getChildAt(2) == actors[0],"Painter order was lost");
+            smokeAssert(additions == 3 && removals == 0,"Reordering triggered stage lifecycle events");
+            sessionDraw(session,view,[actors[2],actors[0]]);
+            smokeAssert(container.numChildren == 2 && removals == 1,"Culled child was retained");
+            sessionDraw(session,view,[actors[2],actors[0],actors[2],actors[3]]);
+            smokeAssert(container.numChildren == 3 && container.getChildAt(0) == actors[0] &&
+               container.getChildAt(1) == actors[2] && container.getChildAt(2) == actors[3],"Duplicate draw ordering changed");
+            smokeAssert(additions == 4 && removals == 1,"A newly visible child did not enter stage exactly once");
+            sessionDraw(session,view,[actors[0],null,actors[2],null,actors[3]]);
+            smokeAssert(container.numChildren == 5 && container.getChildAt(0) == actors[0] &&
+               container.getChildAt(2) == actors[2] && container.getChildAt(4) == actors[3],"Shape layers changed actor order");
+            sessionDraw(session,view,[actors[3],null,actors[0],null,actors[2]]);
+            smokeAssert(container.numChildren == 5 && container.getChildAt(0) == actors[3] &&
+               container.getChildAt(2) == actors[0] && container.getChildAt(4) == actors[2],"Pooled shape layers changed painter order");
+            sessionDraw(session,view,[]);
+            smokeAssert(container.numChildren == 0 && removals == 4,"Empty scene left stale children");
+            sessionDraw(session,view,[actors[1]]);
+            smokeAssert(container.numChildren == 1 && additions == 5,"Hidden actor could not return");
+            view.forceUpdate = false;
+            session.clear(view);
+            smokeAssert(!session.updated,"Unchanged session unexpectedly required redraw");
+            session.render(view);
+            smokeAssert(container.numChildren == 1 && container.getChildAt(0) == actors[1] && additions == 5,
+               "Unchanged session lost its retained child");
+            return {ok:true,additions:additions,removals:removals};
+         }
+         finally { removeChild(view); }
+      }
+
+      private function sessionDraw(session:away3d.core.session.SpriteSession, view:away3d.containers.View3D, sequence:Array) : void
+      {
+         session.clear(view);
+         for each(var child:Sprite in sequence)
+         {
+            if(child == null) session.renderLine(0,0,10,10,1,0xff0000,1);
+            else session.addDisplayObject(child);
+         }
+         session.render(view);
       }
