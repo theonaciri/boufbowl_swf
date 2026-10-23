@@ -94,3 +94,28 @@ order. The table records requested/retained settings, **not achieved display FPS
 `applied/validation.json` fingerprints the patched sources, local rebuilt SWF and
 diagnostic SWF and preserves focused verification status. Raw timing/ordered
 events remain in `applied/results-*.json`.
+
+## Packaging follow-up after the Linux report
+
+A user selected 120+ FPS but still saw 25/60 in UI and 12–50 during resolution
+after `bun run build:players --platform linux`. Code tracing found that player
+packaging reused any existing game SWF. It compiled platform defaults on top of
+that file without recompiling changed shared game patches. This can deliver the
+old scene limits even after fetching newer source. The maintained packager now
+checks the recorded SWF hash and source/configuration fingerprint before choosing
+reuse; stale, missing and unrecognized game builds are compiled first.
+
+The desktop `--show-fps` overlay now shows `FPS: measured / target`. An actual
+`24 / 120` means the setting is active but rendering/updates are below target.
+A target of 50 during resolution after selecting 120 indicates that the updated
+policy is absent or another path changed the setting. Branch identity matters:
+these fixes are on the study branch and have not been merged into main.
+
+Five packaging tests passed (including stale source/output and unchanged-input
+cases), shared tooling passed, and both diagnostic roots compiled. A browser
+probe of the normal UI observed `24 / 30`, `24 / 120`, then `23 / 25` after the
+corresponding live changes; the shared AS3 smoke also passed. These observations
+are saved in `applied/results-game-ui.json` and are not a new FPS benchmark.
+Wine is not installed on this host; the user's actual standalone Flash/Wine
+performance was not reproduced. Existing 3D replay evidence predates this overlay
+and packaging-only follow-up; the FPS policy itself is unchanged.

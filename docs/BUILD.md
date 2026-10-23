@@ -85,6 +85,11 @@ explains individual patches.
 `--mode tutorial`, `--mode menus`, `--mode mock --scene-3d`,
 `--lang fr`, `--profile Alice`, and `--show-fps`.
 The in-game FPS slider requests 25–240 FPS; runtime/display limits still apply.
+The overlay displays `FPS: measured / target`, so `FPS: 35 / 120` means the
+120 FPS setting is active but the runtime is delivering fewer updates. A target
+that drops to 50 during 3D suggests the old scene policy is still running.
+`play.sh` uses standalone Flash Player through Wine, independently of AIR smoke
+testing and its developer license requirements.
 
 ## Simulator
 
@@ -295,6 +300,12 @@ bun run build:players --platform linux
 bun run build:players --platform windows linux
 bun run build:players --platform android
 ```
+
+Before packaging, the command checks the game build receipt against the SWF
+and current game sources/configuration. Changed sources, a replaced SWF or a
+missing/invalid receipt trigger a game rebuild; an unchanged build is reused.
+Earlier versions only rebuilt a missing SWF, so packaging alone could retain
+old ActionScript. With those versions, run `bun run build` before packaging.
 
 The option can also be repeated: `--platform linux --platform android`.
 With no selection, all three platforms are built. Only selected platform tools

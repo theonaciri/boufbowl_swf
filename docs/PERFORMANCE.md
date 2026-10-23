@@ -90,3 +90,23 @@ it does not synthesize limb poses or change authored frame constants. Raising
 the request on a 60 Hz or overloaded display can add work without visible benefit.
 Applied regression evidence and runtime boundaries are recorded in
 [APPLIED.md](../studies/framerate/APPLIED.md).
+
+## Diagnosing a low FPS report after packaging
+
+The Linux developer launcher reads `bin/boufbowl-client-1.9.6.swf` and runs it
+in the standalone Windows Flash player through Wine. `--show-fps` enables a
+frame-event counter; it does not raise the frame-rate setting. The overlay now
+includes the requested stage rate: `FPS: measured / target`. This separates a
+scene policy reverting to 50/25 from a renderer failing to reach a higher target.
+
+Before this follow-up, `build:players` prepared an existing SWF without checking
+whether ActionScript had changed. The packager now uses the game receipt's SWF
+hash and logic fingerprint to rebuild stale/missing/unrecognized game code,
+while retaining incremental reuse when inputs match. Direct `play.sh` launches
+still do not compile; `bun run build` explicitly rebuilds the local game.
+
+After rebuilding, select and release the FPS slider at 120 or higher, then check
+the overlay in both UI and resolution. A retained target of 120 with an actual
+rate of 12–50 needs runtime profiling; unlocking a setting does not remove the
+cost of scene updates, sprite generation and drawing. Browser/native-branch
+probes and compilation do not establish performance of the user's Wine runtime.

@@ -1,5 +1,6 @@
 """Check saved runtime evidence for the maintained policy, without its FPS bypass."""
 import json
+import re
 from pathlib import Path
 
 root = Path(__file__).resolve().parent / 'applied'
@@ -44,3 +45,11 @@ for rate, runtime in [(25, 'ruffle'), (60, 'flash'), (144, 'ruffle'), (240, 'ruf
     print(f'{rate} ({runtime} branch in Ruffle): scene rate retained, ordered completion, one UI update per scene')
 
 print('Native runtime and physical high-refresh presentation remain unverified.')
+
+overlay = json.loads((root / 'results-game-ui.json').read_text())
+assert overlay['sharedSmoke']['ok'] is True
+assert [row['requested'] for row in overlay['overlayChecks']] == [30,120,25]
+for row in overlay['overlayChecks']:
+    assert row['stage'] == row['scene'] == row['requested']
+    assert re.fullmatch(r'FPS: \d+ / ' + str(row['requested']), row['text'])
+print('Overlay reports measured and requested rates after live changes.')

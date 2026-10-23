@@ -1,0 +1,44 @@
+{
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 4,
+    "dpr": 2,
+    "runtimePath": "ruffle",
+    "productionPolicy": true,
+    "target": 0,
+    "visibility": "visible",
+    "mode": "game-ui",
+    "ruffle": "0.8.0-nightly.2026.10.13"
+  },
+  "samples": [],
+  "overlayChecks": [
+    {
+      "requested": 30,
+      "text": "FPS: 24 / 30",
+      "stage": 30,
+      "scene": 30
+    },
+    {
+      "requested": 120,
+      "text": "FPS: 24 / 120",
+      "stage": 120,
+      "scene": 120
+    },
+    {
+      "requested": 25,
+      "text": "FPS: 23 / 25",
+      "stage": 25,
+      "scene": 25
+    }
+  ],
+  "sharedSmoke": {
+    "fps": 30,
+    "lookup": {
+      "indexedMs": 7,
+      "lookups": 3000,
+      "previousMs": 27
+    },
+    "ok": true,
+    "runtime": "ruffle"
+  }
+}

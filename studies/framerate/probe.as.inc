@@ -21,6 +21,9 @@
                scene50:sceneFrameRate(50),scene25:sceneFrameRate(25),stage:stage.frameRate,ruffle:ruffleRuntime};
          });
          flash.external.ExternalInterface.addCallback("studyWebDisplay",setWebDisplay);
+         flash.external.ExternalInterface.addCallback("studyFpsLabel",function():String {
+            return _fpsLabel == null ? null : _fpsLabel.text;
+         });
          flash.external.ExternalInterface.addCallback("studySetRate",function(rate:Number):Object {
             studyRate=rate;
             var accepted:Boolean=true;

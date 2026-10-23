@@ -1,5 +1,6 @@
 """Platform selection must avoid unrelated dependencies and keep secrets off argv."""
 from contextlib import ExitStack, nullcontext
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -7,10 +8,11 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 from tools import build_players
+from tools.media_fingerprints import file_hash, logic_fingerprint
 
 
 class BuildPlayersTests(unittest.TestCase):
-    def run_platform(self, selection):
+    def run_platform(self, selection, fresh=False):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         root = Path(directory.name)
@@ -20,6 +22,7 @@ class BuildPlayersTests(unittest.TestCase):
         stack = ExitStack()
         self.addCleanup(stack.close)
         stack.enter_context(patch.object(build_players, 'ROOT', root))
+        stack.enter_context(patch.object(build_players, 'game_rebuild_required', return_value=not fresh))
         stack.enter_context(patch('sys.argv', ['build_players', '--no-website', '--platform', *selection]))
         mocks = {}
         for name in ('air_sdk', 'android_sdk', 'jdk_directory', 'java_binary', 'ffdec_jar'):
@@ -40,6 +43,43 @@ class BuildPlayersTests(unittest.TestCase):
         command = mocks['run'].call_args_list[-1].args[0]
         self.assertIn('linux', command)
         self.assertNotIn('windows', command)
+        self.assertIn('--rebuild-game', mocks['run'].call_args_list[0].args[0])
+
+    def test_current_game_preserves_incremental_packaging(self):
+        mocks = self.run_platform(['linux'], fresh=True)
+        self.assertNotIn('--rebuild-game', mocks['run'].call_args_list[0].args[0])
+
+    def test_rebuild_detection_checks_sources_and_output_not_just_swf_existence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, content in {
+                'bin/base/boufbowl-client-1.9.6.swf': b'preserved',
+                'bin/boufbowl-client-1.9.6.swf': b'compiled',
+                'resources/game_config.json': b'{}',
+                'patches/ClientRuntime.as.inc': b'policy',
+            }.items():
+                path = root/name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+            receipt = root/'.local/game-build.json'
+            receipt.parent.mkdir()
+            self.assertTrue(build_players.game_rebuild_required(root))
+            current = json.dumps({'client': file_hash(root/build_players.CLIENT),
+                                  'logic': logic_fingerprint(root)})
+            receipt.write_text(current)
+            self.assertFalse(build_players.game_rebuild_required(root))
+            policy = root/'patches/ClientRuntime.as.inc'
+            policy.write_bytes(b'new policy')
+            self.assertTrue(build_players.game_rebuild_required(root))
+            policy.write_bytes(b'policy')
+            self.assertFalse(build_players.game_rebuild_required(root))
+            (root/build_players.CLIENT).write_bytes(b'other compiled client')
+            self.assertTrue(build_players.game_rebuild_required(root))
+            for invalid in ('broken JSON', '[]', '{}'):
+                receipt.write_text(invalid)
+                self.assertTrue(build_players.game_rebuild_required(root))
+            (root/build_players.CLIENT).unlink()
+            self.assertTrue(build_players.game_rebuild_required(root))
 
     def test_android_does_not_require_desktop_player_or_nsis(self):
         mocks = self.run_platform(['android'])

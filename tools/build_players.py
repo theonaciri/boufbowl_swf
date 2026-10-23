@@ -9,8 +9,18 @@ from tools.build_parallel import build_budget, parallel
 from tools.build_tools import BuildError, ffdec_jar, air_sdk, android_sdk, jdk_directory, java_binary, remember_build_tools
 from tools.refresh_website import refresh_website
 from tools.android_signing import signing_credentials
+from tools.media_fingerprints import CLIENT, file_hash, logic_fingerprint, read_json
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def game_rebuild_required(root):
+    client = root/CLIENT
+    if not client.is_file():
+        return True
+    receipt = read_json(root/'.local/game-build.json', {})
+    return (not isinstance(receipt, dict) or receipt.get('client') != file_hash(client)
+            or receipt.get('logic') != logic_fingerprint(root))
 
 
 def main():
@@ -91,8 +101,12 @@ def main():
             return f'{label}: {error}'
         return None
     with build_budget(args.jobs):
-        subprocess.run([str(args.bun), str(ROOT/'tools/build.mjs'), '--game-only',
-                        '--java', str(java), '--ffdec', str(ffdec)], cwd=ROOT, check=True)
+        prepare = [str(args.bun), str(ROOT/'tools/build.mjs'), '--game-only',
+                   '--java', str(java), '--ffdec', str(ffdec)]
+        if game_rebuild_required(ROOT):
+            print('Game sources or compiled client changed; rebuilding before packaging.', flush=True)
+            prepare.append('--rebuild-game')
+        subprocess.run(prepare, cwd=ROOT, check=True)
         # Coordinators do not reserve CPU permits; their leaf encoders/packagers do.
         failures = [failure for failure in parallel(package, jobs, workers=len(jobs)) if failure]
         if failures:
