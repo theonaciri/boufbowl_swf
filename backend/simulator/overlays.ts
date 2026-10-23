@@ -63,13 +63,6 @@ export function overlay(name: string, source: string): string {
     replace("target: { ...target },", "risk_origin: {...e.position},\n      target: { ...target },");
     replace("budget: maxMovementDistance(cfg, e.elements),", "budget: Math.max(0, Math.floor(maxMovementDistance(cfg, e.elements) + ((e as any).range_bonus ?? 0))),");
   }
-  if (name === "combat") {
-    replace("if (a.team_id === b.team_id) continue;", "if (a.team_id === b.team_id || ((a as any).power_locked && (b as any).power_locked)) continue;");
-    replace("const powerA = attackPower(cfg, a.stats.strength, ea.TERRE);", "const powerA = attackPower(cfg, a.stats.strength, ea.TERRE) + ((a as any).attack_bonus ?? 0);");
-    replace("const powerB = attackPower(cfg, b.stats.strength, eb.TERRE);", "const powerB = attackPower(cfg, b.stats.strength, eb.TERRE) + ((b as any).attack_bonus ?? 0);");
-    replace("const aAttacks = powerA >= powerB;", "const aAttacks = (a as any).power_locked ? false : (b as any).power_locked ? true : powerA >= powerB;");
-    replace("if (powerA === powerB) {", "if (powerA === powerB && !(a as any).power_locked && !(b as any).power_locked) {");
-  }
   if (name === "validator") {
     replace('const allocations = new Map<number, string>(),', `const powers = order.actions.filter(a => a?.action_type === "ability");
     const modern = Object.values(this.config.abilities ?? {}).some((r: any) => r.target);
@@ -96,6 +89,32 @@ export function overlay(name: string, source: string): string {
     // Powers can extend a valid target beyond its ordinary budget. Execution still clamps to the actual budget.
     replace("hexDistance(e.position, target) >\n              maxMovementDistance(this.config, elements)", `hexDistance(e.position, target) >
               maxMovementDistance(this.config, elements) + (modern ? Math.max(0, ...state.entities.filter(p => p.team_id === team && p.hp > 0 && (p.ability_uses_remaining ?? 0) > 0).map(p => (this.config.abilities?.[p.class_name] as any)?.range ?? 0)) : 0)`);
+  }
+  if (name === "engine" || name === "turnTick") source = rulebookOverlay(name,source);
+  return source;
+}
+
+/** Shared by a full archive build and the retained-worker refresh. */
+export function rulebookOverlay(name: string, source: string): string {
+  function replaceOne(before: string,after: string) {
+    if (source.split(before).length !== 2) throw new Error(`Rulebook ${name} boundary changed: ${before}`);
+    source=source.replace(before,after);
+  }
+  if (name === "engine") {
+    if (!source.includes("prepareRulebookTurn(cfg, state);")) {
+      const loop = /for \(let tick = 0;\s*tick < cfg.tick_system.max_ticks_per_turn; tick\+\+\) \{/;
+      if (!loop.test(source)) throw new Error("Simulation turn-loop boundary changed");
+      source = source.replace(loop, `prepareRulebookTurn(cfg, state);
+  if (cfg.rulebook) resolveMovementRisk(context, -1);
+  $&`);
+    }
+    if (!source.includes("finishRulebookTurn(cfg, state, events);"))
+      replaceOne("const final_entity_states =", "finishRulebookTurn(cfg, state, events);\n  const final_entity_states =");
+    if (source.startsWith("import") && !source.includes('import {prepareRulebookTurn,finishRulebookTurn}')) source = 'import {prepareRulebookTurn,finishRulebookTurn} from "boufbowl-rulebook";\nimport {resolveMovementRisk} from "boufbowl-movement-risk";\n'+source;
+  } else if (name === "turnTick") {
+    if (!source.includes("tickRulebook(context, tick);")) replaceOne("restoreStandingPlayers(context, tick);", "tickRulebook(context, tick);\n  restoreStandingPlayers(context, tick);");
+    if (!source.includes("const pendingStun =")) replaceOne("return pendingMove ||", "const pendingStun = !!cfg.rulebook && state.entities.some(e => e.hp > 0 && e.status.stunned);\n  return pendingStun || pendingMove ||");
+    if (source.startsWith("import") && !source.includes('import {tickRulebook}')) source = 'import {tickRulebook} from "boufbowl-rulebook";\n'+source;
   }
   return source;
 }

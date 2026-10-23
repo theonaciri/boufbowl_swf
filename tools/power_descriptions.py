@@ -34,6 +34,9 @@ def description(rule, language):
     else:
         target=enemies if rule.get('target')=='enemies' else allies
         parts=[]
+        for key,label in [('shield',{'fr':'bouclier','en':'shield','de':'Schild','es':'escudo'}[language]),
+                          ('temporary_hp',{'fr':'PdV temporaires','en':'temporary HP','de':'temporäre LP','es':'PdV temporales'}[language])]:
+            if rule.get(key):parts.append(f'+{rule[key]:g} {label} → {target} ({turn})')
         if rule.get('hp',rule.get('heal',0)):
             parts.append(f'{rule.get("hp",rule.get("heal",0)):+g} {hp} → {target}')
         for key,label in [('range',reach),('attack',attack)]:

@@ -12,7 +12,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Chat layout/scroll | `ChatMediator.as` → `TextZone.as` → TLF controller | shared smoke; empty, long, resized chat |
 | Popup geometry/layers | `MessageBoxView.as` → `MessageBox.as`, `ResizableTextBox.as`, `ServerSupport.as.inc` | browser probe, popup bounds |
 | CPU roles and risk | `backend/engine.ts` → `cpu-orders.ts`, `cpu-powers.ts` → retained simulator | `verify_client --area cpu` |
-| Recovered server rules | `Service.normalize_club` / `finish_placement` → maintained `backend/simulator` resolvers → retained worker | `test_recovered_rules.py`, CPU checks; [audit and evidence limits](RECOVERED_RULES.md) |
+| Recovered server rules | `resources/rulebook.json` → `backend/rulebook.py` / `Service` → maintained `backend/simulator` resolvers → retained worker | `test_rulebook.py`, `rulebook.test.ts`, `test_recovered_rules.py`, CPU checks; [rulebook](RULEBOOK.md), [choices](RULEBOOK_CHOICES.md) |
 | CPU roster/appearance | `backend/service.py` → `backend/cpu_team.py` | `test_backend.py` |
 | Goal zones and scoring | `resources/game_config.json` → `backend/simulator/ball.ts` → `turn_adapter.py`; CPU uses the same line | `test_gameplay_fixes.py`, `verify_client --area cpu`; [geometry](GOAL_ZONES.md) |
 | Resolution ordering | `backend/turn_adapter.py` → `ScriptBuilder.as`, interaction builders → `ScriptRunner` | resolution-flow tests + 3D fixture |

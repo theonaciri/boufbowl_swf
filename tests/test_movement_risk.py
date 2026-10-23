@@ -11,6 +11,7 @@ class MovementRiskTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.engine=Engine();cls.rules=load_config()['rules']
+        cls.rules['simulation'].pop('rulebook',None)  # frozen pre-v2 range/risk compatibility
         cls.base=json.loads((ROOT/'tests/fixtures/movement_engine_turn.json').read_text())['initial']
 
     @classmethod

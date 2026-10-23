@@ -101,7 +101,9 @@ class ClassPowerTests(unittest.TestCase):
         duel=next(e for e in result['events'] if e['type']=='duel')
         self.assertEqual(duel['actor'],2)
         self.assertEqual(result['final_entity_states'][1]['hp'],8)
-        self.assertLess(result['final_entity_states'][2]['hp'],8)
+        # A normal incidental win stuns without HP loss in the new profile.
+        self.assertEqual(result['final_entity_states'][2]['hp'],8)
+        self.assertTrue(any(e['type']=='stun' and e['actor']==3 for e in result['events']))
         response=self.run_power(world)
         scenario=adapt_turn(dict(initial=world,orders=response['orders'],result=response['result'],rules=self.rules))
         fight=next(i for i in scenario['interaction'] if i['interactionDetails']['type']==20)

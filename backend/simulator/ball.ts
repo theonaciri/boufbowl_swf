@@ -11,6 +11,7 @@ import type { DeterministicRNG } from "../rng";
 import { fixed, fractional, withinRadius, distanceSquared, SCALE } from "./movement";
 import type { MovementTable } from "./movement";
 import { targetedThrow } from "./throwTarget";
+import {rulebookPickupPenalty,rulebookThrowSpeed,rulebookOnFlightSegment,rulebookScatter} from "boufbowl-rulebook";
 const active = (e: WorldState["entities"][number]) =>
   e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !(e as any).power_locked;
 const point = (e: WorldState["entities"][number]) =>
@@ -23,6 +24,7 @@ const clamp = (cfg: GameConfig, p: number) =>
 // Per-turn bookkeeping stays outside the persisted world/replay state.
 interface Attempts { air: number; fire: number; lastTick: number }
 const attemptBooks = new WeakMap<WorldState, Map<number, Attempts>>();
+const throwDistances = new WeakMap<WorldState, Map<number, number>>();
 const actionLimited = (cfg: GameConfig) => (cfg.ball as any).action_limited_attempts === true;
 function usedAttempts(state: WorldState, id: number): Attempts {
   let book = attemptBooks.get(state);
@@ -63,8 +65,7 @@ export function resolveThrows(
   for (const action of actions) {
     if (
       action.action_type !== "throw" ||
-      consumed.has(action.entity_id) ||
-      tick < cfg.simulation.throw_delay_ticks
+      consumed.has(action.entity_id)
     )
       continue;
     const e = state.entities.find((e) => e.id === action.entity_id);
@@ -79,13 +80,21 @@ export function resolveThrows(
       (e) => e.id === action.params.target_entity_id,
     );
     const start = fractional(point(e));
-    const predicted = targetEntity ? targetedThrow(cfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
+    const throwingCfg = {...cfg,ball:{...cfg.ball,throw_speed_cells_per_sec:rulebookThrowSpeed(cfg,e.elements)}};
+    const predicted = targetEntity ? targetedThrow(throwingCfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
     const target = predicted?.target ?? action.params.target_position;
     if (!target || !throwInRange({...cfg, ball: {...cfg.ball, base_range: cfg.ball.base_range + ((e as any).range_bonus ?? 0)}}, start, target, e.elements)) continue;
     const distance = hexDistance(start, target);
     const landTick = tick + (predicted?.flightTicks ?? Math.max(1, Math.ceil(
-      distance / cfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds,
+      distance / throwingCfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds,
     )));
+    let distances=throwDistances.get(state);
+    if (!distances) {distances=new Map();throwDistances.set(state,distances);}
+    const timingDistance=targetEntity ? hexDistance(start,fractional(point(targetEntity))) : distance;
+    const previous=distances.get(e.id);distances.set(e.id,timingDistance);
+    if (tick < cfg.simulation.throw_delay_ticks) continue;
+    if ((cfg as any).rulebook?.passing?.favorable_timing && previous !== undefined && timingDistance < previous &&
+        landTick+1 < cfg.tick_system.max_ticks_per_turn) continue;
     // M05: test scheduling before changing possession, consuming the order or
     // drawing randomness. The last executable tick is max_ticks_per_turn - 1.
     if ((cfg.ball as any).require_arrival_before_turn_end && landTick >= cfg.tick_system.max_ticks_per_turn) continue;
@@ -101,7 +110,8 @@ export function resolveThrows(
         distance * cfg.simulation.distance_penalty,
     );
     const success = rng.chance(precision);
-    const landing = hexRound(target);
+    const landing = hexRound(!success && (cfg as any).rulebook?.passing?.scatter_failures
+      ? rulebookScatter(start,target,rng.nextFloat()) : target);
     events.push({
       tick,
       type: "throw",
@@ -173,6 +183,8 @@ export function resolveReceptions(
         (e) =>
           active(e) &&
           e.id !== f.thrower &&
+          (!(cfg as any).rulebook?.passing?.path_interception || e.id === f.targetEntityId ||
+            rulebookOnFlightSegment(fractional(f.start),f.target,fractional(point(e)))) &&
           (!limited || e.id === f.targetEntityId || e.team_id !== thrower.team_id) &&
           withinRadius(
             point(e),
@@ -235,11 +247,12 @@ export function resolveReceptions(
   }
   if (tick === f.landTick) {
     state.ball.in_flight = false;
-    state.ball.position = { ...f.target };
+    state.ball.position = (cfg as any).rulebook?.passing?.scatter_failures && f.attempted.includes(f.targetEntityId as number)
+      ? hexRound(rulebookScatter(fractional(f.start),f.target,rng.nextFloat())) : {...f.target};
     events.push({
       tick,
       type: "ball_land",
-      params: { position: { ...f.target } },
+      params: { position: { ...state.ball.position } },
     });
   }
   return events;
@@ -273,12 +286,14 @@ export function resolvePickups(
       // Use fire first on the ground, preserving air for an intended reception.
       const kind = remaining(state,e,"fire") > 0 ? "fire" : "air";
       if (!attempt(state,e,tick,kind)) continue;
+      const pressure = rulebookPickupPenalty(cfg,state,e);
       const chance = clamp(cfg,cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat +
-        e.elements.AIR * cfg.simulation.catch_air + e.elements.FEU * cfg.simulation.catch_feu);
+        e.elements.AIR * cfg.simulation.catch_air + e.elements.FEU * cfg.simulation.catch_feu - pressure.penalty);
       if (!rng) throw new Error("Pickup attempts require the turn RNG");
       const success = rng.chance(chance);
       events.push({tick, type: success ? "pickup" : "pickup_fail" as any, actor:e.id,
-        params:{position:{...e.position}, pickup_chance:chance, attempt:usedAttempts(state,e.id).air+usedAttempts(state,e.id).fire, action:kind}});
+        params:{position:{...e.position}, pickup_chance:chance, attempt:usedAttempts(state,e.id).air+usedAttempts(state,e.id).fire, action:kind,
+          ...((cfg as any).rulebook ? {nearby_players:pressure.nearby,lost_combats:pressure.lost_combats} : {})}});
       if (success) {
         e.status.carrying_ball = true; state.ball.holder_entity_id = e.id;
         state.ball.position = {...e.position}; break;

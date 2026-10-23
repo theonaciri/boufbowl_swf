@@ -127,6 +127,9 @@ class RecoveredBallRulesTests(unittest.TestCase):
         for maximum, enabled, launches in ((9, True, False), (10, True, True), (9, False, True)):
             with self.subTest(maximum=maximum, enabled=enabled):
                 rules = self.fixed_chance(1)
+                # Isolate the arrival boundary from the v2 Air speed policy.
+                if 'rulebook' in rules['simulation']:
+                    rules['simulation']['rulebook']['passing']['air_speed_bonus'] = 0
                 rules['simulation']['tick_system']['max_ticks_per_turn'] = maximum
                 rules['simulation']['ball']['require_arrival_before_turn_end'] = enabled
                 world = self.world(passing=True)

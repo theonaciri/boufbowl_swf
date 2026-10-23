@@ -53,5 +53,6 @@ def export_replay(service, match_id, verify=False, profile=None):
         ending.update(leftScore=score[0],rightScore=score[1])
     append('MATCH_END',ending,delay=2000)
     return {'format_version':1,'completed':match['phase']=='ended','name':f'Saved match {match_id}' if match['phase']=='ended' else f'Active match {match_id} snapshot','rules_version':match['rules_version'],
+            **({'rulebook':deepcopy(match['rulebook'])} if match.get('rulebook') else {}),
             'chapters':chapters,'description':'Recorded authoritative simulation. Export does not alter match statistics.',
             'result_kind':result_kind(match),'verified':verify,'audit_available':completed,'steps':steps,'records':records if completed else []}

@@ -1,6 +1,7 @@
 /** Coordinated, deterministic planning from public field state only.
  * No opposing orders, future random draws, or match seed enter this planner.
  */
+import {rulebookMovementProbability,rulebookThrowSpeed} from "boufbowl-rulebook";
 type Cell = {q: number; r: number};
 type Elements = {TERRE: number; FEU: number; AIR: number; EAU: number};
 type Run = {actor: any; target: Cell; elements: Elements; path: Cell[]; speed: number; risk: number};
@@ -86,7 +87,8 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
     return pathsFor(actor).filter(p=>p.path.length-1<=budget).map(p=>{
       const d=Math.max(...p.path.map(c=>cpuDistance(actor.position,c)));
       const ratio=maximum>safe?Math.max(0,Math.min(1,(d-safe)/(maximum-safe))):0;
-      const risk=rule.enabled && d>safe && maximum>safe?rule.fall_probability_at_max*Math.pow(ratio,rule.exponent):0;
+      const baseRisk=rule.enabled && d>safe && maximum>safe?rule.fall_probability_at_max*Math.pow(ratio,rule.exponent):0;
+      const risk=rule.enabled && d>0?rulebookMovementProbability(cfg,baseRisk,actor.stats.endurance,elements.EAU):0;
       return {actor,target:p.target,elements,path:p.path,speed:speed(actor,elements),risk};
     });
   }
@@ -146,7 +148,7 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
   let strategy='recover',pass: any=null;
   function projectPass(thrower: Run,receiver: Run): any {
     const range=cfg.ball.base_range+thrower.elements.AIR*cfg.actions.element_effects.air.range_modifier;
-    const ballStep=cfg.ball.throw_speed_cells_per_sec*dt;
+    const ballStep=rulebookThrowSpeed(cfg,thrower.elements)*dt;
     for (let release=cfg.simulation.throw_delay_ticks;release<cfg.tick_system.max_ticks_per_turn;release++) {
       const origin=position(thrower,(release+1)*dt);
       if (forward(origin)>goal && forward(cpuRound(origin))>goal) return null;
@@ -264,7 +266,8 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
       const d=cpuDistance(enemyCarrier.position,receiver.position);
       if (d>cfg.ball.base_range+2*cfg.actions.element_effects.air.range_modifier || d<2) continue;
       const value=6+Math.max(0,gain)*2+receiver.stats.precision*.25;
-      const ticks=Math.max(1,Math.ceil(d/(cfg.ball.throw_speed_cells_per_sec*dt)));
+      // Cover the fastest legal flight; opposing allocations remain private.
+      const ticks=Math.max(1,Math.ceil(d/(rulebookThrowSpeed(cfg,{AIR:3})*dt)));
       for (let t=1;t<=ticks;t++) {
         const height=4*cfg.ball.arc_height_cells*t*(ticks-t)/(ticks*ticks);
         if (height>cfg.ball.intercept_height_threshold) continue;

@@ -30,6 +30,7 @@ from tools.power_descriptions import client_abilities
 from backend.results import POLICY_VERSION, result_kind
 from backend.placement import placement_zones
 from backend.cpu_team import default_cpu_club
+from backend.rulebook import rulebook_snapshot
 
 CLASS_NAMES = ("Cra", "Ecaflip", "Eniripsa", "Enutrof", "Feca", "Iop", "Osamodas", "Pandawa",
                "Rogue", "Sacrier", "Sadida", "Sram", "Xelor", "Zobal")
@@ -78,8 +79,9 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             self.match_queued_players()
             for row in self.store.db.execute("SELECT state_json FROM matches").fetchall():
                 match = json.loads(row[0])
-                if match.get("phase") != "ended" and match.get("deadline", float("inf")) <= time.time():
-                    self.tick_match(match)
+                if match.get("phase") != "ended":
+                    if not self.check_reconnections(match) and match.get("deadline", float("inf")) <= time.time():
+                        self.tick_match(match)
             for row in self.store.db.execute("SELECT * FROM challenges WHERE status='pending' AND expires<=?", (time.time(),)).fetchall():
                 self.cancel_offer(row)
         self.tracking.sample()
@@ -203,7 +205,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             else:
                 profile, token = self.create_device(body)
             self.maintain_progression()
-            self.touch(profile, body.get("language") if not self.store.db.execute("SELECT 1 FROM presence WHERE profile_id=?", (profile,)).fetchone() else None)
+            self.connection_heartbeat(profile, body.get("language") if not self.store.db.execute("SELECT 1 FROM presence WHERE profile_id=?", (profile,)).fetchone() else None)
             cursor = self.store.db.execute("SELECT COALESCE(MAX(seq),0) FROM events WHERE profile_id=?", (profile,)).fetchone()[0]
             self.emit(profile, "RULES_CONSTANTS", self.rules_message(self.config["rules"]))
             self.emit(profile, "CLUB_INFORMATION", self.club(profile))
@@ -243,6 +245,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
     def command(self, body):
         with self.store.transaction():
             profile = self.store.authenticate(body.get("session"))
+            self.connection_heartbeat(profile)
             self.tracking.activity(profile, body)
             request_id = body.get("request_id")
             if not isinstance(request_id, str) or not 1 <= len(request_id) <= 100:
@@ -406,6 +409,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
                  "orders": {}, "placements": {}, "acks": [], "world": self.initial_world(rosters, rules),
                  "deadline": time.time() + rules["match"]["placement_seconds"]}
         match['presentation']=deepcopy(self.cinematic_settings())
+        if rules.get('simulation', {}).get('rulebook'):
+            match['rulebook'] = rulebook_snapshot(rules)
         if match['presentation']['introductions']:
             match['phase']='introduction'
             match['intro_acks']=[]
@@ -775,6 +780,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
                       "rules": snapshot["rules"], "rules_version": snapshot["rules_version"],
                       "seed_policy": snapshot["seed_policy"], "warnings": result["warnings"],
                       "presentation": snapshot.get("presentation", self.cinematic_settings())}
+            if snapshot.get('rulebook'):
+                record['rulebook'] = {key:snapshot['rulebook'][key] for key in ('id','sha256','evidence_revision')}
             from backend.turn_adapter import adapt_turn
             scenario = adapt_turn(record)
             record["scenario"] = deepcopy(scenario)
@@ -888,6 +895,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             self.tick_match(match)
 
     def tick_match(self, match):
+        if self.check_reconnections(match):
+            return
         if match and match["deadline"] <= time.time():
             if match["phase"] == "introduction":
                 self.begin_placement(match)
@@ -898,6 +907,58 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             elif match["phase"] == "resolution":
                 self.advance(match)
             self.store.save_match(match)
+
+    def connection_heartbeat(self, profile, language=None):
+        match = self.store.active_match(profile)
+        if match:
+            self.check_reconnections(match)
+        self.touch(profile, language)
+        if match and match['phase'] != 'ended':
+            self.check_reconnections(match)
+
+    def check_reconnections(self, match):
+        """P11 grace, with explicit heartbeat/boundary/both-offline policy."""
+        policy = match.get('rules', {}).get('simulation', {}).get('rulebook', {}).get('connection')
+        if not policy or match.get('phase') == 'ended':
+            return match.get('phase') == 'ended'
+        now = time.time()
+        disconnected = match.setdefault('disconnected', {})
+        expired = []
+        changed = False
+        for side, profile in enumerate(match['profiles'], 1):
+            if profile is None:
+                continue
+            row = self.store.db.execute('SELECT seen FROM presence WHERE profile_id=?', (profile,)).fetchone()
+            seen = max(match['created'], row[0] if row else match['created'])
+            key = str(side)
+            offline_at = disconnected.get(key, seen + policy['heartbeat_timeout'])
+            if seen >= offline_at and key in disconnected and seen < offline_at + policy['grace_seconds']:
+                del disconnected[key]
+                changed = True
+                opponent = match['profiles'][2-side]
+                if opponent:
+                    self.emit(opponent, 'OPPONENT_RECONNECTED', {}, 'MATCH')
+            elif now >= offline_at:
+                if key not in disconnected:
+                    disconnected[key] = offline_at
+                    changed = True
+                    opponent = match['profiles'][2-side]
+                    if opponent:
+                        self.emit(opponent, 'OPPONENT_DISCONNECTED', {}, 'MATCH')
+                if now >= offline_at + policy['grace_seconds']:
+                    expired.append(side)
+        if expired:
+            match['end_reason'] = 'both_disconnected' if len(expired) == 2 else 'disconnect_timeout'
+            # Both absent: retain score and existing result policy. This is an
+            # explicit restoration choice; no historical winner is asserted.
+            given_up = expired[0] if len(expired) == 1 else None
+            if given_up:
+                match['score'][2-given_up] = max(match['score'][2-given_up], match['score'][given_up-1]+1)
+            self.end_match(match, given_up)
+            return True
+        if changed:
+            self.store.save_match(match)
+        return False
 
     def poll(self, body):
         wait_ms = body.get("wait_ms", 0)
@@ -935,7 +996,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         if presence and presence[0] > now - 10 and (not queue or queue[0] > now - 10):
             return
         with self.store.transaction():
-            self.touch(profile)
+            self.connection_heartbeat(profile)
             if queue:
                 # An already-expired queue entry must not be resurrected.
                 if queue[0] < now - self.matchmaking_settings()["heartbeat_timeout"]:

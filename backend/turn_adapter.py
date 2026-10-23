@@ -72,7 +72,8 @@ def adapt_turn(record):
     initial, result = record["initial"], record["result"]
     events = result["events"]
     allowed = {"ability", "move", "stand_up", "pickup", "pickup_fail", "dodge", "duel", "damage", "ko", "ball_drop",
-               "throw", "ball_move", "catch", "catch_fail", "ball_land", "goal", "final_state", "fall", "movement_test"}
+               "throw", "ball_move", "catch", "catch_fail", "ball_land", "goal", "final_state", "fall", "movement_test",
+               "throw_cancelled", "stun", "stun_end", "protection_expired"}
     unknown = {e["type"] for e in events} - allowed
     if unknown:
         raise ProtocolError(f"Unmapped simulation events: {sorted(unknown)}")
@@ -126,7 +127,7 @@ def adapt_turn(record):
     def participant(identity, role=1, has_ball=None, damage=0, status=None):
         entity = entities[identity]
         return {"boufbowlerId": str(identity), "role": role, "hasBall": holder == identity if has_ball is None else has_ball,
-                "status": status if status is not None else 4 if entity["hp"] <= 0 else 3 if entity["status"]["knocked_down"] else 1,
+                "status": status if status is not None else 4 if entity["hp"] <= 0 else 3 if entity["status"]["knocked_down"] else 2 if entity["status"]["stunned"] else 1,
                 "damageTaken": max(0, int(damage))}
 
     def interaction(kind, start, duration, participants, **details):
@@ -163,6 +164,7 @@ def adapt_turn(record):
                 healed = max(0, min(entity["max_hp"], entity["hp"] + (int(delta) if delta is not None else int(params.get("heal", 0)))))
                 hp_delta = healed - entity["hp"]
                 display = [hp_delta] if hp_delta else []
+                display.extend(params[key] for key in ('shield','temporary_hp') if params.get(key))
                 target_data = {"boufbowlerId": str(target)}
                 if hp_delta: target_data['preResolutionHitPointsDelta'] = hp_delta
                 targets.append(target_data)
@@ -196,6 +198,8 @@ def adapt_turn(record):
                 ball_position = cell(params['position'])
         elif kind == "stand_up":
             entities[actor]["status"]["knocked_down"] = False
+        elif kind == "stun_end":
+            entities[actor]["status"]["stunned"] = False
         elif kind in ("pickup", "pickup_fail"):
             interaction(11, start, 14, [participant(actor, has_ball=False)], maneuverTest=maneuver(kind == "pickup"),
                         pickupDetails={"ballPosition": deepcopy(ball_position)})
@@ -204,32 +208,38 @@ def adapt_turn(record):
                 ball_position = deepcopy(positions[actor])
         elif kind in ("duel", "dodge"):
             defender = params["defender"]
-            damage, knocked = {}, set()
+            damage, knocked, stunned = {}, set(), set()
             dispersion = None
             for auxiliary in events[index + 1:]:
-                if auxiliary["tick"] != tick or auxiliary["type"] not in {"damage", "ko", "ball_drop"}:
+                if auxiliary["tick"] != tick or auxiliary["type"] not in {"damage", "ko", "stun", "ball_drop"}:
                     break
                 victim = auxiliary.get("actor")
                 if auxiliary["type"] == "damage":
                     damage[victim] = damage.get(victim, 0) + auxiliary["params"]["damage"]
                 elif auxiliary["type"] == "ko":
                     knocked.add(victim)
+                elif auxiliary["type"] == "stun":
+                    stunned.add(victim)
                 else:
                     dispersion = cell(auxiliary["params"]["position"])
             statuses = {}
             for victim in (actor, defender):
                 future_hp = entities[victim]["hp"] - damage.get(victim, 0)
-                statuses[victim] = 4 if future_hp <= 0 else 3 if victim in knocked else 1
+                statuses[victim] = 4 if future_hp <= 0 else 3 if victim in knocked else 2 if victim in stunned else 1
             scores = []
             for victim in (actor, defender):
-                inherent = entities[victim]["stats"]["strength"]
+                fields = params.get('stat_fields', {})
+                inherent = entities[victim]["stats"][fields.get(str(victim), fields.get(victim, 'strength'))]
                 allocation = next((a["params"].get("elements", {}) for a in actions.get(victim, []) if "elements" in a["params"]), {})
                 attack = inherent + allocation.get("TERRE", 0) * record.get("rules", {}).get("simulation", {}).get("actions", {}).get("element_effects", {}).get("terre", {}).get("attack_bonus_per", 1) + entities[victim].get("attack_bonus", 0)
-                scores.append({"inherentScore": inherent, "finalScore": max(0, attack)})
+                values = params.get('score_values', {})
+                final_score = values.get(str(victim), values.get(victim, attack))
+                scores.append({"inherentScore": inherent, "finalScore": round(max(0, final_score))})
             fight_details = {"ballDispersion": dispersion} if dispersion else {}
             interaction(20, start, 30, [participant(actor, 4, damage=damage.get(actor, 0), status=statuses[actor]),
                                        participant(defender, 5, damage=damage.get(defender, 0), status=statuses[defender])],
-                        fightTest={"winner": 5 if kind == "dodge" else 4, "outcome": 3,
+                        fightTest={"winner": (4 if params['winner'] == actor else 5) if 'winner' in params else 5 if kind == "dodge" else 4,
+                                   "outcome": {'normal':3,'wide':2,'critical':1}.get(params.get('tier'),3),
                                    "type": 4 if kind == "dodge" else 1, "score": scores}, fightDetails=fight_details)
         elif kind == "damage":
             if actor in entities:
@@ -237,6 +247,9 @@ def adapt_turn(record):
         elif kind == "ko":
             if actor in entities:
                 entities[actor]["status"]["knocked_down"] = True
+        elif kind == "stun":
+            if actor in entities:
+                entities[actor]["status"]["stunned"] = True
         elif kind == "ball_drop":
             holder = None
             ball_position = cell(params["position"])

@@ -1487,6 +1487,9 @@
               "required": [
                 "ball_exclusion_radius_cells"
               ]
+            },
+            "rulebook": {
+              "$ref": "#/$defs/rulebook"
             }
           },
           "additionalProperties": false,
@@ -1927,6 +1930,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -2344,6 +2350,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -2761,6 +2770,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -3178,6 +3190,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -3595,6 +3610,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -4012,6 +4030,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -4429,6 +4450,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -4846,6 +4870,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -5263,6 +5290,9 @@
                         }
                       },
                       "additionalProperties": false
+                    },
+                    "rulebook": {
+                      "$ref": "#/$defs/rulebook"
                     }
                   },
                   "additionalProperties": false
@@ -5455,6 +5485,16 @@
         },
         "redirect_enemy_heal": {
           "type": "boolean"
+        },
+        "shield": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "temporary_hp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
         }
       }
     },
@@ -5553,8 +5593,200 @@
         },
         "redirect_enemy_heal": {
           "type": "boolean"
+        },
+        "shield": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "temporary_hp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
         }
       }
+    },
+    "rulebook": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "restoration-2012-v2"
+          ]
+        },
+        "movement": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "safe_failure": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "water_stat": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "water_order": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "safe_failure",
+            "water_stat",
+            "water_order"
+          ]
+        },
+        "pickup": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "radius": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "nearby_penalty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "loss_penalty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "radius",
+            "nearby_penalty",
+            "loss_penalty"
+          ]
+        },
+        "status": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "base_ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "water_reduction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "minimum_ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "required": [
+            "base_ticks",
+            "water_reduction",
+            "minimum_ticks"
+          ]
+        },
+        "combat": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "official_effects": {
+              "type": "boolean"
+            },
+            "boundary": {
+              "type": "string",
+              "enum": [
+                "lower",
+                "upper"
+              ]
+            },
+            "critical_dodge_down": {
+              "type": "boolean"
+            },
+            "next_bonus": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "official_effects",
+            "boundary",
+            "critical_dodge_down",
+            "next_bonus"
+          ]
+        },
+        "connection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "heartbeat_timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120
+            },
+            "grace_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "both_expired": {
+              "type": "string",
+              "enum": [
+                "finish-current-score"
+              ]
+            }
+          },
+          "required": [
+            "heartbeat_timeout",
+            "grace_seconds",
+            "both_expired"
+          ]
+        },
+        "passing": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "air_speed_bonus": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "favorable_timing": {
+              "type": "boolean"
+            },
+            "scatter_failures": {
+              "type": "boolean"
+            },
+            "path_interception": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "air_speed_bonus",
+            "favorable_timing",
+            "scatter_failures",
+            "path_interception"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "movement",
+        "pickup",
+        "status",
+        "combat",
+        "connection",
+        "passing"
+      ]
     }
   }
 }

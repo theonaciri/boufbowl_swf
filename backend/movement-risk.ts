@@ -3,6 +3,7 @@
  */
 import {hexDistance} from "../../boufbowl_server/src/hex";
 import {SIMULATION_SCALE} from "../../boufbowl_server/src/coordinates";
+import {rulebookMovementProbability} from "boufbowl-rulebook";
 
 export function referenceDistance(cfg: any, elements: any): number {
   const r = cfg.client_ranges;
@@ -17,7 +18,7 @@ export function resolveMovementRisk(context: any, tick: number): void {
   context.rangeRisk ??= new Map();
   for (const [id,m] of movements) {
     const e = state.entities.find((actor: any) => actor.id === id);
-    if (!e || e.hp <= 0 || e.status.knocked_down || e.status.stunned) continue;
+    if (!e || e.hp <= 0 || (tick >= 0 && (e.status.knocked_down || e.status.stunned))) continue;
     let test = context.rangeRisk.get(id);
     if (!test) {
       // Store the original allocation: recovery may consume EAU later in the turn.
@@ -26,12 +27,20 @@ export function resolveMovementRisk(context: any, tick: number): void {
       test = {safe,max:Math.max(safe,referenceDistance(cfg,action.params.elements ?? e.elements)*cfg.client_ranges.max_distance_factor+(e.range_bonus ?? 0)),
         origin:m.risk_origin,probability:0,success:true,score:e.stats.endurance,distance:0};
       context.rangeRisk.set(id,test);
+      if (cfg.rulebook?.movement) test.draw = rng.nextFloat();
     }
     test.distance = hexDistance(test.origin,m.current);
-    if (test.distance <= test.safe || test.max <= test.safe) continue;
+    const policy = cfg.rulebook?.movement;
+    if (!policy && (test.distance <= test.safe || test.max <= test.safe)) continue;
     test.draw ??= rng.nextFloat();
-    const ratio = Math.max(0,Math.min(1,(test.distance-test.safe)/(test.max-test.safe)));
+    const ratio = test.max > test.safe ? Math.max(0,Math.min(1,(test.distance-test.safe)/(test.max-test.safe))) : 0;
     test.probability = risk.fall_probability_at_max*Math.pow(ratio,risk.exponent);
+    if (policy) {
+      const allocation = context.actions.find((a: any) => a.entity_id === id && ['move','follow'].includes(a.action_type)).params.elements ?? e.elements;
+      // Explicit replacement balance: not the missing original success formula.
+      test.probability = rulebookMovementProbability(cfg,test.probability,e.stats.endurance,allocation.EAU);
+      if (test.distance <= 0) continue;
+    }
     if (test.draw >= test.probability) continue;
     test.success = false;
     e.status.knocked_down = true;

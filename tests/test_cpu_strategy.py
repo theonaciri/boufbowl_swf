@@ -74,10 +74,10 @@ class CPUStrategyTests(unittest.TestCase):
 
     def test_risky_scoring_run_is_allowed_but_ordinary_carry_prefers_safe_range(self):
         safe = self.cpu(self.tactical_world([(0,0)]))
-        self.assertEqual(safe['orders'][0]['cpu_plan']['roles'][0]['movement_risk'], 0)
+        self.assertGreater(safe['orders'][0]['cpu_plan']['roles'][0]['movement_risk'], 0)
         scoring = self.tactical_world([(5,0)])
         success, failure = self.cpu(scoring), self.cpu(scoring, seed=4)
-        self.assertGreater(success['orders'][0]['cpu_plan']['roles'][0]['movement_risk'], 0)
+        self.assertGreater(success['orders'][0]['cpu_plan']['roles'][0]['movement_risk'], safe['orders'][0]['cpu_plan']['roles'][0]['movement_risk'])
         self.assertEqual(success['orders'], failure['orders'])
         self.assertIn('goal', [e['type'] for e in success['result']['events']])
         self.assertIn('fall', [e['type'] for e in failure['result']['events']])
@@ -182,6 +182,8 @@ class CPUStrategyTests(unittest.TestCase):
                                     [(3,0),(0,5,{'precision':20}),(-3,-5),(8,6),(10,-6)], holder=21)
         rules = deepcopy(self.rules)
         rules['simulation']['combat']['trigger_distance_cells'] = .01
+        # Keep an early interception window with the faster v2 Air flight.
+        rules['simulation']['ball']['intercept_height_threshold'] = 2
         opponent = {'player_id':'human','team_index':1,'turn_number':1,'nonce':'pass','actions':[
             {'entity_id':21,'action_type':'throw','params':{'target_entity_id':22,'elements':dict(TERRE=0,FEU=0,AIR=3,EAU=0)}},
             {'entity_id':22,'action_type':'wait','params':{'elements':dict(TERRE=0,FEU=0,AIR=3,EAU=0)}}]}

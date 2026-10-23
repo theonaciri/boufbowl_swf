@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "id": "restoration-2012-v2",
+  "target": "Post-1.0.7 / 1.0.8 framework; February 2012 consequence semantics; incomplete original formulas",
+  "evidence_revision": "484d203",
+  "policy_defaults": {
+    "id": "restoration-2012-v2",
+    "movement": {
+      "safe_failure": 0.01,
+      "water_stat": 0.05,
+      "water_order": 0.1
+    },
+    "pickup": {
+      "radius": 1,
+      "nearby_penalty": 0.05,
+      "loss_penalty": 0.05
+    },
+    "status": {
+      "base_ticks": 20,
+      "water_reduction": 1,
+      "minimum_ticks": 1
+    },
+    "combat": {
+      "official_effects": true,
+      "boundary": "lower",
+      "critical_dodge_down": false,
+      "next_bonus": 1
+    },
+    "connection": {
+      "heartbeat_timeout": 30,
+      "grace_seconds": 120,
+      "both_expired": "finish-current-score"
+    },
+    "passing": {
+      "air_speed_bonus": 0.1,
+      "favorable_timing": true,
+      "scatter_failures": true,
+      "path_interception": true
+    }
+  },
+  "rules": [
+    {
+      "id": "C01",
+      "name": "Roster role cap",
+      "status": "implemented",
+      "sources": [
+        "P09",
+        "P10"
+      ],
+      "decision": "Three per role across ten players; inactive old templates are editable but not playable until legal."
+    },
+    {
+      "id": "C02",
+      "name": "Five field players",
+      "status": "implemented",
+      "sources": [
+        "M01"
+      ],
+      "decision": "Five owned players; role caps apply."
+    },
+    {
+      "id": "C03",
+      "name": "One team special",
+      "status": "implemented",
+      "sources": [
+        "M07"
+      ],
+      "decision": "Client last assignment wins; malformed submitted double specials are rejected."
+    },
+    {
+      "id": "C04",
+      "name": "Caster replaces ordinary turn",
+      "status": "implemented",
+      "sources": [
+        "M07"
+      ],
+      "decision": "Caster cannot combine ordinary assignments with a special."
+    },
+    {
+      "id": "C05",
+      "name": "Reserve recovery",
+      "status": "provisional",
+      "sources": [
+        "M02"
+      ],
+      "decision": "Living reserves heal; field players retain HP; dead reserves stay dead pending revival evidence."
+    },
+    {
+      "id": "C06",
+      "name": "Water movement reliability",
+      "status": "provisional",
+      "sources": [
+        "M03",
+        "M08"
+      ],
+      "decision": "One seeded draw at turn start; nonzero green risk and Water dependence use explicit replacement balance."
+    },
+    {
+      "id": "C07",
+      "name": "Water required to stand",
+      "status": "implemented",
+      "sources": [
+        "P11"
+      ],
+      "decision": "Down players need Water; existing stand-up delay/resource budget retained."
+    },
+    {
+      "id": "C08",
+      "name": "Targeted combat consequences",
+      "status": "provisional",
+      "sources": [
+        "M09"
+      ],
+      "decision": "Official consequence rows; existing deterministic score proxy and configurable threshold equality are unverified."
+    },
+    {
+      "id": "C09",
+      "name": "Incidental zero-damage stun",
+      "status": "provisional",
+      "sources": [
+        "M09"
+      ],
+      "decision": "Normal incidental/dodge win stuns for zero HP damage; four-damage critical dodge down is a separate flag."
+    },
+    {
+      "id": "C10",
+      "name": "Pickup crowd pressure",
+      "status": "provisional",
+      "sources": [
+        "M04"
+      ],
+      "decision": "Both teams count as pressure; radius and penalty are configurable replacement values."
+    },
+    {
+      "id": "C11",
+      "name": "Pickup prior combat losses",
+      "status": "provisional",
+      "sources": [
+        "M04"
+      ],
+      "decision": "Each same-turn loss contributes a configurable pickup penalty; bookkeeping resets with the turn world."
+    },
+    {
+      "id": "C12",
+      "name": "Separate throw and catch",
+      "status": "provisional",
+      "sources": [
+        "M05"
+      ],
+      "decision": "Separate throw/catch tests; failed tests scatter to a seeded point on the trajectory (replacement distribution)."
+    },
+    {
+      "id": "C13",
+      "name": "Preassigned pass chains",
+      "status": "implemented",
+      "sources": [
+        "M05"
+      ],
+      "decision": "Onward assignments survive until possession; flights chain; Air speeds travel using a configurable replacement coefficient."
+    },
+    {
+      "id": "C14",
+      "name": "Arrival deadline",
+      "status": "implemented",
+      "sources": [
+        "M05"
+      ],
+      "decision": "Arrival must be before the discrete turn end."
+    },
+    {
+      "id": "C15",
+      "name": "Contact interrupts throw",
+      "status": "provisional",
+      "sources": [
+        "M05"
+      ],
+      "decision": "Contact cancels an unlaunched carrier pass; converging trajectories may defer launch under an explicit timing heuristic."
+    },
+    {
+      "id": "C16",
+      "name": "Path interception",
+      "status": "provisional",
+      "sources": [
+        "M05"
+      ],
+      "decision": "Path/height/radius samples plus a forward flight-segment filter; exact historical corridor and retries remain provisional."
+    },
+    {
+      "id": "C17",
+      "name": "Mid-turn stun recovery",
+      "status": "provisional",
+      "sources": [
+        "M18",
+        "P16"
+      ],
+      "decision": "Water-based configurable stun duration allows a receiver to recover before ball arrival."
+    },
+    {
+      "id": "C18",
+      "name": "Ecaflip healing redirection",
+      "status": "implemented",
+      "sources": [
+        "M07"
+      ],
+      "decision": "Only opposing Eniripsa healing is redirected; no opponent heal means no effect."
+    },
+    {
+      "id": "C19",
+      "name": "No five-score cutoff",
+      "status": "implemented",
+      "sources": [
+        "P11"
+      ],
+      "decision": "Continue to the stadium turn limit; fifth score is not a cutoff."
+    },
+    {
+      "id": "C20",
+      "name": "Historical tournament format",
+      "status": "custom",
+      "sources": [
+        "R06"
+      ],
+      "decision": "Keep the user-requested Saturday Paris qualifying/bracket competition."
+    },
+    {
+      "id": "C21",
+      "name": "Late tournament settlement",
+      "status": "custom",
+      "sources": [
+        "R06"
+      ],
+      "decision": "Keep custom bracket settlement; historical timed-event accounting not claimed."
+    },
+    {
+      "id": "C22",
+      "name": "Reconnect grace",
+      "status": "provisional",
+      "sources": [
+        "P11"
+      ],
+      "decision": "Two-minute grace after heartbeat loss detection; clocks continue; boundary and both-offline policy are explicit."
+    }
+  ],
+  "unresolved": [
+    "Intrinsic-value formula1.png and random CDF formula2.png",
+    "Exact tier boundaries 0/15/30",
+    "Critical-dodge knockdown",
+    "Original movement/pressure/stun coefficients",
+    "Original exact pass scheduler, pressure/quality transfer and scatter distribution",
+    "Complete revival and ability inversion combinations"
+  ],
+  "sources": {
+    "M01": "4180373",
+    "M02": "4463430",
+    "M03": "4463456",
+    "M04": "4463669",
+    "M05": "4469815",
+    "M06": "4470155",
+    "M07": "4817315",
+    "M08": "5183829",
+    "M09": "5206184",
+    "M10": "5207552",
+    "M11": "5209678",
+    "M12": "5207786",
+    "M13": "5209652",
+    "M14": "5209904",
+    "M15": "5221656",
+    "M16": "5217816",
+    "M17": "5218222",
+    "M18": "5218238",
+    "M19": "5218692",
+    "M20": "5207110",
+    "M21": "5207178",
+    "M22": "5207198",
+    "M23": "5207204",
+    "M24": "5221742",
+    "M25": "5221696",
+    "M26": "5221758",
+    "M27": "5221462",
+    "M28": "5184940",
+    "M29": "5184362",
+    "M30": "5184377",
+    "M31": "5213760",
+    "P01": "4231655",
+    "P02": "4252349",
+    "P03": "4261525",
+    "P04": "4387594",
+    "P05": "4465327",
+    "P06": "4500702",
+    "P07": "5183919",
+    "P08": "5184217",
+    "P09": "5186862",
+    "P10": "5186860",
+    "P11": "5190718",
+    "P12": "5193400",
+    "P13": "5195100",
+    "P14": "5197910",
+    "P15": "5202706",
+    "P16": "5206386",
+    "P17": "5206384",
+    "P18": "5187356",
+    "P19": "5220446",
+    "P20": "5226926",
+    "R01": "4465502",
+    "R02": "4482341",
+    "R03": "5183687",
+    "R04": "5183802",
+    "R05": "5198510",
+    "R06": "5195726",
+    "R07": "5197712",
+    "R08": "5197708",
+    "R09": "5197710",
+    "R10": "5195534",
+    "R11": "5216666",
+    "R12": "5212062",
+    "R13": "5192152",
+    "A01": "5183676",
+    "A02": "5211422",
+    "A03": "5217778",
+    "A04": "5193878",
+    "A05": "5222904",
+    "U01": "5184764",
+    "U02": "5184816",
+    "U03": "5185576",
+    "U04": "5221680",
+    "U05": "5221684",
+    "U06": "5221958",
+    "U07": "5212888",
+    "U08": "5183899",
+    "U09": "5184758",
+    "U10": "5207368",
+    "B01": "5186156",
+    "B02": "5186074",
+    "B03": "5187558",
+    "B04": "5187584"
+  }
+}

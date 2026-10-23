@@ -84,6 +84,15 @@ def check_rules(rules, path):
     simulation = rules["simulation"]["simulation"]
     if simulation["probability_min"] > simulation["probability_max"]:
         raise ConfigError(f"{path}: probability_min exceeds probability_max")
+    policy = rules['simulation'].get('rulebook')
+    if policy:
+        if policy['status']['minimum_ticks'] > policy['status']['base_ticks']:
+            raise ConfigError(f'{path}: minimum stun ticks exceed base ticks')
+        from backend.rulebook import rulebook_snapshot
+        try:
+            rulebook_snapshot(rules)
+        except ValueError as error:
+            raise ConfigError(f'{path}: {error}') from error
 
 
 def load_config(path=DEFAULT_CONFIG):

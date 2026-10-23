@@ -1,5 +1,10 @@
 # Recovered rules audit — October 2026
 
+**Baseline audit for commit `62bc888`.** The subsequent rulebook implementation
+is documented in [RULEBOOK.md](RULEBOOK.md) and [RULEBOOK_CHOICES.md](RULEBOOK_CHOICES.md).
+The gaps below describe the v1 baseline; the current registry records which have
+since received implemented or explicitly provisional behavior.
+
 ## Target and evidence
 
 New matches use `forum-semantics-2012-1`. The target is the **post-1.0.7 roster /

@@ -13,8 +13,9 @@ const result = await Bun.build({
       path: resolve(archive, args.path.split("boufbowl_server/src/")[1] + ".ts"),
     }));
     build.onResolve({filter:/^boufbowl-movement-risk$/}, () => ({path:resolve(root,"movement-risk.ts")}));
+    build.onResolve({filter:/^boufbowl-rulebook$/}, () => ({path:resolve(root,"simulator/rulebook.ts")}));
     build.onLoad({ filter: /[/\\]simulator[/\\](ball|abilities|engine|movement|combat|turnTick)\.ts$|[/\\](validator|rules)\.ts$/ }, args => ({
-      contents: ["ball", "abilities"].includes(basename(args.path, ".ts"))
+      contents: ["ball", "abilities", "combat"].includes(basename(args.path, ".ts"))
         ? readFileSync(resolve(root, "simulator", basename(args.path)), "utf8")
         : overlay(basename(args.path, ".ts"), readFileSync(args.path, "utf8")),
       loader: "ts", resolveDir: dirname(args.path),

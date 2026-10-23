@@ -63,6 +63,10 @@ export function resolveAbilities(cfg: GameConfig, state: WorldState, actions: Ac
       const before = target.hp;
       target.hp = Math.max(0, Math.min(target.max_hp, target.hp + (rule.hp ?? 0)));
       hpDeltas[target.id] = target.hp - before;
+      if ((cfg as any).rulebook) {
+        target.shield_hp = (target.shield_hp ?? 0) + (rule.shield ?? 0);
+        target.temporary_hp = (target.temporary_hp ?? 0) + (rule.temporary_hp ?? 0);
+      }
       // Characteristics are separate from the three action slots.
       const fields = {TERRE: "strength", FEU: "agility", AIR: "precision", EAU: "endurance"};
       for (const [element, value] of Object.entries(bonus ?? {})) {
@@ -78,6 +82,7 @@ export function resolveAbilities(cfg: GameConfig, state: WorldState, actions: Ac
       ...(enemyRoll !== undefined ? {random_draw: enemyRoll} : {}),
       uses_remaining: caster.ability_uses_remaining,
       ...(redirector ? {redirected_by: redirector.caster.id} : {}),
+      ...((cfg as any).rulebook ? {shield:rule.shield ?? 0,temporary_hp:rule.temporary_hp ?? 0} : {}),
     }});
   }
   return events;
