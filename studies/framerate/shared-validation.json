@@ -1,0 +1,1 @@
+{"status": "passed", "checks": [{"check": "shared", "status": "passed", "seconds": 0.32, "log": "/home/ubuntu/.t3/worktrees/boufbowl_swf/study-animation-framerate-interpolation/.local/verification/shared/shared.log"}], "report": "/home/ubuntu/.t3/worktrees/boufbowl_swf/study-animation-framerate-interpolation/.local/verification/shared/report.json"}

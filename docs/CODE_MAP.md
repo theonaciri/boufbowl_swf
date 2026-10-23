@@ -17,6 +17,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Resolution ordering | `backend/turn_adapter.py` → `ScriptBuilder.as`, interaction builders → `ScriptRunner` | resolution-flow tests + 3D fixture |
 | Scene updates | `ResolutionMediator.as` → `SceneController.as` → UI, scripts, model | shared smoke + ResolutionDone/MATCH_END |
 | Sprite redraw | `BoufbowlerPresenter.positionUpdated` → `MovieClipSpritePresenter.as` → shared Away3D vertex | shared smoke; move/no-op/invalidate/swap |
+| High-refresh/interpolation study | isolated `studies/framerate/study.py` → diagnostic SWFs only | [study and reproduction](../studies/framerate/REPORT.md) |
 | Animation timing | `FrameController.as` → frame/completion events → controlled movie clips | shared smoke; loop, completion, no-skip |
 | Character lookup | `SceneModel.getBoufbowler` → identity map / equivalent-ID cache | shared smoke; full 64-bit IDs and removal |
 | Downloads/publication | `tools/build_players.py` → platform packages → `tools/website/build.mjs` | `bun run check:site` + package inspection |

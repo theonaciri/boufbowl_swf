@@ -1,0 +1,24 @@
+{
+  "source": "main checkout built SWF, copied read-only for study",
+  "sha256": "7f333ed183ee602d2baf0e3919b27ea1ddd5f1d5addb70392e2ab403860be5af",
+  "bytes": 4424539,
+  "studyBase": "685536580ce04db8d08620600b0139b641c10aaa",
+  "ruffleCommit": "46fec3f1b2e625fae7035bb3b00d6d5c0ec0d413",
+  "gpu": "ANGLE / Vulkan / SwiftShader software renderer",
+  "browser": "Chromium 154 Linux x86_64",
+  "cssPlayer": [
+    640,
+    375
+  ],
+  "backingCanvas": [
+    1280,
+    750
+  ],
+  "rafControlHz": 60,
+  "physicalHighRefreshDisplayTested": false,
+  "receptionRecordSha256": "04c74a16cd00f3c93898d9f5fd91fb4c1421ce63ab7abbaad8476f6bd4e74494",
+  "boneLibraryHeaderRates": {
+    "25": 7
+  },
+  "boneLibraryHeadersScanned": 7
+}

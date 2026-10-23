@@ -1,0 +1,9 @@
+{
+  "ruffleCommit": "46fec3f1b2e625fae7035bb3b00d6d5c0ec0d413",
+  "ruffleTag": "nightly-2026-10-13",
+  "sources": [
+    "https://github.com/ruffle-rs/ruffle/blob/46fec3f1b2e625fae7035bb3b00d6d5c0ec0d413/web/src/lib.rs",
+    "https://github.com/ruffle-rs/ruffle/blob/46fec3f1b2e625fae7035bb3b00d6d5c0ec0d413/core/src/player.rs",
+    "https://github.com/ruffle-rs/ruffle/blob/46fec3f1b2e625fae7035bb3b00d6d5c0ec0d413/core/src/avm2/globals/flash/display/stage.rs"
+  ]
+}

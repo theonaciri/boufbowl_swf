@@ -1,0 +1,28 @@
+[
+  {
+    "path": "assets/sprites/boufball.swf",
+    "fps": 25.0,
+    "rootFrames": 2
+  },
+  {
+    "path": "assets/sprites/bones/20.swl",
+    "librarySignature": 76,
+    "libraryVersion": 0,
+    "fps": 25,
+    "classes": 24
+  },
+  {
+    "path": "assets/sprites/bones/0-deplacement.swl",
+    "librarySignature": 76,
+    "libraryVersion": 0,
+    "fps": 25,
+    "classes": 393
+  },
+  {
+    "path": "assets/sprites/bones/0-etat.swl",
+    "librarySignature": 76,
+    "libraryVersion": 0,
+    "fps": 25,
+    "classes": 425
+  }
+]

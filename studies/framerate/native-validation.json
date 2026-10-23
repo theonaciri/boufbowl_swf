@@ -1,0 +1,23 @@
+{
+  "status": "blocked",
+  "results": [
+    {
+      "root": "desktop",
+      "client": "/home/ubuntu/.t3/worktrees/boufbowl_swf/study-animation-framerate-interpolation/.local/client-probes/e4a73704734665f36cf115efe5373edd90c03bc6199e7a409b9c7854161d31d0/client.swf",
+      "reused": true,
+      "status": "blocked",
+      "reason": "AIR requires a commercial developer license; no application code ran",
+      "log": "/home/ubuntu/.t3/worktrees/boufbowl_swf/study-animation-framerate-interpolation/.local/shared-client/native-desktop.log",
+      "seconds": 1.15
+    },
+    {
+      "root": "android",
+      "client": "/home/ubuntu/.t3/worktrees/boufbowl_swf/study-animation-framerate-interpolation/.local/client-probes/ec38235ae6b2b3a9ddd3aa90335b884f43643dc839aa885adcdb2b456db19daf/client.swf",
+      "reused": false,
+      "status": "blocked",
+      "reason": "AIR requires a commercial developer license; no application code ran",
+      "seconds": 14.09
+    }
+  ],
+  "report": "/home/ubuntu/.t3/worktrees/boufbowl_swf/study-animation-framerate-interpolation/.local/shared-client/report.json"
+}

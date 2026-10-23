@@ -1,0 +1,1385 @@
+{
+  "format_version": 1,
+  "initial": {
+    "entities": [
+      {
+        "id": 11,
+        "team_id": 0,
+        "position": {
+          "q": 0,
+          "r": 0
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 100
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": true
+        }
+      },
+      {
+        "id": 12,
+        "team_id": 0,
+        "position": {
+          "q": 3,
+          "r": 0
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 100,
+          "endurance": 10,
+          "precision": 100
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 13,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": 0
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 14,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": 1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 15,
+        "team_id": 0,
+        "position": {
+          "q": -5,
+          "r": 2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 21,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": -2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 22,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": -1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 23,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": 0
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 24,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": 1
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      },
+      {
+        "id": 25,
+        "team_id": 1,
+        "position": {
+          "q": 5,
+          "r": 2
+        },
+        "orientation": 0,
+        "stats": {
+          "strength": 10,
+          "agility": 10,
+          "endurance": 10,
+          "precision": 10
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "class_name": "Iop",
+        "ability_uses_remaining": 1,
+        "elements": {
+          "TERRE": 0,
+          "FEU": 0,
+          "AIR": 0,
+          "EAU": 0
+        },
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        }
+      }
+    ],
+    "ball": {
+      "position": {
+        "q": 0,
+        "r": 0
+      },
+      "holder_entity_id": 11,
+      "in_flight": false
+    },
+    "tick": 0
+  },
+  "orders": [
+    {
+      "player_id": "0",
+      "turn_number": 1,
+      "team_index": 0,
+      "nonce": "reception0",
+      "actions": [
+        {
+          "entity_id": 11,
+          "action_type": "throw",
+          "params": {
+            "target_entity_id": 12,
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 3,
+              "EAU": 0
+            }
+          }
+        },
+        {
+          "entity_id": 12,
+          "action_type": "wait",
+          "params": {
+            "elements": {
+              "TERRE": 0,
+              "FEU": 0,
+              "AIR": 3,
+              "EAU": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "player_id": "1",
+      "turn_number": 1,
+      "team_index": 1,
+      "nonce": "reception1",
+      "actions": []
+    }
+  ],
+  "result": {
+    "turn_number": 1,
+    "seed": 12345,
+    "tick_duration": 0.1,
+    "initial_state_hash": "95a4a9581425f0b71e490ada279e6a8fd4e7e7f488f3145315613cbd8c026f57",
+    "events": [
+      {
+        "tick": 1,
+        "type": "throw",
+        "actor": 11,
+        "params": {
+          "start_position": {
+            "q": 0,
+            "r": 0
+          },
+          "target_position": {
+            "q": 3,
+            "r": 0
+          },
+          "target_entity_id": 12,
+          "success": true,
+          "precision": 0.99,
+          "land_tick": 5,
+          "arc_height": 2.5
+        }
+      },
+      {
+        "tick": 1,
+        "type": "ball_move",
+        "params": {
+          "position": {
+            "q": 0,
+            "r": 0
+          },
+          "height": 0
+        }
+      },
+      {
+        "tick": 2,
+        "type": "ball_move",
+        "params": {
+          "position": {
+            "q": 0.75,
+            "r": 0
+          },
+          "height": 1.875
+        }
+      },
+      {
+        "tick": 3,
+        "type": "ball_move",
+        "params": {
+          "position": {
+            "q": 1.5,
+            "r": 0
+          },
+          "height": 2.5
+        }
+      },
+      {
+        "tick": 4,
+        "type": "ball_move",
+        "params": {
+          "position": {
+            "q": 2.25,
+            "r": 0
+          },
+          "height": 1.875
+        }
+      },
+      {
+        "tick": 5,
+        "type": "ball_move",
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 0
+          },
+          "height": 0
+        }
+      },
+      {
+        "tick": 5,
+        "type": "catch",
+        "actor": 12,
+        "params": {
+          "position": {
+            "q": 3,
+            "r": 0
+          },
+          "catch_chance": 0.99
+        }
+      },
+      {
+        "tick": 5,
+        "type": "final_state",
+        "actor": -1,
+        "params": {
+          "final_entity_states": [
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 11,
+              "position": {
+                "q": 0,
+                "r": 0
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 12,
+              "position": {
+                "q": 3,
+                "r": 0
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": true
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 13,
+              "position": {
+                "q": -5,
+                "r": 0
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 14,
+              "position": {
+                "q": -5,
+                "r": 1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 15,
+              "position": {
+                "q": -5,
+                "r": 2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 21,
+              "position": {
+                "q": 5,
+                "r": -2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 22,
+              "position": {
+                "q": 5,
+                "r": -1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 23,
+              "position": {
+                "q": 5,
+                "r": 0
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 24,
+              "position": {
+                "q": 5,
+                "r": 1
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            },
+            {
+              "ability_uses_remaining": 1,
+              "entity_id": 25,
+              "position": {
+                "q": 5,
+                "r": 2
+              },
+              "hp": 16,
+              "max_hp": 16,
+              "status": {
+                "stunned": false,
+                "knocked_down": false,
+                "carrying_ball": false
+              },
+              "is_ko": false,
+              "is_eliminated": false
+            }
+          ],
+          "final_ball_state": {
+            "position": {
+              "q": 3,
+              "r": 0
+            },
+            "holder_entity_id": 12,
+            "in_flight": false
+          }
+        }
+      }
+    ],
+    "final_state_hash": "3b4ed00a88b09648339771ab3c4e7b15556a9264146f8e3ba6ad84f356f3be2b",
+    "protocol_version": "1.0.0",
+    "simulation_version": "2.5.0+client-ball-2",
+    "timestamp": 0,
+    "final_entity_states": [
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 11,
+        "position": {
+          "q": 0,
+          "r": 0
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 12,
+        "position": {
+          "q": 3,
+          "r": 0
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": true
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 13,
+        "position": {
+          "q": -5,
+          "r": 0
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 14,
+        "position": {
+          "q": -5,
+          "r": 1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 15,
+        "position": {
+          "q": -5,
+          "r": 2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 21,
+        "position": {
+          "q": 5,
+          "r": -2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 22,
+        "position": {
+          "q": 5,
+          "r": -1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 23,
+        "position": {
+          "q": 5,
+          "r": 0
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 24,
+        "position": {
+          "q": 5,
+          "r": 1
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      },
+      {
+        "ability_uses_remaining": 1,
+        "entity_id": 25,
+        "position": {
+          "q": 5,
+          "r": 2
+        },
+        "hp": 16,
+        "max_hp": 16,
+        "status": {
+          "stunned": false,
+          "knocked_down": false,
+          "carrying_ball": false
+        },
+        "is_ko": false,
+        "is_eliminated": false
+      }
+    ],
+    "final_ball_state": {
+      "position": {
+        "q": 3,
+        "r": 0
+      },
+      "holder_entity_id": 12,
+      "in_flight": false
+    },
+    "final_world_state": {
+      "entities": [
+        {
+          "id": 11,
+          "team_id": 0,
+          "position": {
+            "q": 0,
+            "r": 0
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 100
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 3,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 12,
+          "team_id": 0,
+          "position": {
+            "q": 3,
+            "r": 0
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 100,
+            "endurance": 10,
+            "precision": 100
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 3,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": true
+          }
+        },
+        {
+          "id": 13,
+          "team_id": 0,
+          "position": {
+            "q": -5,
+            "r": 0
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 14,
+          "team_id": 0,
+          "position": {
+            "q": -5,
+            "r": 1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 15,
+          "team_id": 0,
+          "position": {
+            "q": -5,
+            "r": 2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 21,
+          "team_id": 1,
+          "position": {
+            "q": 5,
+            "r": -2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 22,
+          "team_id": 1,
+          "position": {
+            "q": 5,
+            "r": -1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 23,
+          "team_id": 1,
+          "position": {
+            "q": 5,
+            "r": 0
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 24,
+          "team_id": 1,
+          "position": {
+            "q": 5,
+            "r": 1
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        },
+        {
+          "id": 25,
+          "team_id": 1,
+          "position": {
+            "q": 5,
+            "r": 2
+          },
+          "orientation": 0,
+          "stats": {
+            "strength": 10,
+            "agility": 10,
+            "endurance": 10,
+            "precision": 10
+          },
+          "hp": 16,
+          "max_hp": 16,
+          "class_name": "Iop",
+          "ability_uses_remaining": 1,
+          "elements": {
+            "TERRE": 0,
+            "FEU": 0,
+            "AIR": 0,
+            "EAU": 0
+          },
+          "status": {
+            "stunned": false,
+            "knocked_down": false,
+            "carrying_ball": false
+          }
+        }
+      ],
+      "ball": {
+        "position": {
+          "q": 3,
+          "r": 0
+        },
+        "holder_entity_id": 12,
+        "in_flight": false
+      },
+      "tick": 5
+    },
+    "score": [
+      0,
+      0
+    ]
+  },
+  "rules": {
+    "match": {
+      "turns_per_match": 24,
+      "turns_per_period": 12,
+      "class_ability_uses": 1,
+      "placement_seconds": 60,
+      "planning_seconds": 60,
+      "max_players_per_role": 5,
+      "regenerate_between_turns": true
+    },
+    "client_ranges": {
+      "max_distance_factor": 1.33,
+      "earth_distance_bonus": 2.0,
+      "fire_distance_bonus": 2.0,
+      "air_distance_bonus": 2.34,
+      "water_distance_bonus": 3.0
+    },
+    "classes": {
+      "defaults": {
+        "earth": 12,
+        "air": 10,
+        "fire": 10,
+        "water": 10,
+        "health": 16,
+        "regeneration": 3
+      },
+      "overrides": {
+        "CRA": {
+          "role": 2
+        },
+        "ECAFLIP": {
+          "role": 3
+        },
+        "ENIRIPSA": {
+          "role": 4
+        },
+        "ENUTROF": {
+          "role": 1
+        },
+        "FECA": {
+          "role": 2
+        },
+        "IOP": {
+          "role": 3
+        },
+        "OSAMODAS": {
+          "role": 4
+        },
+        "PANDAWA": {
+          "role": 1
+        },
+        "ROUBLARD": {
+          "role": 2
+        },
+        "SACRIEUR": {
+          "role": 3
+        },
+        "SADIDA": {
+          "role": 4
+        },
+        "SRAM": {
+          "role": 1
+        },
+        "XELOR": {
+          "role": 2
+        },
+        "ZOBAL": {
+          "role": 3
+        }
+      }
+    },
+    "simulation": {
+      "actions": {
+        "element_effects": {
+          "terre": {
+            "attack_bonus_per": 1
+          },
+          "feu": {
+            "used_for_pickup": true,
+            "used_for_reception": true
+          },
+          "air": {
+            "range_modifier": 1
+          }
+        }
+      },
+      "ball": {
+        "base_range": 7,
+        "pickup_range": 2.0,
+        "throw_speed_cells_per_sec": 8.0,
+        "arc_height_cells": 2.5,
+        "catch_radius_cells": 2.0,
+        "intercept_radius_cells": 2.0,
+        "intercept_height_threshold": 1.5,
+        "reception_requires_air": true,
+        "goal_line_half_width": 12.5
+      },
+      "combat": {
+        "duel": {
+          "damage_on_win": 4,
+          "damage_on_tie": 2
+        },
+        "revive": {
+          "required_eau_actions_to_get_up": 1
+        },
+        "trigger_distance_cells": 1.0,
+        "fight_duration_penalty_cells": 1.0
+      },
+      "probabilities": {
+        "air_precision_per_action": 0.15
+      },
+      "movement": {
+        "base_speed_cells_per_sec": 2.0,
+        "speed_per_endurance": 0.15,
+        "eau_speed_bonus_per_action": 0.4,
+        "terre_speed_penalty_per_action": 0.2,
+        "air_speed_bonus_per_action": 0.1,
+        "base_movement_range": 7,
+        "eau_range_bonus_per_action": 2,
+        "air_range_bonus_per_action": 3,
+        "terre_range_penalty_per_action": 1
+      },
+      "simulation": {
+        "stand_up_ticks": 5,
+        "throw_delay_ticks": 1,
+        "catch_base": 0.35,
+        "catch_stat": 0.03,
+        "catch_feu": 0.1,
+        "catch_air": 0.05,
+        "throw_base": 0.4,
+        "throw_stat": 0.03,
+        "distance_penalty": 0.02,
+        "probability_min": 0.05,
+        "probability_max": 0.99,
+        "fall_base": 0.15,
+        "fall_per_power": 0.1,
+        "fall_max": 0.9
+      },
+      "tick_system": {
+        "tick_dt_seconds": 0.1,
+        "max_ticks_per_turn": 100,
+        "tick_animation_duration_seconds": 0.5
+      },
+      "placement": {
+        "ball_exclusion_radius_cells": 3
+      }
+    },
+    "abilities": {
+      "Iop": {
+        "name": "Cri de force (provisoire)",
+        "verified": false,
+        "heal": 0,
+        "element": "TERRE",
+        "bonus": 1
+      },
+      "Sram": {
+        "name": "Ruse collective (provisoire)",
+        "verified": false,
+        "heal": 0,
+        "element": "FEU",
+        "bonus": 1
+      },
+      "Feca": {
+        "name": "Soutien collectif (provisoire)",
+        "verified": false,
+        "heal": 3,
+        "bonus": 0
+      },
+      "Xelor": {
+        "name": "Acceleration (provisoire)",
+        "verified": false,
+        "heal": 0,
+        "element": "EAU",
+        "bonus": 1
+      },
+      "Default": {
+        "name": "Second souffle (provisoire)",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Cra": {
+        "name": "Cra configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Ecaflip": {
+        "name": "Ecaflip configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Eniripsa": {
+        "name": "Eniripsa configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Enutrof": {
+        "name": "Enutrof configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Osamodas": {
+        "name": "Osamodas configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Pandawa": {
+        "name": "Pandawa configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Rogue": {
+        "name": "Rogue configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Sacrier": {
+        "name": "Sacrier configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Sadida": {
+        "name": "Sadida configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      },
+      "Zobal": {
+        "name": "Zobal configurable ability",
+        "verified": false,
+        "heal": 2,
+        "bonus": 0
+      }
+    }
+  },
+  "rules_version": "boufbowl-custom-2"
+}
