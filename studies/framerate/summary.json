@@ -559,5 +559,43 @@
       "requested": 10000,
       "updates": 10001
     }
+  ],
+  "applied": [
+    {
+      "requested": 144,
+      "sceneUpdates": 128,
+      "uiUpdates": 128,
+      "sceneRates": {
+        "144": 128
+      },
+      "runtime": "ruffle"
+    },
+    {
+      "requested": 240,
+      "sceneUpdates": 128,
+      "uiUpdates": 128,
+      "sceneRates": {
+        "240": 128
+      },
+      "runtime": "ruffle"
+    },
+    {
+      "requested": 25,
+      "sceneUpdates": 129,
+      "uiUpdates": 129,
+      "sceneRates": {
+        "25": 129
+      },
+      "runtime": "ruffle"
+    },
+    {
+      "requested": 60,
+      "sceneUpdates": 128,
+      "uiUpdates": 128,
+      "sceneRates": {
+        "60": 128
+      },
+      "runtime": "flash"
+    }
   ]
 }

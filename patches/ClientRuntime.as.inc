@@ -13,7 +13,7 @@
          if(ruffleRuntime && loaderInfo.parameters.webFps != null)
          {
             var requested:Number = Number(loaderInfo.parameters.webFps);
-            if(requested >= 25 && requested <= 60) browserFrameRate = requested;
+            if(requested >= 25 && requested <= 240) browserFrameRate = requested;
          }
       }
 
@@ -33,7 +33,7 @@
       public static function sceneFrameRate(defaultRate:Number) : Number
       {
          return ruffleRuntime ? browserFrameRate :
-            (preferredFrameRate > 0 ? Math.min(defaultRate,preferredFrameRate) : defaultRate);
+            (preferredFrameRate > 0 ? preferredFrameRate : defaultRate);
       }
 
       private static var measurementRoot:BoufbowlClient;

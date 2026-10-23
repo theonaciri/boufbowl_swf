@@ -124,7 +124,7 @@ package com.ankamagames.boufbowl
 
       private function setWebDisplay(fps:Number, quality:String) : Boolean
       {
-         if(!ruffleRuntime || isNaN(fps) || fps < 25 || fps > 60 ||
+         if(!ruffleRuntime || isNaN(fps) || fps < 25 || fps > 240 ||
             (quality != "low" && quality != "medium" && quality != "high")) return false;
          browserFrameRate = fps;
          stage.frameRate = fps;

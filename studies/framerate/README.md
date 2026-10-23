@@ -1,12 +1,14 @@
 # Isolated frame-rate study
 
 Read [REPORT.md](REPORT.md) for findings, evidence, alternatives and limitations.
-This folder contains diagnostic tooling and saved measurements, not a production
-patch. Nothing here is imported by the application or website build.
+This folder contains diagnostic tooling and saved measurements. Nothing here is
+imported by the application or website build. Baseline observations were committed
+as `a4b1762`; the later authorized game policy changes are in [APPLIED.md](APPLIED.md).
 
 ## Inputs and isolation
 
-Base commit: `6855365`. The study used a read-only copy of main's already built
+Base commit: `6855365`; baseline study snapshot: `a4b1762`. Use that snapshot
+to reproduce the original caps; current source includes the authorized fix. The study used a read-only copy of main's already built
 `bin/boufbowl-client-1.9.6.swf`; its SHA-256 is recorded in `provenance.json`.
 If that generated file is absent in a fresh study worktree, copy the exact input
 from an existing build or build it **inside this worktree** with
@@ -99,6 +101,17 @@ commercial developer-license requirement; it did not run native game code.
 - `summary.json`, `report.html`: compact data and interactive study report.
 - `validate_results.py`, `build_report.py`: checks and regeneration of the report.
 
-Do not merge the diagnostic FPS bypass into game roots. A production proposal
-needs hardware/native high-refresh validation and the additional correctness
-checks listed in the report.
+Do not merge the diagnostic FPS bypass into game roots. To test the applied
+policy without this bypass, rebuild locally then run:
+
+```sh
+python3 patches/rebuild.py
+python3 studies/framerate/study.py --production-policy --serve --port 9914
+```
+
+Use `?applied=1&replay=1&fps=RATE` on port 9914. Results and traces are saved
+separately under `studies/framerate/applied/` and `.local/framerate-study/applied/`.
+Use a fresh trace for each replay. `runtime=flash` exercises the native policy
+branch inside Ruffle; it is not a native-runtime test. These probes count the
+actual stage rates seen by SceneController, not just the requested rate. Native
+hardware and high-refresh display validation remain necessary before publication.

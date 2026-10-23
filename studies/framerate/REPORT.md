@@ -1,8 +1,10 @@
 # Animation rate and interpolation study
 
 Study branch: `study/animation-framerate-interpolation`, based on `6855365`.
-Date: 2026-10-23. All experiments live in this worktree. No production source,
-main-checkout file, service, published site, SWF or download was changed.
+Date: 2026-10-23. Baseline study committed as `a4b1762` before changing game
+source. Measurements below describe that baseline. The subsequently authorized
+policy fix is documented in [APPLIED.md](APPLIED.md). All edits/builds remain in
+this worktree; no main checkout, live service, published site or download changed.
 
 ## Answer
 
@@ -28,7 +30,7 @@ change the animation constant or run the whole game in an unlimited busy loop.
 
 ## Traced rates and their owners
 
-| Layer | Current behavior | Evidence |
+| Layer | Baseline behavior | Evidence |
 | --- | --- | --- |
 | SWF/library metadata | Copied runnable SWF, all seven available body/movement library headers and the sampled ball asset declare 25 FPS | `provenance.json`, `asset-rates.json`; header reads |
 | App startup | Root restores native preference or defaults to 60 | `patches/BoufbowlClient.as`, `ClientRuntime.as.inc` |

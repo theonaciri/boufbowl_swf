@@ -19,17 +19,28 @@
             smokeAssert(readFrameRatePreference({frameRateTarget:240}) == 240,"Valid high FPS preference was lost");
             smokeAssert(readFrameRatePreference({frameRateTarget:NaN,limitFrameRate25:true}) == 25,"Legacy FPS cap was lost");
             smokeAssert(readFrameRatePreference({frameRateTarget:300}) == 0,"Invalid FPS preference was accepted");
+            for each(var invalidRate:Number in [24,241,NaN,Infinity,-Infinity])
+               smokeAssert(readFrameRatePreference({frameRateTarget:invalidRate}) == 0,"Out-of-range FPS preference was accepted");
             var wasRuffle:Boolean = ruffleRuntime;
             var savedPreferred:Number = preferredFrameRate;
+            var savedBrowser:Number = browserFrameRate;
             ruffleRuntime = false;
-            preferredFrameRate = 30;
-            smokeAssert(sceneFrameRate(50) == 30 && sceneFrameRate(25) == 25,"Native scene FPS caps changed");
             preferredFrameRate = 0;
             smokeAssert(sceneFrameRate(50) == 50 && sceneFrameRate(25) == 25,"Native default scene rates changed");
-            ruffleRuntime = true;
-            smokeAssert(sceneFrameRate(50) == browserFrameRate,"Browser scene FPS cap changed");
+            for each(var targetRate:Number in [25,30,50,60,90,120,144,240])
+            {
+               preferredFrameRate = targetRate;
+               ruffleRuntime = false;
+               smokeAssert(sceneFrameRate(50) == targetRate && sceneFrameRate(25) == targetRate,
+                  "Native scene entry lost the selected FPS");
+               browserFrameRate = targetRate;
+               ruffleRuntime = true;
+               smokeAssert(sceneFrameRate(50) == targetRate && sceneFrameRate(25) == targetRate,
+                  "Browser scene entry lost the selected FPS");
+            }
             ruffleRuntime = wasRuffle;
             preferredFrameRate = savedPreferred;
+            browserFrameRate = savedBrowser;
             var presenter:com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter =
                new com.ankamagames.boufbowl.resolution.display.presenter.MovieClipSpritePresenter(1);
             presenter.sprite = new Sprite();

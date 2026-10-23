@@ -288,7 +288,6 @@ package com.ankamagames.boufbowl.client.options.view
          this._frameRateTarget = Math.min(240,this._frameRateTarget);
          if(com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime)
          {
-            this._frameRateTarget = Math.min(60,this._frameRateTarget);
             com.ankamagames.boufbowl.BoufbowlClient.browserFrameRate = this._frameRateTarget;
          }
          this._frameRateThumb.x = (this._frameRateTarget - 25) / 215 * 150;

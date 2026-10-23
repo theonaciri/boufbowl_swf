@@ -74,3 +74,19 @@ passed with both the native and Ruffle runtime branches selected in Ruffle.
 The Python suite passed 314 tests with one skipped; both browser-preset tests
 passed. Native application execution remains unverified on this host because
 its ARM64 AIR runtime requires a commercial developer license.
+
+## Optional high-refresh settings
+
+The [frame-rate study](../studies/framerate/REPORT.md) separates authored 25 Hz
+poses, scene update frequency and browser presentation. Explicit native FPS
+preferences now take precedence over both 50 FPS resolution entry and 25 FPS
+scene exit defaults. With no saved preference those defaults remain unchanged;
+legacy `limitFrameRate25` still resolves to 25. Both roots use the shared policy.
+
+The browser loader, live display callback and in-game slider now accept the same
+25–240 range. Existing web presets remain 25/30/60, so high-refresh use is opt-in.
+This permits additional samples of existing elapsed-time movement trajectories;
+it does not synthesize limb poses or change authored frame constants. Raising
+the request on a 60 Hz or overloaded display can add work without visible benefit.
+Applied regression evidence and runtime boundaries are recorded in
+[APPLIED.md](../studies/framerate/APPLIED.md).

@@ -5,6 +5,12 @@ from statistics import median
 root=Path(__file__).resolve().parent
 rates=[25,30,50,60,90,120,144,240]
 summary={'contexts':{},'replays':[],'native':'blocked: AIR developer license','synthetic':[]}
+summary['applied']=[]
+for path in sorted((root/'applied').glob('results-replay-*.json')):
+    result=json.loads(path.read_text())
+    sample=result['samples'][0]
+    summary['applied'].append({**{key:sample[key] for key in ('requested','sceneUpdates','uiUpdates','sceneRates')},
+                              'runtime':result['environment']['runtimePath']})
 for name in ('bare','game-ui'):
     data=json.loads((root/f'results-{name}.json').read_text())
     rows=[]

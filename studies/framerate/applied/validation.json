@@ -1,0 +1,52 @@
+{
+  "baselineStudyCommit": "a4b1762",
+  "productionPolicyBypass": false,
+  "sourceAndBuildSha256": {
+    "patches/ClientRuntime.as.inc": "24bd5d753cff06d2f06294e2fae89194fbabd14d47b7baf9f127650735d3d7a3",
+    "patches/BoufbowlClient.as": "4de745ab2c4faf90e0bfae15013a1a3a8b36c9712ec3c9dfc2e668df38e449eb",
+    "patches/OptionsView.as": "dbb70539c02151c1c0e9c7b33fa59f04480cbacc8ae52de75f447d8da05c4251",
+    "android/patches/BoufbowlClient.as": "1bae262d9ff1a160e881f3b92e8f5e5bd441ad8cf72ec3f58b0253c3358bbb35",
+    "tools/shared_client_smoke.as.inc": "8d76c707a629a45a51e5f02d3f93c4c63f99c4019dcfa17b3f3c4d955bd44f95",
+    "bin/boufbowl-client-1.9.6.swf": "066760a0b8ec4cef6140d58b8b74c0eddc3f2847a28ec4d37dc23cf7d236d888"
+  },
+  "checks": {
+    "shared": {
+      "status": "passed",
+      "checks": [
+        {
+          "check": "shared",
+          "status": "passed",
+          "seconds": 0.22,
+          "log": ".local/verification/applied-shared/shared.log"
+        }
+      ],
+      "report": ".local/verification/applied-shared/report.json"
+    },
+    "web": {
+      "status": "passed",
+      "checks": [
+        {
+          "check": "web",
+          "status": "passed",
+          "seconds": 0.02,
+          "log": ".local/verification/applied-web/web.log"
+        }
+      ],
+      "report": ".local/verification/applied-web/report.json"
+    },
+    "compile": {
+      "status": "compiled",
+      "checks": [
+        {
+          "check": "compile",
+          "status": "compiled",
+          "seconds": 40.71,
+          "log": ".local/verification/applied-compile/compile.log"
+        }
+      ],
+      "report": ".local/verification/applied-compile/report.json"
+    }
+  },
+  "nativeExecution": "not repeated; baseline blocked by AIR developer license before application code ran",
+  "diagnosticSwfSha256": "de0cff90f8b0fedd1c9bc1a6b5e0a6c1e28520559477b2b8dc8bf5a8bc838899"
+}

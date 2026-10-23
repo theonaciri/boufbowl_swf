@@ -17,7 +17,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Resolution ordering | `backend/turn_adapter.py` → `ScriptBuilder.as`, interaction builders → `ScriptRunner` | resolution-flow tests + 3D fixture |
 | Scene updates | `ResolutionMediator.as` → `SceneController.as` → UI, scripts, model | shared smoke + ResolutionDone/MATCH_END |
 | Sprite redraw | `BoufbowlerPresenter.positionUpdated` → `MovieClipSpritePresenter.as` → shared Away3D vertex | shared smoke; move/no-op/invalidate/swap |
-| High-refresh/interpolation study | isolated `studies/framerate/study.py` → diagnostic SWFs only | [study and reproduction](../studies/framerate/REPORT.md) |
+| High-refresh/interpolation study | isolated `studies/framerate/study.py` → diagnostic SWFs, optional production-policy validation | [study and reproduction](../studies/framerate/REPORT.md) |
 | Animation timing | `FrameController.as` → frame/completion events → controlled movie clips | shared smoke; loop, completion, no-skip |
 | Character lookup | `SceneModel.getBoufbowler` → identity map / equivalent-ID cache | shared smoke; full 64-bit IDs and removal |
 | Downloads/publication | `tools/build_players.py` → platform packages → `tools/website/build.mjs` | `bun run check:site` + package inspection |
@@ -33,7 +33,9 @@ can be exported selectively with FFDec when a caller requires inspection.
   and touch/layout/resource adapters through the shared patch registry.
 - Both roots expand the same FPS policy fragment. Desktop permits the explicit
   `clientRuntime=ruffle` opt-in; Android disables it. Native scene defaults remain
-  50/25 FPS, capped by a saved choice. Unset native menu FPS is 60.
+  50/25 FPS when unset; an explicit 25–240 FPS choice takes precedence across
+  scenes. Browser launch/display settings also accept 25–240; presets stay
+  25/30/60 by default. Unset native menu FPS is 60.
 - Ruffle popup skins, clipping and launcher presets remain browser-specific.
   Sprite updates, frame controllers, text batching and scene lookup are shared.
 - The backend owns outcomes and randomness. Presentation optimizations must keep
