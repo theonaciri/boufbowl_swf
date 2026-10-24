@@ -3228,7 +3228,7 @@
   "classes_order_tooltip_desc_enum": {
     "fr": {
         "1": "+1 portée (déplacement et passe) → tous les alliés (pour ce tour).",
-        "2": "50%: +2 chaque élément → tous les alliés (pour ce tour); 50%: +1 chaque élément → tous les ennemis (pour ce tour).",
+        "2": "Détourne les soins de l’Eniripsa adverse vers votre équipe. Sans soin adverse : aucun effet.",
         "3": "+2 PdV → tous les alliés.",
         "4": "+3 EAU → tous les alliés (pour ce tour).",
         "5": "-1 attaque → tous les ennemis (pour ce tour).",
@@ -3244,7 +3244,7 @@
     },
     "en": {
         "1": "+1 range (movement and passing) → all allies (for this turn).",
-        "2": "50%: +2 each element → all allies (for this turn); 50%: +1 each element → all enemies (for this turn).",
+        "2": "Redirects the opposing Eniripsa’s healing to your team. No opposing heal: no effect.",
         "3": "+2 HP → all allies.",
         "4": "+3 WATER → all allies (for this turn).",
         "5": "-1 attack → all enemies (for this turn).",
@@ -3260,7 +3260,7 @@
     },
     "de": {
         "1": "+1 Reichweite (Bewegung und Pass) → alle Verbündeten (für diese Runde).",
-        "2": "50%: +2 jedes Element → alle Verbündeten (für diese Runde); 50%: +1 jedes Element → alle Gegner (für diese Runde).",
+        "2": "Lenkt die Heilung des gegnerischen Eniripsa auf dein Team um. Ohne gegnerische Heilung: kein Effekt.",
         "3": "+2 LP → alle Verbündeten.",
         "4": "+3 WASSER → alle Verbündeten (für diese Runde).",
         "5": "-1 Angriff → alle Gegner (für diese Runde).",
@@ -3276,7 +3276,7 @@
     },
     "es": {
         "1": "+1 alcance (movimiento y pase) → todos los aliados (durante este turno).",
-        "2": "50%: +2 cada elemento → todos los aliados (durante este turno); 50%: +1 cada elemento → todos los enemigos (durante este turno).",
+        "2": "Redirige la curación del Eniripsa rival a tu equipo. Sin curación rival: ningún efecto.",
         "3": "+2 PdV → todos los aliados.",
         "4": "+3 AGUA → todos los aliados (durante este turno).",
         "5": "-1 ataque → todos los enemigos (durante este turno).",
@@ -3294,7 +3294,7 @@
   "classes_order_combatlog_desc_enum": {
     "fr": {
         "1": "+1 portée (déplacement et passe) → tous les alliés (pour ce tour).",
-        "2": "50%: +2 chaque élément → tous les alliés (pour ce tour); 50%: +1 chaque élément → tous les ennemis (pour ce tour).",
+        "2": "Détourne les soins de l’Eniripsa adverse vers votre équipe. Sans soin adverse : aucun effet.",
         "3": "+2 PdV → tous les alliés.",
         "4": "+3 EAU → tous les alliés (pour ce tour).",
         "5": "-1 attaque → tous les ennemis (pour ce tour).",
@@ -3310,7 +3310,7 @@
     },
     "en": {
         "1": "+1 range (movement and passing) → all allies (for this turn).",
-        "2": "50%: +2 each element → all allies (for this turn); 50%: +1 each element → all enemies (for this turn).",
+        "2": "Redirects the opposing Eniripsa’s healing to your team. No opposing heal: no effect.",
         "3": "+2 HP → all allies.",
         "4": "+3 WATER → all allies (for this turn).",
         "5": "-1 attack → all enemies (for this turn).",
@@ -3326,7 +3326,7 @@
     },
     "de": {
         "1": "+1 Reichweite (Bewegung und Pass) → alle Verbündeten (für diese Runde).",
-        "2": "50%: +2 jedes Element → alle Verbündeten (für diese Runde); 50%: +1 jedes Element → alle Gegner (für diese Runde).",
+        "2": "Lenkt die Heilung des gegnerischen Eniripsa auf dein Team um. Ohne gegnerische Heilung: kein Effekt.",
         "3": "+2 LP → alle Verbündeten.",
         "4": "+3 WASSER → alle Verbündeten (für diese Runde).",
         "5": "-1 Angriff → alle Gegner (für diese Runde).",
@@ -3342,7 +3342,7 @@
     },
     "es": {
         "1": "+1 alcance (movimiento y pase) → todos los aliados (durante este turno).",
-        "2": "50%: +2 cada elemento → todos los aliados (durante este turno); 50%: +1 cada elemento → todos los enemigos (durante este turno).",
+        "2": "Redirige la curación del Eniripsa rival a tu equipo. Sin curación rival: ningún efecto.",
         "3": "+2 PdV → todos los aliados.",
         "4": "+3 AGUA → todos los aliados (durante este turno).",
         "5": "-1 ataque → todos los enemigos (durante este turno).",
