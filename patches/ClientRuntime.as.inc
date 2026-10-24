@@ -6,7 +6,7 @@
       private function initializeClientRuntime(allowBrowser:Boolean) : void
       {
          measurementRoot = this;
-         measurementLaunchAt = flash.utils.getTimer();
+         measurementLaunchAt = getTimer();
          ruffleRuntime = allowBrowser && loaderInfo.parameters.clientRuntime == "ruffle";
          if(ruffleRuntime && flash.external.ExternalInterface.available)
             flash.external.ExternalInterface.addCallback("setMeasurementActive",setMeasurementActive);
@@ -67,7 +67,7 @@
          if(!measurementStartupReported)
          {
             measurementStartupReported = true;
-            var startupElapsed:int = flash.utils.getTimer()-measurementLaunchAt;
+            var startupElapsed:int = getTimer()-measurementLaunchAt;
             if(startupElapsed >= 0 && startupElapsed <= 3600000)
                sink({kind:"game_startup",elapsed_ms:startupElapsed});
          }
@@ -86,7 +86,7 @@
          if(active == measurementActive) return;
          flushMeasurements();
          measurementActive = active;
-         measurementLast = flash.utils.getTimer();
+         measurementLast = getTimer();
       }
 
       private static function measurementActivated(event:Event) : void { setMeasurementActive(true); }
@@ -94,7 +94,7 @@
 
       private static function resetMeasurements() : void
       {
-         measurementLast = flash.utils.getTimer();
+         measurementLast = getTimer();
          measurementFrames = measurementSlow = 0;
          measurementElapsed = measurementMax = 0;
          measurementHistogram = [0,0,0,0,0,0,0,0,0,0];
@@ -104,7 +104,7 @@
 
       private static function measureRuntimeFrame(event:Event) : void
       {
-         var now:int = flash.utils.getTimer();
+         var now:int = getTimer();
          var elapsed:int = now-measurementLast;
          measurementLast = now;
          if(!measurementActive || elapsed <= 0 || elapsed > 60000) return;

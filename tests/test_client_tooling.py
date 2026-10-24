@@ -46,6 +46,9 @@ class ClientToolingTests(unittest.TestCase):
             source = next(p.source for p in client_patches(platform=platform) if p.source.stem == 'BoufbowlClient')
             expanded = client_root_source(source.read_text())
             self.assertNotIn('@shared-client-runtime',expanded)
+            self.assertEqual(expanded.count('import flash.utils.getTimer;'),1)
+            self.assertIn('measurementLaunchAt = getTimer();',expanded)
+            self.assertNotIn('flash.utils.getTimer()',expanded)
             with self.assertRaises(ValueError):
                 client_root_source(expanded)
             for native in (False,True):

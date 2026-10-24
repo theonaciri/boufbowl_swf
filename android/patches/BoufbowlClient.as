@@ -28,8 +28,10 @@ package com.ankamagames.boufbowl
 
       private static var embeddedVersionClass:Class = BoufbowlClient_embeddedVersionClass;
       
-      private static const LOGGER:ILogger = LoggerFactory.getLogger(BoufbowlClient);
+      private static var LOGGER:ILogger;
       
+      private var _startupPhase:String = "document constructor";
+      private var _startupDiagnostic:TextField;
       private var _uncaughtErrorsHandler:UncaughtErrorsHandler;
       private var _gameView:Sprite;
       private var _touchPoints:Dictionary = new Dictionary();
@@ -41,40 +43,69 @@ package com.ankamagames.boufbowl
       public function BoufbowlClient()
       {
          super();
-         this.initializeClientRuntime(false);
-         LogManager.logFileURL = "app:/resources/logback.xml";
-         LogManager(LogManager.getInstance()).init();
-         this._uncaughtErrorsHandler = new UncaughtErrorsHandler(loaderInfo.uncaughtErrorEvents);
-         loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR,function(event:UncaughtErrorEvent):void
-         {
-            var diagnostic:TextField = new TextField();
-            diagnostic.defaultTextFormat = new TextFormat("_sans",16,16737894);
-            diagnostic.text = event.error;
-            diagnostic.wordWrap = true;
-            diagnostic.multiline = true;
-            if(event.error is Error && Error(event.error).getStackTrace() != null)
-            {
-               diagnostic.appendText("\n" + Error(event.error).getStackTrace());
-            }
-            diagnostic.width = 1024;
-            diagnostic.height = 500;
-            if(stage != null)
-            {
-               stage.addChild(diagnostic);
-            }
-         });
-         LOGGER.info("Starting up");
-         this.logAvailableFonts();
+         loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR,this.startupErrorHandler,false,1000);
          if(stage != null)
          {
-            this.init();
+            this.startApplication();
          }
          else
          {
             addEventListener(Event.ADDED_TO_STAGE,this.addedToStageHandler,false,0,true);
          }
       }
-      
+
+      private function startupErrorHandler(event:UncaughtErrorEvent) : void
+      {
+         this.showStartupError(event.error);
+      }
+
+      private function showStartupError(error:Object) : void
+      {
+         if(this._startupDiagnostic == null) this._startupDiagnostic = new TextField();
+         var diagnostic:TextField = this._startupDiagnostic;
+         diagnostic.defaultTextFormat = new TextFormat("_sans",18,0xffffff);
+         diagnostic.embedFonts = false;
+         diagnostic.background = true;
+         diagnostic.backgroundColor = 0x391b24;
+         diagnostic.text = "Boufbowl Fan — démarrage interrompu\nÉtape : " + this._startupPhase + "\n" + String(error);
+         diagnostic.wordWrap = true;
+         diagnostic.multiline = true;
+         if(error is Error && Error(error).getStackTrace() != null)
+         {
+            diagnostic.appendText("\n" + Error(error).getStackTrace());
+         }
+         diagnostic.width = 1024;
+         diagnostic.height = 600;
+         if(stage != null) stage.addChild(diagnostic);
+         else addChild(diagnostic);
+      }
+
+      private function startApplication() : void
+      {
+         try
+         {
+            this._startupPhase = "runtime policy";
+            this.initializeClientRuntime(false);
+            // Logging may load resources asynchronously. Install error handling
+            // first and catch synchronous failures in this startup entry point.
+            this._startupPhase = "logging configuration";
+            LogManager.logFileURL = "app:/resources/logback.xml";
+            LogManager(LogManager.getInstance()).init();
+            this._startupPhase = "uncaught-error handler";
+            this._uncaughtErrorsHandler = new UncaughtErrorsHandler(loaderInfo.uncaughtErrorEvents);
+            this._startupPhase = "logger factory";
+            LOGGER = LoggerFactory.getLogger(BoufbowlClient);
+            LOGGER.info("Starting up");
+            this._startupPhase = "font enumeration";
+            this.logAvailableFonts();
+            this.init();
+         }
+         catch(error:Error)
+         {
+            this.showStartupError(error);
+         }
+      }
+
       private function logAvailableFonts() : void
       {
          var _loc2_:Font = null;
@@ -88,14 +119,22 @@ package com.ankamagames.boufbowl
       
       private function init() : void
       {
+         this._startupPhase = "stage setup";
          stage.align = StageAlign.TOP;
          stage.scaleMode = StageScaleMode.SHOW_ALL;
+         this._startupPhase = "saved preferences";
          var preferences:SharedObject = SharedObject.getLocal("BoufbowlPreferences","/");
          stage.frameRate = this.restoreFrameRate(preferences.data);
+         this._startupPhase = "touch setup";
          Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
          this._gameView = new Sprite();
          addChild(this._gameView);
-         this._gameView.addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));
+         this._startupPhase = "embedded version";
+         var embeddedVersion:String = String(new embeddedVersionClass());
+         this._startupPhase = "MainApp constructor";
+         var application:MainApp = new MainApp(this._uncaughtErrorsHandler,embeddedVersion);
+         this._startupPhase = "MainApp configuration/context startup";
+         this._gameView.addChild(application);
          stage.addEventListener(TouchEvent.TOUCH_BEGIN,this.onTouchBegin,true,1000);
          stage.addEventListener(TouchEvent.TOUCH_MOVE,this.onTouchMove,true,1000);
          stage.addEventListener(TouchEvent.TOUCH_END,this.onTouchEnd,true,1000);
@@ -187,10 +226,10 @@ package com.ankamagames.boufbowl
          return null;
       }
       
-      private function addedToStageHandler(param1:Event) : void
+      private function addedToStageHandler(event:Event) : void
       {
          removeEventListener(Event.ADDED_TO_STAGE,this.addedToStageHandler);
-         this.init();
+         this.startApplication();
       }
    }
 }

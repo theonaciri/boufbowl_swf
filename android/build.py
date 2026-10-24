@@ -34,6 +34,13 @@ def run(command, *, env=None, timeout=600):
         raise RuntimeError("Build command failed: " + Path(command[0]).name) from None
 
 
+def runtime_options(*, debug=False, diagnostic=False):
+    """Diagnostic builds must start without a connected desktop debugger."""
+    if debug and diagnostic:
+        raise ValueError('Choose --debug or --diagnostic, not both')
+    return ['-target', 'apk-debug', '-listen', '7936'] if debug else ['-target', 'apk']
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs", type=int, help="Maximum CPU jobs (default: available CPUs)")
@@ -44,7 +51,9 @@ def main():
     parser.add_argument("--jdk", type=Path, help="Override automatic JDK 17+ discovery")
     parser.add_argument("--arch", choices=("armv8", "x64"), default="armv8")
     parser.add_argument("--server-url", help="Override resources/site.json hosted server")
-    parser.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime")
+    diagnostics = parser.add_mutually_exclusive_group()
+    diagnostics.add_argument("--debug", action="store_true", help="Include AIR's debugger runtime; waits for USB debugger on port 7936")
+    diagnostics.add_argument("--diagnostic", action="store_true", help="Include SWF debug locations with the normal runtime; starts without a debugger")
     parser.add_argument("--keystore", type=Path, help="Optional PKCS12 signing certificate")
     parser.add_argument('--bun', default='bun', help='Bun executable for refreshing the website')
     parser.add_argument('--no-website', action='store_true', help='Build the APK only; defer website generation')
@@ -92,6 +101,8 @@ def build_locked(args, parser):
     suffix = '' if args.arch == 'armv8' else '-emulator-x64'
     if args.debug:
         suffix += '-debug'
+    elif args.diagnostic:
+        suffix += '-diagnostic'
     output = build/('Boufbowl Fan'+suffix+'.apk')
     inputs = Inputs()
     asset_root = root/'assets'
@@ -113,7 +124,8 @@ def build_locked(args, parser):
                 'common_patches': {p.name: inputs.file(p) for p in sorted((root/'patches').iterdir()) if p.is_file()},
                 'helpers': {name: inputs.file(root/('tools/'+name+'.py')) for name in tools},
                 'descriptor': inputs.file(android/'application.xml'), 'server_url': args.server_url,
-                'arch': args.arch, 'debug': args.debug, 'certificate': inputs.file(certificate),
+                'arch': args.arch, 'debug': args.debug, 'diagnostic': args.diagnostic,
+                'certificate': inputs.file(certificate),
                 'java': inputs.java(java), 'ffdec': inputs.tree(args.ffdec.parent),
                 'air_lib': inputs.tree(args.air_sdk/'lib'), 'air_bin': inputs.tree(args.air_sdk/'bin'),
                 'android_platforms': inputs.tree(args.android_sdk/'platforms'),
@@ -214,10 +226,24 @@ def build_locked(args, parser):
             compile_receipt.save(compile_key, [compiled])
         else:
             print('Reusing compiled Android client', flush=True)
-        copy_changed(compiled, stage/'bin'/swf_name)
+        packaged_client = compiled
+        if args.debug or args.diagnostic:
+            # A debug AIR runtime alone does not enable SWF stack/line data.
+            # Keep diagnostic bytecode separate from the release client cache.
+            debug_key = digest({'compile': compile_key, 'debug_recipe': 1})
+            debug_client = compiled.with_name('client-debug.swf')
+            debug_receipt = Receipt(root, 'android-debug-client/'+debug_key)
+            if not debug_receipt.current(debug_key, [debug_client]):
+                temporary_debug = debug_client.with_suffix('.building.swf')
+                run([java, '-jar', args.ffdec.resolve(), '-enabledebugging',
+                     '-injectas3', '-pcode', compiled, temporary_debug], timeout=600)
+                temporary_debug.replace(debug_client)
+                debug_receipt.save(debug_key, [debug_client])
+            packaged_client = debug_client
+        copy_changed(packaged_client, stage/'bin'/swf_name)
 
     temporary_output = output.with_name("." + output.stem + ".building.apk")
-    run([java, "-Xmx2g", "-jar", adt, "-package", "-target", "apk-debug" if args.debug else "apk",
+    run([java, "-Xmx2g", "-jar", adt, "-package", *runtime_options(debug=args.debug, diagnostic=args.diagnostic),
          "-arch", args.arch, "-storetype", "pkcs12", "-keystore", certificate,
          "-storepass", password, temporary_output, android / "application.xml",
          "-C", stage, "bin/" + swf_name, "assets", "resources", "icons",

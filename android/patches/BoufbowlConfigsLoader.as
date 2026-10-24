@@ -5,6 +5,7 @@ package com.ankamagames.boufbowl.client.application.loading
    import com.ankamagames.xgaming.utils.string.StringUtils;
    import flash.net.URLRequest;
    import flash.text.TextField;
+   import flash.text.TextFormat;
    
    public class BoufbowlConfigsLoader extends URLQueueLoader
    {
@@ -31,10 +32,12 @@ package com.ankamagames.boufbowl.client.application.loading
       
       private var _motdFileData:String;
       
-      public function BoufbowlConfigsLoader(param1:TextField)
+      public function BoufbowlConfigsLoader(errorField:TextField)
       {
          super();
-         this._errorField = param1;
+         this._errorField = errorField;
+         this._errorField.embedFonts = false;
+         this._errorField.defaultTextFormat = new TextFormat("_sans",16,0xffffff);
          this.init();
       }
       
@@ -103,9 +106,9 @@ package com.ankamagames.boufbowl.client.application.loading
          }
       }
       
-      private function configLoadErrorHandler(param1:URLQueueLoaderEvent) : void
+      private function configLoadErrorHandler(event:URLQueueLoaderEvent) : void
       {
-         this._errorField.text = param1.errorMessage + "\n" + "File name : " + StringUtils.getFileName(param1.url.url);
+         this._errorField.text = "Boufbowl Fan — configuration unavailable\n" + event.errorMessage + "\n" + "File name : " + StringUtils.getFileName(event.url.url);
       }
    }
 }
