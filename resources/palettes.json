@@ -461,7 +461,7 @@
         },
         "female": {
           "hair": "ff9901",
-          "eyes": "ffffff",
+          "eyes": "d6a64a",
           "skin": "fbbea3"
         }
       }
@@ -579,7 +579,20 @@
       "hair": ["1c1c14", "f0e4c8", "5c4c38", "d8c8a8", "8c6c40"],
       "eyes": ["3c2410", "2c2c2c", "6c4c2c"],
       "skin": ["c89858", "e0b888", "a87840", "f0d0a8"],
-      "reference_status": "pending"
+      "reference_status": "pending",
+
+      "defaults": {
+        "male": {
+          "hair": "1c1c14",
+          "eyes": "3c2410",
+          "skin": "c89858"
+        },
+        "female": {
+          "hair": "1c1c14",
+          "eyes": "3c2410",
+          "skin": "c89858"
+        }
+      }
     },
     {
       "id": 10,
@@ -840,12 +853,12 @@
         "male": {
           "hair": "e62539",
           "eyes": "ffffff",
-          "skin": "b6ab8c"
+          "skin": "f1cba4"
         },
         "female": {
           "hair": "e62539",
           "eyes": "ffffff",
-          "skin": "b6ab8c"
+          "skin": "f1cba4"
         }
       }
     },
@@ -1592,9 +1605,9 @@
       "unique_character": 502,
       "name": "Pita Smisse",
       "source": "Pita Smisse — supplied RGB colors",
-      "hair": ["192747"],
-      "eyes": ["793e94"],
-      "skin": ["e7b98c"]
+      "hair": ["fffb95", "192747"],
+      "eyes": ["da2976", "29839d"],
+      "skin": ["f7aa52"]
     },
     {
       "id": 15,
@@ -1602,7 +1615,7 @@
       "name": "Kriss Krass",
       "source": "Kriss supplied reference",
       "hair": [
-        "ecddca",
+        "e9dccc",
         "c9baa7",
         "fff4df",
         "8d7d70",
@@ -1610,26 +1623,26 @@
         "a86675",
         "6a8f8c"
       ],
-      "eyes": ["c02d37", "8d202c", "ec6970", "a780b7", "538c88", "d2b15e"],
-      "skin": ["8f7147", "9d785e", "825d45", "bf9978", "d8b695", "604434"]
+      "eyes": ["fcffff", "8d202c", "ec6970", "a780b7", "538c88", "d2b15e"],
+      "skin": ["ad7b42", "9d785e", "825d45", "bf9978", "d8b695", "604434"]
     },
     {
       "id": 17,
       "unique_character": 503,
       "name": "Maud",
       "source": "Maud reference",
-      "hair": ["273131", "151d1f", "3e5153", "526973", "433447", "8e5a42"],
-      "eyes": ["a60d0e", "b9c8c8", "5b838a", "476676", "453629"],
-      "skin": ["ca9555", "ba854a", "dfb476", "a97440", "edc995"]
+      "hair": ["142828", "151d1f", "3e5153", "526973", "433447", "8e5a42"],
+      "eyes": ["970604", "b9c8c8", "5b838a", "476676", "453629"],
+      "skin": ["e6a858", "ba854a", "dfb476", "a97440", "edc995"]
     },
     {
       "id": 18,
       "unique_character": 504,
       "name": "The Masked Gobbowler",
       "source": "The Masked Gobbowler reference",
-      "hair": ["fffee7", "daccaf", "e8e2d4", "b9c8d5", "7c8d9c", "3a3338"],
+      "hair": ["ebddcb", "daccaf", "e8e2d4", "b9c8d5", "7c8d9c", "3a3338"],
       "eyes": ["d4080d", "a90404", "f25237", "dd9c28", "8b58a3"],
-      "skin": ["3f321f", "5b452c", "786041", "9b7a51", "2d2823"]
+      "skin": ["786041", "5b452c", "3f321f", "9b7a51", "2d2823"]
     },
     {
       "id": 19,
@@ -1637,7 +1650,7 @@
       "name": "Goultard the Barbarian",
       "source": "Goultard supplied reference",
       "hair": [
-        "fd8203",
+        "ff9800",
         "c45a05",
         "ffa846",
         "ffd083",
@@ -1645,17 +1658,17 @@
         "347d9b",
         "76549c"
       ],
-      "eyes": ["ffffff", "f4e7b7", "d7ac43", "a14c2d", "6fa9bd", "a68cbd"],
-      "skin": ["ecb141", "c18a2c", "f5ca73", "ffe0a2", "996724", "b98152"]
+      "eyes": ["ff2f2c", "f4e7b7", "d7ac43", "a14c2d", "6fa9bd", "a68cbd"],
+      "skin": ["f5ca73", "c18a2c", "ffe0a2", "996724", "b98152"]
     },
     {
       "id": 20,
       "unique_character": 506,
       "name": "Amalia Sheran Sharm",
       "source": "Amalia reference",
-      "hair": ["81980c", "a4b724", "5b7818", "c2cb58", "40754c", "b86b37"],
+      "hair": ["98ba00", "a4b724", "5b7818", "c2cb58", "40754c", "b86b37"],
       "eyes": ["633c24", "814c25", "758b33", "bf9149", "4b7570"],
-      "skin": ["9f5621", "894a21", "b87338", "ce9459", "75411f"]
+      "skin": ["b87338", "894a21", "9f5621", "ce9459", "75411f"]
     },
     {
       "id": 21,
@@ -1663,7 +1676,7 @@
       "name": "Miranda",
       "source": "Miranda supplied reference",
       "hair": [
-        "5b4f37",
+        "3d3323",
         "110f0a",
         "685c3c",
         "8a7650",
@@ -1671,8 +1684,8 @@
         "647a85",
         "80608f"
       ],
-      "eyes": ["8d410f", "a7873c", "d7c290", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["9c7448", "734d31", "544932", "948158", "342d1f", "a8956d"]
+      "eyes": ["b4755a", "a7873c", "d7c290", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["8b552d", "734d31", "544932", "948158", "342d1f", "a8956d"]
     },
     {
       "id": 22,
@@ -1680,7 +1693,7 @@
       "name": "Evangelyne",
       "source": "Evangelyne supplied reference",
       "hair": [
-        "f3df87",
+        "ffec9a",
         "edcf4b",
         "f9f0c8",
         "cba65d",
@@ -1688,7 +1701,7 @@
         "739c92",
         "a27daa"
       ],
-      "eyes": ["719817", "49630f", "9fd620", "b8dce4", "a884bd", "c99c4e"],
+      "eyes": ["7ca330", "49630f", "9fd620", "b8dce4", "a884bd", "c99c4e"],
       "skin": ["ffd087", "ffbc54", "ffe4ba", "ffa821", "fff4e3"]
     },
     {
@@ -1697,7 +1710,7 @@
       "name": "Ruel Stroud",
       "source": "Ruel Stroud supplied reference",
       "hair": [
-        "f5f4dc",
+        "fcfbe6",
         "e6e4a8",
         "fafaef",
         "d9d4b4",
@@ -1705,8 +1718,8 @@
         "6b887c",
         "9981a3"
       ],
-      "eyes": ["4b4934", "27261b", "757251", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["f5c783", "f1b254", "f9dcb2", "ed9c25", "fcedd8"]
+      "eyes": ["002027", "27261b", "757251", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ffce90", "f5c783", "f1b254", "f9dcb2", "ed9c25", "fcedd8"]
     },
     {
       "id": 24,
@@ -1714,7 +1727,7 @@
       "name": "Shoshanne",
       "source": "Shoshanne supplied reference",
       "hair": [
-        "ff9369",
+        "ff805e",
         "ff7e69",
         "db8978",
         "ef8b61",
@@ -1722,8 +1735,8 @@
         "77a29a",
         "5c7e9e"
       ],
-      "eyes": ["50371e", "23180d", "845b31", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["da9954", "93522b", "ce8356", "6c3c1f", "d79a76"]
+      "eyes": ["1c0e00", "23180d", "845b31", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ed9947", "93522b", "ce8356", "6c3c1f", "d79a76"]
     },
     {
       "id": 25,
@@ -1731,7 +1744,7 @@
       "name": "Kabrok",
       "source": "Kabrok supplied reference",
       "hair": [
-        "18292d",
+        "fff9e6",
         "090f11",
         "31535c",
         "0c1011",
@@ -1739,8 +1752,8 @@
         "f1e7b3",
         "97765a"
       ],
-      "eyes": ["0f3135", "d3c36c", "f1edd2", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["27596c", "121c1f", "365861", "090f10", "456f7b"]
+      "eyes": ["00090c", "d3c36c", "f1edd2", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["4e869e", "121c1f", "365861", "090f10", "456f7b"]
     },
     {
       "id": 26,
@@ -1748,7 +1761,8 @@
       "name": "Brumen Tinctorias",
       "source": "Brumen Tinctorias supplied reference",
       "hair": [
-        "9e5500",
+        "db7a17",
+        "fff9e6",
         "5c3100",
         "e57b00",
         "cf8629",
@@ -1756,8 +1770,8 @@
         "547c82",
         "78729b"
       ],
-      "eyes": ["262222", "65655c", "a7a79e", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["ddddc8", "cacaa8", "f0f0e8", "b6b689", "f7f7f2"]
+      "eyes": ["65655c", "fefffc", "a7a79e", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["f1eabf", "cacaa8", "f0f0e8", "b6b689", "f7f7f2"]
     },
     {
       "id": 27,
@@ -1801,7 +1815,7 @@
       "name": "Pan Diego",
       "source": "Pan Diego supplied reference",
       "hair": [
-        "f5edd2",
+        "71673d",
         "e9d79c",
         "fbf8ee",
         "cec49f",
@@ -1809,8 +1823,8 @@
         "36777d",
         "af7746"
       ],
-      "eyes": ["c99c4e", "100e09", "615235", "b8dce4", "a884bd"],
-      "skin": ["f8f4e6", "e0d298", "1a1714", "d5c170", "faf8ef"]
+      "eyes": ["ffbf00", "100e09", "615235", "b8dce4", "a884bd"],
+      "skin": ["fefeca", "e0d298", "1a1714", "d5c170", "faf8ef"]
     },
     {
       "id": 34,
@@ -1835,7 +1849,7 @@
       "name": "Jack Chaferton",
       "source": "Jack Chaferton supplied reference",
       "hair": [
-        "f3f3f3",
+        "f4f4f4",
         "d2d2d2",
         "f5f5f5",
         "b0b0b0",
@@ -1843,8 +1857,8 @@
         "7d9da8",
         "b5a48a"
       ],
-      "eyes": ["333333", "141414", "575757", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["bcbcbc", "a3a3a3", "d6d6d6", "898989", "eaeaea"],
+      "eyes": ["363638", "141414", "575757", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["f2f2f2", "a3a3a3", "d6d6d6", "898989", "eaeaea"],
       "reference_note": "Monochrome reference; neutral defaults, optional colored customization swatches."
     },
     {
@@ -1879,7 +1893,7 @@
       "name": "Skunk",
       "source": "Skunk supplied reference",
       "hair": [
-        "ee7d29",
+        "fc9508",
         "c55d10",
         "f3a56b",
         "ffb664",
@@ -1887,8 +1901,8 @@
         "488751",
         "9c529c"
       ],
-      "eyes": ["9b76b1", "7d5595", "bca3cb", "b8dce4", "a884bd", "c99c4e"],
-      "skin": ["f3d2b1", "ecb885", "faebdd", "e59f59", "fcf5ed"]
+      "eyes": ["06a8fd", "7d5595", "bca3cb", "b8dce4", "a884bd", "c99c4e"],
+      "skin": ["ffdeb8", "ecb885", "faebdd", "e59f59", "fcf5ed"]
     }
   ]
 }
