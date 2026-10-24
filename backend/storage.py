@@ -120,6 +120,10 @@ class Store:
               profile_id TEXT NOT NULL REFERENCES profiles(id), joined REAL NOT NULL,
               PRIMARY KEY(tournament_id,profile_id));
             CREATE TABLE IF NOT EXISTS tournament_watchers(profile_id TEXT PRIMARY KEY REFERENCES profiles(id));
+            CREATE TABLE IF NOT EXISTS tournament_intentions(
+              tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+              profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+              created REAL NOT NULL, PRIMARY KEY(tournament_id,profile_id));
             CREATE TABLE IF NOT EXISTS tournament_rewards(
               tournament_id INTEGER NOT NULL REFERENCES tournaments(id), profile_id TEXT NOT NULL REFERENCES profiles(id),
               reward INTEGER NOT NULL, balances_json TEXT NOT NULL, awarded REAL NOT NULL,

@@ -157,6 +157,50 @@ from the output. Game sessions, accounts, administration, and browser activity
 still use `/api/`, which Nginx proxies to the Python backend on port 9901.
 Browsing static pages does not require the API; interactive server features do.
 
+The homepage’s `#tournois` section reads `GET /api/tournaments` for the current
+event (open, or finishing its last matches) and the single next upcoming event.
+It reuses the stadium images from the restoration inventory and
+displays start/end dates in Paris time, effective match rules, qualification/round times,
+and the live top ten (with the first five featured and a podium for the first
+three). It loads once when the section approaches the viewport. The “Actualiser”
+button updates the tournaments and rankings on demand; there is no polling or
+refresh when returning to the browser tab.
+
+The default competition runs every Saturday from 14:00 to 18:00 in
+`Europe/Paris`. Weekly recurrence advances calendar weeks in that timezone, so
+the local hours stay fixed through daylight saving changes. Qualifications run
+until 17:30, followed by two 15-minute knockout rounds. Late matches can finish
+after their entry window; they do not move the next Saturday’s schedule.
+
+Players sign in with their existing game account through `/api/account`.
+`POST /api/tournaments` with `action: "participate"`, `session`, `tournament_id`,
+and an explicit boolean `participating` records or removes an attendance
+confirmation. Confirmations persist in `tournament_intentions`, independently
+of competitive entries and scores: players still join their tournament from
+the game. Authenticated `action: "list"` returns their confirmation state;
+`action: "logout"` revokes the website session without leaving the game queue.
+The website keeps that session in tab-scoped session storage. All tournament API
+responses use `Cache-Control: no-store`. Deploy the backend changes and restart
+the backend when publishing this feature; the existing Nginx `/api/` proxy needs
+no additional rule. A static-only preview shows a server-unavailable message.
+
+The public `ladder.html` page, linked from the homepage tournament section, reads the anonymous
+`GET /api/ladder?page=1` endpoint. Each page contains up to ten players in the
+same rating/nickname order as the game, with their global ranks, clubs, ratings,
+league/qualification state, and ranked wins/draws/losses. Previous/next buttons
+retain absolute ranks across pages. It loads once near the viewport and refreshes
+the currently displayed page every 30 minutes after the last request; the
+“Actualiser” button can also refresh it. This timer does not refresh tournaments.
+Requests past the last page return that last page, including after the player
+count changes. No account or session is required, and private profile IDs and
+account fields are excluded.
+
+Occurrence names live in each tournament’s `settings_json`; changing one name
+does not rename the recurring series. Removing the first generated occurrence
+also requires advancing the stored series anchor/ID and rotating its stadium
+sequence by the same number of weeks, otherwise maintenance would recreate it.
+Preserve later occurrence IDs, frozen settings, and completed tournament history.
+
 ```sh
 bun run build:website
 bun run check:site

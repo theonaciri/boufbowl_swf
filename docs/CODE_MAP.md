@@ -21,6 +21,7 @@ boundaries; search for current symbols rather than relying on fixed line numbers
 | Animation timing | `FrameController.as` → frame/completion events → controlled movie clips | shared smoke; loop, completion, no-skip |
 | Character lookup | `SceneModel.getBoufbowler` → identity map / equivalent-ID cache | shared smoke; full 64-bit IDs and removal |
 | Downloads/publication | `tools/build_players.py` → platform packages → `tools/website/build.mjs` | `bun run check:site` + package inspection |
+| Public competitions | `index.html` → `home-tournaments.js` → `Tournaments.public_tournaments`; `ladder.html` → `home-ladder.js` → `Progression.public_ladder` | public tournament/ladder tests + `bun run check:site`; [website](WEBSITE.md) |
 
 Commands above abbreviate `python3 -m tools.verify_client`. Shared AS3 overrides
 are in `patches/`; preserved sources live in `bin/base/`. Full decompilations are

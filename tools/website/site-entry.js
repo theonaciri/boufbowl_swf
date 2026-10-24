@@ -3,3 +3,4 @@ import "../../contributions.js";
 import "../../site-activity.js";
 import "../../restoration.js";
 import "../../home.js";
+import "../../home-tournaments.js";

@@ -8,6 +8,24 @@ DEFAULTS={'qualifying_games':3,'leagues':[{'id':5,'min_rating':0},{'id':4,'min_r
 
 
 class Progression:
+    def public_ladder(self, page=1):
+        if isinstance(page, str) and page.isascii() and page.isdigit() and len(page) <= 10:
+            page = int(page)
+        if isinstance(page, bool) or not isinstance(page, int) or not 1 <= page <= 2147483647:
+            raise ServiceError('PAGE_INVALID', 'Choisissez une page de classement valide.')
+        with self.store.transaction():
+            self.maintain_progression()
+            total = self.store.db.execute('SELECT COUNT(*) FROM profiles').fetchone()[0]
+            pages = max(1, (total + 9) // 10)
+            page = min(page, pages)
+            rows = self.rankings((page - 1) * 10, 10)
+            return {'ok': True, 'page': page, 'page_size': 10, 'total': total, 'pages': pages,
+                    'generated_at': time.time(),
+                    'players': [{'rank': row['rank'], 'nickname': row['player']['nickname'],
+                                 'club': row['player']['club']['clubName'], 'rating': row['rating'],
+                                 'wins': row['wins'], 'draws': row['draws'], 'losses': row['losses'],
+                                 'league': row['league'], 'qualified': row['qualified']} for row in rows]}
+
     def progression_settings(self):return self.config['general'].get('progression',DEFAULTS)
 
     def league_for(self, profile):

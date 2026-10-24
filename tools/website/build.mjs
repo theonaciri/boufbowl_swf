@@ -7,7 +7,7 @@ import { legalPages } from "./legal.mjs";
 import { responsiveImages } from "./responsive-images.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const PAGES = ["index.html", "play.html", "browser.html", "admin.html", "website-activity.html", "moderation.html", "tournaments.html", "assets-admin.html"];
+const PAGES = ["index.html", "ladder.html", "play.html", "browser.html", "admin.html", "website-activity.html", "moderation.html", "tournaments.html", "assets-admin.html"];
 const DOWNLOADS = {
   android: ["android/build/Boufbowl Fan.apk", "downloads/Boufbowl Fan.apk"],
   desktop: ["linux/build/Boufbowl Fan.run", "downloads/Boufbowl Fan.run"],

@@ -13,7 +13,7 @@ import queue
 import traceback
 from pathlib import Path
 import sys
-from urllib.parse import urlsplit, unquote
+from urllib.parse import urlsplit, unquote, parse_qs
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from backend.service import Service
@@ -32,7 +32,7 @@ class BackendHTTPServer(ThreadingHTTPServer):
     request_queue_size = 1024
 
 
-STATIC_PAGES = ("index.html", "play.html", "web-player.js", "home.js", "site-activity.js", "restoration.js", "browser.html", "admin.html", "website-activity.html", "website-activity.js", "moderation.html", "tournaments.html",
+STATIC_PAGES = ("index.html", "ladder.html", "play.html", "web-player.js", "home.js", "site-activity.js", "restoration.js", "browser.html", "admin.html", "website-activity.html", "website-activity.js", "moderation.html", "tournaments.html",
                 "admin.js", "admin-game.js", "moderation.js", "tournaments.js", "assets-admin.html", "assets-admin.js",
                 "legal.html", "confidentialite.html", "conditions-utilisation.html",
                 "mentions-legales.html", "cookies.html", "charte-communaute.html", "reglement-tournois.html")
@@ -136,7 +136,7 @@ class Handler(SimpleHTTPRequestHandler):
         elif route.lstrip('/') not in STATIC_PAGES and route not in ('/', '/__mock_trace', '/crossdomain.xml',
                             '/api/hello', '/api/command', '/api/poll', '/api/replay', '/api/community',
                             '/api/account', '/api/telemetry', '/api/metrics', '/api/admin', '/api/site', '/api/client',
-                            '/api/health', '/api/site-events', '/api/presence-counts'):
+                            '/api/health', '/api/site-events', '/api/presence-counts', '/api/tournaments', '/api/ladder'):
             route = '/unknown'
         try:
             handler()
@@ -168,6 +168,7 @@ class Handler(SimpleHTTPRequestHandler):
                   "/api/community": self.server.service.community,
                   "/api/metrics": self.server.service.metrics,
                   "/api/admin": self.server.service.admin,
+                  "/api/tournaments": self.server.service.public_tournaments,
                   "/api/telemetry": self.server.service.telemetry,
                   "/api/site-events": self.server.service.website_events,
                   "/api/presence-counts": self.server.service.live_presence,
@@ -261,6 +262,19 @@ class Handler(SimpleHTTPRequestHandler):
 
     def handle_get(self):
         route = urlsplit(self.path).path
+        if route == '/api/ladder':
+            try:
+                pages = parse_qs(urlsplit(self.path).query, keep_blank_values=True, max_num_fields=10).get('page', ['1'])
+                if len(pages) != 1:
+                    raise ServiceError('PAGE_INVALID', 'Choisissez une seule page de classement.')
+                result = self.server.service.public_ladder(pages[0])
+            except (ServiceError, ValueError) as error:
+                result = {'ok': False, 'code': getattr(error, 'code', 'PAGE_INVALID'), 'error': str(error)}
+            self.json_response(result)
+            return
+        if route == '/api/tournaments':
+            self.json_response(self.server.service.public_tournaments())
+            return
         if route == '/api/asset-catalog':
             from backend.asset_contributions import catalog
             self.json_response({'ok':True,'assets':list(catalog(Path(self.directory)).values())})

@@ -96,12 +96,13 @@ class Community:
         else: raise ServiceError('FRIEND_ACTION', 'Unknown friend action')
         return self.friends_data(profile)
 
-    def rankings(self):
+    def rankings(self, offset=0, limit=None):
         players = [self.store.profile(row[0]) for row in self.store.db.execute('SELECT id FROM profiles')]
         players.sort(key=lambda p: (-p['statistics']['rating'], p['nickname'].casefold(), p['id']))
         return [{'index': i, 'rank': i+1, 'league':self.league_for(p['id']), 'qualified':self.league_for(p['id'])>0, 'player': self.player_summary(p['id']),
                  'wins': p['statistics']['wins'], 'draws': p['statistics']['draws'],
-                 'losses': p['statistics']['defeats'], 'rating': p['statistics']['rating']} for i,p in enumerate(players)]
+                 'losses': p['statistics']['defeats'], 'rating': p['statistics']['rating']}
+                for i,p in enumerate(players[offset:offset+limit if limit is not None else None], offset)]
 
     @staticmethod
     def page(body):

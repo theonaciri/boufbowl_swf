@@ -4,6 +4,7 @@ import math
 import time
 from backend.storage import ServiceError
 from backend.results import result_kind
+from backend.tournaments import calendar_weekly
 
 
 class TournamentRounds:
@@ -104,6 +105,10 @@ class TournamentRounds:
         previous=self.tournament_config(identity)
         for row in self.store.db.execute("SELECT * FROM tournaments WHERE id>? AND phase='upcoming' ORDER BY id",(identity,)).fetchall():
             settings=json.loads(row['settings_json']);duration=settings['end_time']-settings['start_time']
+            if calendar_weekly(settings):
+                previous = settings
+                end = settings['end_time']
+                continue
             same_series=previous.get('series_id')==settings.get('series_id')
             gap=max(0,settings.get('repeat_seconds',0)-duration) if same_series else 0
             start=max(settings['start_time'],end+gap)

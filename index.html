@@ -74,6 +74,7 @@
     <link rel="stylesheet" href="source-build.css" data-source-only />
     <link rel="stylesheet" href="contributions.css" />
     <link rel="stylesheet" href="restoration.css" />
+    <link rel="stylesheet" href="home-tournaments.css" />
   </head>
   <body>
     <a class="skip-link" href="#contenu">Aller au contenu</a>
@@ -95,7 +96,7 @@
       <nav id="main-nav" aria-label="Navigation principale">
         <a href="#le-jeu">Le jeu</a><a href="#vestiaires">La restauration</a
         ><a href="#le-chantier">Le chantier</a
-        ><a href="#telecharger">Télécharger</a
+        ><a href="#tournois">Tournois</a><a href="#telecharger">Télécharger</a
         ><a href="#benevoles"
           >Rejoindre l’équipe <span class="nav-dot"></span
         ></a>
@@ -376,6 +377,24 @@ bun run build:players --platform android</code></pre>
           </div>
         </div>
       </div>
+      <section id="tournois" class="section tournament-section" aria-labelledby="tournament-heading">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">RENDEZ-VOUS SUR LE TERRAIN</span>
+            <h2 id="tournament-heading">LES TOURNOIS.<br /><em>LA GLOIRE SE MÉRITE.</em></h2>
+          </div>
+          <p>Choisissez votre prochain tournoi, annoncez votre participation et suivez les dix meilleurs joueurs en direct.</p>
+        </div>
+        <div class="tournament-toolbar">
+          <p id="tournament-status" role="status">Chargement des tournois…</p>
+          <div><span id="tournament-viewer"></span><button type="button" id="tournament-signin" class="text-button">SE CONNECTER</button><button type="button" id="tournament-signout" class="text-button" hidden>SE DÉCONNECTER</button><button type="button" id="tournament-refresh" class="text-button">ACTUALISER ↻</button></div>
+        </div>
+        <div id="tournament-events" aria-busy="true"></div>
+        <p class="tournament-note">« Je participe » annonce votre présence. Au début du tournoi, lancez le jeu et rejoignez le tournoi depuis votre client pour disputer vos matchs. Cliquez sur « Actualiser » pour mettre à jour les tournois et les classements.</p>
+        <p><a class="button" href="ladder.html">VOIR LE CLASSEMENT GÉNÉRAL ↗</a></p>
+        <noscript><p>Activez JavaScript pour consulter les horaires, les règles et les classements des tournois.</p></noscript>
+      </section>
+
       <section id="le-jeu" class="section game-section">
         <div class="section-heading reveal">
           <div>
@@ -1226,6 +1245,17 @@ bun run build:players --platform android</code></pre>
         votre aide et demander l’accès au dépôt privé.
       </p>
       <p id="copy-status" role="status" aria-live="polite"></p>
+    </dialog>
+    <dialog id="tournament-login" class="tournament-login" aria-labelledby="tournament-login-title">
+      <div class="dialog-header"><h2 id="tournament-login-title">RENDEZ-VOUS AU STADE.</h2><button type="button" id="tournament-login-close" aria-label="Fermer la connexion">×</button></div>
+      <p>Connectez-vous avec le compte lié à votre joueur pour annoncer votre participation.</p>
+      <form id="tournament-login-form">
+        <label for="tournament-username">Nom de compte</label><input id="tournament-username" name="username" autocomplete="username" required minlength="3" maxlength="32" />
+        <label for="tournament-password">Mot de passe</label><input id="tournament-password" name="password" type="password" autocomplete="current-password" required maxlength="128" />
+        <p id="tournament-login-status" role="status"></p>
+        <button type="submit" class="button">SE CONNECTER</button>
+      </form>
+      <p>Pas encore de compte ? Créez ou liez votre compte depuis le jeu. <a href="#telecharger" id="tournament-get-client">Choisir mon client ↗</a></p>
     </dialog>
     <script src="tools/website/site-entry.js" defer></script>
   </body>

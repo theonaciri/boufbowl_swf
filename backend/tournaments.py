@@ -1,32 +1,118 @@
 """Durable scheduled free tournaments using the original client lifecycle."""
 from copy import deepcopy
+from datetime import datetime, timedelta
 import json
 import math
 import time
+from zoneinfo import ZoneInfo
 from backend.results import result_kind
 from backend.storage import ServiceError
-from tools.game_config import STADIUMS
+from tools.game_config import STADIUMS, resolve_stadium
 
 # Original G/I/C reward artwork; currencies are local to this replacement.
 REWARD_BALANCES = {1: (20,10,10), 2: (10,10,10), 3: (0,5,10), 4: (0,0,10)}
 
 
+def calendar_weekly(settings):
+    return settings.get('repeat_seconds') == 604800 and bool(settings.get('timezone'))
+
+
+def occurrence_window(settings, number):
+    """Keep weekly wall-clock times stable through daylight saving changes."""
+    if calendar_weekly(settings):
+        zone = ZoneInfo(settings['timezone'])
+        return tuple(int((datetime.fromtimestamp(settings[key], zone) + timedelta(weeks=number)).timestamp())
+                     for key in ('start_time', 'end_time'))
+    offset = number * settings.get('repeat_seconds', 0)
+    return settings['start_time'] + offset, settings['end_time'] + offset
+
+
 class Tournaments:
+    def public_tournaments(self, body=None):
+        """Public schedule and scores; website RSVPs never enter matchmaking."""
+        body = body or {}
+        action = body.get('action', 'list')
+        if action not in ('list', 'participate', 'logout'):
+            raise ServiceError('TOURNAMENT_ACTION', 'Action de tournoi inconnue.')
+        with self.store.transaction():
+            profile = self.store.authenticate(body['session']) if body.get('session') else None
+            if action == 'logout' and profile:
+                self.store.db.execute('DELETE FROM sessions WHERE token_hash=?', (self.store.digest(body['session']),))
+                profile = None
+            self.maintain_tournaments()
+            enabled = self.tournament_settings()['enabled']
+            if action == 'participate':
+                if profile is None:
+                    raise ServiceError('SESSION_INVALID', 'Connectez-vous avec votre compte de jeu.')
+                attending = body.get('participating')
+                if not isinstance(attending, bool):
+                    raise ServiceError('TOURNAMENT_INPUT', 'Une confirmation de participation est requise.')
+                if body.get('tournament_id') is None:
+                    raise ServiceError('TOURNAMENT_UNKNOWN', 'Choisissez un tournoi.')
+                settings = self.tournament_config(body['tournament_id'])
+                if not enabled or not time.time() < settings['end_time']:
+                    raise ServiceError('TOURNAMENT_CLOSED', 'Les confirmations sont closes pour ce tournoi.')
+                if attending:
+                    rating = self.store.profile(profile)['statistics']['rating']
+                    if not settings.get('min_rating', 0) <= rating <= settings.get('max_rating', 100000):
+                        raise ServiceError('TOURNAMENT_RATING', 'Votre cote ne correspond pas aux limites de ce tournoi.')
+                    self.store.db.execute('INSERT OR IGNORE INTO tournament_intentions VALUES(?,?,?)',
+                                          (settings['id'], profile, time.time()))
+                else:
+                    self.store.db.execute('DELETE FROM tournament_intentions WHERE tournament_id=? AND profile_id=?',
+                                          (settings['id'], profile))
+            events = []
+            rows = []
+            if enabled:
+                current = self.store.db.execute("SELECT * FROM tournaments WHERE phase IN ('open','closing') ORDER BY CASE phase WHEN 'open' THEN 0 ELSE 1 END,json_extract(settings_json,'$.start_time') LIMIT 1").fetchone()
+                upcoming = self.store.db.execute("SELECT * FROM tournaments WHERE phase='upcoming' ORDER BY json_extract(settings_json,'$.start_time') LIMIT 1").fetchone()
+                rows = [row for row in (current, upcoming) if row is not None]
+            for row in rows:
+                cfg = json.loads(row['settings_json'])
+                entries = self.tournament_entries(cfg) if row['phase'] != 'upcoming' else []
+                match_rules = resolve_stadium(self.config, STADIUMS[cfg['stadium'] - 1])['match']
+                match_rules.update(cfg.get('match_rules', {}))
+                intentions = self.store.db.execute('SELECT COUNT(*),MAX(profile_id=?) FROM tournament_intentions WHERE tournament_id=?',
+                                                   (profile, row['id'])).fetchone()
+                events.append({
+                    'id': str(row['id']), 'name': cfg.get('name') or 'Coupe du Boufbowl',
+                    'phase': row['phase'], 'start_time': cfg['start_time'], 'end_time': cfg['end_time'],
+                    'stadium': STADIUMS[cfg['stadium'] - 1], 'format': cfg.get('format', 'league'),
+                    'min_rating': cfg.get('min_rating', 0), 'max_rating': cfg.get('max_rating', 100000),
+                    'points': {key: cfg[key + '_points'] for key in ('win', 'draw', 'loss')},
+                    'match_rules': {key: match_rules[key] for key in ('turns_per_match', 'turns_per_period', 'planning_seconds',
+                                    'placement_seconds', 'class_ability_uses', 'regenerate_between_turns')},
+                    'qualification_seconds': cfg.get('qualification_seconds'), 'qualifying_top': cfg.get('qualifying_top'),
+                    'rounds': self.admin_rounds(cfg), 'participants': len(entries),
+                    'interested': intentions[0], 'participating': bool(intentions[1]),
+                    'standings': [{'rank': entry['currentRank'], 'nickname': entry['player']['nickname'],
+                                   'club': entry['player']['club']['clubName'], 'points': entry['tournamentPoints'],
+                                   'eliminated': entry['eliminated']} for _, entry in entries[:10]],
+                })
+            return {'ok': True, 'tournaments': events, 'generated_at': time.time(),
+                    'viewer': {'nickname': self.store.profile(profile)['nickname']} if profile else None}
+
     def schedule_tournaments(self):
         cfg = self.tournament_settings()
         if not cfg['enabled']: return
         now = time.time(); repeat = cfg.get('repeat_seconds',0)
-        index = max(0, int((now-cfg['start_time'])//repeat)) if repeat else 0
+        if calendar_weekly(cfg):
+            zone = ZoneInfo(cfg['timezone'])
+            index = max(0, (datetime.fromtimestamp(now, zone).date() -
+                            datetime.fromtimestamp(cfg['start_time'], zone).date()).days // 7)
+        else:
+            index = max(0, int((now-cfg['start_time'])//repeat)) if repeat else 0
         indices = range(index,index+cfg.get('upcoming_count',2)+1) if repeat else (0,)
         rotation = cfg.get('stadium_rotation', [cfg['stadium']])
         rotation = [n for n in rotation if self.config['stadiums'][STADIUMS[n-1]]['enabled']]
         if not rotation: return
         for number in indices:
             settings = deepcopy(cfg)
-            settings.update(id=cfg['id']+number, start_time=cfg['start_time']+number*repeat,
-                            end_time=cfg['end_time']+number*repeat, stadium=rotation[number%len(rotation)])
+            start, end = occurrence_window(cfg, number)
+            settings.update(id=cfg['id']+number, start_time=start,
+                            end_time=end, stadium=rotation[number%len(rotation)])
             previous=self.store.db.execute('SELECT settings_json FROM tournaments WHERE id<? ORDER BY id DESC LIMIT 1',(settings['id'],)).fetchone()
-            if previous and repeat:
+            if previous and repeat and not calendar_weekly(cfg):
                 previous=json.loads(previous[0]);gap=repeat-(cfg['end_time']-cfg['start_time'])
                 same_series=previous.get('series_id')==settings.get('series_id')
                 start=max(settings['start_time'],previous['end_time']+(gap if same_series else 0))

@@ -16,7 +16,8 @@ class GameConfigTests(unittest.TestCase):
         self.assert_invalid(lambda c: c['general']['tournament'].update(rewards=[1,2,3,99]))
 
     def test_knockout_rounds_fit_duration_and_capacity(self):
-        self.assert_invalid(lambda c: c['general']['tournament'].update(qualification_seconds=2600))
+        self.assert_invalid(lambda c: c['general']['tournament'].update(
+            qualification_seconds=c['general']['tournament']['end_time'] - c['general']['tournament']['start_time']))
         self.assert_invalid(lambda c: c['general']['tournament'].update(qualifying_top=8,round_count=2))
 
     def test_leagues_have_unique_ids_and_monotonic_thresholds(self):

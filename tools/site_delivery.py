@@ -4,8 +4,8 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parent.parent
-PAGES = ('index.html', 'play.html', 'browser.html', 'admin.html', 'website-activity.html', 'moderation.html', 'tournaments.html', 'assets-admin.html')
-FRONTEND = ('home.js', 'home.css', 'contributions.css', 'restoration.css', 'restoration.js', 'site-activity.js', 'contributions.js',
+PAGES = ('index.html', 'ladder.html', 'play.html', 'browser.html', 'admin.html', 'website-activity.html', 'moderation.html', 'tournaments.html', 'assets-admin.html')
+FRONTEND = ('home.js', 'home.css', 'home-ladder.js', 'home-ladder.css', 'home-tournaments.js', 'home-tournaments.css', 'contributions.css', 'restoration.css', 'restoration.js', 'site-activity.js', 'contributions.js',
             'website-activity.js', 'legal.css', 'admin.js', 'admin.css', 'moderation.js', 'tournaments.js', 'assets-admin.js')
 
 

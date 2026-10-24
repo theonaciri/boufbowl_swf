@@ -134,6 +134,10 @@
               "type": "integer",
               "minimum": 0
             },
+            "timezone": {
+              "type": "string",
+              "enum": ["Europe/Paris", "UTC"]
+            },
             "upcoming_count": {
               "type": "integer",
               "minimum": 1,
