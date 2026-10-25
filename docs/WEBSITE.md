@@ -127,15 +127,18 @@ fresh checkout.
 | --- | --- |
 | `build_restoration_data` | Resource availability inventory |
 | `build_site_videos` | Tutorial MP4s and AVIF poster from the preserved FLVs |
-| `export_home_cinematics` | 15 films, 18 distinct legends, animated AVIF + AV1/H.264 MP4 |
+| `export_home_cinematics` | 15 films, 18 distinct legends, AV1 MP4 |
 | `export_puppet_videos` | Five gameplay puppet loops, AV1 CRF 35 at 530 px high |
 | `build_website` | Minified Bun JavaScript bundle, bundled and inlined Bun CSS, stadium previews and transparent logo as AVIF, native portraits, grid icons, refreshed inventory/legal/download manifests, public delivery |
 
-Carousel films are 1015 × 595 in AV1 (CRF 35) and animated AVIF at 60 FPS,
-preserving native 25 FPS pose timing from the 2560 × 1500 captures. H.264 fallbacks
-add one pixel of padding at the right and bottom for 4:2:0 compatibility.
+Carousel films are 1015 × 595 in AV1 (CRF 35) at 60 FPS,
+preserving native 25 FPS pose timing from the 2560 × 1500 captures.
 Evangelyne uses black team color. Masters/capture caches live under
 `.local/`; exported media remains ignored under `assets/site/`.
+Keep only the cinematic version selected by `cinematicMediaVersion` in `home.js`
+(currently `legends-v3`), with one `.av1.mp4` file per scene. The carousel uses
+AV1 directly; the exporter removes older versions and alternate formats. Site MP4s are generated media and are not
+tracked by Git; the tutorial sources remain preserved under `assets/videos/`.
 The generated carousel provenance is `docs/site/media-sources.json`.
 
 Use `python3 -m tools.export_home_cinematics --encode-only` to reconvert cached

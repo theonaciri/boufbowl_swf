@@ -1,5 +1,30 @@
 # Client performance
 
+## Web chat layout
+
+Ruffle can render a wrapped FTE `TextLine` at multiple rows while TLF reserves
+one row. `ChatMediator` enables `TextZone.webParagraphLayout` only for Ruffle:
+compose the chat without a height limit, stack actual rendered bounds, update
+line hit geometry/content height, then clip/scroll the viewport. Suppress the
+leading empty importer paragraph. Keep original spans and link listeners.
+Native TLF composition is unchanged; dirty batching still applies.
+The chat thumb also needs a Ruffle skin workaround: snapshot the original button
+at3× and stretch its centre between fixed caps from its scale9 grid. Retain the
+transparent original button for drag/click input. Enable this for browser scrollbars;
+native skins retain their original path.
+Browser background slices share pixel cut positions and are composed onto one
+bitmap before display, avoiding hairline joins at fractional scale/zoom. Rebuild
+the surface only when its size/frame changes; dispose superseded surfaces.
+Browser probe reproduced the overlap, then checked wrapped/bold messages, repeated
+appends, resize, top/bottom scrolling and clearing in the actual chat widget.
+Game SWF and static website rebuilt; served SWF hash matches. Native packages and
+automated suites were not rebuilt/run for this web-only change.
+
+Tournament tabs use stateful nested nine-slice skins: `RunningButtonSprite`
+repairs the current frame while retaining the live label/hit target. All browser
+`ScrollIndicator` instances use fixed-cap thumbs, including tournament popups.
+Root-package timeline overrides are discovered by `tools/client_patches.py`.
+
 ## Imported study improvements
 
 Selected production/tooling changes from `study/animation-framerate-interpolation`

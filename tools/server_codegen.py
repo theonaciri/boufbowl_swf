@@ -46,7 +46,7 @@ def inject_server(source, config, android=False, server_url=None):
          toolbar=new Sprite();
          """+quit_button+"""
          addButton("Server","""+str(58 if android else 0)+""",55,function():void { serverConnectionPanel(); });
-         serverLivePlayersLabel=serverText(toolbar,"Lobby — · En jeu —","""+str(118 if android else 64)+""",3,200);
+         serverLivePlayersLabel=serverText(toolbar,"Lobby — · En jeu —","""+str(118 if android else 64)+""",3,140);
          serverLivePlayersLabel.height=22;serverLivePlayersLabel.background=true;serverLivePlayersLabel.backgroundColor=0xffffe8;
          serverLivePlayersLabel.border=true;serverLivePlayersLabel.borderColor=0xb4a570;
          Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);

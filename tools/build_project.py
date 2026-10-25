@@ -98,7 +98,7 @@ def build(args):
                       'assets/videos/layout_tuto_01.flv'],
                      ['assets/site/tutorial-archive.mp4', 'assets/site/tutorial-field.mp4', 'assets/site/tutorial-poster.avif']),
         'cinematics': (shared + ['tools/export_home_cinematics.py', 'tools/site_cinematic_capture.as.inc', 'tools/website/cinematics.mjs'],
-                       ['assets/site/cinematic-*.mp4', 'assets/site/cinematic-*.avif', 'docs/site/media-sources.json']),
+                       ['assets/site/cinematic-*.av1.mp4', 'docs/site/media-sources.json']),
         'puppets': (shared + ['tools/export_puppet_videos.py', 'tools/site_puppet_capture.as.inc', 'tools/website/puppet-videos.mjs', 'tools/site_portraits.py'],
                     ['assets/site/restoration/puppets/*.mp4', 'assets/site/restoration/puppets/videos.json']),
         'portraits': (shared + ['tools/build_website.py', 'tools/site_portraits.py', 'tools/site_portrait_capture.*',

@@ -32,7 +32,7 @@ def homepage_assets(root):
             block=source.split('const cinematicScenes = [',1)[-1].split('].map(',1)[0]
             version=re.search(r'const cinematicMediaVersion = "([a-z0-9-]+)"',source)
             suffix='-'+version.group(1) if version else ''
-            extensions=('.mp4','.av1.mp4','.avif') if version else ('.webp','.mp4')
+            extensions=('.av1.mp4',) if version else ('.webp','.mp4')
             for identity in re.findall(r'\[\s*"([a-z0-9-]+)"\s*,',block):
                 paths.update('assets/site/cinematic-'+identity+suffix+extension for extension in extensions)
     return [{'path':path,'available':(root/path).is_file() and (root/path).stat().st_size>0 and (root/path).resolve().is_relative_to(root.resolve())} for path in sorted(paths) if not path.startswith('assets/site/responsive/')]

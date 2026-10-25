@@ -76,6 +76,7 @@ Thumbs.db
 /backend/build/engine_base.json
 /resources/mock_match.json
 /assets/site/cinematic-*
+/assets/site/*.mp4
 /assets/site/tutorial-archive.mp4
 /assets/site/tutorial-field.mp4
 /assets/site/tutorial-poster.webp

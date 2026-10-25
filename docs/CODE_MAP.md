@@ -10,7 +10,8 @@ Start at the relevant entry point; read dependencies only as needed.
 | Android background audio | Android `BoufbowlClient` → NativeApplication activate/deactivate → SoundMixer master transform | Home/return/lock; preserve category volumes, repeated deactivation |
 | Browser launch/quality | `play.html` → `web-player.js` → root `setWebDisplay` | `verify_client --area web` |
 | Game measurements/admin charts | `ClientRuntime.as.inc` / `Service.run_resolution` → `backend/game_measurements.py` → `admin-game.js` | `verify_client --area all`; [coverage](GAME_MEASUREMENTS.md) |
-| Chat layout/scroll | `ChatMediator.as` → `TextZone.as` → TLF controller | shared smoke; empty, long, resized chat |
+| Chat layout/scroll | `ChatMediator.as` → `TextZone.as` → TLF controller; Ruffle stacks rendered paragraph bounds | empty, wrapped/bold, long, resized chat; [layout](PERFORMANCE.md#web-chat-layout) |
+| Browser controls | `ScrollIndicator.as` → fixed-cap thumb; `RunningButtonSprite.as` → frame-aware `FlashInstanceContainer` skin | short/full thumb; normal, hover, selected tournament tabs |
 | Popup geometry/layers | `MessageBoxView.as` → `MessageBox.as`, `ResizableTextBox.as`, `ServerSupport.as.inc` | browser probe, popup bounds |
 | CPU roles and risk | `backend/engine.ts` → `cpu-orders.ts`, `cpu-powers.ts` → retained simulator | `verify_client --area cpu` |
 | Original powers/randomness | `resources/game_config.json` → `abilities.ts` / `combat.ts` → `rulebookCombatNoise` | [evidence and choices](ORIGINAL_POWERS_AND_RANDOMNESS.md) |

@@ -190,8 +190,7 @@ import { assetUrl } from "./tools/website/asset-url.js";
     category: "cinematic",
     title,
     description,
-    video: `assets/site/cinematic-${id}-${cinematicMediaVersion}.mp4`,
-    videoAv1: `assets/site/cinematic-${id}-${cinematicMediaVersion}.av1.mp4`,
+    video: `assets/site/cinematic-${id}-${cinematicMediaVersion}.av1.mp4`,
   }));
   const scenes = [
     ...cinematicScenes,
@@ -253,15 +252,9 @@ import { assetUrl } from "./tools/website/asset-url.js";
       !carouselPaused && !globalPaused() && !document.hidden && carouselInView
     );
   }
-  const failedAv1 = new Set();
-  function preferredCarouselVideo(scene) {
-    return scene.videoAv1 && !failedAv1.has(scene.videoAv1) &&
-      carouselVideo.canPlayType('video/mp4; codecs="av01.0.08M.10"')
-      ? scene.videoAv1 : scene.video;
-  }
   function syncCarousel() {
     clearTimeout(carouselTimer);
-    const scene = scenes[sceneIndex], source = preferredCarouselVideo(scene);
+    const scene = scenes[sceneIndex], source = scene.video;
     if (source && carouselInView) {
       if (carouselVideo.dataset.source !== source) {
         carouselVideo.pause();
@@ -327,11 +320,6 @@ import { assetUrl } from "./tools/website/asset-url.js";
   });
   carouselVideo.addEventListener("error", () => {
     const scene = scenes[sceneIndex];
-    if (scene.videoAv1 && carouselVideo.dataset.source === scene.videoAv1) {
-      failedAv1.add(scene.videoAv1);
-      syncCarousel();
-      return;
-    }
     carouselVideo.hidden = true;
     $("carousel-image").hidden = !scene.image;
   });

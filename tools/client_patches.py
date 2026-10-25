@@ -18,11 +18,11 @@ def discover(directory):
     patches = {}
     for source in sorted(directory.glob('*.as')):
         text = source.read_text()
-        package = re.search(r'^package\s+([\w.]+)', text, re.M)
+        package = re.search(r'^package(?:\s+([\w.]+))?\s*\{', text, re.M)
         declaration = re.search(r'\b(?:public|internal)\s+(?:(?:final|dynamic)\s+)*class\s+(\w+)', text)
         if not package or not declaration or declaration[1] != source.stem:
             raise ValueError(f'Invalid AS3 patch declaration: {source}')
-        patches[source.name] = ClientPatch(package[1]+'.'+declaration[1], source)
+        patches[source.name] = ClientPatch((package[1]+'.' if package[1] else '')+declaration[1], source)
     return patches
 
 

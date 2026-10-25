@@ -119,6 +119,11 @@ package com.ankamagames.xgaming.ui.components
                   if(oldTile.parent == host) host.removeChild(oldTile);
                   oldTile.bitmapData.dispose();
                }
+            if(slices.rendered != null)
+            {
+               if(slices.rendered.parent == host) host.removeChild(slices.rendered);
+               slices.rendered.bitmapData.dispose();
+            }
             delete browserSlices[host];
             slices=null;
          }
@@ -159,16 +164,19 @@ package com.ankamagames.xgaming.ui.components
             for(var row:int=0;row<3;row++)
                for(var column:int=0;column<3;column++)
                {
-                  var rect:Rectangle=new Rectangle(Math.round((columns[column]-bounds.x)*2),Math.round((rows[row]-bounds.y)*2),
-                     Math.round((columns[column+1]-columns[column])*2),Math.round((rows[row+1]-rows[row])*2));
+                  var pixelLeft:int=Math.round((columns[column]-bounds.x)*2);
+                  var pixelTop:int=Math.round((rows[row]-bounds.y)*2);
+                  var rect:Rectangle=new Rectangle(pixelLeft,pixelTop,
+                     Math.round((columns[column+1]-bounds.x)*2)-pixelLeft,
+                     Math.round((rows[row+1]-bounds.y)*2)-pixelTop);
                   if(rect.width <= 0 || rect.height <= 0) { tiles.push(null); continue; }
                   var pixels:BitmapData=new BitmapData(rect.width,rect.height,true,0);
                   pixels.copyPixels(texture,rect,new Point());
                   var tile:Bitmap=new Bitmap(pixels,"auto",true);
-                  tiles.push(tile);host.addChild(tile);
+                  tiles.push(tile);
                }
             texture.dispose();
-            slices={bounds:bounds,content:content,grid:grid,tiles:tiles,originals:originals,frame:frame};
+            slices={bounds:bounds,content:content,grid:grid,tiles:tiles,originals:originals,frame:frame,rendered:null};
             browserSlices[host]=slices;
          }
          if(host.scaleX != slices.horizontal || host.scaleY != slices.vertical)
@@ -198,18 +206,43 @@ package com.ankamagames.xgaming.ui.components
          var height:Number = Math.max(content.height*vertical+bounds.height-content.height,top+bottom);
          var columns:Array = [x,x+left,x+width-right,x+width];
          var rows:Array = [y,y+top,y+height-bottom,y+height];
+         // Compose onto one surface with shared integer pixel edges. Separate
+         // smoothed quads leave hairline gaps at fractional device scales.
+         var resolution:Number = Math.min(2,2048 / width,2048 / height);
+         var pixels:BitmapData = new BitmapData(Math.max(1,Math.ceil(width * resolution)),
+            Math.max(1,Math.ceil(height * resolution)),true,0);
          for(var row:int=0;row<3;row++)
          {
             for(var column:int=0;column<3;column++)
             {
                var tile:Bitmap = slices.tiles[row*3+column];
                if(tile == null) continue;
-               tile.x=columns[column]/horizontal;
-               tile.y=rows[row]/vertical;
-               tile.width=(columns[column+1]-columns[column])/horizontal;
-               tile.height=(rows[row+1]-rows[row])/vertical;
+               var pixelLeft:int = Math.round((columns[column] - x) * resolution);
+               var pixelTop:int = Math.round((rows[row] - y) * resolution);
+               var pixelWidth:int = Math.round((columns[column+1] - x) * resolution) - pixelLeft;
+               var pixelHeight:int = Math.round((rows[row+1] - y) * resolution) - pixelTop;
+               if(pixelWidth <= 0 || pixelHeight <= 0) continue;
+               var matrix:Matrix = new Matrix(pixelWidth / tile.bitmapData.width,0,0,
+                  pixelHeight / tile.bitmapData.height,pixelLeft,pixelTop);
+               pixels.draw(tile.bitmapData,matrix,null,null,
+                  new Rectangle(pixelLeft,pixelTop,pixelWidth,pixelHeight),true);
             }
          }
+         if(slices.rendered == null)
+         {
+            slices.rendered = new Bitmap(pixels,"auto",true);
+            host.addChild(slices.rendered);
+         }
+         else
+         {
+            var previous:BitmapData = slices.rendered.bitmapData;
+            slices.rendered.bitmapData = pixels;
+            previous.dispose();
+         }
+         slices.rendered.x = x / horizontal;
+         slices.rendered.y = y / vertical;
+         slices.rendered.width = width / horizontal;
+         slices.rendered.height = height / vertical;
       }
 
       protected function initFlashInstances() : void

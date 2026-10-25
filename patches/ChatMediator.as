@@ -34,6 +34,9 @@ package com.ankamagames.boufbowl.client.chat.view
 
       override public function onRegister() : void
       {
+         this._view.contentZone.webParagraphLayout = com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime;
+         this._view.scrollbar.indicator.webThumbRendering = com.ankamagames.boufbowl.BoufbowlClient.ruffleRuntime;
+         if(this._view.scrollbar.indicator.webThumbRendering) this._view.scrollManager.update();
          super.onRegister();
          addContextListener(ChatModel.EVT_CHAT_MESSAGE_ADDED,this.chatMessageAddedHandler,ChatMessageEvent);
          addContextListener(ChatModel.EVT_AVAILABLE_CHANNEL_ADDED,this.availableChannelAddedHandler,ChatChannelEvent);

@@ -5,6 +5,7 @@ package com.ankamagames.xgaming.ui.components
    import com.ankamagames.xgaming.utils.string.StringUtils;
    import com.reider.log4AS3.ILogger;
    import flash.display.DisplayObject;
+   import flash.display.DisplayObjectContainer;
    import flash.display.Sprite;
    import flash.geom.Rectangle;
    import com.ankamagames.boufbowl.BoufbowlClient;
@@ -15,6 +16,9 @@ package com.ankamagames.xgaming.ui.components
    import flash.text.engine.FontWeight;
    import flash.text.engine.RenderingMode;
    import flash.text.engine.TextBaseline;
+   import flash.text.engine.TextLine;
+   import flashx.textLayout.tlf_internal;
+   import flashx.textLayout.compose.TextFlowLine;
    import flashx.textLayout.container.ContainerController;
    import flashx.textLayout.conversion.ITextImporter;
    import flashx.textLayout.conversion.TextConverter;
@@ -27,8 +31,11 @@ package com.ankamagames.xgaming.ui.components
    import flashx.textLayout.formats.TextDecoration;
    import flashx.textLayout.formats.TextLayoutFormat;
 
+   use namespace tlf_internal;
+
    public class TextZone extends Sprite implements IScrollableContent
    {
+      public var webParagraphLayout:Boolean = false;
 
       private static const DEFAULT_WIDTH:Number = 300;
 
@@ -345,7 +352,17 @@ package com.ankamagames.xgaming.ui.components
             removeEventListener(Event.ENTER_FRAME,this.textUpdate);
             if(this._textFlow == null) return;
             this._allowScrollDispatching = false;
-            this._textFlow.flowComposer.updateAllControllers();
+            if(this.webParagraphLayout)
+            {
+               // Ruffle can draw a wrapped paragraph inside a single TextLine
+               // while TLF reserves only one baseline. Compose all paragraphs,
+               // then stack their actual rendered bounds before clipping.
+               this._controller.verticalScrollPosition = 0;
+               this._controller.setCompositionSize(this._width,NaN);
+               this._textFlow.flowComposer.updateAllControllers();
+               this.layoutWebParagraphs();
+            }
+            else this._textFlow.flowComposer.updateAllControllers();
             this.applyScrollRatio(this._scrollRatio);
             dispatchEvent(new Event(Event.CHANGE));
          }
@@ -366,9 +383,49 @@ package com.ankamagames.xgaming.ui.components
          if(this._controller != null)
          {
             var extent:Number = this._controller.getContentBounds().height - this._controller.compositionHeight;
-            this._controller.verticalScrollPosition = ratio * (isFinite(extent) ? Math.max(0,extent) : 0);
+            var offset:Number = ratio * (isFinite(extent) ? Math.max(0,extent) : 0);
+            if(this.webParagraphLayout) scrollRect = new Rectangle(0,offset,this._width,this._height);
+            else this._controller.verticalScrollPosition = offset;
          }
          this._allowScrollDispatching = true;
+      }
+
+      private function collectWebLines(container:DisplayObjectContainer, lines:Array) : void
+      {
+         for(var i:int=0;i<container.numChildren;i++)
+         {
+            var child:DisplayObject = container.getChildAt(i);
+            if(child is TextLine) lines.push(child);
+            else if(child is DisplayObjectContainer) this.collectWebLines(DisplayObjectContainer(child),lines);
+         }
+      }
+
+      private function layoutWebParagraphs() : void
+      {
+         var lines:Array = [];
+         this.collectWebLines(this,lines);
+         lines.sortOn("y",Array.NUMERIC);
+         var bottom:Number = this._paddings.top;
+         for(var i:int=0;i<lines.length;i++)
+         {
+            var line:TextLine = TextLine(lines[i]);
+            // Importing empty content creates a leading placeholder paragraph.
+            if(i == 0 && line.textBlock != null && /^\s*$/.test(line.textBlock.content.rawText))
+            {
+               line.visible = false;
+               continue;
+            }
+            line.visible = true;
+            var bounds:Rectangle = line.getBounds(this);
+            var delta:Number = bottom - bounds.y;
+            var lineHeight:Number = Math.max(bounds.height,line.ascent + line.descent);
+            line.y += delta;
+            var model:TextFlowLine = line.userData as TextFlowLine;
+            if(model != null) model.setXYAndHeight(model.x,model.y + delta,lineHeight);
+            bottom += lineHeight;
+         }
+         this._controller.setCompositionSize(this._width,this._height);
+         this._controller.setContentBounds(0,0,this._width,bottom + this._paddings.bottom);
       }
 
       private function init(param1:Number) : void
