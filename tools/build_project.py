@@ -7,6 +7,7 @@ import subprocess
 import sys
 from tools.build_parallel import build_budget, available_cpus, parallel
 from tools.build_tools import BuildError, ffdec_jar, java_binary
+from tools.game_build_state import game_build_reason
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -26,6 +27,7 @@ def main():
     parser.add_argument('--java', help='Optional Java 17+ executable override')
     parser.add_argument('--game-only', action='store_true', help='Prepare the game without building the website')
     parser.add_argument('--rebuild-game', action='store_true', help='Recompile the game even if its SWF already exists')
+    parser.add_argument('--plan', action='store_true', help='Show the game cache decision without building or downloading tools')
     args = parser.parse_args()
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
@@ -36,13 +38,18 @@ def main():
 
 
 def build(args):
+    reason = 'explicit clean rebuild requested' if args.rebuild_game else game_build_reason(ROOT)
+    print('Game: ' + ('rebuild — ' + reason if reason else 'cached — inputs and output unchanged'), flush=True)
+    if args.plan:
+        if not args.game_only:
+            print('Website: media fingerprints checked and static pages generated when executed.', flush=True)
+        return
     env = dict(os.environ)
     bun = env.get('BUN') or shutil.which('bun')
     if not bun:
         raise BuildError('Bun is missing. Install Bun, then run bun run build.')
     python = sys.executable
-    client = ROOT/'bin/boufbowl-client-1.9.6.swf'
-    rebuilt = args.rebuild_game or not client.is_file()
+    rebuilt = reason is not None
     java = ffdec = None
 
     def tools():
@@ -61,7 +68,7 @@ def build(args):
         run([python, '-m', 'tools.game_config'], 'Validate game configuration', env)
         run([python, 'patches/rebuild.py', '--ffdec', ffdec], 'Build game client', env)
     else:
-        print('Using existing game client (bun run build recompiles it).', flush=True)
+        print('Reusing compiled game client.', flush=True)
     source = ROOT/'backend/engine_base.json'
     target = ROOT/'backend/build/engine_base.json'
     if not target.is_file() or target.read_bytes() != source.read_bytes():

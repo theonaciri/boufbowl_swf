@@ -5,6 +5,7 @@ Start at the relevant entry point; read dependencies only as needed.
 | Behavior | Entry point and next dependency | Focused check |
 | --- | --- | --- |
 | Patch selection/build | `tools/client_patches.py` → `patches/rebuild.py` / `android/build.py` | `verify_client --area shared` |
+| Game cache / explicit release | `package.json` → `build_project.py` / `build_players.py` → `game_build_state.py` | `bun run build --plan`; [fast loop](BUILD.md#fast-development-loop) |
 | FPS/preferences | both `BoufbowlClient.as` roots → `ClientRuntime.as.inc` → `OptionsView.as`, `ResolutionMediator.as` | shared smoke, both roots |
 | Android background audio | Android `BoufbowlClient` → NativeApplication activate/deactivate → SoundMixer master transform | Home/return/lock; preserve category volumes, repeated deactivation |
 | Browser launch/quality | `play.html` → `web-player.js` → root `setWebDisplay` | `verify_client --area web` |

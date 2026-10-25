@@ -56,6 +56,7 @@ class BuildPlayersTests(unittest.TestCase):
                 'bin/base/boufbowl-client-1.9.6.swf': b'preserved',
                 'bin/boufbowl-client-1.9.6.swf': b'compiled',
                 'resources/game_config.json': b'{}',
+                'resources/palettes.json': b'{}',
                 'patches/ClientRuntime.as.inc': b'policy',
             }.items():
                 path = root/name
@@ -65,6 +66,7 @@ class BuildPlayersTests(unittest.TestCase):
             receipt.parent.mkdir()
             self.assertTrue(build_players.game_rebuild_required(root))
             current = json.dumps({'client': file_hash(root/build_players.CLIENT),
+                                  'palette': file_hash(root/'resources/palettes.json'),
                                   'logic': logic_fingerprint(root)})
             receipt.write_text(current)
             self.assertFalse(build_players.game_rebuild_required(root))

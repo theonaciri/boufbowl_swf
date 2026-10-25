@@ -12,7 +12,7 @@ CLASSES = ['Crâ','Ecaflip','Eniripsa','Enutrof','Féca','Iop','Osamodas','Panda
 SLUGS = ['cra','ecaflip','eniripsa','enutrof','feca','iop','osamodas','pandawa','roublard','sacrieur','sadida','sram','xelor','zobal']
 STADIUM_NAMES = {'FARMSTEAD':'Cania','BRAKMAR':'Brâkmar','BONTA':'Bonta','BEACH':'La Plage','FRIGOST':'Frigost','KARA':'Kara','FOREST':'La Forêt','BALLOTIN':'Saint-Ballotin','PIXEL':'Pixel'}
 HEROES = [(501,10,1),(502,9,2),(503,10,2),(504,12,1),(505,6,1),(506,11,2),(507,2,2),(508,1,2),(509,4,1),(510,3,2),(511,7,1),(512,3,1),(513,13,1),(514,8,1),(515,5,1),(516,12,1),(517,11,1),(518,14,1)]
-LOW_QUALITY_RESTORATIONS = {f'music/music_resolution_loop_{i:02d}.mp3' for i in range(1,4)}
+LOW_QUALITY_RESTORATIONS = {f'music/music_resolution_loop_{i:02d}.mp3' for i in range(2,4)}
 # Names of heroes beyond the first recovered team are read from the original catalog.
 
 

@@ -3,11 +3,35 @@
 Run commands from the repository root:
 
 ```sh
-bun run build                 # Build the game only
+bun run build                 # Game only; reuse unchanged compiled output
+bun run build --plan          # Explain cache decision; no build/downloads
+bun run build:clean           # Force a complete game recompile; keep media caches
 bun run build:website         # Build the website (including missing media)
+bun run release               # All player packages, changed media, static website
 ```
 
 The game command does not render website media or start Chromium.
+
+## Fast development loop
+
+Batch related edits, then run only the affected stage:
+
+| Change | Command |
+| --- | --- |
+| HTML/CSS/JS or French rules page | `bun run build:website:quick` |
+| Python backend | No client build; restart only when authorized |
+| Simulator TypeScript | `bun backend/refresh-mechanics-worker.ts` |
+| CPU TypeScript | `bun backend/refresh-cpu-worker.ts` |
+| Shared AS3 | `bun run build` |
+| Android package needed | `bun run build:players --platform android --no-website` |
+| Full delivery requested | `bun run release` |
+
+Unchanged game inputs and output reuse `.local/game-build.json` without starting
+Java/FFDec. The palette has a separate receipt field so its compiled UI defaults
+cannot silently become stale. Older receipts need one rebuild to upgrade.
+AS3 changes still recompile the complete SWF; class-level incremental compilation
+and reducing Android's repeated shared compilation are separate future work.
+Release builds generate local artifacts; publishing/restarting services is separate.
 
 ## Tools and inputs
 
@@ -49,7 +73,7 @@ bun run build:website
 
 This command, in order:
 
-1. Builds the game SWF if missing, then prepares its runtime JSON files.
+1. Builds the game SWF if missing or stale, then prepares its runtime JSON files.
 2. Generates missing website videos, portraits, stadium previews, and metadata.
    Renderer packages and Chromium are downloaded automatically when needed.
 3. Uses Bun to bundle/minify CSS and JavaScript and generate all static pages,

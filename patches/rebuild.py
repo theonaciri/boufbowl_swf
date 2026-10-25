@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 from tools.media_fingerprints import logic_fingerprint, file_hash
+import hashlib
 from tools.build_tools import BuildError, ffdec_jar, java_binary
 from tools.client_patches import client_patches
 from tools.client_runtime_codegen import client_root_source
@@ -62,6 +63,7 @@ with tempfile.TemporaryDirectory(prefix=".tutorial-build-", dir=root / "bin") as
     output.replace(root / "bin" / output.name)
 receipt = root/".local/game-build.json"
 receipt.parent.mkdir(parents=True, exist_ok=True)
-receipt.write_text(json.dumps({"client": file_hash(root/"bin/boufbowl-client-1.9.6.swf"), "logic": logic})+"\n")
+receipt.write_text(json.dumps({"client": file_hash(root/"bin/boufbowl-client-1.9.6.swf"), "logic": logic,
+                               "palette": hashlib.sha256(palette_source).hexdigest()})+"\n")
 apply_resources(root / "resources", config)
 print("Rebuilt", root / "bin/boufbowl-client-1.9.6.swf")

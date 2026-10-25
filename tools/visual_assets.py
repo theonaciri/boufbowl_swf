@@ -98,7 +98,7 @@ def palette_source(source):
             elif 'galleryRoster' in line:
                 palette,gender='i+1','1'
             else:
-                palette,gender='cls','1+i%2'
+                palette,gender='cls','gender'
             item=f'BoufbowlerPaletteItem(palettes.getItem({palette}))'
             colors=','.join(f'{item}.getColor(BoufbowlerPaletteItem.{kind}_COLOR,{item}.getDefault{method}ColorId(0,{gender}))'
                             for kind,method in (('HAIR','Hair'),('SKIN','Skin'),('EYE','Eye')))

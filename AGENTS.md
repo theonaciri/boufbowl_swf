@@ -27,12 +27,21 @@ Preserve unrelated edits; stage only task-specific files/hunks.
 
 ## Build and test
 
+Batch related edits before building. Choose the smallest affected component:
+website text/styles → `build:website:quick`; backend → its worker only; AS3 →
+`build` and one relevant runtime/platform. Package all platforms, regenerate media,
+or run long native sessions only for requested releases or relevant behavior changes.
+Use `bun run build --plan` to inspect reuse first. Keep logs on disk; report the
+exit status and relevant errors instead of repeatedly reading compiler progress.
+
 ```sh
-bun run build                                      # Game
+bun run build                                      # Incremental game
+bun run build:clean                                # Force game recompile
 python3 -m tools.verify_client --area compile        # Both application roots
 bun run build:players --platform android --no-website
 bun run build:website
 ./play.sh --show-fps --scene-3d
+bun run release                                    # Explicit full delivery build
 ```
 
 - Rebuild shared AS3 **before** `--area compile`: it uses the existing SWF.

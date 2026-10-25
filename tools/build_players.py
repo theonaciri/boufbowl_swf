@@ -9,18 +9,10 @@ from tools.build_parallel import build_budget, parallel
 from tools.build_tools import BuildError, ffdec_jar, air_sdk, android_sdk, jdk_directory, java_binary, remember_build_tools
 from tools.refresh_website import refresh_website
 from tools.android_signing import signing_credentials
-from tools.media_fingerprints import CLIENT, file_hash, logic_fingerprint, read_json
+from tools.game_build_state import game_rebuild_required
+from tools.media_fingerprints import CLIENT
 
 ROOT = Path(__file__).resolve().parent.parent
-
-
-def game_rebuild_required(root):
-    client = root/CLIENT
-    if not client.is_file():
-        return True
-    receipt = read_json(root/'.local/game-build.json', {})
-    return (not isinstance(receipt, dict) or receipt.get('client') != file_hash(client)
-            or receipt.get('logic') != logic_fingerprint(root))
 
 
 def main():
@@ -36,7 +28,9 @@ def main():
     parser.add_argument('--keystore', type=Path)
     parser.add_argument('--jobs', type=int, help='Maximum total CPU jobs (default: all available CPUs)')
     parser.add_argument('--bun', default=os.environ.get('BUN') or shutil.which('bun') or 'bun')
-    parser.add_argument('--no-website', action='store_true')
+    website = parser.add_mutually_exclusive_group()
+    website.add_argument('--no-website', action='store_true')
+    website.add_argument('--website-media', action='store_true', help='Also update changed website media (release workflow)')
     args = parser.parse_args()
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
@@ -111,7 +105,12 @@ def main():
         failures = [failure for failure in parallel(package, jobs, workers=len(jobs)) if failure]
         if failures:
             raise BuildError('Player builds failed: '+', '.join(failures)+'. See the errors above; completed downloads are preserved.')
-        if not args.no_website:
+        if args.website_media:
+            command = [args.bun, str(ROOT/'tools/build.mjs')]
+            if args.jobs is not None:
+                command += ['--jobs', str(args.jobs)]
+            subprocess.run(command, cwd=ROOT, check=True)
+        elif not args.no_website:
             refresh_website(ROOT, args.bun)
 
 
