@@ -1,0 +1,182 @@
+{
+  "groups": [
+    [
+      "equipe",
+      "L’équipe et le match",
+      [
+        "C01",
+        "C02",
+        "C19"
+      ]
+    ],
+    [
+      "deplacement",
+      "Se déplacer et se relever",
+      [
+        "C06",
+        "C07",
+        "C17"
+      ]
+    ],
+    [
+      "combat",
+      "Les contacts et les combats",
+      [
+        "C08",
+        "C09"
+      ]
+    ],
+    [
+      "ballon",
+      "Ramasser, passer, intercepter",
+      [
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "C15",
+        "C16"
+      ]
+    ],
+    [
+      "pouvoirs",
+      "Pouvoirs et récupération",
+      [
+        "C03",
+        "C04",
+        "C05",
+        "C18"
+      ]
+    ],
+    [
+      "competition",
+      "Tournois et reconnexion",
+      [
+        "C20",
+        "C21",
+        "C22"
+      ]
+    ]
+  ],
+  "cases": {
+    "C01": [
+      "Trois joueurs par rôle",
+      "Le club compte dix joueurs. Au maximum {rosterLimit} peuvent appartenir au même rôle, toutes classes confondues. La limite sur le terrain est de {fieldRoleLimit} par rôle.",
+      "La limite porte sur les bloqueurs, esquiveurs, coureurs et lanceurs ; pas sur chaque classe séparément."
+    ],
+    "C02": [
+      "Cinq joueurs sur le terrain",
+      "Chaque équipe place cinq joueurs de son club, un par zone de départ autorisée. Les autres restent en réserve.",
+      "Le placement dure {placementSeconds} secondes et la préparation des ordres {planningSeconds} secondes par défaut. Les variantes de stade figurent plus bas."
+    ],
+    "C03": [
+      "Un pouvoir spécial par équipe et par tour",
+      "Assigner un second pouvoir annule la première assignation dans le client. Une équipe ne peut donc pas lancer deux pouvoirs pendant le même tour.",
+      "Une requête contenant plusieurs pouvoirs est refusée par le serveur."
+    ],
+    "C04": [
+      "Le lanceur consacre son tour au pouvoir",
+      "Un joueur qui active son pouvoir ne peut pas recevoir en même temps un ordre ordinaire ou de déplacement.",
+      "Le lanceur doit être vivant, disponible et disposer d’une utilisation restante."
+    ],
+    "C05": [
+      "Retour des remplaçants",
+      "{restartRecovery} Les charges de pouvoir ne sont pas réinitialisées à chaque touchdown.",
+      "{revival} Les règles historiques complètes de résurrection restent inconnues."
+    ],
+    "C06": [
+      "L’Eau réduit le risque de chute",
+      "La caractéristique Eau et les ordres Eau améliorent la fiabilité du déplacement, même avec des ordres d’autres éléments. Une zone verte n’assure pas une réussite à 100 %.",
+      "Un tirage est effectué au début du tour, après les pouvoirs. Les coefficients et la courbe de risque actuels sont une reconstruction, pas les probabilités historiques. {movementQuality}"
+    ],
+    "C07": [
+      "Se relever demande de l’Eau",
+      "Un joueur au sol a besoin d’au moins {standOrders} ordre(s) Eau pour se relever.",
+      "Le principe est documenté après la version 1.0.8. Le délai actuel est de {standSeconds} seconde(s) de simulation ; ce délai exact n’est pas certifié historique."
+    ],
+    "C08": [
+      "Un adversaire explicitement ciblé",
+      "{targetedEffects}",
+      "Le score intrinsèque reste un remplacement. Un tirage logistique reproductible approche les probabilités décrites par le concepteur ; l’image de la courbe d’origine n’a pas été retrouvée."
+    ],
+    "C09": [
+      "Contact incident ou esquive gagnante",
+      "Une victoire lors d’un contact non ciblé ou d’une esquive utilise une autre ligne de dégâts. Une esquive gagnante affecte l’attaquant, pas le défenseur qui l’a évité.",
+      "{criticalDodge} Les témoignages divergent sur ce point. Un contact incident infligeant quatre PV n’est pas assimilé automatiquement à une mise au sol."
+    ],
+    "C10": [
+      "Ramasser près d’autres joueurs",
+      "Le ramassage est possible à {pickupRange} case(s) du ballon. Les joueurs vivants des deux équipes, alliés compris, gênent le ramasseur à proximité.",
+      "Actuellement : rayon de {pressureRadius} case(s), pénalité de {nearbyPenalty} points de pourcentage par joueur. Le rayon, les coefficients et la formule exacte restent incertains."
+    ],
+    "C11": [
+      "Un combat perdu gêne le ramassage suivant",
+      "Chaque combat perdu pendant le même tour ajoute actuellement {lossPenalty} points de pourcentage de pénalité au ramassage. Une défaite sans perte de PV compte aussi.",
+      "L’historique est remis à zéro au tour suivant. Le principe est documenté ; la valeur et la combinaison des pénalités sont provisoires."
+    ],
+    "C12": [
+      "Lancer et recevoir sont deux épreuves",
+      "Une passe comporte un test de lancer, puis un test de réception. Un lancer réussi n’assure donc pas que le destinataire prendra le ballon.",
+      "{scatter} Les coefficients de réussite et la distribution de déviation d’origine n’ont pas été retrouvés. {maneuverQuality}"
+    ],
+    "C13": [
+      "Préparer et enchaîner les passes",
+      "Un joueur peut recevoir un ordre de passe avant de posséder le ballon. S’il le reçoit à temps, il peut exécuter cette passe et prolonger une chaîne dans le même tour.",
+      "L’Air accélère actuellement le vol de {airSpeedBonus} % par ordre Air. Ce coefficient est un choix de reconstruction, même si le principe des passes préparées est documenté. {receptionBonus}"
+    ],
+    "C14": [
+      "Arriver avant la fin du tour",
+      "{passDeadline}",
+      "La limite exacte au dernier instant suit les pas de temps du simulateur ; cette convention n’est pas une formule historique retrouvée."
+    ],
+    "C15": [
+      "Un contact peut interrompre le lancer",
+      "{contactCancellation}",
+      "{passingTiming} Le calendrier précis des passes et la durée de préparation d’origine restent inconnus."
+    ],
+    "C16": [
+      "Intercepter sur la trajectoire",
+      "L’interception utilise actuellement la caractéristique {interceptionStat} et dépend de la position sur le trajet du ballon ; la réception prévue dépend de l’Air. Être simplement proche du passeur ne suffit pas.",
+      "{pathInterception} La largeur du couloir, la hauteur admissible, les priorités et le nombre d’essais restent des paramètres de reconstruction."
+    ],
+    "C17": [
+      "Un étourdissement peut finir pendant le tour",
+      "L’étourdissement est temporaire. Un receveur peut récupérer avant l’arrivée d’une passe. La caractéristique Eau réduit sa durée.",
+      "Durée actuelle : {stunFormula}. Cette courbe est provisoire. Être étourdi, au sol, protégé ou à zéro PV sont des états distincts."
+    ],
+    "C18": [
+      "Écaflip et le soin adverse",
+      "{ecaflipBehavior}",
+      "Les valeurs des pouvoirs viennent des descriptions du client original. Les interactions entre deux contre-pouvoirs, les masques personnels et l’ordre exact des protections gardent des choix de reconstruction."
+    ],
+    "C19": [
+      "Cinq touchdowns n’arrêtent pas le match",
+      "Le match continue jusqu’à sa limite de tours, même après le cinquième touchdown. La règle par défaut est de {matchTurns} tours, répartis en périodes de {periodTurns} tours.",
+      "Les valeurs par stade sont détaillées plus bas. Un abandon ou une expiration de reconnexion peut terminer la partie avant cette limite."
+    ],
+    "C20": [
+      "Les tournois de la restauration",
+      "{tournamentSchedule} {tournamentFormat}",
+      "Ce format est propre à Boufbowl Fan. Il ne prétend pas reproduire les tournois chronométrés historiques."
+    ],
+    "C21": [
+      "Points et départage des tournois",
+      "Barème configuré : victoire {winPoints}, nul {drawPoints}, défaite {lossPoints}. En phase finale, le classement des qualifications départage une égalité.",
+      "Le règlement et les horaires affichés sur la fiche du tournoi font foi. Le traitement des fins de ronde est une règle de la restauration."
+    ],
+    "C22": [
+      "Reconnexion : le match continue",
+      "Après détection d’une déconnexion, le délai de retour est de {graceSeconds} secondes. Les chronomètres et l’adversaire continuent à jouer.",
+      "La détection intervient actuellement après {heartbeatSeconds} secondes sans signal authentifié. L’expiration exacte et le règlement du score sont des choix de reconstruction ; si les deux joueurs expirent, {bothExpired}. Une panne serveur ne met pas ce délai en pause."
+    ]
+  },
+  "unresolved": {
+    "Intrinsic-value formula1.png and random CDF formula2.png": "La table des valeurs intrinsèques et la distribution aléatoire des scores de combat : les deux images d’origine sont manquantes.",
+    "Exact tier boundaries 0/15/30": "Les égalités exactes aux seuils 0, 15 et 30 entre les niveaux de résultat d’un combat.",
+    "Critical-dodge knockdown": "La mise au sol après une esquive critique, contredite selon les sources.",
+    "Original movement/pressure/stun coefficients": "Les coefficients d’origine des déplacements, de la pression au ramassage et de l’étourdissement.",
+    "Original exact pass scheduler, pressure/quality transfer and scatter distribution": "Le moment précis des passes, le transfert de leur qualité, la pression et la distribution des déviations.",
+    "Complete revival and ability inversion combinations": "Les règles complètes de résurrection et les combinaisons d’inversion des pouvoirs."
+  }
+}

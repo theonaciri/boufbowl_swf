@@ -1,76 +1,120 @@
-# Shared client performance work
+# Client performance
 
-The five optimization cycles target code shared by Ruffle, desktop Flash, and
-Android AIR. Preserve action timing, coordinate mapping, explicit redraws and
-completion callbacks. Renderer-specific popup skins remain scoped to Ruffle.
+## Render FPS setting
 
-## Cycle 1: batch sprite vertex writes
+The in-game slider (25–240 FPS) controls the render target through 3D entry/exit;
+native default is 60. Removed the scene's old 50/25 caps and browser slider's 60
+cap. Authored animation clocks remain separate. Benchmarks below used the older
+50 FPS scene target; they do not measure high-FPS capability.
 
-Moving sprites formerly wrote three temporary extreme coordinates, then the
-three actual coordinates. Each Sprite3D setter also read the vertex, potentially
-recomputing its position repeatedly. Use the existing shared vertex's setValue
-method to update all axes and invalidate geometry once. Explicit redraws use the
-same method without allocating a temporary Point3. Reject NaN before mutation.
+Game rebuilt; both roots compiled and Windows/Linux/Android downloads packaged.
+Actual high-FPS rendering remains unverified on hardware.
 
-The focused benchmark in tools/shared_client_bench.as.inc compares 3,000 changing
-positions using identical, preallocated points. Under this host's Ruffle runtime,
-three samples were 25–26 ms for the former setter sequence and 8 ms for the
-batched presenter path. These are microbenchmark results, not measured gameplay
-FPS gains or native runtime results.
+3D-entry crash: FFDec26.3 compiled `Boufbowler._uid = _nextUid++` into
+constructor bytecode that reused/killed local0 (`this`) and local1 (sprite).
+Native Flash debug traced Error1009 to that constructor; Android reported1010.
+Allocate the ID after `super()` with separate read/add assignments. Avoid side
+effects in field initializers when introducing decompiled overrides.
+Fixed native Flash32 debug probe retained a 90FPS target, rendered the CPU turn
+and sent `RESOLUTION_DONE`, reaching turn2. This verifies the constructor repair,
+not sustained90FPS or Android hardware. Android error overlay now distinguishes
+game runtime from synchronous startup failures.
 
-The shared smoke checks cover unchanged/moving positions, axis mapping, explicit
-redraws, replacement sprites, rejected NaN coordinates, and chat scroll state.
-Run `python3 -m tools.smoke_shared_client` on a host with a compatible, licensed
-AIR runtime. Native AIR application execution on this development host is
-license gated; browser probes exercise both runtime branches in Ruffle.
+## Running cadence
 
-## Cycle 2: retire completed frame controllers
+Ordinary travel uses `min(scheduledMs, floor(pathDistance * 40 / (30 * 0.7)))`
+(positive paths: at least1ms). Runs slow by at most30%; remaining time becomes
+an idle wait at the route's end, not at every hex. Full movement-node duration
+is retained, so interaction joins keep their existing schedule. Combat/pass
+choreography and the server simulation are unchanged. Footstep counts exclude
+the new idle portion, at the existing sound timeline's tick granularity.
+`presentationItems` groups adjacent moving wire entries into a continuous route;
+stationary waits, gaps and interactions break the group. Consumers use copies:
+the received protocol message is unchanged. Track information, movement nodes
+and footsteps use the same grouping.
+Grouped-route native Flash32 debug probe at target90FPS completed two CPU turns,
+including five fights in turn2, and reached orders/turn3 with both real client
+acknowledgements. Seeds3435174131 / 618410282; Android device check pending.
 
-A finished FrameController now returns immediately and reports completion once.
-Unobserved frame/completion events no longer allocate Event objects. The smoke
-test sends 1,000 updates past the end and requires exactly one completion, while
-also checking scheduled starts, timed loops and incremental non-skipping frames.
+Field markers use `getTimer()` at25FPS, independently of stage FPS: possession's
+24-frame loop lasts960ms; the red power indicator's 14-frame loop lasts560ms.
+Possession loss stops its callback; stage detachment removes both listeners.
+Native Flash32 debug at a 90FPS target completed a CPU turn and displayed the
+possession marker. Cross-FPS timing comparison and Android confirmation pending.
+The transient Android black ground could not be reproduced by the user; retain
+original texture loading. Packaged grass PNG matches its source.
 
-## Cycle 3: compose text only when dirty
+`Boufbowler` derives cadence from segment distance/duration:
+`rate = min(1, distance * 40 / (duration * 30))`, using the retained
+`Physics.DEFAULT_VELOCITY` (30 units/40ms). Velocity moves use the factory's rounded
+duration; timed moves use their supplied duration. Faster moves retain rate1.
 
-TextZone tracks pending content/layout work, registers its frame listener once
-per batch and makes unchanged updateNow calls cheap. Size/padding changes still
-invalidate layout; a failed composition can be retried explicitly. The smoke
-test requires no extra change notifications for 500 unchanged refreshes, and
-requires composition after resizing or changing padding. Identical dimensions
-no longer update the TLF controller or recreate a browser clipping rectangle.
+`FpsControler` accumulates fractional frame credit without skipping authored
+markers or restarting phase. Reapply after sprite/direction changes. Scale normal,
+Water and circle-free runs during movement; other animations use rate1. Global
+replay speed/pause applies separately; clip cleanup removes rate entries.
 
-## Cycle 4: advance the scene UI once
+Game/downloads rebuilt; desktop/Android roots compiled. Visual/gameplay validation
+remains pending. Recordings below predate this change.
 
-SceneController updated the UI explicitly and again through its updatable list.
-Remove the duplicate registration, retaining the explicit update before scripts
-and models and the same behavior after reset. Instrumented playback measured
-47 scene updates and 94 UI updates before this change; the corrected path must
-produce one UI update per scene update and still finish the resolution. The
-corrected replay completed with 143 scene updates and 143 UI updates, emitted
-ResolutionDoneMessage, and reached MATCH_END at the selected 30 FPS stage cap.
+## Shared optimizations
 
-## Cycle 5: cache equivalent character ids
+| Path | Change / invariant | Evidence |
+| --- | --- | --- |
+| `MovieClipSpritePresenter` | One vertex `setValue`; preserve explicit redraw, axis mapping and NaN rejection | 3,000 updates: 25–26ms → 8ms |
+| `FrameController` | Finished controllers return; completion once; allocate events only when observed | 1,000 post-end updates, one completion |
+| `TextZone` | Compose only when dirty; resize/padding invalidate; retry failures | 500 unchanged updates, no notifications |
+| `SceneController` | UI once before scripts/models | Before: 47 scene/94 UI; after: 143/143, resolution completed |
+| `SceneModel` | Cache equivalent Int64 keys; invalidate on add/remove/reset; retain full IDs | 3,000 lookups: 27–28ms → 6–7ms |
 
-Keep the existing identity lookup and roster iteration order, but remember the
-original map key after matching a decoded Int64 by value. Repeated equivalent-id
-lookups then avoid allocating an iterator and scanning the roster. Add/remove
-operations invalidate the relevant cache entry; reset clears it. Cache keys keep
-both integer words separated, avoiding ambiguous Int64.toString values and
-Number precision loss. Cached keys are checked for equality before use.
+Timings are Ruffle microbenchmarks, not whole-game/native FPS. Sources:
+`tools/shared_client_{smoke,bench}.as.inc`. Combined browser replay reached
+`ResolutionDoneMessage`/`MATCH_END` at 30FPS; both runtime branches passed in
+Ruffle. Historical Python run: 314 passed, one skipped; browser presets: two
+passed. AIR execution was license-blocked then; later native trials follow.
 
-The smoke test covers fresh equivalent objects, high/low word collisions,
-negative/high-bit ids, removal and re-adding. With ten characters and 3,000
-preallocated decoded ids, three Ruffle samples took 27–28 ms on the former scan
-path and 6–7 ms with the cache. This remains a microbenchmark, not a claim of
-native or whole-game speedup. The benchmark sources are included in the native
-smoke harness for reproduction on supported hosts.
+## Same-host runtime comparison — 2026-10-24
 
-## Combined validation
+Four-core ARM64 Neoverse-N1 Ubuntu26.04 server, software graphics, approximately
+640×375 game content, 50FPS target:
 
-The final combined browser replay reached ResolutionDoneMessage and MATCH_END
-with a 30 FPS stage limit and 141 scene/UI updates each. The shared smoke checks
-passed with both the native and Ruffle runtime branches selected in Ruffle.
-The Python suite passed 314 tests with one skipped; both browser-preset tests
-passed. Native application execution remains unverified on this host because
-its ARM64 AIR runtime requires a commercial developer license.
+| Runtime | Recording OFF | Recording ON |
+| --- | ---: | ---: |
+| Native ARM64 Android AIR / Redroid15 | 43.68 FPS | 42.29 FPS |
+| Windows i386 Flash32 / Hangover11.16 FEX | 11.82 FPS | 12.03 FPS |
+
+Android: API35, ANGLE/SwiftShader, 640×376 at 60Hz, density160. Desktop:
+Xvfb/llvmpipe, `HODLL=libwow64fex.dll`; default Box64 stalled. Each of five measured
+passes completed two CPU turns (3+6 fights), with identical authoritative result
+hashes, fixed roster/seeds, and real client acknowledgements. Android warm-up
+excluded; production APK/SWF unchanged.
+
+Android OFF/ON/OFF: 43.67/42.29/43.70FPS → observed recording slowdown **3.20%**.
+Desktop showed no resolved slowdown; turn2 alone: 11.75/11.73FPS. Its slight
+aggregate improvement may reflect cache/timing variation. Android was **3.69×**
+desktop here; native ARM versus x86 emulation/software graphics does not predict
+physical-phone or native-x86 GPU performance. These are frame-event rates,
+not video/GPU presentation FPS.
+
+Capture paths differ: Android `screenrecord`, H.264 2Mbps, 640×376; desktop
+15FPS X11 + x264 ultrafast, 640×394 including menu. Videos decoded/visually checked,
+YUV420P; earlier YUV444P played black. Small samples do not establish universal
+overhead or encoder efficiency.
+
+Earlier desktop trials: 1024×600 movement-only 11.90FPS; 640×375 combat turns
+11.81/11.65FPS, worst frames548/431ms, processCPU128% (100%=one CPU), peakRSS660/681MiB.
+Main thread95% plus llvmpipe workers indicates a CPU limit on this host. Different
+turns/cache states prevent a controlled resolution comparison.
+
+## Evidence and reproduction
+
+[Runtime recipes](NATIVE_TESTING.md); [telemetry](GAME_MEASUREMENTS.md).
+External caches retain scripts, build hashes, SQLite, raw samples and recordings:
+
+- `~/.cache/boufbowl-android-testing/performance/`: `METHOD.md`, `REPORT.md`,
+  `comparison-results.json`, `android-recorded.mp4`.
+- `~/.cache/boufbowl-desktop-testing/`: `comparison/desktop-recorded.mp4`,
+  `cpu-turn/`, `cpu-small/`.
+
+Test runtimes/backend stopped; disposable Android OS data/images removed.
+Logs/DBs contain local sessions; redact before publishing.

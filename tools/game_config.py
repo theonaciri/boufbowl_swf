@@ -79,6 +79,10 @@ def check_rules(rules, path):
     except ValueError as error:
         raise ConfigError(f"{path}: {error}") from error
     match = rules["match"]
+    for name, ability in rules.get('abilities', {}).items():
+        for fields in ability.get('mask_order', {}).values():
+            if set(fields) != {'strength', 'agility', 'precision', 'endurance'}:
+                raise ConfigError(f'{path}: {name} mask must assign each characteristic once')
     if match["turns_per_period"] > match["turns_per_match"]:
         raise ConfigError(f"{path}: turns_per_period exceeds turns_per_match")
     simulation = rules["simulation"]["simulation"]
@@ -86,6 +90,9 @@ def check_rules(rules, path):
         raise ConfigError(f"{path}: probability_min exceeds probability_max")
     policy = rules['simulation'].get('rulebook')
     if policy:
+        grades = policy.get('maneuvers')
+        if grades and grades['wide_margin'] >= grades['critical_margin']:
+            raise ConfigError(f'{path}: wide maneuver margin must be below critical margin')
         if policy['status']['minimum_ticks'] > policy['status']['base_ticks']:
             raise ConfigError(f'{path}: minimum stun ticks exceed base ticks')
         from backend.rulebook import rulebook_snapshot

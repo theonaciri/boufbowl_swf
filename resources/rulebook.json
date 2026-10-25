@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "id": "restoration-2012-v2",
+  "id": "restoration-2012-v4",
   "target": "Post-1.0.7 / 1.0.8 framework; February 2012 consequence semantics; incomplete original formulas",
   "evidence_revision": "484d203",
   "policy_defaults": {
-    "id": "restoration-2012-v2",
+    "id": "restoration-2012-v4",
     "movement": {
       "safe_failure": 0.01,
       "water_stat": 0.05,
@@ -24,7 +24,11 @@
       "official_effects": true,
       "boundary": "lower",
       "critical_dodge_down": false,
-      "next_bonus": 1
+      "next_bonus": 1,
+      "random_score": {
+        "model": "logistic-approximation",
+        "scale": 3.4590086183578026
+      }
     },
     "connection": {
       "heartbeat_timeout": 30,
@@ -36,6 +40,16 @@
       "favorable_timing": true,
       "scatter_failures": true,
       "path_interception": true
+    },
+    "maneuvers": {
+      "wide_margin": 15,
+      "critical_margin": 30,
+      "movement_bonus": 1,
+      "reception_throw_bonus": 1,
+      "critical_failures": true
+    },
+    "recovery": {
+      "revive_rested_reserves": true
     }
   },
   "rules": [
@@ -83,7 +97,7 @@
       "sources": [
         "M02"
       ],
-      "decision": "Living reserves heal; field players retain HP; dead reserves stay dead pending revival evidence."
+      "decision": "Rested reserves regain maximum HP, including dead reserves under the explicit v4 revival policy. Former field players retain HP; no immediate revival or ability-charge reset. Complete historical revival semantics are unknown."
     },
     {
       "id": "C06",
@@ -93,7 +107,7 @@
         "M03",
         "M08"
       ],
-      "decision": "One seeded draw at turn start; nonzero green risk and Water dependence use explicit replacement balance."
+      "decision": "One seeded movement draw; Water-dependent replacement risk. On route completion, wide/critical success grants a nonstacking next-action bonus, expiring at turn end. Grading and coefficients are reconstruction choices."
     },
     {
       "id": "C07",
@@ -111,7 +125,7 @@
       "sources": [
         "M09"
       ],
-      "decision": "Official consequence rows; existing deterministic score proxy and configurable threshold equality are unverified."
+      "decision": "Official consequences; seeded logistic margin noise approximates M09 probabilities. Intrinsic score proxy and exact boundaries remain provisional."
     },
     {
       "id": "C09",
@@ -145,18 +159,19 @@
       "name": "Separate throw and catch",
       "status": "provisional",
       "sources": [
-        "M05"
+        "M05",
+        "CLIENTFX"
       ],
-      "decision": "Separate throw/catch tests; failed tests scatter to a seeded point on the trajectory (replacement distribution)."
+      "decision": "Separate seeded throw/catch tests with configurable log-odds maneuver grades. Critical throw stuns; critical pickup/reception/interception knocks down without invented HP damage. A failed interception does not terminate flight. Thresholds and severity probabilities are provisional."
     },
     {
       "id": "C13",
       "name": "Preassigned pass chains",
-      "status": "implemented",
+      "status": "provisional",
       "sources": [
         "M05"
       ],
-      "decision": "Onward assignments survive until possession; flights chain; Air speeds travel using a configurable replacement coefficient."
+      "decision": "Preassigned passes chain. Successful reception grants a quality-dependent next-throw bonus in v4, consumed once and expiring at turn end. Air travel coefficient and bonus magnitude are provisional."
     },
     {
       "id": "C14",
@@ -200,9 +215,10 @@
       "name": "Ecaflip healing redirection",
       "status": "implemented",
       "sources": [
-        "M07"
+        "M07",
+        "CLIENT19"
       ],
-      "decision": "Only opposing Eniripsa healing is redirected; no opponent heal means no effect."
+      "decision": "Original client target reversal for team-targeted powers; self-only masks and two counterspells have no redirectable team target."
     },
     {
       "id": "C19",
@@ -332,6 +348,8 @@
     "B01": "5186156",
     "B02": "5186074",
     "B03": "5187558",
-    "B04": "5187584"
+    "B04": "5187584",
+    "CLIENT19": "original client e3d29c4:resources/lang.json",
+    "CLIENTFX": "original bin/base/boufbowl-client-1.9.6.swf: PickUpFunction, PassFunction, ReceptionFunction, InterceptionFunction"
   }
 }

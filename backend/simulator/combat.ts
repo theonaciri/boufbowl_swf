@@ -1,6 +1,6 @@
 import {attackPower, dodgeSucceeds, duelDamage} from "../rules";
 import {fixed, withinRadius} from "./movement";
-import {applyRulebookDamage, recordRulebookLoss, rulebookConsequences, rulebookStunDuration} from "boufbowl-rulebook";
+import {applyRulebookDamage, recordRulebookLoss, rulebookConsequences, rulebookStunDuration, rulebookCombatNoise, takeRulebookActionBonus} from "boufbowl-rulebook";
 
 export function resolveDuels(cfg, state, actions, rng, tick, dueledPairs) {
   const events = [];
@@ -85,19 +85,20 @@ function legacyPerformDuel(cfg, a, b, ea, eb, rng) {
   }
   if (powerA === powerB && !a.power_locked && !b.power_locked) {
     const tieDamage = cfg.combat.duel.damage_on_tie + atk.TERRE;
-    attacker.hp = Math.max(0, attacker.hp - tieDamage);
-    defender.hp = Math.max(0, defender.hp - tieDamage);
+    attacker.hp = Math.max(0, attacker.hp - tieDamage - (attacker.combat_damage_bonus ?? 0));
+    defender.hp = Math.max(0, defender.hp - tieDamage - (defender.combat_damage_bonus ?? 0));
     return {
       attacker,
       defender,
       damage: tieDamage,
+      tieDamage: {attacker:tieDamage+(attacker.combat_damage_bonus ?? 0),defender:tieDamage+(defender.combat_damage_bonus ?? 0)},
       defenderDodged: false,
       defenderKO: false,
       ballDropped: false,
       tie: true
     };
   }
-  const damage = duelDamage(cfg, atk.TERRE);
+  const damage = duelDamage(cfg, atk.TERRE) + (defender.combat_damage_bonus ?? 0);
   defender.hp = Math.max(0, defender.hp - damage);
   const diff = Math.abs(powerA - powerB);
   const koChance = Math.min(cfg.simulation.fall_max, cfg.simulation.fall_base + diff * cfg.simulation.fall_per_power);
@@ -134,13 +135,13 @@ function duelEvents(outcome, tick) {
       tick,
       type: "damage",
       actor: outcome.attacker.id,
-      params: { damage: outcome.damage, hp: outcome.attacker.hp }
+      params: { damage: outcome.tieDamage?.attacker ?? outcome.damage, hp: outcome.attacker.hp }
     });
     events.push({
       tick,
       type: "damage",
       actor: outcome.defender.id,
-      params: { damage: outcome.damage, hp: outcome.defender.hp }
+      params: { damage: outcome.tieDamage?.defender ?? outcome.damage, hp: outcome.defender.hp }
     });
     return events;
   }
@@ -171,26 +172,46 @@ function performDuel(cfg: any, a: any, b: any, ea: any, eb: any, rng: any, actio
   const policy = cfg.rulebook?.combat;
   if (!policy?.official_effects) return legacyPerformDuel(cfg,a,b,ea,eb,rng);
   // Retain the recreation's pre-existing score proxy, NOT formula1/formula2.
-  const bonusA=a.next_combat_bonus ?? 0,bonusB=b.next_combat_bonus ?? 0;
+  const movementA=takeRulebookActionBonus(a),movementB=takeRulebookActionBonus(b);
+  const bonusA=(a.next_combat_bonus ?? 0)+movementA,bonusB=(b.next_combat_bonus ?? 0)+movementB;
   const powerA = attackPower(cfg,a.stats.strength,ea.TERRE)+(a.attack_bonus ?? 0)+bonusA;
   const powerB = attackPower(cfg,b.stats.strength,eb.TERRE)+(b.attack_bonus ?? 0)+bonusB;
   delete a.next_combat_bonus; delete b.next_combat_bonus;
   const aAttacks = a.power_locked ? false : b.power_locked ? true : powerA >= powerB;
   const attacker = aAttacks ? a : b, defender = aAttacks ? b : a;
   const atk = aAttacks ? ea : eb, def = aAttacks ? eb : ea;
-  const dodged = dodgeSucceeds({attacker_terre:atk.TERRE,defender_feu:def.FEU,
+  let dodged = dodgeSucceeds({attacker_terre:atk.TERRE,defender_feu:def.FEU,
     attacker_agility:attacker.stats.agility,defender_agility:defender.stats.agility});
-  const winner = dodged ? defender : attacker, loser = dodged ? attacker : defender;
-  const scoreValues = dodged
+  let defenderWins = dodged;
+  let fireDefense = dodged;
+  let scoreValues = dodged
     ? {[attacker.id]:aAttacks ? powerA : powerB,[defender.id]:attackPower(cfg,defender.stats.agility,def.FEU)+(defender.attack_bonus ?? 0)+(aAttacks ? bonusB : bonusA)}
     : {[a.id]:powerA,[b.id]:powerB};
-  const margin = dodged ? Math.max(0,scoreValues[defender.id]-scoreValues[attacker.id]) : Math.abs(powerA-powerB);
+  let margin = dodged ? Math.max(0,scoreValues[defender.id]-scoreValues[attacker.id]) : Math.abs(powerA-powerB);
+  const random = rulebookCombatNoise(cfg,rng);
+  if (policy.random_score) {
+    fireDefense = def.FEU > 0 && !def.TERRE;
+    const attack = aAttacks ? powerA : powerB;
+    const defense = fireDefense
+      ? attackPower(cfg,defender.stats.agility,def.FEU)+(defender.attack_bonus ?? 0)+(aAttacks ? bonusB : bonusA)
+      : aAttacks ? powerB : powerA;
+    const noisyAttack = attack + random.noise;
+    const delta = noisyAttack - defense;
+    defenderWins = delta < 0;
+    dodged = defenderWins && fireDefense;
+    margin = Math.abs(delta);
+    // Original score fields are unsigned. A common shift preserves the margin
+    // when a rare negative draw puts one displayed score below zero.
+    const shift = Math.max(0,-Math.min(noisyAttack,defense));
+    scoreValues = {[attacker.id]:noisyAttack+shift,[defender.id]:defense+shift};
+  }
+  const winner = defenderWins ? defender : attacker, loser = defenderWins ? attacker : defender;
   const targeted = actions.some(order => order.entity_id === winner.id && order.action_type === "follow" && order.params.target_entity_id === loser.id);
   const branch = dodged ? "dodge" : targeted ? "targeted" : "incidental";
   const upper = policy.boundary === "upper";
   const tier = (upper ? margin >= 30 : margin > 30) ? "critical" : (upper ? margin >= 15 : margin > 15) ? "wide" : "normal";
   const effect = rulebookConsequences(tier,branch,policy.critical_dodge_down);
-  const applied = applyRulebookDamage(loser,effect.damage);
+  const applied = applyRulebookDamage(loser,effect.damage+(loser.combat_damage_bonus ?? 0));
   if (effect.down || loser.hp <= 0) {loser.status.knocked_down=true;loser.status.stunned=false;delete loser.stun_until_tick;}
   else {loser.status.stunned=true;loser.stun_until_tick=tick+rulebookStunDuration(cfg,loser);}
   recordRulebookLoss(state,loser.id);
@@ -198,6 +219,9 @@ function performDuel(cfg: any, a: any, b: any, ea: any, eb: any, rng: any, actio
   const ballDropped = loser.status.carrying_ball && loser.status.knocked_down;
   if (ballDropped) loser.status.carrying_ball=false;
   return {attacker,defender,loser,dropper:loser,damage:applied.damage,applied,defenderDodged:dodged,ballDropped,
-    audit:{winner:winner.id,loser:loser.id,tier,branch,margin,score_model:"legacy-proxy-unverified",score_values:scoreValues,
-      stat_fields:{[attacker.id]:"strength",[defender.id]:dodged ? "agility" : "strength"}}};
+    audit:{winner:winner.id,loser:loser.id,tier,branch,margin,granted_bonus:effect.next_bonus ? policy.next_bonus : 0,
+      ...(cfg.rulebook?.maneuvers ? {movement_bonuses:{[a.id]:movementA,[b.id]:movementB}} : {}),
+      score_model:policy.random_score ? 'proxy-intrinsic+logistic-approximation' : "legacy-proxy-unverified",score_values:scoreValues,
+      ...(policy.random_score ? {random_draw:random.draw,random_score:random.noise,random_model:policy.random_score.model} : {}),
+      stat_fields:{[attacker.id]:"strength",[defender.id]:fireDefense ? "agility" : "strength"}}};
 }

@@ -16,9 +16,7 @@ package com.ankamagames.boufbowl.client.match.resolution.view
 
       public static const SCRIPT_ENDED:String = "com.ankamagames.boufbowl.client.match.resolution.view.ResolutionMediator.SCRIPT_ENDED";
 
-      private static const STANDARD_FPS:int = 25;
-
-      private static const RESOLUTION_FPS:int = 50;
+      private static const DEFAULT_RENDER_FPS:int = 60;
 
       private static const LOGGER:ILogger = LoggerFactory.getLogger(ResolutionMediator);
 
@@ -42,7 +40,7 @@ package com.ankamagames.boufbowl.client.match.resolution.view
       {
          super.onRegister();
          addContextListener(MatchModel.PLAY_SCRIPT,this.playScript);
-         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.sceneFrameRate(RESOLUTION_FPS);
+         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.sceneFrameRate(DEFAULT_RENDER_FPS);
       }
 
       override public function onRemove() : void
@@ -53,7 +51,7 @@ package com.ankamagames.boufbowl.client.match.resolution.view
             LOGGER.debug("Mediator::onRemove called with a script running. Cleaning...");
             this.cleanScript();
          }
-         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.sceneFrameRate(STANDARD_FPS);
+         this._stage.frameRate = com.ankamagames.boufbowl.BoufbowlClient.sceneFrameRate(DEFAULT_RENDER_FPS);
          this._stage = null;
       }
 

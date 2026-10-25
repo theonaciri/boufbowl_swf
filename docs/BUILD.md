@@ -84,7 +84,8 @@ explains individual patches.
 `play.sh` launches existing files without compiling them. Useful options:
 `--mode tutorial`, `--mode menus`, `--mode mock --scene-3d`,
 `--lang fr`, `--profile Alice`, and `--show-fps`.
-The in-game FPS slider requests 25–240 FPS; runtime/display limits still apply.
+The in-game FPS slider requests 25–240 FPS, including 3D scenes; scene changes
+retain that target. Native default: 60. Runtime/display limits still apply.
 
 ## Simulator
 

@@ -1,87 +1,158 @@
-# Native client validation
+# Native client testing
 
-The manual `Native client validation` GitHub workflow targets a self-hosted Linux
-runner labeled `boufbowl-air`. Provision that runner with Python, Bun, Java 17+,
-FFDec, Xvfb, AIR's shared-library dependencies, and a host-compatible AIR SDK
-licensed to execute applications. Use the build-tool discovery settings described
-in [BUILD.md](BUILD.md), or pass `--air-sdk` and `--runtime-libs` directly to the
-smoke command. Licensing stays on the runner; no credentials belong in Git.
+Prefer a phone or native ARM64 **Redroid 15** on this host. Desktop Flash uses
+x86 emulation; both server paths use software graphics. Recipes below assume
+repository-root cwd. Build/tool discovery: [BUILD.md](BUILD.md).
 
-The pinned actions use verified v7 tags from the official
-[checkout](https://github.com/actions/checkout) and
-[upload-artifact](https://github.com/actions/upload-artifact) repositories. Keep
-the self-hosted Actions runner current for their Node 24 runtime.
-
-Run locally:
+## Build
 
 ```sh
+bun run build
 python3 -m tools.verify_client --area compile
-python3 -m tools.verify_client --area native
+bun run build:players --platform android --no-website
 ```
 
-The first compiles instrumented desktop and Android roots and reports `compiled`.
-It needs Java/FFDec, not an executable or licensed AIR SDK. The second executes
-both roots with isolated app ids/preferences and a 30 FPS saved cap. It requires
-the shared smoke checks, 3D mode, ResolutionDone acknowledgement, and MATCH_END.
-The Android root runs in desktop AIR; device touch input and GPU behavior still
-need device testing.
+`--area compile` replaces roots in the existing SWF; rebuild shared patches first.
+An existing APK/download remains stale until repackaged.
 
-The native smoke prints one JSON report and saves it under `.local/shared-client`.
-The wrapper keeps logs and a compact summary under `.local/verification/native`.
-Source/tool/base-client fingerprints cache disposable probes under
-`.local/client-probes`; unchanged checks reuse compilation. These instrumented
-SWFs never replace the production client or enter download packages.
+## Android device
 
-Exit 0 means passed execution (or compiled when explicitly requested). Exit 77
-means execution was blocked, including the AIR developer-license gate; CI does
-not count that as success. Exit 1 means compilation or validation failed. A
-license rejection is reported once, without repeatedly attempting execution for
-the second root. This repository supplies the workflow and checks; it does not
-provision a machine or provide an AIR developer license.
+Use `adb` from PATH or the Android SDK's `platform-tools`:
 
-## Android startup and diagnostics
+```sh
+adb install -r 'android/build/Boufbowl Fan.apk'
+adb reverse tcp:41983 tcp:41983
+adb shell am start -W -n air.org.boufbowl.offline/.AIRAppEntry
+```
 
-For an APK that runs independently and shows startup locations:
+In **Server**, connect to `http://127.0.0.1:41983` through that reverse mapping.
+Use a separate backend database/profile.
+
+Android root mutes `SoundMixer` on NativeApplication deactivation and restores
+the previous master transform on activation. Category preferences are untouched;
+duplicate deactivations must not replace the saved transform with silence.
+Device check: music → Home/lock → silence → return → previous volume, including
+zero-volume settings. This mutes output; it does not pause server match timers.
+
+## Redroid on this ARM64 host
+
+External helpers require rootful Podman and `binder_linux`. They recreate the
+removed Android image/data: Android 15/API35, ARM64, memfd, ANGLE/SwiftShader,
+640×376 at 60 Hz. No KVM or outbound network. Dismiss fullscreen help.
+
+```sh
+trial="$HOME/.cache/boufbowl-android-testing/performance"
+"$trial/start-trial.sh" "$PWD/android/build/Boufbowl Fan.apk"
+"$trial/podman-trial" exec boufbowl-redroid-performance /system/bin/wm density 160
+```
+
+Run the backend in that network namespace, in another terminal:
+
+```sh
+trial="$HOME/.cache/boufbowl-android-testing/performance"
+redroid_pid=$("$trial/podman-trial" inspect --format '{{.State.Pid}}' boufbowl-redroid-performance)
+sudo nsenter -t "$redroid_pid" -n -- runuser -u "$USER" -- \
+  env PYTHONPATH="$PWD" python3 -m backend.server --host 127.0.0.1 \
+  --port 41983 --database "$trial/manual-test.sqlite"
+```
+
+Set **Server** to `http://127.0.0.1:41983`; start a CPU match. External benchmark
+scripts retain old PIDs/ports: adapt before reuse. The older
+`redroid-20261024` helper uses 1280×720 **15 Hz**, unsuitable for FPS comparisons.
+
+```sh
+"$trial/podman-trial" exec boufbowl-redroid-performance /system/bin/screencap -p > "$trial/game.png"
+"$trial/podman-trial" exec boufbowl-redroid-performance /system/bin/screenrecord \
+  --time-limit 120 --size 640x376 --bit-rate 2000000 /data/local/tmp/game.mp4
+"$trial/podman-trial" exec boufbowl-redroid-performance /system/bin/cat \
+  /data/local/tmp/game.mp4 > "$trial/game.mp4"
+```
+
+After stopping the recording/backend:
+
+```sh
+"$trial/podman-trial" stop -t 5 boufbowl-redroid-performance
+"$trial/podman-trial" rm boufbowl-redroid-performance
+sudo umount "$trial/binderfs"
+```
+
+Keep scripts/evidence; remove disposable OS data/images. Do not force-unload busy
+kernel modules. Android 16 failed in SurfaceFlinger here; x86 Emulator 37.2.12
+(API36/API28) failed to boot through compatibility layers without usable KVM.
+
+## Desktop on this ARM64 host
+
+Tested: Hangover 11.16 / Ubuntu26.04 ARM64, Windows i386 Flash32. Select FEX;
+default Box64 stalled. Cache: `~/.cache/boufbowl-desktop-testing/`.
+
+```sh
+desktop_trial="$HOME/.cache/boufbowl-desktop-testing"
+python3 -m backend.server --host 127.0.0.1 --port 41984 \
+  --database "$desktop_trial/manual-test.sqlite"
+```
+
+In separate terminals, start Xvfb and launch:
+
+```sh
+Xvfb :118 -screen 0 1280x800x24 -nolisten tcp -ac
+```
+
+```sh
+desktop_trial="$HOME/.cache/boufbowl-desktop-testing"
+game_origin='http://127.0.0.1:41984'
+DISPLAY=:118 WINEPREFIX="$desktop_trial/wine-prefix" WINEDEBUG=-all \
+  WINEDLLOVERRIDES='mscoree,mshtml=' HODLL=libwow64fex.dll \
+  "$desktop_trial/runtime/usr/bin/wine" "$PWD/bin/flashplayer_32_sa.exe" \
+  "$game_origin/bin/boufbowl-client-1.9.6.swf?server=1&backend=$game_origin&profile=DesktopTrial&lang=en&scene3d=1&showFps=1&clientRuntime=flash"
+```
+
+Normal desktop launcher: `./play.sh --show-fps --scene-3d`.
+For 640×375 content, use Windows `SetWindowPos`/`WM_SIZE`; X11 resizing only clipped
+this window. Cached helper: `cpu-small/resize.c` / `resize.exe`; run with the same
+Wine environment. Inspect `DISPLAY=:118 xwininfo -root -tree` for fresh geometry.
+Original content is 1024×600, plus a 19px menu.
+
+Example capture for the verified 640×394 window at (8,60); adjust coordinates:
+
+```sh
+ffmpeg -y -f x11grab -framerate 15 -video_size 640x394 -i :118+8,60 \
+  -t 120 -c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p \
+  -movflags +faststart "$desktop_trial/game.mp4"
+```
+
+Decode/check a frame before sharing; YUV444P displayed black for the user.
+Stop the test backend/Xvfb and only the isolated prefix:
+
+```sh
+WINEPREFIX="$desktop_trial/wine-prefix" "$desktop_trial/runtime/usr/bin/wineserver" -k
+```
+
+## AIR diagnostics and smoke harness
 
 ```sh
 python3 android/build.py --diagnostic --no-website
+python3 -m tools.verify_client --area native
 ```
 
-This produces `android/build/Boufbowl Fan-diagnostic.apk`, using the normal AIR
-runtime with debug locations in a separately cached SWF. The production APK and
-compiled release client stay separate. `--arch x64` selects emulator packaging.
-`--debug` instead includes AIR's debugger runtime and waits for a USB debugger
-on port 7936; it is not a standalone diagnostic download. Both modes preserve
-the application ID and signing certificate so existing app data is retained.
+- Diagnostic APK: `android/build/Boufbowl Fan-diagnostic.apk`; standalone runtime
+  with SWF debug locations. `--debug` instead waits for a debugger on port7936;
+  `--arch x64` selects emulator packaging. Preserve app ID/signing credentials.
+- Error1065 at `runtime policy` was FFDec compiling `flash.utils.getTimer()` as
+  `getlex flash`. Keep the explicit import and bare `getTimer()` in shared roots.
+- AIR smoke executes both roots at a saved 30FPS cap; Android-on-desktop AIR is
+  not a device test. Requires licensed host-compatible AIR, Xvfb and dependencies.
+  CI runner label: `boufbowl-air`. Reports: `.local/verification/native/` and
+  `.local/shared-client/`; probes: `.local/client-probes/`.
+- Exit0: executed/compiled as requested; exit77: blocked (including licensing);
+  exit1: failed. Do not retry a license block as though it were a client bug.
 
-Android registers startup error handling before initializing logging, catches
-synchronous root startup errors, and displays the last startup phase. Diagnostics
-and configuration-loading errors use device fonts; the retained MainApp's
-embedded-Verdana error field could otherwise render invisibly. Private local
-startup diagnostics remain in `.local/client-probes`; never package them as game
-assets or source files.
+## Acceptance and measurements
 
-### Confirmed native timer binding fix
+Require actual 3D, real client `RESOLUTION_DONE`, then next turn. Include combat;
+check `MATCH_END` for end-flow changes. Record build hashes, runtime, dimensions,
+orders and targetFPS. Never inject completion to claim success.
 
-A phone screenshot isolated Error #1065 to `runtime policy`. The packaged root's
-P-code showed that FFDec compiled `flash.utils.getTimer()` into `getlex flash`,
-`getproperty utils`, and `callproperty getTimer`. Native AIR has no lexical
-variable named `flash`, so startup stopped before configuration loading.
-
-`tools/client_runtime_codegen.py` now imports `flash.utils.getTimer` explicitly
-in both roots, and `patches/ClientRuntime.as.inc` calls `getTimer()` directly.
-The correction covers startup and all measurement callbacks. Shared-root
-regressions require a single explicit import and reject the ambiguous spelling.
-The rebuilt ARM64 APK contains direct native timer references and no `getlex
-flash`; its website copy matches the build output checksum. The user confirmed
-successful phone startup. This confirms boot, not a complete gameplay/device
-regression pass. Logger and dependency-injection behavior was not changed.
-
-### Local execution limits
-
-The ARM64 server has no usable KVM device. Android Emulator 37.2.12 was attempted
-through an x64 compatibility layer: API 36 stalled during kernel setup, and API
-28 exceeded Android's device-discovery boot timeout. No APK ran in those guests.
-The attempted emulator downloads and virtual disks were removed after diagnosis;
-compact evidence remains under `.local/verification/android-startup/`. Use an
-Android device or an emulator host with working virtualization for runtime checks.
+Use `game_frames` and process CPU/RSS (100% = one CPU). Match seeds/rosters/orders
+and result hashes; warm up and bracket recording ON with OFF runs. Frame-event,
+video and GPU FPS differ. Keep session-bearing logs/DBs private. Earlier videos
+do not validate later code. Results: [PERFORMANCE.md](PERFORMANCE.md).

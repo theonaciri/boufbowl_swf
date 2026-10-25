@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Règles du jeu et fidélité à l’original — Boufbowl Fan</title>
+  <meta name="description" content="Toutes les règles de Boufbowl Fan : équipes, ordres, déplacements, combats, passes, classes et stades. Les règles documentées et les incertitudes de la restauration sont indiquées." />
+  <link rel="canonical" href="https://boufbowl-fan.fr/regles.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Boufbowl Fan" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:url" content="https://boufbowl-fan.fr/regles.html" />
+  <meta property="og:title" content="Les règles du Boufbowl, sans zone d’ombre" />
+  <meta property="og:description" content="Le règlement de la restauration, les valeurs actuelles et les différences encore incertaines avec le jeu d’origine." />
+  <meta property="og:image" content="https://boufbowl-fan.fr/assets/site/logo.avif" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Les règles du jeu — Boufbowl Fan" />
+  <meta name="twitter:description" content="Équipes, passes, combats et pouvoirs : ce qui est documenté, ce qui reste à confirmer." />
+  <meta name="twitter:image" content="https://boufbowl-fan.fr/assets/site/logo.avif" />
+  <link rel="icon" href="data:," />
+  <link rel="preload" href="assets/site/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/site/Barlow-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/site/BarlowCondensed-ExtraBold.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="rules.css" />
+</head>
+<body class="rules-page">
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="site-header rules-header">
+    <a class="wordmark" href="index.html" aria-label="Boufbowl, accueil"><img class="site-logo" src="assets/site/responsive/logo-240.avif" srcset="assets/site/responsive/logo-240.avif 240w, assets/site/responsive/logo-630.avif 630w" sizes="(max-width: 780px) 120px, 200px" alt="Boufbowl" width="630" height="232" /></a>
+    <div class="rules-header-links"><a href="index.html">← Accueil</a><a class="button button-small" href="index.html#telecharger">JOUER ↗</a></div>
+  </header>
+  <main id="contenu" class="rules-main">
+    <section class="rules-hero" aria-labelledby="rules-heading">
+      <span class="eyebrow">LE RÈGLEMENT / LA RESTAURATION</span>
+      <h1 id="rules-heading">LE BEAU JEU.<br /><em>LES RÈGLES AU CLAIR.</em></h1>
+      <p class="rules-intro">Comment jouer au Boufbowl, et ce que nous savons vraiment de son fonctionnement d’origine.</p>
+      <p class="rules-counts">{{COUNTS}}</p>
+      <div class="rules-legend" aria-label="Comment lire les indications de fidélité">
+        <div><span class="rule-badge implemented">Principe documenté</span><p>Le principe est étayé par les archives. Cela ne certifie pas tous ses paramètres.</p></div>
+        <div><span class="rule-badge provisional">Fidélité incertaine</span><p>La règle fonctionne dans la restauration, mais une partie de son calcul reste reconstruite.</p></div>
+        <div><span class="rule-badge custom">Règle de la restauration</span><p>Un choix actuel de Boufbowl Fan, sans revendication de fidélité historique.</p></div>
+      </div>
+      <p class="rules-era">Référence : cadre des versions 1.0.7 et 1.0.8, complété par les explications de février 2012. Les formules originales de combat n’ont pas toutes été retrouvées.</p>
+    </section>
+    <div class="rules-layout">
+      <aside class="rules-toc"><nav aria-label="Sommaire du règlement"><strong>SUR LE TERRAIN</strong><a href="#essentiel">L’essentiel pour jouer</a>{{TOC}}</nav></aside>
+      <div class="rules-content">
+        <section class="rules-section" id="essentiel" aria-labelledby="heading-essentiel">
+          <div class="rules-section-title"><span class="eyebrow">AVANT LE COUP D’ENVOI</span><h2 id="heading-essentiel">L’essentiel pour jouer</h2></div>
+          <div class="rules-facts"><div><strong>5 contre 5</strong><span>sur le terrain</span></div><div><strong>3 ordres</strong><span>élémentaires par joueur</span></div><div><strong>{{MATCH_TURNS}} tours</strong><span>par défaut, selon le stade</span></div><div><strong>{{PLAN_SECONDS}} secondes</strong><span>pour préparer ses ordres</span></div></div>
+          <ol class="rules-steps">
+            <li><strong>Composez et placez votre équipe.</strong> Un club de dix joueurs, cinq sur le terrain, des rôles à équilibrer.</li>
+            <li><strong>Répartissez trois ordres élémentaires.</strong> Vous pouvez répéter un élément ou les combiner, puis choisir un déplacement, un adversaire à poursuivre ou une passe. Ce ne sont pas trois déplacements successifs.</li>
+            <li><strong>Validez, puis regardez la résolution.</strong> Les deux équipes agissent dans le même tour : déplacements, contacts et trajectoires de balle se croisent.</li>
+            <li><strong>Marquez un touchdown.</strong> Un porteur vivant et actif doit franchir l’en-but adverse avec le ballon. Rester sur sa limite ne suffit pas. Les équipes changent de côté à la mi-temps ; le score le plus élevé à la fin l’emporte, avec un nul possible hors départage de tournoi.</li>
+          </ol>
+          <div class="rules-elements"><article><span>01 / TERRE</span><h3>Le contact</h3><p>Intervient dans la force d’attaque et les confrontations.</p></article><article><span>02 / FEU</span><h3>L’esquive</h3><p>Intervient dans l’esquive, l’interception et le ramassage.</p></article><article><span>03 / AIR</span><h3>La balle</h3><p>Intervient dans le lancer, la réception et le ramassage.</p></article><article><span>04 / EAU</span><h3>Le mouvement</h3><p>Améliore la fiabilité du déplacement et permet de se relever.</p></article></div>
+          <p class="rules-notice">Une <strong>caractéristique</strong> appartient au joueur ; un <strong>ordre</strong> est une allocation pour ce tour. Les pouvoirs qui augmentent une caractéristique n’ajoutent pas des cases d’ordres. {{ORDERS}}</p>
+        </section>
+        {{CASES}}
+        <section class="rules-section" id="classes" aria-labelledby="heading-classes">
+          <div class="rules-section-title"><span class="eyebrow">LE VESTIAIRE</span><h2 id="heading-classes">Classes et pouvoirs</h2></div>
+          <p class="rules-lead"><span class="rule-badge provisional">Équilibrage historique non certifié</span> Ces valeurs et effets sont ceux du profil configuré. Ils ne constituent pas une table des sorts d’origine retrouvée.</p>
+          {{ATTRIBUTES}}
+          <p class="rule-note">¹ Intervalle de régénération configuré, en tours. La régénération entre les tours est {{REGENERATION}}. Les rôles sont documentés ; les valeurs d’équilibrage et leurs modalités restent propres au profil restauré.</p>
+          {{ABILITIES}}
+          <p class="rules-notice">Les soins sont plafonnés aux PV maximum. Si un profil accorde des boucliers ou des PV temporaires, les dégâts les consomment avant les PV permanents, dans cet ordre ; ils expirent en fin de tour. Cette gestion de la protection est reconstruite. Les pouvoirs ne ciblent pas un joueur déjà mort au début de leur phase ; l’ordre exact des soins simultanés reste incertain.</p>
+        </section>
+        <section class="rules-section" id="stades" aria-labelledby="heading-stades">
+          <div class="rules-section-title"><span class="eyebrow">À CHAQUE TERRAIN SON MATCH</span><h2 id="heading-stades">Les variantes des stades</h2></div>
+          <p class="rules-lead">Les charges sont comptées par joueur. Un touchdown ne les recharge pas. Les chiffres ci-dessous suivent les stades activés dans la configuration de la restauration ; leur fidélité historique complète n’est pas certifiée.</p>
+          {{STADIUMS}}
+        </section>
+        <section class="rules-section rules-uncertain" id="incertitudes" aria-labelledby="heading-incertitudes">
+          <div class="rules-section-title"><span class="eyebrow">LES ZONES D’OMBRE</span><h2 id="heading-incertitudes">Ce qui reste à confirmer</h2></div>
+          <p class="rules-lead">Une règle testée peut être cohérente sans être identique à celle de 2012. Les points suivants restent ouverts :</p>
+          <ul class="rules-open-questions">{{UNRESOLVED}}</ul>
+          <details class="rules-calculations"><summary>Voir les calculs de remplacement actuels</summary><p>Dans ces formules, « Air », « Eau » et « Feu » désignent les caractéristiques ; « ordres » désigne les allocations du tour. Les probabilités sont exprimées entre 0 et 1. Les bornes indiquées s’appliquent aux tests de ballon, pas à toutes les règles du jeu.</p>{{FORMULAS}}</details>
+        </section>
+        <section class="rules-section rules-provenance" id="sources" aria-labelledby="heading-sources">
+          <h2 id="heading-sources">D’où viennent ces règles ?</h2>
+          <p>Les repères C01 à C22 renvoient au registre de la restauration. Les repères M, P et R identifient les messages conservés dans les archives ; les témoignages et les changements de version peuvent se contredire.</p>
+          <p><a href="https://github.com/theonaciri/boufbowl_swf/blob/main/docs/RULEBOOK_CHOICES.md">Consulter les choix de reconstruction ↗</a><a href="https://github.com/theonaciri/boufbowl-website-legacy/tree/{{EVIDENCE_REVISION}}/docs/research">Consulter les recherches et archives ↗</a><a href="resources/rulebook.json">Ouvrir le registre des règles ↗</a></p>
+          <p class="rule-note">Profil : {{RULEBOOK_ID}}. Cette page reflète la configuration au moment de sa génération. Une partie déjà créée conserve son propre règlement ; la fiche d’un tournoi précise ses variantes.</p>
+          <a class="button" href="index.html#tournois">CONSULTER LES TOURNOIS ↗</a>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer class="rules-footer"><a href="index.html">← Retour à l’accueil</a><a href="ladder.html">Le classement ↗</a><a href="index.html#telecharger">Choisir mon client ↗</a><a href="legal.html">Informations juridiques</a></footer>
+</body>
+</html>

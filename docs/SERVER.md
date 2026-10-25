@@ -45,7 +45,7 @@ existing matches and replays keep their saved rule snapshots. Five active player
 per side, ten-player rosters, and three regular-order elements are protocol limits.
 
 Class powers/probabilities are experimental replacements, not recovered historical
-balance. The default `restoration-2012-v2` profile adds role, restart, pass and
+balance. The default `restoration-2012-v4` profile adds role, restart, pass and
 Ecaflip corrections plus explicitly provisional movement, combat, pickup, status
 and reconnect policies. See the [rulebook](RULEBOOK.md) and [choices](RULEBOOK_CHOICES.md)
 for source IDs, compatibility switches and remaining gaps. New rosters allow at

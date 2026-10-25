@@ -136,7 +136,10 @@
             },
             "timezone": {
               "type": "string",
-              "enum": ["Europe/Paris", "UTC"]
+              "enum": [
+                "Europe/Paris",
+                "UTC"
+              ]
             },
             "upcoming_count": {
               "type": "integer",
@@ -5409,7 +5412,8 @@
           "type": "string",
           "enum": [
             "allies",
-            "enemies"
+            "enemies",
+            "all"
           ]
         },
         "hp": {
@@ -5499,6 +5503,67 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 20
+        },
+        "combat_damage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "redirect_enemy_ability": {
+          "type": "boolean"
+        },
+        "mask_order": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "1": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "strength",
+                  "agility",
+                  "precision",
+                  "endurance"
+                ]
+              }
+            },
+            "2": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "strength",
+                  "agility",
+                  "precision",
+                  "endurance"
+                ]
+              }
+            },
+            "3": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "strength",
+                  "agility",
+                  "precision",
+                  "endurance"
+                ]
+              }
+            }
+          },
+          "required": [
+            "1",
+            "2",
+            "3"
+          ]
         }
       }
     },
@@ -5517,7 +5582,8 @@
           "type": "string",
           "enum": [
             "allies",
-            "enemies"
+            "enemies",
+            "all"
           ]
         },
         "hp": {
@@ -5607,6 +5673,67 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 20
+        },
+        "combat_damage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "redirect_enemy_ability": {
+          "type": "boolean"
+        },
+        "mask_order": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "1": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "strength",
+                  "agility",
+                  "precision",
+                  "endurance"
+                ]
+              }
+            },
+            "2": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "strength",
+                  "agility",
+                  "precision",
+                  "endurance"
+                ]
+              }
+            },
+            "3": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "strength",
+                  "agility",
+                  "precision",
+                  "endurance"
+                ]
+              }
+            }
+          },
+          "required": [
+            "1",
+            "2",
+            "3"
+          ]
         }
       }
     },
@@ -5617,7 +5744,9 @@
         "id": {
           "type": "string",
           "enum": [
-            "restoration-2012-v2"
+            "restoration-2012-v2",
+            "restoration-2012-v3",
+            "restoration-2012-v4"
           ]
         },
         "movement": {
@@ -5719,6 +5848,27 @@
               "type": "number",
               "minimum": 0,
               "maximum": 10
+            },
+            "random_score": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "enum": [
+                    "logistic-approximation"
+                  ]
+                },
+                "scale": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "model",
+                "scale"
+              ]
             }
           },
           "required": [
@@ -5779,6 +5929,54 @@
             "favorable_timing",
             "scatter_failures",
             "path_interception"
+          ]
+        },
+        "maneuvers": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "wide_margin": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "critical_margin": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 200
+            },
+            "movement_bonus": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "reception_throw_bonus": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "critical_failures": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "wide_margin",
+            "critical_margin",
+            "movement_bonus",
+            "reception_throw_bonus",
+            "critical_failures"
+          ]
+        },
+        "recovery": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "revive_rested_reserves": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "revive_rested_reserves"
           ]
         }
       },

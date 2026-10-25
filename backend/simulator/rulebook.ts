@@ -2,6 +2,56 @@
  * intrinsic-score table or combat random CDF. See resources/rulebook.json.
  */
 const rulebookLosses = new WeakMap<object, Map<number, number>>();
+const bounded = (p: number) => Math.max(Number.EPSILON,Math.min(1-Number.EPSILON,p));
+export function rulebookQuality(cfg: any, probability: number, draw: number): any {
+  const policy = cfg.rulebook.maneuvers;
+  const scale = cfg.rulebook.combat.random_score?.scale ?? 6/Math.log(17/3);
+  const logit = (p: number) => Math.log(bounded(p)/(1-bounded(p)));
+  const margin = scale*(logit(probability)-logit(draw));
+  const magnitude = Math.abs(margin);
+  return {quality_margin:margin,tier:magnitude>policy.critical_margin ? 'critical' : magnitude>policy.wide_margin ? 'wide' : 'normal'};
+}
+export function takeRulebookActionBonus(actor: any): number {
+  const bonus = actor.next_action_bonus ?? 0;
+  delete actor.next_action_bonus;
+  return bonus;
+}
+export function rollRulebookManeuver(cfg: any, actor: any, chance: number, rng: any, kind: string): any {
+  if (!cfg.rulebook?.maneuvers) return {success:rng.chance(chance)};
+  let bonus = takeRulebookActionBonus(actor);
+  if (kind === 'throw') {bonus += actor.next_throw_bonus ?? 0;delete actor.next_throw_bonus;}
+  if (bonus && chance>0 && chance<1) {
+    const scale = cfg.rulebook.combat.random_score?.scale ?? 6/Math.log(17/3);
+    chance = 1/(1+Math.exp(-(Math.log(chance/(1-chance))+bonus/scale)));
+    chance = Math.max(cfg.simulation.probability_min,Math.min(cfg.simulation.probability_max,chance));
+  }
+  const draw = rng.nextFloat();
+  const quality = rulebookQuality(cfg,chance,draw);
+  const inherent = ['interception','pickup_fire'].includes(kind) ? actor.stats.agility : actor.stats.precision;
+  if (draw>=chance && quality.tier==='critical' && !cfg.rulebook.maneuvers.critical_failures) quality.tier='wide';
+  return {success:draw<chance,probability:chance,random_draw:draw,...quality,
+    consumed_bonus:bonus,maneuver_bonus_malus:bonus,
+    inherent_score:inherent,final_score:Math.max(0,inherent+bonus),
+    difficulty:Math.round(chance*100)};
+}
+export function failRulebookManeuver(cfg: any, actor: any, result: any, kind: string, tick: number, events: any[]): void {
+  if (result.success || result.tier!=='critical' || !cfg.rulebook?.maneuvers?.critical_failures) return;
+  if (kind==='throw') {
+    actor.status.stunned=true;actor.stun_until_tick=tick+rulebookStunDuration(cfg,actor);
+    events.push({tick,type:'stun',actor:actor.id,params:{until_tick:actor.stun_until_tick,reason:'critical_throw'}});
+  } else {
+    actor.status.knocked_down=true;actor.status.stunned=false;delete actor.stun_until_tick;
+    events.push({tick,type:'ko',actor:actor.id,params:{reason:'critical_'+kind}});
+  }
+}
+export function rulebookCombatNoise(cfg: any, rng: any): any {
+  const policy = cfg.rulebook?.combat?.random_score;
+  if (!policy) return {noise:0};
+  if (policy.model !== 'logistic-approximation' || !(policy.scale > 0)) throw new Error('Invalid score distribution');
+  const draw = rng.nextFloat();
+  const u = Math.max(Number.EPSILON,Math.min(1-Number.EPSILON,draw));
+  return {draw,noise:policy.scale*Math.log(u/(1-u))};
+}
 export function rulebookMovementProbability(cfg: any, base: number, water: number, orders: number): number {
   const policy=cfg.rulebook?.movement;
   return policy ? Math.min(1,(policy.safe_failure+base)/(1+Math.max(0,water)*policy.water_stat+orders*policy.water_order)) : base;
@@ -62,9 +112,10 @@ export function finishRulebookTurn(cfg: any, state: any, events: any[]): void {
     if (actor.status.stunned && actor.hp > 0) actor.stun_ticks_remaining = Math.max(1,actor.stun_until_tick-state.tick-1);
     delete actor.stun_until_tick;
     delete actor.next_combat_bonus;
+    delete actor.next_action_bonus;delete actor.next_throw_bonus;
     if (actor.shield_hp || actor.temporary_hp) events.push({tick:state.tick,type:"protection_expired",actor:actor.id,
       params:{shield_hp:actor.shield_hp ?? 0,temporary_hp:actor.temporary_hp ?? 0}});
-    delete actor.shield_hp; delete actor.temporary_hp;
+    delete actor.shield_hp; delete actor.temporary_hp; delete actor.combat_damage_bonus;
   }
 }
 export function applyRulebookDamage(actor: any, amount: number): any {

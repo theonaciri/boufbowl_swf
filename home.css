@@ -34,6 +34,7 @@
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
 }
+.rules-home-link { margin: -8px 0 28px; }
 * {
   box-sizing: border-box;
 }

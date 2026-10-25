@@ -3,7 +3,7 @@
  */
 import {hexDistance} from "../../boufbowl_server/src/hex";
 import {SIMULATION_SCALE} from "../../boufbowl_server/src/coordinates";
-import {rulebookMovementProbability} from "boufbowl-rulebook";
+import {rulebookMovementProbability,rulebookQuality} from "boufbowl-rulebook";
 
 export function referenceDistance(cfg: any, elements: any): number {
   const r = cfg.client_ranges;
@@ -41,7 +41,18 @@ export function resolveMovementRisk(context: any, tick: number): void {
       test.probability = rulebookMovementProbability(cfg,test.probability,e.stats.endurance,allocation.EAU);
       if (test.distance <= 0) continue;
     }
-    if (test.draw >= test.probability) continue;
+    if (test.draw >= test.probability) {
+      if (cfg.rulebook?.maneuvers && m.done && test.distance>0 && !test.bonusGranted) {
+        const quality=rulebookQuality(cfg,1-test.probability,1-test.draw);
+        test.tier=quality.tier;
+        if (quality.tier!=='normal') {
+          test.bonusGranted=true;
+          e.next_action_bonus=cfg.rulebook.maneuvers.movement_bonus;
+          events.push({tick,type:'movement_bonus',actor:id,params:{bonus:e.next_action_bonus,...quality}});
+        }
+      }
+      continue;
+    }
     test.success = false;
     e.status.knocked_down = true;
     m.done = true;
@@ -64,5 +75,6 @@ export function publishMovementTests(context: any): void {
   for (const [id,test] of context.rangeRisk ?? []) context.events.push({tick:context.state.tick,type:'movement_test',actor:id,params:{
     success:test.success,probability:test.probability,random_draw:test.draw ?? null,
     distance:test.distance,safe_range:test.safe,max_range:test.max,inherent_score:test.score,
+    ...(test.tier ? {tier:test.tier,granted_bonus:test.bonusGranted ? context.cfg.rulebook.maneuvers.movement_bonus : 0} : {}),
   }});
 }

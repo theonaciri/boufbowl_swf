@@ -15,10 +15,17 @@ Its `web-player.js` launcher offers live balanced (30 FPS, medium quality), high
 in browser storage. The `clientRuntime=ruffle` launch parameter enables the web
 frame budget, chat clipping and popup skins. Chat batching/scroll calculations,
 redundant 3D position suppression and modal layering are shared with desktop and
-Android. Native scene changes also respect saved FPS caps; Android defaults to
+Android. The in-game slider requests 25–240 FPS through 3D scene changes;
+browser presets remain startup defaults. Android defaults to
 60 FPS before a preference is saved. Use the default Ruffle renderer selection: the legacy
 `webgl` backend lacks the bitmap drawing required by the UI skin repair.
 ## Build
+
+`regles.html` is rendered by `tools/website/rules.mjs` on every website build,
+including the quick command. Values/stadium overrides come from
+`resources/game_config.json`; fidelity statuses come from `resources/rulebook.json`.
+French explanations live in `tools/website/rules-data.json`; untranslated cases
+or unresolved questions stop the build. The page needs no browser JavaScript.
 
 After installing the [system prerequisites](BUILD.md#tools-and-inputs), run:
 

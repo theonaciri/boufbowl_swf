@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { legalPages } from "./legal.mjs";
+import { rulesPage } from "./rules.mjs";
 import { responsiveImages } from "./responsive-images.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -156,6 +157,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
     const manifest = await siteManifest(root, files);
     const pages = new Map(await Promise.all(PAGES.map(async (name) => [name, await fs.readFile(path.join(root, name), "utf8")])));
     for (const [name, html] of Object.entries(await legalPages(root))) pages.set(name, html);
+    pages.set("regles.html", await rulesPage(root));
     // Keep bookmarks working when the output is served by a generic static host.
     for (const legacy of ["website-tracking.html", "website-analytics.html"]) pages.set(legacy, '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=website-activity.html"><link rel="canonical" href="website-activity.html"><title>Website activity</title></head><body><a href="website-activity.html">Open website activity</a></body></html>');
     const scripts = new Map();

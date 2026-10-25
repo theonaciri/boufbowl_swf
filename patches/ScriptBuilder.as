@@ -120,24 +120,24 @@ package com.ankamagames.boufbowl.client.match.resolution.builder
 
       private function buildBoufbowlersInfos() : void
       {
-         var _loc1_:BoufbowlerTrack = null;
-         var _loc2_:BoufbowlerInfos = null;
-         var _loc3_:TrackItem = null;
-         for each(_loc1_ in this._message.boufbowlerTracks)
+         var track:BoufbowlerTrack = null;
+         var infos:BoufbowlerInfos = null;
+         var item:TrackItem = null;
+         for each(track in this._message.boufbowlerTracks)
          {
-            _loc2_ = new BoufbowlerInfos(_loc1_.boufbowlerId,_loc1_.order);
-            for each(_loc3_ in _loc1_.item)
+            infos = new BoufbowlerInfos(track.boufbowlerId,track.order);
+            for each(item in BoufbowlerMovementFunction.presentationItems(track.item))
             {
-               if(_loc3_.type != TrackItemType.MOVEMENT)
+               if(item.type != TrackItemType.MOVEMENT)
                {
-                  _loc2_.addTrajectory(_loc3_.movement.startTick,_loc3_.movement.endTick,_loc3_.movement.positions.map(Converters.toHexPoint),_loc3_.interactionId);
+                  infos.addTrajectory(item.movement.startTick,item.movement.endTick,item.movement.positions.map(Converters.toHexPoint),item.interactionId);
                }
                else
                {
-                  _loc2_.addTrajectory(_loc3_.movement.startTick,_loc3_.movement.endTick,_loc3_.movement.positions.map(Converters.toHexPoint));
+                  infos.addTrajectory(item.movement.startTick,item.movement.endTick,item.movement.positions.map(Converters.toHexPoint));
                }
             }
-            this._commonData.addBoufbowlerInfos(_loc2_);
+            this._commonData.addBoufbowlerInfos(infos);
          }
       }
 
@@ -253,55 +253,55 @@ package com.ankamagames.boufbowl.client.match.resolution.builder
 
       private function computeResolution() : INode
       {
-         var _loc3_:BoufbowlerTrack = null;
-         var _loc4_:IIterator = null;
-         var _loc5_:BoufbowlerInfos = null;
-         var _loc6_:TrackItem = null;
-         var _loc7_:InteractionEntry = null;
-         var _loc8_:INode = null;
-         var _loc9_:SequentialNode = null;
-         var _loc10_:ActionNode = null;
-         var _loc1_:ParallelNode = new ParallelNode();
-         _loc1_.structuralNode = true;
-         _loc1_.label = "Root Node";
-         var _loc2_:INode = this.computeStepsSound();
-         _loc2_.structuralNode = true;
-         _loc2_.label = "stepNode";
-         _loc2_.simplify();
-         _loc1_.addNode(_loc2_);
-         for each(_loc3_ in this._message.boufbowlerTracks)
+         var track:BoufbowlerTrack = null;
+         var ballInteractions:IIterator = null;
+         var infos:BoufbowlerInfos = null;
+         var item:TrackItem = null;
+         var interaction:InteractionEntry = null;
+         var interactionNode:INode = null;
+         var ballSequence:SequentialNode = null;
+         var waitForBall:ActionNode = null;
+         var root:ParallelNode = new ParallelNode();
+         root.structuralNode = true;
+         root.label = "Root Node";
+         var stepsNode:INode = this.computeStepsSound();
+         stepsNode.structuralNode = true;
+         stepsNode.label = "stepNode";
+         stepsNode.simplify();
+         root.addNode(stepsNode);
+         for each(track in this._message.boufbowlerTracks)
          {
-            _loc5_ = this._commonData.getBoufbowlerInfos(_loc3_.boufbowlerId);
-            this.addBoufbowlerStartNode(_loc5_,_loc1_);
-            for each(_loc6_ in _loc3_.item)
+            infos = this._commonData.getBoufbowlerInfos(track.boufbowlerId);
+            this.addBoufbowlerStartNode(infos,root);
+            for each(item in BoufbowlerMovementFunction.presentationItems(track.item))
             {
-               if(_loc6_.type == TrackItemType.MOVEMENT)
+               if(item.type == TrackItemType.MOVEMENT)
                {
-                  this.addMovementNode(_loc5_,_loc6_.movement);
+                  this.addMovementNode(infos,item.movement);
                }
-               else if(_loc6_.type == TrackItemType.INTERACTION)
+               else if(item.type == TrackItemType.INTERACTION)
                {
-                  this.addInteractionNode(_loc5_,_loc6_.interactionId,_loc1_);
+                  this.addInteractionNode(infos,item.interactionId,root);
                }
             }
          }
-         _loc4_ = this._ballOnlyInteractions.getIterator();
-         while(_loc4_.hasNext())
+         ballInteractions = this._ballOnlyInteractions.getIterator();
+         while(ballInteractions.hasNext())
          {
-            _loc7_ = _loc4_.getNext();
-            _loc8_ = this.getComputedInteraction(_loc7_.interactionId);
-            _loc9_ = new SequentialNode();
-            _loc10_ = this.waitNode(_loc7_.interactionDetails.startTick * ScriptConstants.TICK_TO_MS);
+            interaction = ballInteractions.getNext();
+            interactionNode = this.getComputedInteraction(interaction.interactionId);
+            ballSequence = new SequentialNode();
+            waitForBall = this.waitNode(interaction.interactionDetails.startTick * ScriptConstants.TICK_TO_MS);
             var ballGate:JoinNode = new JoinNode();
             ballGate.structuralNode = true;
-            ballGate.addNode(_loc10_);
-            this.addPreviousInteraction(ballGate,_loc7_.interactionId);
-            _loc1_.addNode(_loc10_);
-            _loc9_.addNode(ballGate);
-            _loc9_.addNode(_loc8_);
-            _loc1_.addNode(_loc9_);
+            ballGate.addNode(waitForBall);
+            this.addPreviousInteraction(ballGate,interaction.interactionId);
+            root.addNode(waitForBall);
+            ballSequence.addNode(ballGate);
+            ballSequence.addNode(interactionNode);
+            root.addNode(ballSequence);
          }
-         return _loc1_;
+         return root;
       }
 
       private function computeStepsSound() : INode

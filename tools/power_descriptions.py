@@ -19,7 +19,14 @@ def description(rule, language):
         if len(elements)==4 and len(set(values))==1:
             return f'{values[0]:+g} {each} → {target} ({turn})'
         return ', '.join(f'{amount:+g} {ELEMENTS[language][["TERRE","FEU","AIR","EAU"].index(element)]}' for element,amount in elements.items()) + f' → {target} ({turn})'
-    if rule.get('redirect_enemy_heal'):
+    if rule.get('redirect_enemy_ability'):
+        text = {
+            'fr': "Inverse les équipes ciblées par le pouvoir adverse pour ce tour. Sans pouvoir adverse : aucun effet.",
+            'en': "Reverses the teams targeted by the opposing power this turn. No opposing power: no effect.",
+            'de': "Vertauscht für diese Runde die Zielteams der gegnerischen Fähigkeit. Ohne gegnerische Fähigkeit: kein Effekt.",
+            'es': "Invierte los equipos objetivo del poder rival durante este turno. Sin poder rival: ningún efecto.",
+        }[language]
+    elif rule.get('redirect_enemy_heal'):
         text = {
             'fr': "Détourne les soins de l’Eniripsa adverse vers votre équipe. Sans soin adverse : aucun effet.",
             'en': "Redirects the opposing Eniripsa’s healing to your team. No opposing heal: no effect.",
@@ -28,12 +35,23 @@ def description(rule, language):
         }[language]
     elif rule.get('change_mask'):
         text=mask
+        if rule.get('mask_order'):
+            text += ' ' + {'fr': 'Modifie ses caractéristiques jusqu’à la fin du match.',
+                'en': 'Changes its characteristics until the end of the match.',
+                'de': 'Ändert seine Eigenschaften bis zum Spielende.',
+                'es': 'Cambia sus características hasta el final del partido.'}[language]
     elif 'enemy_chance' in rule:
         chance=rule['enemy_chance']*100
         text=f'{100-chance:g}%: '+effect(rule.get('elements',{}),allies)+f'; {chance:g}%: '+effect(rule.get('enemy_elements',{}),enemies)+'.'
     else:
-        target=enemies if rule.get('target')=='enemies' else allies
+        target=({'fr':'tous les joueurs','en':'all players','de':'alle Spieler','es':'todos los jugadores'}[language]
+                if rule.get('target')=='all' else enemies if rule.get('target')=='enemies' else allies)
         parts=[]
+        if rule.get('combat_damage'):
+            parts.append({'fr':f"Tous les combats infligent {rule['combat_damage']:+g} PdV de dégâts ({turn})",
+                'en':f"All combats deal {rule['combat_damage']:+g} HP damage ({turn})",
+                'de':f"Alle Kämpfe verursachen {rule['combat_damage']:+g} LP Schaden ({turn})",
+                'es':f"Todos los combates infligen {rule['combat_damage']:+g} PdV de daño ({turn})"}[language])
         for key,label in [('shield',{'fr':'bouclier','en':'shield','de':'Schild','es':'escudo'}[language]),
                           ('temporary_hp',{'fr':'PdV temporaires','en':'temporary HP','de':'temporäre LP','es':'PdV temporales'}[language])]:
             if rule.get(key):parts.append(f'+{rule[key]:g} {label} → {target} ({turn})')

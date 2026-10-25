@@ -9,13 +9,17 @@ package com.ankamagames.boufbowl
    import flash.display.StageAlign;
    import flash.display.StageScaleMode;
    import flash.events.Event;
+   import flash.events.IEventDispatcher;
    import flash.events.TouchEvent;
    import flash.events.UncaughtErrorEvent;
    import flash.geom.Point;
+   import flash.media.SoundMixer;
+   import flash.media.SoundTransform;
    import flash.net.SharedObject;
    import flash.ui.Multitouch;
    import flash.ui.MultitouchInputMode;
    import flash.utils.Dictionary;
+   import flash.utils.getDefinitionByName;
    import flash.text.Font;
    import flash.text.TextField;
    import flash.text.TextFormat;
@@ -39,11 +43,18 @@ package com.ankamagames.boufbowl
       private var _zoom:Number = 1;
       private var _minimumZoom:Number = 0.7;
       private var _maximumZoom:Number = 8;
+      private var _backgroundSoundTransform:SoundTransform;
       
       public function BoufbowlClient()
       {
          super();
          loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR,this.startupErrorHandler,false,1000);
+         // Resolve AIR's application singleton at runtime: FFDec's shared
+         // compiler globals also serve the non-AIR desktop client.
+         var nativeApplicationClass:Class = getDefinitionByName("flash.desktop.NativeApplication") as Class;
+         var lifecycle:IEventDispatcher = nativeApplicationClass["nativeApplication"] as IEventDispatcher;
+         lifecycle.addEventListener(Event.DEACTIVATE,this.backgroundAudio,false,0,true);
+         lifecycle.addEventListener(Event.ACTIVATE,this.foregroundAudio,false,0,true);
          if(stage != null)
          {
             this.startApplication();
@@ -52,6 +63,22 @@ package com.ankamagames.boufbowl
          {
             addEventListener(Event.ADDED_TO_STAGE,this.addedToStageHandler,false,0,true);
          }
+      }
+
+      private function backgroundAudio(event:Event) : void
+      {
+         if(this._backgroundSoundTransform != null) return;
+         this._backgroundSoundTransform = SoundMixer.soundTransform;
+         var silent:SoundTransform = SoundMixer.soundTransform;
+         silent.volume = 0;
+         SoundMixer.soundTransform = silent;
+      }
+
+      private function foregroundAudio(event:Event) : void
+      {
+         if(this._backgroundSoundTransform == null) return;
+         SoundMixer.soundTransform = this._backgroundSoundTransform;
+         this._backgroundSoundTransform = null;
       }
 
       private function startupErrorHandler(event:UncaughtErrorEvent) : void
@@ -67,7 +94,7 @@ package com.ankamagames.boufbowl
          diagnostic.embedFonts = false;
          diagnostic.background = true;
          diagnostic.backgroundColor = 0x391b24;
-         diagnostic.text = "Boufbowl Fan — démarrage interrompu\nÉtape : " + this._startupPhase + "\n" + String(error);
+         diagnostic.text = "Boufbowl Fan — " + (this._startupPhase == "game runtime" ? "erreur en jeu" : "démarrage interrompu") + "\nÉtape : " + this._startupPhase + "\n" + String(error);
          diagnostic.wordWrap = true;
          diagnostic.multiline = true;
          if(error is Error && Error(error).getStackTrace() != null)
@@ -138,6 +165,7 @@ package com.ankamagames.boufbowl
          stage.addEventListener(TouchEvent.TOUCH_BEGIN,this.onTouchBegin,true,1000);
          stage.addEventListener(TouchEvent.TOUCH_MOVE,this.onTouchMove,true,1000);
          stage.addEventListener(TouchEvent.TOUCH_END,this.onTouchEnd,true,1000);
+         this._startupPhase = "game runtime";
       }
 
       private function onTouchBegin(event:TouchEvent) : void

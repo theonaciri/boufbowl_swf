@@ -23,7 +23,7 @@
             var savedPreferred:Number = preferredFrameRate;
             ruffleRuntime = false;
             preferredFrameRate = 30;
-            smokeAssert(sceneFrameRate(50) == 30 && sceneFrameRate(25) == 25,"Native scene FPS caps changed");
+            smokeAssert(sceneFrameRate(50) == 30 && sceneFrameRate(25) == 30,"Scene transition overrode the FPS preference");
             preferredFrameRate = 0;
             smokeAssert(sceneFrameRate(50) == 50 && sceneFrameRate(25) == 25,"Native default scene rates changed");
             ruffleRuntime = true;

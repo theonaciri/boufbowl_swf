@@ -1,7 +1,7 @@
 {
   "$schema": "./game_config.schema.json",
   "schema_version": 1,
-  "rules_version": "restoration-2012-v2",
+  "rules_version": "restoration-2012-v4",
   "general": {
     "language": "en",
     "server": {
@@ -337,7 +337,7 @@
         "ball_exclusion_radius_cells": 3
       },
       "rulebook": {
-        "id": "restoration-2012-v2",
+        "id": "restoration-2012-v4",
         "movement": {
           "safe_failure": 0.01,
           "water_stat": 0.05,
@@ -357,7 +357,11 @@
           "official_effects": true,
           "boundary": "lower",
           "critical_dodge_down": false,
-          "next_bonus": 1
+          "next_bonus": 1,
+          "random_score": {
+            "model": "logistic-approximation",
+            "scale": 3.4590086183578026
+          }
         },
         "connection": {
           "heartbeat_timeout": 30,
@@ -369,112 +373,146 @@
           "favorable_timing": true,
           "scatter_failures": true,
           "path_interception": true
+        },
+        "maneuvers": {
+          "wide_margin": 15,
+          "critical_margin": 30,
+          "movement_bonus": 1,
+          "reception_throw_bonus": 1,
+          "critical_failures": true
+        },
+        "recovery": {
+          "revive_rested_reserves": true
         }
       }
     },
     "abilities": {
       "Sadida": {
         "name": "Sadida",
-        "verified": false,
-        "target": "enemies",
-        "range": -1
+        "verified": true,
+        "target": "allies",
+        "temporary_hp": 1,
+        "elements": {
+          "TERRE": 2
+        }
       },
       "Enutrof": {
         "name": "Enutrof",
-        "verified": false,
-        "target": "allies",
+        "verified": true,
+        "target": "enemies",
         "elements": {
-          "EAU": 3
+          "FEU": -5
         }
       },
       "Iop": {
         "name": "Iop",
-        "verified": false,
-        "target": "allies",
-        "elements": {
-          "TERRE": 3
-        }
+        "verified": true,
+        "target": "all",
+        "combat_damage": 1
       },
       "Osamodas": {
         "name": "Osamodas",
-        "verified": false,
-        "target": "allies",
+        "verified": true,
+        "target": "enemies",
         "elements": {
-          "TERRE": 1,
-          "FEU": 1,
-          "AIR": 1,
-          "EAU": 1
+          "AIR": -5
         }
       },
       "Cra": {
         "name": "Cra",
-        "verified": false,
+        "verified": true,
         "target": "allies",
-        "range": 1
+        "elements": {
+          "AIR": 5
+        }
       },
       "Sacrier": {
         "name": "Sacrier",
-        "verified": false,
+        "verified": true,
         "target": "allies",
         "hp": -1,
         "elements": {
-          "TERRE": 2,
-          "FEU": 2,
-          "AIR": 2,
-          "EAU": 2
+          "TERRE": 5
         }
       },
       "Rogue": {
         "name": "Rogue",
-        "verified": false,
+        "verified": true,
         "target": "enemies",
-        "hp": -2
+        "elements": {
+          "TERRE": -5
+        }
       },
       "Eniripsa": {
         "name": "Eniripsa",
-        "verified": false,
+        "verified": true,
         "target": "allies",
         "hp": 2
       },
       "Xelor": {
         "name": "Xelor",
-        "verified": false,
+        "verified": true,
         "target": "allies",
         "elements": {
-          "AIR": 3
+          "EAU": 10
         }
       },
       "Ecaflip": {
         "name": "Ecaflip",
-        "verified": false,
+        "verified": true,
         "target": "allies",
-        "redirect_enemy_heal": true
+        "redirect_enemy_ability": true
       },
       "Zobal": {
         "name": "Zobal",
         "verified": false,
         "target": "allies",
-        "change_mask": true
+        "change_mask": true,
+        "mask_order": {
+          "1": [
+            "endurance",
+            "precision",
+            "agility",
+            "strength"
+          ],
+          "2": [
+            "strength",
+            "precision",
+            "endurance",
+            "agility"
+          ],
+          "3": [
+            "agility",
+            "endurance",
+            "precision",
+            "strength"
+          ]
+        }
       },
       "Sram": {
         "name": "Sram",
-        "verified": false,
+        "verified": true,
         "target": "allies",
         "elements": {
-          "FEU": 3
+          "FEU": 5
         }
       },
       "Feca": {
         "name": "Feca",
-        "verified": false,
-        "target": "enemies",
-        "attack": -1
+        "verified": true,
+        "target": "allies",
+        "shield": 2
       },
       "Pandawa": {
         "name": "Pandawa",
-        "verified": false,
-        "target": "allies",
-        "attack": 1
+        "verified": true,
+        "target": "enemies",
+        "elements": {
+          "TERRE": -2,
+          "FEU": -2,
+          "AIR": -2,
+          "EAU": -2
+        }
       }
     }
   },

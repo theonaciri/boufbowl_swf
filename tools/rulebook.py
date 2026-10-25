@@ -14,7 +14,10 @@ def render(snapshot):
           '| Case | Rule | Status | Evidence | Decision |', '| --- | --- | --- | --- | --- |']
     for rule in snapshot['rules']:
         rows.append(f"| {rule['id']} | {rule['name']} | {rule['status']} | {', '.join(rule['sources'])} | {rule.get('decision','See reconstruction choices below.')} |")
-    rows.extend(['','## Configured class effects','','These retain the requested custom profile; they are not a recovered historical spell table.','',
+    power_note = ('Values follow the preserved original client tooltips. Mask numbers and exceptional inversion/stacking cases remain provisional.'
+                  if any(a.get('verified') for a in snapshot['class_abilities'].values())
+                  else 'These retain the requested custom profile; they are not a recovered historical spell table.')
+    rows.extend(['','## Configured class effects','',power_note,'',
                  '| Class | Configured effect | Historically verified |','| --- | --- | --- |'])
     for name,ability in snapshot['class_abilities'].items():
         effect={key:value for key,value in ability.items() if key not in ('name','verified')}

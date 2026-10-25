@@ -2,7 +2,7 @@
 
 ## Scope and identity
 
-The active profile is `restoration-2012-v2`. [RULEBOOK.md](RULEBOOK.md) lists all
+The active profile is `restoration-2012-v4`. See [maneuver and recovery choices](MANEUVERS_AND_RECOVERY.md). See [original powers and randomness](ORIGINAL_POWERS_AND_RANDOMNESS.md) for the new client evidence and explicit approximation. [RULEBOOK.md](RULEBOOK.md) lists all
 C01–C22 cases and the active policy. Its source is `resources/rulebook.json` plus
 `rules.simulation.rulebook` in `resources/game_config.json`. Every case has an
 evidence code, status and implementation decision. Original post IDs are included
@@ -18,7 +18,7 @@ New matches save the complete evidence/decision registry, policy and SHA-256 in
 that rulebook's ID, evidence revision and hash; replay exports carry the full
 frozen rulebook. Active exports still hide private orders/seeds. Replays retain
 their own inputs and events. Changing defaults cannot change a running match's
-choices. Worker versions add `+rulebook:restoration-2012-v2`. Omitting
+choices. Worker versions add `+rulebook:restoration-2012-v4`. Omitting
 `rules.simulation.rulebook` keeps v1/legacy movement, combat, pickup and disconnect
 behavior; the prior optional v1 switches still operate independently.
 
@@ -46,12 +46,12 @@ Existing colored range geometry and movement speed rules remain separate.
 
 ## Combat scoring versus consequences — M09–M12; C08–C09
 
-The missing intrinsic-value image and combat CDF remain **unrecovered**. No normal,
-logistic or other distribution has been fitted to the text, and no stat-times-orders
-formula is claimed. In particular, 83 minus 35 is 48; the source's arithmetic error
+The missing intrinsic-value image and combat CDF remain **unrecovered**. V3 uses an explicitly requested logistic approximation to the surviving probability anchors; it is not a recovered distribution. No stat-times-orders formula is claimed. In particular, 83 minus 35 is 48; the source's arithmetic error
 is not a calibration target.
 
-For playable default outcomes, the existing recreation's score/attacker/dodge
+The v2 baseline below describes the retained model when `combat.random_score` is absent. V3 adds the seeded logistic margin distribution documented above, while retaining the intrinsic-score proxy.
+
+For playable v2 outcomes, the existing recreation's score/attacker/dodge
 selection is retained as an explicitly **unverified deterministic proxy**. Its
 Earth score is characteristic plus the existing configured per-order bonus, not
 the historical intrinsic value. The proxy supplies a margin for the new table.
@@ -116,7 +116,9 @@ earlier lethal HP change within that phase. Its historical ordering is unverifie
 Damage traces report
 permanent HP loss and each absorbed amount separately.
 
-The current requested class-power profile is otherwise retained. It is **not**
+The v2 class-power profile described below is retained only in frozen older matches. V3 restores the original client values and target reversal; mask numerical values and exceptional inversion cases remain explicitly provisional.
+
+The former class-power profile was **not**
 the historical spell table: several class names/effects differ from M07. Shield
 and temporary-HP capability do not silently redefine Féca or the version-ambiguous
 Sadida effect. Their configured spell values remain experimental. Ecaflip's
@@ -234,7 +236,7 @@ archived upstream source tree is absent here, so a full archive build cannot be
 claimed as validation. No native AIR execution is claimed by server/protocol tests.
 Production deployment and restart are separate from this implementation.
 
-Validation for this revision: **135 focused server tests**, **13 Bun rulebook
+Historical v2 validation (not rerun for v3): **135 focused server tests**, **13 Bun rulebook
 tests**, **13 CPU strategy tests** and **two resolution checks** passed.
 Configuration validation and byte-identical repeated runtime refresh/document
 generation passed. Full Python discovery ran **364 tests: 360 passed, one skipped,

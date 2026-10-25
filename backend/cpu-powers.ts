@@ -21,6 +21,7 @@ export function addCPUPower(cfg: any, world: any, order: any, level: string): an
       if (rule.hp < 0) score += hostile ? Math.min(-rule.hp,target.hp) * 2 + (target.hp <= -rule.hp ? 6 : 0) : rule.hp * 2;
       if (rule.range) score += (hostile ? -rule.range : rule.range) * (hostile || moving(target) ? 1.5 : 0);
       if (rule.attack) score += (hostile ? -rule.attack : rule.attack) * (threatened(target) || hostile ? 1.5 : .25);
+      if (rule.shield || rule.temporary_hp) score += ((rule.shield ?? 0)+(rule.temporary_hp ?? 0)) * (threatened(target) ? 1.5 : .1);
       for (const [element, amount] of Object.entries(rule.elements ?? {})) {
         const weight = element === "EAU" ? (moving(target) ? 1 : .15) : element === "AIR" ? (receivers.has(target.id) || world.ball.holder_entity_id === target.id ? 1 : .25) : (threatened(target) ? 1 : .25);
         score += Number(amount) * weight * (hostile ? -1 : 1);
@@ -35,7 +36,7 @@ export function addCPUPower(cfg: any, world: any, order: any, level: string): an
     if (!rule?.target || (caster.ability_uses_remaining ?? 0) <= 0 || caster.id === world.ball.holder_entity_id || receivers.has(caster.id) || protectedIds.has(caster.id)) continue;
     // Opposing orders are private. Do not choose a counterspell using hidden
     // orders, or value its obsolete random stat bonus as if it still existed.
-    if (rule.redirect_enemy_heal) continue;
+    if (rule.redirect_enemy_heal || rule.redirect_enemy_ability) continue;
     // Preserve the immediate ball pickup rather than freezing the designated retriever.
     if (world.ball.holder_entity_id === null && caster.id === nearest?.id && hexDistance(caster.position,world.ball.position) <= 3) continue;
     if (rule.target === "allies" && rule.hp < 0 && allies.some((e: any) => e.hp <= -rule.hp)) continue;
@@ -43,11 +44,20 @@ export function addCPUPower(cfg: any, world: any, order: any, level: string): an
       ? (1-rule.enemy_chance) * value(rule,allies,false) + rule.enemy_chance * value({elements:rule.enemy_elements},enemies,true)
       : value(rule,rule.target === "enemies" ? enemies : allies,rule.target === "enemies");
     const params: any = {};
+    if (rule.target === 'all' && rule.combat_damage) {
+      const strongest = (players: any[]) => Math.max(0,...players.map(e => e.stats.strength));
+      score = Math.max(0,strongest(allies)-strongest(enemies)) * rule.combat_damage;
+    }
     if (rule.change_mask) {
-      // Current masks have no stat effects: change only while idle, occasionally.
-      if (moving(caster) || order.turn_number % 4 !== 0) continue;
-      params.zobal_mask = (caster.zobal_mask ?? 1) % 3 + 1;
-      score = 2;
+      if (rule.mask_order) {
+        params.zobal_mask = threatened(caster) ? 2 : moving(caster) ? 1 : 3;
+        if (params.zobal_mask === (caster.zobal_mask ?? 1)) continue;
+        score = threatened(caster) ? 3 : 2;
+      } else {
+        if (moving(caster) || order.turn_number % 4 !== 0) continue;
+        params.zobal_mask = (caster.zobal_mask ?? 1) % 3 + 1;
+        score = 2;
+      }
     }
     // Freeze the caster, so its own movement/stat bonuses provide no tactical value.
     if (rule.target === "allies" && !rule.change_mask) {

@@ -11,7 +11,8 @@ import type { DeterministicRNG } from "../rng";
 import { fixed, fractional, withinRadius, distanceSquared, SCALE } from "./movement";
 import type { MovementTable } from "./movement";
 import { targetedThrow } from "./throwTarget";
-import {rulebookPickupPenalty,rulebookThrowSpeed,rulebookOnFlightSegment,rulebookScatter} from "boufbowl-rulebook";
+import {rulebookPickupPenalty,rulebookThrowSpeed,rulebookOnFlightSegment,rulebookScatter,
+  rollRulebookManeuver,failRulebookManeuver} from "boufbowl-rulebook";
 const active = (e: WorldState["entities"][number]) =>
   e.hp > 0 && !e.status.knocked_down && !e.status.stunned && !(e as any).power_locked;
 const point = (e: WorldState["entities"][number]) =>
@@ -109,7 +110,8 @@ export function resolveThrows(
         e.elements.AIR * cfg.probabilities.air_precision_per_action -
         distance * cfg.simulation.distance_penalty,
     );
-    const success = rng.chance(precision);
+    const test = rollRulebookManeuver(cfg,e,precision,rng,'throw');
+    const success = test.success;
     const landing = hexRound(!success && (cfg as any).rulebook?.passing?.scatter_failures
       ? rulebookScatter(start,target,rng.nextFloat()) : target);
     events.push({
@@ -121,11 +123,13 @@ export function resolveThrows(
         target_position: landing,
         target_entity_id: targetEntity?.id ?? null,
         success,
-        precision,
+        precision:test.probability ?? precision,
+        ...((cfg as any).rulebook?.maneuvers ? test : {}),
         land_tick: landTick,
         arc_height: cfg.ball.arc_height_cells,
       },
     });
+    failRulebookManeuver(cfg,e,test,'throw',tick,events);
     flights.push({
       start: fixed(start),
       startTick: tick,
@@ -224,16 +228,25 @@ export function resolveReceptions(
       const bonus = intended ? e.elements.AIR * cfg.simulation.catch_air : e.elements.FEU * cfg.simulation.catch_feu;
       const chance = clamp(cfg, limited ? base + bonus
         : base + e.elements.FEU * cfg.simulation.catch_feu + e.elements.AIR * cfg.simulation.catch_air);
-      if (rng.chance(chance)) {
+      const test = rollRulebookManeuver(cfg,e,chance,rng,intended ? 'reception' : 'interception');
+      if (test.success) {
         e.status.carrying_ball = true;
         state.ball.holder_entity_id = e.id;
         state.ball.in_flight = false;
         state.ball.position = { ...e.position };
+        let granted = 0;
+        if (intended && (cfg as any).rulebook?.maneuvers) {
+          granted = (cfg as any).rulebook.maneuvers.reception_throw_bonus *
+            ({normal:1,wide:2,critical:3}[test.tier] ?? 1);
+          (e as any).next_throw_bonus = granted;
+        }
         events.push({
           tick,
           type: "catch",
           actor: e.id,
-          params: { position: { ...e.position }, catch_chance: chance, ...(limited ? {interception: !intended, attempt: usedAttempts(state,e.id)[kind], action: kind} : {}) },
+          params: { position: { ...e.position }, catch_chance: test.probability ?? chance,
+            ...((cfg as any).rulebook?.maneuvers ? {...test,granted_throw_bonus:granted,maneuver_bonus_malus:granted || test.maneuver_bonus_malus} : {}),
+            ...(limited ? {interception: !intended, attempt: usedAttempts(state,e.id)[kind], action: kind} : {}) },
         });
         return events;
       }
@@ -241,8 +254,19 @@ export function resolveReceptions(
         tick,
         type: "catch_fail",
         actor: e.id,
-        params: { catch_chance: chance, ...(limited ? {interception: !intended, attempt: usedAttempts(state,e.id)[kind], action: kind} : {}) },
+        params: { position:{...e.position},catch_chance: test.probability ?? chance,
+          ...((cfg as any).rulebook?.maneuvers ? test : {}),
+          ...(limited ? {interception: !intended, attempt: usedAttempts(state,e.id)[kind], action: kind} : {}) },
       });
+      failRulebookManeuver(cfg,e,test,intended ? 'reception' : 'interception',tick,events);
+      if (intended && test.tier==='critical' && (cfg as any).rulebook?.maneuvers?.critical_failures) {
+        // The original critical reception is a hit/fumble, not a retry with
+        // possession. End this flight and publish its separate ground rebound.
+        state.ball.in_flight=false;state.ball.holder_entity_id=null;
+        state.ball.position=hexRound(rulebookScatter(e.position,f.target,rng.nextFloat()));
+        events.push({tick,type:'ball_land',params:{position:{...state.ball.position},reason:'critical_reception'}});
+        return events;
+      }
     }
   }
   if (tick === f.landTick) {
@@ -287,13 +311,20 @@ export function resolvePickups(
       const kind = remaining(state,e,"fire") > 0 ? "fire" : "air";
       if (!attempt(state,e,tick,kind)) continue;
       const pressure = rulebookPickupPenalty(cfg,state,e);
-      const chance = clamp(cfg,cfg.simulation.catch_base + e.stats.precision * cfg.simulation.catch_stat +
+      const stat = (cfg as any).rulebook?.maneuvers && kind==='fire' ? e.stats.agility : e.stats.precision;
+      const chance = clamp(cfg,cfg.simulation.catch_base + stat * cfg.simulation.catch_stat +
         e.elements.AIR * cfg.simulation.catch_air + e.elements.FEU * cfg.simulation.catch_feu - pressure.penalty);
       if (!rng) throw new Error("Pickup attempts require the turn RNG");
-      const success = rng.chance(chance);
+      const test = rollRulebookManeuver(cfg,e,chance,rng,kind==='fire' ? 'pickup_fire' : 'pickup');
+      const success = test.success;
       events.push({tick, type: success ? "pickup" : "pickup_fail" as any, actor:e.id,
-        params:{position:{...e.position}, pickup_chance:chance, attempt:usedAttempts(state,e.id).air+usedAttempts(state,e.id).fire, action:kind,
+        params:{position:{...e.position}, pickup_chance:test.probability ?? chance, attempt:usedAttempts(state,e.id).air+usedAttempts(state,e.id).fire, action:kind,
+          // Original FX uses the sign only. Report actual applied pressure,
+          // expressed in percentage points, without adding a gameplay malus.
+          maneuver_bonus_malus: test.maneuver_bonus_malus || (pressure.penalty > 0 ? -Math.ceil(pressure.penalty * 100) : 0),
+          ...((cfg as any).rulebook?.maneuvers ? {...test,maneuver_bonus_malus:test.maneuver_bonus_malus || (pressure.penalty>0 ? -Math.ceil(pressure.penalty*100) : 0)} : {}),
           ...((cfg as any).rulebook ? {nearby_players:pressure.nearby,lost_combats:pressure.lost_combats} : {})}});
+      failRulebookManeuver(cfg,e,test,'pickup',tick,events);
       if (success) {
         e.status.carrying_ball = true; state.ball.holder_entity_id = e.id;
         state.ball.position = {...e.position}; break;

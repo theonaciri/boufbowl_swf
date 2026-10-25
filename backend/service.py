@@ -620,8 +620,8 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
         previous_masks.update(self.match_masks(match))
         previous_uses = match.setdefault("ability_uses", {})
         previous_uses.update({str(e["id"]): e.get("ability_uses_remaining", 0) for e in match["world"]["entities"]})
-        # M02: only reserves rested during the preceding action. Rebuilding the
-        # field must not heal returning players (or resurrect a dead player).
+        # M02: only reserves rested during the preceding action. Revival is a
+        # separately versioned restoration policy, never a mid-turn heal.
         previous_hp = {e["id"]: e["hp"] for e in match["world"]["entities"]}
         roster_health = match.setdefault("roster_health", {})
         roster_health.update({str(identity): hp for identity, hp in previous_hp.items()})
@@ -630,10 +630,11 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             entity["position"] = all_positions[entity["id"]]
             if match["rules"]["match"].get("restart_recovery") == "reserves":
                 entity["hp"] = previous_hp.get(entity["id"], entity["max_hp"])
-                # Full revival rules are unknown; resting must not implicitly
-                # resurrect a dead reserve. Keep death distinct from knockdown.
-                if roster_health.get(str(entity["id"])) == 0:
+                revival = match['rules']['simulation'].get('rulebook', {}).get('recovery', {}).get('revive_rested_reserves', False)
+                rested = entity['id'] not in previous_hp
+                if roster_health.get(str(entity["id"])) == 0 and not (revival and rested):
                     entity["hp"] = 0
+                roster_health[str(entity['id'])] = entity['hp']
                 entity["status"]["knocked_down"] = entity["hp"] <= 0
             if entity["class_name"] == "Zobal": entity["zobal_mask"] = previous_masks.get(str(entity["id"]), 1)
             entity["ability_uses_remaining"] = previous_uses.get(str(entity["id"]), match["rules"]["match"]["class_ability_uses"])

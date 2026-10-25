@@ -1,8 +1,8 @@
 # Boufbowl restoration rulebook
 
-Profile: `restoration-2012-v2`. Evidence: preservation commit `484d203`.
+Profile: `restoration-2012-v4`. Evidence: preservation commit `484d203`.
 
-Policy/evidence fingerprint: `9cd2e51e7a5e29250f9c8df217858dc0290bc1ef50c62f1cf81aa2277ac02967`.
+Policy/evidence fingerprint: `53ad6644596c6aba70dd202ba16c85347edac733c096163363ca733bd603ad1b`.
 
 Post-1.0.7 / 1.0.8 framework; February 2012 consequence semantics; incomplete original formulas
 
@@ -14,20 +14,20 @@ Post-1.0.7 / 1.0.8 framework; February 2012 consequence semantics; incomplete or
 | C02 | Five field players | implemented | M01 | Five owned players; role caps apply. |
 | C03 | One team special | implemented | M07 | Client last assignment wins; malformed submitted double specials are rejected. |
 | C04 | Caster replaces ordinary turn | implemented | M07 | Caster cannot combine ordinary assignments with a special. |
-| C05 | Reserve recovery | provisional | M02 | Living reserves heal; field players retain HP; dead reserves stay dead pending revival evidence. |
-| C06 | Water movement reliability | provisional | M03, M08 | One seeded draw at turn start; nonzero green risk and Water dependence use explicit replacement balance. |
+| C05 | Reserve recovery | provisional | M02 | Rested reserves regain maximum HP, including dead reserves under the explicit v4 revival policy. Former field players retain HP; no immediate revival or ability-charge reset. Complete historical revival semantics are unknown. |
+| C06 | Water movement reliability | provisional | M03, M08 | One seeded movement draw; Water-dependent replacement risk. On route completion, wide/critical success grants a nonstacking next-action bonus, expiring at turn end. Grading and coefficients are reconstruction choices. |
 | C07 | Water required to stand | implemented | P11 | Down players need Water; existing stand-up delay/resource budget retained. |
-| C08 | Targeted combat consequences | provisional | M09 | Official consequence rows; existing deterministic score proxy and configurable threshold equality are unverified. |
+| C08 | Targeted combat consequences | provisional | M09 | Official consequences; seeded logistic margin noise approximates M09 probabilities. Intrinsic score proxy and exact boundaries remain provisional. |
 | C09 | Incidental zero-damage stun | provisional | M09 | Normal incidental/dodge win stuns for zero HP damage; four-damage critical dodge down is a separate flag. |
 | C10 | Pickup crowd pressure | provisional | M04 | Both teams count as pressure; radius and penalty are configurable replacement values. |
 | C11 | Pickup prior combat losses | provisional | M04 | Each same-turn loss contributes a configurable pickup penalty; bookkeeping resets with the turn world. |
-| C12 | Separate throw and catch | provisional | M05 | Separate throw/catch tests; failed tests scatter to a seeded point on the trajectory (replacement distribution). |
-| C13 | Preassigned pass chains | implemented | M05 | Onward assignments survive until possession; flights chain; Air speeds travel using a configurable replacement coefficient. |
+| C12 | Separate throw and catch | provisional | M05, CLIENTFX | Separate seeded throw/catch tests with configurable log-odds maneuver grades. Critical throw stuns; critical pickup/reception/interception knocks down without invented HP damage. A failed interception does not terminate flight. Thresholds and severity probabilities are provisional. |
+| C13 | Preassigned pass chains | provisional | M05 | Preassigned passes chain. Successful reception grants a quality-dependent next-throw bonus in v4, consumed once and expiring at turn end. Air travel coefficient and bonus magnitude are provisional. |
 | C14 | Arrival deadline | implemented | M05 | Arrival must be before the discrete turn end. |
 | C15 | Contact interrupts throw | provisional | M05 | Contact cancels an unlaunched carrier pass; converging trajectories may defer launch under an explicit timing heuristic. |
 | C16 | Path interception | provisional | M05 | Path/height/radius samples plus a forward flight-segment filter; exact historical corridor and retries remain provisional. |
 | C17 | Mid-turn stun recovery | provisional | M18, P16 | Water-based configurable stun duration allows a receiver to recover before ball arrival. |
-| C18 | Ecaflip healing redirection | implemented | M07 | Only opposing Eniripsa healing is redirected; no opponent heal means no effect. |
+| C18 | Ecaflip healing redirection | implemented | M07, CLIENT19 | Original client target reversal for team-targeted powers; self-only masks and two counterspells have no redirectable team target. |
 | C19 | No five-score cutoff | implemented | P11 | Continue to the stadium turn limit; fifth score is not a cutoff. |
 | C20 | Historical tournament format | custom | R06 | Keep the user-requested Saturday Paris qualifying/bracket competition. |
 | C21 | Late tournament settlement | custom | R06 | Keep custom bracket settlement; historical timed-event accounting not claimed. |
@@ -35,24 +35,24 @@ Post-1.0.7 / 1.0.8 framework; February 2012 consequence semantics; incomplete or
 
 ## Configured class effects
 
-These retain the requested custom profile; they are not a recovered historical spell table.
+Values follow the preserved original client tooltips. Mask numbers and exceptional inversion/stacking cases remain provisional.
 
 | Class | Configured effect | Historically verified |
 | --- | --- | --- |
-| Sadida | `{"range": -1, "target": "enemies"}` | no |
-| Enutrof | `{"elements": {"EAU": 3}, "target": "allies"}` | no |
-| Iop | `{"elements": {"TERRE": 3}, "target": "allies"}` | no |
-| Osamodas | `{"elements": {"AIR": 1, "EAU": 1, "FEU": 1, "TERRE": 1}, "target": "allies"}` | no |
-| Cra | `{"range": 1, "target": "allies"}` | no |
-| Sacrier | `{"elements": {"AIR": 2, "EAU": 2, "FEU": 2, "TERRE": 2}, "hp": -1, "target": "allies"}` | no |
-| Rogue | `{"hp": -2, "target": "enemies"}` | no |
-| Eniripsa | `{"hp": 2, "target": "allies"}` | no |
-| Xelor | `{"elements": {"AIR": 3}, "target": "allies"}` | no |
-| Ecaflip | `{"redirect_enemy_heal": true, "target": "allies"}` | no |
-| Zobal | `{"change_mask": true, "target": "allies"}` | no |
-| Sram | `{"elements": {"FEU": 3}, "target": "allies"}` | no |
-| Feca | `{"attack": -1, "target": "enemies"}` | no |
-| Pandawa | `{"attack": 1, "target": "allies"}` | no |
+| Sadida | `{"elements": {"TERRE": 2}, "target": "allies", "temporary_hp": 1}` | yes |
+| Enutrof | `{"elements": {"FEU": -5}, "target": "enemies"}` | yes |
+| Iop | `{"combat_damage": 1, "target": "all"}` | yes |
+| Osamodas | `{"elements": {"AIR": -5}, "target": "enemies"}` | yes |
+| Cra | `{"elements": {"AIR": 5}, "target": "allies"}` | yes |
+| Sacrier | `{"elements": {"TERRE": 5}, "hp": -1, "target": "allies"}` | yes |
+| Rogue | `{"elements": {"TERRE": -5}, "target": "enemies"}` | yes |
+| Eniripsa | `{"hp": 2, "target": "allies"}` | yes |
+| Xelor | `{"elements": {"EAU": 10}, "target": "allies"}` | yes |
+| Ecaflip | `{"redirect_enemy_ability": true, "target": "allies"}` | yes |
+| Zobal | `{"change_mask": true, "mask_order": {"1": ["endurance", "precision", "agility", "strength"], "2": ["strength", "precision", "endurance", "agility"], "3": ["agility", "endurance", "precision", "strength"]}, "target": "allies"}` | no |
+| Sram | `{"elements": {"FEU": 5}, "target": "allies"}` | yes |
+| Feca | `{"shield": 2, "target": "allies"}` | yes |
+| Pandawa | `{"elements": {"AIR": -2, "EAU": -2, "FEU": -2, "TERRE": -2}, "target": "enemies"}` | yes |
 
 ## Configured attributes
 
@@ -99,7 +99,7 @@ These values are configurable replacement balance, not recovered historical cons
 
 ```json
 {
-  "id": "restoration-2012-v2",
+  "id": "restoration-2012-v4",
   "movement": {
     "safe_failure": 0.01,
     "water_stat": 0.05,
@@ -119,7 +119,11 @@ These values are configurable replacement balance, not recovered historical cons
     "official_effects": true,
     "boundary": "lower",
     "critical_dodge_down": false,
-    "next_bonus": 1
+    "next_bonus": 1,
+    "random_score": {
+      "model": "logistic-approximation",
+      "scale": 3.4590086183578026
+    }
   },
   "connection": {
     "heartbeat_timeout": 30,
@@ -131,6 +135,16 @@ These values are configurable replacement balance, not recovered historical cons
     "favorable_timing": true,
     "scatter_failures": true,
     "path_interception": true
+  },
+  "maneuvers": {
+    "wide_margin": 15,
+    "critical_margin": 30,
+    "movement_bonus": 1,
+    "reception_throw_bonus": 1,
+    "critical_failures": true
+  },
+  "recovery": {
+    "revive_rested_reserves": true
   }
 }
 ```
