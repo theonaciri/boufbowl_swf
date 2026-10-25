@@ -48,6 +48,8 @@ class Store:
               club_json TEXT NOT NULL, statistics_json TEXT NOT NULL, created REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS sessions(
               token_hash TEXT PRIMARY KEY, profile_id TEXT NOT NULL REFERENCES profiles(id), expires REAL NOT NULL, kind TEXT NOT NULL DEFAULT 'device');
+            CREATE TABLE IF NOT EXISTS deleted_sessions(
+              token_hash TEXT PRIMARY KEY, expires REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS matches(
               id INTEGER PRIMARY KEY AUTOINCREMENT, state_json TEXT NOT NULL, updated REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS participants(
@@ -232,6 +234,10 @@ class Store:
             row = self.db.execute("SELECT profile_id FROM sessions WHERE token_hash=? AND expires>?",
                                   (self.digest(token), time.time())).fetchone()
             if not row:
+                deleted = self.db.execute("SELECT 1 FROM deleted_sessions WHERE token_hash=? AND expires>?",
+                                          (self.digest(token), time.time())).fetchone()
+                if deleted:
+                    raise ServiceError("SESSION_DELETED", "Ce profil a été supprimé. Aucune reconnexion automatique n’est possible.")
                 raise ServiceError("SESSION_INVALID", "Device session expired or unknown")
             self.check_sanctions(row["profile_id"])
             return row["profile_id"]

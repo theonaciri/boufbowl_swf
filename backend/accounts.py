@@ -26,6 +26,9 @@ def password_hash(password,salt,iterations=ITERATIONS):
 class Accounts:
     def account(self, body, peer='local'):
         action=body.get('action')
+        if action in ('export', 'delete'):
+            from backend.account_privacy import privacy_action
+            return privacy_action(self, body, peer)
         if action=='logout':
             with self.store.transaction():
                 profile=self.store.authenticate(body.get('session'))

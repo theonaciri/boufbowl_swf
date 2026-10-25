@@ -33,6 +33,7 @@
       private static var serverAuthMode:String = "device";
       private static var serverAccountUsername:String;
       private static var serverAccountBusy:Boolean = false;
+      private static var serverPrivacyDeleting:Boolean = false;
       private static var serverQueueWaiting:Boolean = false;
       private static var serverSpectating:String;
       private static var serverSubscriptions:Array=[];
@@ -92,7 +93,7 @@
          }
          serverGeneration++;
          serverInitTracking();
-         serverAccountBusy = false;
+         serverAccountBusy = false;serverPrivacyDeleting=false;
          serverActive = true;serverConnecting=true;serverRole="player";
          clearTimeout(serverPollTimer);clearTimeout(serverSendTimer);
          clearTimeout(serverLivePlayersTimer);
@@ -156,6 +157,7 @@
       }
 
       private static function serverRefreshSession(complete:Function):void {
+         if(serverPrivacyDeleting) { if(complete != null)complete(false);return; }
          if(serverAuthMode != "device") {
             serverTrace("Account session requires login");
             serverActive=false;serverSession=null;serverQueue=[];serverConnecting=false;
@@ -235,6 +237,7 @@
                }
                return;
             }
+            if((response.code == "SESSION_INVALID" || response.code == "SESSION_DELETED") && route != "account" && serverPrivacyDeleting) return;
             if(response.code == "SESSION_INVALID" && route == "poll") { serverRefreshSession(null);return; }
             if(response.code == "SESSION_INVALID" && (route == "community" || route == "replay")) {
                serverRefreshSession(function(ok:Boolean):void {
@@ -300,7 +303,7 @@
 
       private static function serverPump() : void
       {
-         if(!serverActive || serverSession == null || serverSending || serverQueue.length == 0) return;
+         if(!serverActive || serverSession == null || serverSending || serverQueue.length == 0 || serverPrivacyDeleting) return;
          serverSending = true;
          var body:Object = serverQueue[0];
          body.session = serverSession;
@@ -338,7 +341,7 @@
 
       private static function serverPoll() : void
       {
-         if(!serverActive || serverSession == null || serverPolling) return;
+         if(!serverActive || serverSession == null || serverPolling || serverPrivacyDeleting) return;
          serverPolling = true;
          var epoch:uint=++serverPollEpoch;
          serverRequest("poll",{session:serverSession,cursor:serverCursor,wait_ms:serverPollWait,compact:true},function(response:Object):void {
@@ -359,7 +362,7 @@
                else {
                   serverPollFailures++;
                   if(serverPollFailures == 1)serverStatus("Connection interrupted; reconnecting: " + response.error,true);
-                  if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID") {
+                  if(response.code == "PLAYER_KICKED" || response.code == "PLAYER_BANNED" || response.code == "SESSION_INVALID" || response.code == "SESSION_DELETED") {
                      serverGeneration++;serverPollEpoch++;serverActive=false;
                      if(serverLivePlayersLabel != null)serverLivePlayersLabel.text="Hors ligne";
                      clearTimeout(serverSendTimer);serverQueue=[];serverSending=false;stopMock();showHome();serverCurrentMatch=null;
@@ -613,7 +616,7 @@
       {
          if(serverBase == null) { serverStatus("Connect to a server first",true); return; }
          if(serverCurrentMatch != null) { serverStatus("Finish or surrender your match before changing accounts",true); return; }
-         serverDialog("Account: " + (serverAuthMode == "account" ? serverAccountUsername : "anonymous device"),330);
+         serverDialog("Account: " + (serverAuthMode == "account" ? serverAccountUsername : "anonymous device"),380);
          serverText(serverPanel,"Username",20,55,130);
          var username:TextField = serverInput(serverPanel,serverAccountUsername != null ? serverAccountUsername : "",170,55,550);
          serverText(serverPanel,"Password",20,95,130);
@@ -628,7 +631,69 @@
          serverAction(serverPanel,"Log out",570,215,160,function():void { serverAccountRequest("logout",username,password,replacement); });
          serverAction(serverPanel,"Use device profile",20,255,220,function():void { serverUseDevice(); });
          serverAction(serverPanel,"Recover account",260,255,220,function():void { serverAccountRequest("recover",username,password,replacement,recovery); });
-         serverText(serverPanel,"Passwords: 10–128 characters. Create links this profile and preserves your clubs.",20,295,740);
+         serverAction(serverPanel,"Mes données / Supprimer",20,295,340,function():void { serverPrivacyPanel(); });
+         serverText(serverPanel,"Passwords: 10–128 characters. Create links this profile and preserves your clubs.",20,340,740);
+      }
+
+      private static function serverPrivacyPanel() : void
+      {
+         serverDialog("Mes données personnelles",440);
+         serverText(serverPanel,"Le compte lié exige son mot de passe, même depuis un profil appareil.",20,50,750);
+         serverText(serverPanel,"Sans compte : seule la session de cet appareil prouve votre accès.",20,80,750);
+         serverText(serverPanel,"Mot de passe",20,120,150);
+         var password:TextField=serverInput(serverPanel,"",180,120,540,true);
+         serverText(serverPanel,"Pseudo exact",20,165,150);
+         var nickname:TextField=serverInput(serverPanel,"",180,165,540);
+         serverText(serverPanel,"Confirmation",20,210,150);
+         var confirmation:TextField=serverInput(serverPanel,"",180,210,540);
+         serverText(serverPanel,"Suppression définitive : tapez SUPPRIMER et votre pseudo exact.",20,255,750);
+         serverText(serverPanel,"Résultats conservés sous pseudonyme. Match actif : suppression refusée.",20,285,750);
+         serverText(serverPanel,"Les clubs locaux restent sur cet appareil. Exportez avant de supprimer.",20,315,750);
+         serverAction(serverPanel,"Exporter mes données",20,360,330,function():void {
+            serverPrivacyRequest("export",password,nickname,confirmation);
+         });
+         serverAction(serverPanel,"Supprimer définitivement",390,360,340,function():void {
+            serverPrivacyRequest("delete",password,nickname,confirmation);
+         });
+      }
+
+      private static function serverPrivacyRequest(action:String, password:TextField, nickname:TextField, confirmation:TextField) : void
+      {
+         if(serverAccountBusy) return;
+         serverAccountBusy=true;
+         if(action == "delete") serverPrivacyDeleting=true;
+         serverRequest("account",{action:action,session:serverSession,password:password.text,nickname:nickname.text,
+            confirmation:confirmation.text,device_session:serverStorage.data.deviceSession,
+            account_session:serverStorage.data.accountSession},function(response:Object):void {
+            serverAccountBusy=false;password.text="";
+            if(!response.ok) {
+               if(!response.retryable) { serverPrivacyDeleting=false;serverPoll();serverPump(); }
+               serverStatus(response.retryable && action == "delete" ? "Réponse incertaine : reconnexion automatique suspendue. Réessayez explicitement." : response.error,true);return;
+            }
+            if(action == "export") {
+               serverDialog("Exporter mes données",200);
+               serverText(serverPanel,"Ce fichier contient vos données personnelles. Conservez-le en lieu sûr.",20,50,750);
+               serverAction(serverPanel,"Enregistrer le fichier JSON",20,100,420,function():void {
+                  serverReplayFile=new flash.net.FileReference();
+                  serverReplayFile.save(com.adobe.serialization.json.JSON.encode(response["export"]),"boufbowl-mes-donnees.json");
+               });
+               return;
+            }
+            serverGeneration++;serverPollEpoch++;serverActive=false;serverConnecting=false;
+            serverSession=null;serverQueue=[];serverPolling=false;serverSending=false;
+            clearTimeout(serverPollTimer);clearTimeout(serverSendTimer);clearTimeout(serverLivePlayersTimer);
+            delete serverStorage.data.session;
+            if(response.clear_device_session) delete serverStorage.data.deviceSession;
+            if(response.clear_account_session) delete serverStorage.data.accountSession;
+            serverStorage.data.authMode="device";serverStorage.flush();
+            serverAccountUsername=null;serverAuthMode="device";
+            var chat:com.ankamagames.boufbowl.client.chat.model.IChatModel=app.contextInjector.getInstance(com.ankamagames.boufbowl.client.chat.model.IChatModel);
+            chat.clearMessages();chat.clear();
+            serverDialog("Profil supprimé",220);
+            serverText(serverPanel,"Vos accès sont révoqués. Les résultats restent sous pseudonyme.",20,55,750);
+            serverText(serverPanel,"Les clubs locaux restent sur cet appareil. Une nouvelle connexion",20,90,750);
+            serverText(serverPanel,"sans compte créera un nouveau profil. Fermez le jeu pour quitter.",20,120,750);
+         });
       }
 
       private static function serverUseDevice() : void
