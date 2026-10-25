@@ -83,3 +83,11 @@ flush, frozen standings, rollback, replay verification after rekeying, and the
 actual HTTP route/no-store response. Root coordinates account/community/tournament
 regressions and shared AS3 compilation. Client rendering is not validated by these
 Python tests.
+
+## Integration verification (0.3.0)
+
+The focused privacy/account/community/results/tournament suite passed 65 tests.
+Shared SWF and Android packaging compiled the account controls. In Ruffle against
+an isolated SQLite backend, the account panel downloaded valid personal JSON;
+explicit deletion removed the test profile and retained one revoked-session
+marker. Production backend activation requires its separately authorized restart.

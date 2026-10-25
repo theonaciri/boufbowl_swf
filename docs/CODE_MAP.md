@@ -8,6 +8,8 @@ Start at the relevant entry point; read dependencies only as needed.
 | Game cache / explicit release | `package.json` → `build_project.py` / `build_players.py` → `game_build_state.py` | `bun run build --plan`; [fast loop](BUILD.md#fast-development-loop) |
 | FPS/preferences | both `BoufbowlClient.as` roots → `ClientRuntime.as.inc` → `OptionsView.as`, `ResolutionMediator.as` | shared smoke, both roots |
 | Android background audio | Android `BoufbowlClient` → NativeApplication activate/deactivate → SoundMixer master transform | Home/return/lock; preserve category volumes, repeated deactivation |
+| Cursor/pinch zoom | `BoufbowlClient.as` → `ClientRuntime.as.inc::wheelZoomTransform`; Android touch wrapper | `tests/client_zoom.test.js`; [behavior](CURSOR_ZOOM.md) |
+| Account privacy | `/api/account` → `Accounts.account` → `account_privacy.py`; game account panel | `tests/test_account_privacy.py`; [scope](ACCOUNT_PRIVACY.md) |
 | Browser launch/quality | `play.html` → `web-player.js` → root `setWebDisplay` | `verify_client --area web` |
 | Game measurements/admin charts | `ClientRuntime.as.inc` / `Service.run_resolution` → `backend/game_measurements.py` → `admin-game.js` | `verify_client --area all`; [coverage](GAME_MEASUREMENTS.md) |
 | Chat layout/scroll | `ChatMediator.as` → `TextZone.as` → TLF controller; Ruffle stacks rendered paragraph bounds | empty, wrapped/bold, long, resized chat; [layout](PERFORMANCE.md#web-chat-layout) |

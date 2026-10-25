@@ -36,8 +36,8 @@ maximum scale, fractional/extreme deltas, and 2,000 seeded cursor/delta changes.
 checks both roots still expand and existing probe instrumentation anchors remain
 valid. These checks do not compile AS3 or exercise browser/native input delivery.
 
-The coordinating build must still compile both roots and verify real wheel input
-in Flash and Ruffle, including fullscreen/letterboxed windows, corner anchoring,
-scrollable controls, and return to the exact original view. Android pinch requires
-a device regression check after the batched build. No clients were rebuilt or
-packaged for this isolated change.
+Integration verification (0.3.0): shared SWF and Windows/Linux/Android packages
+built successfully. A disposable Ruffle probe exercised real pointer coordinates
+plus canvas wheel events: cursor anchoring, bounded zoom-out after changing
+cursor position, and exact reset to scale1/x0/y0. Hardware wheel input,
+fullscreen/letterboxing and physical Android pinch remain device checks.
