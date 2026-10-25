@@ -66,3 +66,12 @@ test('fractional, zero and extreme deltas remain bounded through seeded cursor c
   for(let n=0;n<5;n++) view=step(view,random()*width,random()*height,-3000);
   expect(view).toEqual(original);
 });
+
+test('the preserved 1024x600 viewport clamps correctly at changed cursor positions', () => {
+  let view={scale:8,x:-1024*7,y:-600*7};
+  view=zoom(view.scale,view.x,view.y,0,0,-3,1024,600);
+  expect(view.x).toBeCloseTo(1024*(1-view.scale),10);
+  expect(view.y).toBeCloseTo(600*(1-view.scale),10);
+  for(let n=0;n<30;n++)view=zoom(view.scale,view.x,view.y,1024,600,-3,1024,600);
+  expect(view).toEqual(original);
+});

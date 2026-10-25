@@ -7,7 +7,8 @@ path supplies AS3 events; there is no JavaScript wheel bridge or duplicate zoom.
 Wheel events inside the authored canvas are consumed before game controls scroll.
 
 `ClientRuntime.as.inc::wheelZoomTransform` computes the transform in the authored
-1920×1125 canvas coordinates. `SHOW_ALL` handles window/fullscreen sizing. Positive
+actual stage canvas coordinates (normally1024×600 in the preserved SWF;
+FFDec does not change the SWF header to match replacement-source metadata). `SHOW_ALL` handles window/fullscreen sizing. Positive
 wheel deltas zoom in, negative deltas zoom out: three delta units multiply scale
 by 1.12. Fractional deltas work; per-event deltas are capped at ±30 and total
 scale at 1–8. There is no separate mouse drag gesture.

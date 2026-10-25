@@ -103,9 +103,11 @@ package com.ankamagames.boufbowl
       {
          // SHOW_ALL keeps the authored canvas coordinates across window sizes.
          var anchor:Point = this.globalToLocal(new Point(event.stageX,event.stageY));
-         if(anchor.x < 0 || anchor.y < 0 || anchor.x > 1920 || anchor.y > 1125) return;
+         var canvasWidth:Number = stage.stageWidth;
+         var canvasHeight:Number = stage.stageHeight;
+         if(anchor.x < 0 || anchor.y < 0 || anchor.x > canvasWidth || anchor.y > canvasHeight) return;
          var next:Object = wheelZoomTransform(this._wheelGameView.scaleX,
-            this._wheelGameView.x,this._wheelGameView.y,anchor.x,anchor.y,event.delta,1920,1125);
+            this._wheelGameView.x,this._wheelGameView.y,anchor.x,anchor.y,event.delta,canvasWidth,canvasHeight);
          this._wheelGameView.scaleX = next.scale;
          this._wheelGameView.scaleY = next.scale;
          this._wheelGameView.x = next.x;
