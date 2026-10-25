@@ -1,5 +1,6 @@
 """Persistent human queue, bounded searches and rating-aware pairing."""
 import json
+import secrets
 import time
 from backend.storage import ServiceError
 from tools.game_config import STADIUMS
@@ -72,9 +73,10 @@ class Matchmaking:
                 if not common: continue
                 distance=abs(rating-self.store.profile(second['profile_id'])['statistics']['rating'])
                 window=settings['rating_window']+settings['widen_per_second']*(now-min(first['joined'],second['joined']))
-                if distance<=window: choices.append((distance,second['joined'],second['profile_id'],second,min(common)))
+                if distance<=window: choices.append((distance,second['joined'],second['profile_id'],second,sorted(common)))
             if choices:
-                _,_,_,second,stadium=min(choices,key=lambda c:c[:3])
+                _,_,_,second,stadiums=min(choices,key=lambda c:c[:3])
+                stadium=secrets.choice(stadiums)
                 self.create_match(first['profile_id'],second['profile_id'],stadium, tournament=int(first['tournament_id']) if first['tournament_id'] is not None else None, source="tournament" if first['tournament_id'] is not None else "matchmaking")
                 matched.update((first['profile_id'],second['profile_id']))
 

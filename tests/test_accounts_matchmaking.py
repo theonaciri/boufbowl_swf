@@ -7,6 +7,7 @@ import sqlite3
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 from backend.service import Service
 from backend.storage import ServiceError
@@ -135,6 +136,21 @@ class AccountMatchmakingTests(unittest.TestCase):
         self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
         self.command(self.b,stadiums=[1,2])
         self.assertEqual(self.s.store.active_match(self.pid(self.a))['stadium'],1)
+
+    def test_random_stadium_draws_from_shared_enabled_pool(self):
+        self.command(self.a,stadiums=[1,4])
+        with patch('backend.matchmaking.secrets.choice',return_value=4) as draw:
+            self.command(self.b,stadiums=[1,3,4])
+        draw.assert_called_once_with([1,4])
+        self.assertEqual(self.s.store.active_match(self.pid(self.a))['stadium'],4)
+
+    def test_disjoint_stadium_choices_do_not_create_or_draw_a_match(self):
+        self.command(self.a,stadiums=[1])
+        with patch('backend.matchmaking.secrets.choice') as draw:
+            self.command(self.b,stadiums=[4])
+        draw.assert_not_called()
+        self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.b))['status'],'waiting')
 
     def test_rating_search_widens(self):
         with self.s.store.transaction():

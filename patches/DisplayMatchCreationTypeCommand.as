@@ -25,11 +25,8 @@ package com.ankamagames.boufbowl.client.matchmaking.controller
       
       override public function execute() : void
       {
-         if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode() && this._event.matchCreationType == MatchCreationType.RANDOM)
-         {
-            com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverPlay();
-            return;
-         }
+         if(com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverMode() &&
+            com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand.serverResumeActiveMatch()) return;
          if(this._event.matchCreationType == MatchCreationType.TOURNAMENT)
          {
             dispatch(new DisplayViewEvent(Views.TOURNAMENT));

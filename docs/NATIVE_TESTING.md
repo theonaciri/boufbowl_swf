@@ -173,3 +173,25 @@ A disposable compiled Ruffle probe passed 25 event-level checks, including power
 regressions, generic information, nested targets, graphics, repeated assignment,
 button actions and lifecycle cleanup. Real Ruffle clicks were also checked.
 Native Android touch delivery still requires an installed APK check.
+
+## Match setup page
+
+Play uses the original full-page matchmaking view. Match/challenge tabs share
+one stadium selection; zero means a random enabled stadium. Hover previews do
+not change selection, and a click needs no preceding hover. The left panel
+contains team selection, random choice, CPU, queue cancellation, tournament entry
+and community access. State updates use existing server metadata events.
+
+CPU/challenge requests draw one enabled stadium when random is selected. Human
+matchmaking draws from the intersection of both players’ accepted stadiums;
+opponent/rating ordering is unchanged. Tournament stadiums follow the event.
+
+```sh
+python3 -m unittest tests.test_accounts_matchmaking tests.test_public_tournaments
+```
+
+36 tests passed, including forced non-first stadium selection and disjoint pools.
+Isolated Ruffle checks covered team/card updates, no-hover taps, hover stability,
+shared selection/reset, queue/cancel, tournament/cancel, challenge/cancel and CPU
+launch. Layout checked at the authored 1024×600 viewport. Native touch remains a
+phone check after installing the new APK.

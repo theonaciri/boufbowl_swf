@@ -205,6 +205,7 @@
          if(response.profile != null) AccountInformations(app.contextInjector.getInstance(AccountInformations)).nickname = response.profile.nickname;
          if(response.current_match != null) serverCurrentMatch = String(response.current_match);
          else if(response.hasOwnProperty("current_match")) serverCurrentMatch = null;
+         Stage(app.contextInjector.getInstance(Stage)).dispatchEvent(new Event("restorationMatchmakingUpdated"));
       }
 
       public static function serverAbilityDescription(classId:int) : String
@@ -399,6 +400,7 @@
          else if(packet.channel == "MATCH") pipeline.sendDataUpstream(message,app.contextInjector.getInstance(MatchMessageHandler));
          else pipeline.sendDataUpstream(message,app.contextInjector.getInstance(LobbyMessageHandler));
          serverTrace("Incoming " + packet.type);
+         if(packet.type == "CLUB_INFORMATION") Stage(app.contextInjector.getInstance(Stage)).dispatchEvent(new Event("restorationMatchmakingUpdated"));
          if(packet.type == "MATCH_END") { serverCurrentMatch = null;setMatchToolbar(false); }
       }
 
@@ -476,44 +478,56 @@
          if(serverActive) { serverStatus("Saving club..."); serverSend({operation:"save_club",club:serverSnapshot(club)}); }
       }
 
-      public static function serverPlay() : void
+      public static function serverResumeActiveMatch() : Boolean
       {
-         if(serverCurrentMatch != null) { startServer(serverBase.replace(/\/api\/$/,""),null,true); return; }
-         serverDialog("Play",310);
-         var selectedClub:String=serverClubId;
-         var clubIds:Array=[];
-         for(var clubKey:String in serverNames) clubIds.push(clubKey);
-         clubIds.sort(Array.NUMERIC);
-         var clubLabel:TextField=serverText(serverPanel,"Team: " + serverNames[selectedClub],20,245,500);
-         serverAction(serverPanel,"Change team",560,245,180,function():void {
-            var clubIndex:int=clubIds.indexOf(selectedClub);
-            selectedClub=String(clubIds[(clubIndex+1)%clubIds.length]);
-            clubLabel.text="Team: " + serverNames[selectedClub];
-         });
-         var selected:int = 0;
-         var stadiums:Array = @ENABLED_STADIUMS@;
-         var names:Array = ["Any stadium","Farmstead","Brakmar","Beach","Bonta","Frigost","Kara","Forest","Ballotin","Pixel"];
-         var stadiumLabel:TextField = serverText(serverPanel,"Any stadium",20,45,430);
-         serverAction(serverPanel,"Change stadium",560,45,180,function():void {
-            selected = (selected + 1) % (stadiums.length + 1);
-            stadiumLabel.text = selected == 0 ? "Any stadium" : names[int(stadiums[selected-1])];
-         });
-         serverAction(serverPanel,"Find opponent",20,85,160,function():void {
-            serverClosePanel(); serverSend({operation:"queue_join",club_id:selectedClub,stadiums:selected == 0 ? stadiums : [stadiums[selected-1]]});
-         });
-         serverAction(serverPanel,"CPU matchmaking",200,85,140,function():void {
-            serverClosePanel(); serverSend({operation:"cpu_match",club_id:selectedClub,stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
-         });
-         serverAction(serverPanel,"Cancel search",360,85,170,function():void { serverSend({operation:"queue_leave"}); });
-         if(@TOURNAMENT_ENABLED@) serverAction(serverPanel,"Find tournament",20,200,220,function():void {
-            serverClosePanel(); serverSend({operation:"tournament_match",club_id:selectedClub});
-         });
-         serverAction(serverPanel,"Community",550,200,180,function():void { serverCommunityPanel("Friends"); });
-         serverText(serverPanel,"Challenge a player by nickname",20,130,500);
-         var guest:TextField = serverInput(serverPanel,"",20,160,490);
-         serverAction(serverPanel,"Challenge",540,160,180,function():void {
-            serverClosePanel(); serverSend({operation:"challenge",club_id:selectedClub,nickname:guest.text,stadium:selected == 0 ? stadiums[0] : stadiums[selected-1]});
-         });
+         if(serverCurrentMatch == null) return false;
+         startServer(serverBase.replace(/\/api\/$/,""),null,true);
+         return true;
+      }
+
+      public static function serverMatchPageInfo() : Object
+      {
+         var clubs:Array=[];
+         for(var key:String in serverNames) clubs.push({id:key,name:String(serverNames[key])});
+         clubs.sortOn("id",Array.NUMERIC);
+         return {clubs:clubs,club_id:serverClubId,club:ClubModel(app.contextInjector.getInstance(ClubModel)).clubInformation,waiting:serverQueueWaiting,
+            stadiums:@ENABLED_STADIUMS@,tournament:@TOURNAMENT_ENABLED@};
+      }
+
+      public static function serverMatchPageButton(parent:Sprite, label:String, x:int, y:int, width:int, callback:Function) : Sprite
+      {
+         return serverAction(parent,label,x,y,width,callback);
+      }
+
+      public static function serverMatchPageCommunity() : void
+      {
+         serverCommunityPanel("Friends");
+      }
+
+      public static function serverMatchPageRequest(operation:String, club:String, stadium:int=0, nickname:String="") : Boolean
+      {
+         if(!serverActive || serverSession == null) { serverStatus("Connect to a server first",true);return false; }
+         if(serverResumeActiveMatch()) return false;
+         if(operation == "queue_leave") { serverSend({operation:operation});return true; }
+         if(serverNames[club] == null) { serverStatus("Choisissez une équipe disponible.",true);return false; }
+         if(operation == "select_club") { serverSend({operation:operation,club_id:club});return true; }
+         var enabled:Array=@ENABLED_STADIUMS@;
+         if(stadium != 0 && enabled.indexOf(stadium) < 0) { serverStatus("Ce stade n’est pas disponible.",true);return false; }
+         var request:Object={operation:operation,club_id:club};
+         if(operation == "queue_join") request.stadiums=stadium == 0 ? enabled : [stadium];
+         else if(operation == "cpu_match" || operation == "challenge")
+         {
+            request.stadium=stadium == 0 ? enabled[int(Math.random()*enabled.length)] : stadium;
+            if(operation == "challenge")
+            {
+               nickname=nickname.replace(/^\s+|\s+$/g,"");
+               if(nickname.length == 0) { serverStatus("Indiquez le pseudo du joueur à défier.",true);return false; }
+               request.nickname=nickname;
+            }
+         }
+         else if(operation != "tournament_match" || !@TOURNAMENT_ENABLED@) return false;
+         serverSend(request);
+         return true;
       }
 
       private static function serverClosePanel() : void
