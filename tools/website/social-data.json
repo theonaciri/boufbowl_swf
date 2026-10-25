@@ -1,0 +1,68 @@
+{
+  "index.html": {
+    "title": "Préserver. Restaurer. Rejouer.",
+    "label": "LA RESTAURATION PAR DES FANS",
+    "image": "assets/site/game-resolution.webp",
+    "alt": "Scène 3D du Boufbowl original — projet de restauration par des fans"
+  },
+  "regles.html": {
+    "title": "Comprendre les règles du Boufbowl",
+    "label": "PLANIFIER, PUIS RÉSOUDRE ENSEMBLE",
+    "image": "assets/site/game-orders.webp",
+    "alt": "Grille tactique et ordres du Boufbowl original — les règles du jeu"
+  },
+  "ladder.html": {
+    "title": "Le classement des joueurs",
+    "label": "CLUBS, COTES ET RÉSULTATS",
+    "image": "assets/site/game-club.png",
+    "alt": "Interface de club du Boufbowl original — classement des joueurs"
+  },
+  "legal.html": {
+    "title": "Le cadre du projet",
+    "label": "INFORMATIONS JURIDIQUES",
+    "image": "assets/site/game-goultard.webp",
+    "alt": "Personnage du Boufbowl original — informations juridiques du projet de fans"
+  },
+  "confidentialite.html": {
+    "title": "Vos données personnelles",
+    "label": "CONFIDENTIALITÉ",
+    "image": "assets/site/game-customization.png",
+    "alt": "Personnalisation d’un joueur du Boufbowl original — confidentialité"
+  },
+  "conditions-utilisation.html": {
+    "title": "Les conditions d’utilisation",
+    "label": "ACCÈS ET UTILISATION DU SERVICE",
+    "image": "assets/site/game-legends.webp",
+    "alt": "Personnages du Boufbowl original — conditions d’utilisation"
+  },
+  "mentions-legales.html": {
+    "title": "Les mentions légales",
+    "label": "LE SITE ET SES RESPONSABLES",
+    "image": "assets/site/goultard-original.webp",
+    "alt": "Illustration originale de Goultard — mentions légales du projet de fans"
+  },
+  "cookies.html": {
+    "title": "Cookies et stockage local",
+    "label": "COMPRENDRE LE STOCKAGE DU SITE",
+    "image": "assets/site/restoration/editor-reference.webp",
+    "alt": "Interface originale du Boufbowl — information sur les cookies et le stockage"
+  },
+  "charte-communaute.html": {
+    "title": "La charte de la communauté",
+    "label": "ÉCHANGES ET RESPECT ENTRE JOUEURS",
+    "image": "assets/site/restoration/cra-1-default.webp",
+    "alt": "Illustration de classe du Boufbowl original — charte de la communauté"
+  },
+  "reglement-tournois.html": {
+    "title": "Le règlement des tournois",
+    "label": "PARTICIPER AUX COMPÉTITIONS",
+    "image": "assets/site/restoration/iop-1-default.webp",
+    "alt": "Illustration de classe du Boufbowl original — règlement des tournois"
+  },
+  "play.html": {
+    "title": "Essayer le client Web",
+    "label": "VERSION EXPÉRIMENTALE · RUFFLE",
+    "image": "assets/site/game-team.png",
+    "alt": "Composition d’équipe du Boufbowl original — client Web expérimental"
+  }
+}

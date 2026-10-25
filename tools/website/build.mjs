@@ -7,9 +7,10 @@ import { legalPages } from "./legal.mjs";
 import { releaseManifest } from "./updates.mjs";
 import { rulesPage } from "./rules.mjs";
 import { responsiveImages } from "./responsive-images.mjs";
+import { socialCards, socialMetadata } from "./social-cards.mjs";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const PAGES = ["index.html", "ladder.html", "play.html", "browser.html", "admin.html", "website-activity.html", "moderation.html", "tournaments.html", "assets-admin.html"];
+export const PAGES = ["index.html", "ladder.html", "play.html", "browser.html", "admin.html", "website-activity.html", "moderation.html", "tournaments.html", "assets-admin.html"];
 const DOWNLOADS = {
   android: ["android/build/Boufbowl Fan.apk", "downloads/Boufbowl Fan.apk"],
   desktop: ["linux/build/Boufbowl Fan.run", "downloads/Boufbowl Fan.run"],
@@ -147,7 +148,14 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       const filename = await downloadFile(root, source);
       if (filename) await record(name, await fs.readFile(filename));
     }
-    const media = [...files].filter(([name]) => /^(assets|vendor|bin)\//.test(name) && !name.endsWith(".json"));
+    const pages = new Map(await Promise.all(PAGES.map(async (name) => [name, await fs.readFile(path.join(root, name), "utf8")])));
+    for (const [name, html] of Object.entries(await legalPages(root))) pages.set(name, html);
+    pages.set("regles.html", await rulesPage(root));
+    // Keep bookmarks working when the output is served by a generic static host.
+    for (const legacy of ["website-tracking.html", "website-analytics.html"]) pages.set(legacy, '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=website-activity.html"><link rel="canonical" href="website-activity.html"><title>Website activity</title></head><body><a href="website-activity.html">Open website activity</a></body></html>');
+    const cards = await socialCards(root, pages);
+    for (const card of cards.values()) await record(card.path, await fs.readFile(card.filename));
+    const media = [...files].filter(([name]) => /^(assets|vendor|bin)\//.test(name) && !name.endsWith(".json") && !name.startsWith("assets/site/social/"));
     const revision = digest(JSON.stringify(media.sort(([a], [b]) => a.localeCompare(b)).map(([name, entry]) => [name, entry.sha256]))).slice(0, 16);
     const version = (url) => {
       if (/^\/?(?:assets|vendor|bin)\//.test(url) && !files.has(url.split("?")[0].replace(/^\//, ""))) {
@@ -156,11 +164,6 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       return versionUrl(url, revision);
     };
     const manifest = await siteManifest(root, files);
-    const pages = new Map(await Promise.all(PAGES.map(async (name) => [name, await fs.readFile(path.join(root, name), "utf8")])));
-    for (const [name, html] of Object.entries(await legalPages(root))) pages.set(name, html);
-    pages.set("regles.html", await rulesPage(root));
-    // Keep bookmarks working when the output is served by a generic static host.
-    for (const legacy of ["website-tracking.html", "website-analytics.html"]) pages.set(legacy, '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=website-activity.html"><link rel="canonical" href="website-activity.html"><title>Website activity</title></head><body><a href="website-activity.html">Open website activity</a></body></html>');
     const scripts = new Map();
     const buildScript = async (source, module) => {
       const key = `${source}:${module}`;
@@ -183,7 +186,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
     };
     const sitemapUrls = new Set();
     for (const [name, source] of pages) {
-      let html = pageMetadata(source, name, origin);
+      let html = socialMetadata(pageMetadata(source, name, origin), name, origin, cards.get(name));
       html = await new HTMLRewriter().on("[data-source-only]", {
         element(element) { element.remove(); },
       }).transform(new Response(html)).text();

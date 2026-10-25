@@ -1864,3 +1864,14 @@ body:has(.carousel-stage.is-expanded) {
     display: none;
   }
 }
+
+/* Project context and restoration status stay readable alongside the archives. */
+.restoration-improvements { margin: 32px auto; max-width: 1000px; }
+.restoration-improvements h2 { font-size: clamp(25px, 4vw, 36px); margin-bottom: 14px; }
+.restoration-improvements ul { padding-left: 1.3em; line-height: 1.65; }
+.restoration-improvements li + li { margin-top: .6em; }
+.restoration-improvements p, .project-interest > p { line-height: 1.7; max-width: 800px; }
+.project-interest { background: #e8ede5; }
+.project-interest h2 { margin: 22px 0; }
+.share-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-top: 25px; }
+.share-actions [hidden] { display: none; }

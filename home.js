@@ -17,6 +17,23 @@ import { assetUrl } from "./tools/website/asset-url.js";
     sizeCoverImage(image);
     coverObserver.observe(image);
   }
+  const shareButton = $("share-project");
+  const shareUrl = document.querySelector('link[rel="canonical"]').href;
+  $("share-email").href = `mailto:?subject=${encodeURIComponent("Boufbowl Fan — un projet de restauration")}&body=${encodeURIComponent(shareUrl)}`;
+  if (navigator.share || navigator.clipboard?.writeText) {
+    shareButton.hidden = false;
+    shareButton.addEventListener("click", async () => {
+      try {
+        if (navigator.share) await navigator.share({ title: document.title, url: shareUrl });
+        else {
+          await navigator.clipboard.writeText(shareUrl);
+          $("share-status").textContent = "Lien du projet copié.";
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") $("share-status").textContent = "Vous pouvez partager le lien de cette page ou utiliser le lien e-mail.";
+      }
+    });
+  }
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   if (!reducedMotion.matches)
     document.documentElement.classList.add("js-motion");
@@ -469,19 +486,19 @@ import { assetUrl } from "./tools/website/asset-url.js";
       src: "assets/site/game-team.png",
       alt: "Capture réelle de la composition de l’équipe dans Boufbowl",
       description:
-        "Dix joueurs. Un collectif. Quelques ego à faire rentrer dans le vestiaire.",
+        "Composez votre effectif de dix joueurs et choisissez les cinq qui entreront sur le terrain.",
     },
     customization: {
       src: "assets/site/game-customization.png",
       alt: "Capture réelle de la personnalisation d’un Crâ et de sa tenue",
       description:
-        "Des couleurs, un nom, des capacités. Le mauvais goût est une option gratuite.",
+        "Choisissez l’apparence, le nom et les caractéristiques de vos Boufbowlers.",
     },
     club: {
       src: "assets/site/game-club.png",
       alt: "Capture réelle de l’éditeur du club avec équipe, blason et palette",
       description:
-        "Un blason, des couleurs et une identité. Maintenant, il va falloir l’assumer.",
+        "Personnalisez le blason et les couleurs de votre club.",
     },
   };
   const tabs = [...document.querySelectorAll("[data-screen]")];
