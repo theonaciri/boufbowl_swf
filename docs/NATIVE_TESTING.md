@@ -159,13 +159,17 @@ do not validate later code. Results: [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Power description tooltips
 
-The team-panel power icon opens the existing description on click/tap. Click
-again or press elsewhere to dismiss; changing its description or removing the
-icon also dismisses it. Hover keeps its original 300ms delay. Power activation is
-unchanged. Shared sources: `OrderSpellTooltipHandler.as`, `TooltipFrameMediator.as`.
+Standard game tooltips open on click/tap: power icons, element gauges, health,
+regeneration, character/role information, tournament rewards and controls using
+`setTooltip`. Click again or press elsewhere to dismiss. Hover keeps its 300ms
+delay. Changed content, disabled controls and removed owners dismiss stale text.
 
-A disposable compiled Ruffle probe passed 14 event-level checks: tap without hover,
-post-tap rollout, toggle, hover interference, another icon, outside press, content
-change, removal, empty/disabled icons, delayed hover, hover dismissal and pending
-hover cancellation. This checks AS3 event sequences; native Android touch delivery
-still requires an installed APK check.
+`BaseComponent.as` runs ordinary click actions first without cancelling them;
+removed/disabled sources do not open orphan tooltips. Nested controls select the
+deepest tooltip owner. Inline graphics use the same factories as hover.
+`TooltipFrameMediator.as` owns the pinned state; there is no power-only override.
+
+A disposable compiled Ruffle probe passed 25 event-level checks, including power
+regressions, generic information, nested targets, graphics, repeated assignment,
+button actions and lifecycle cleanup. Real Ruffle clicks were also checked.
+Native Android touch delivery still requires an installed APK check.

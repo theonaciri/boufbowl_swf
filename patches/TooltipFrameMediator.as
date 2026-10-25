@@ -1,7 +1,7 @@
 package com.ankamagames.boufbowl.client.application.tooltip
 {
    import com.adobe.errors.IllegalStateError;
-   import com.ankamagames.boufbowl.ui.components.teampanel.OrderSpellTooltipHandler;
+   import com.ankamagames.xgaming.ui.components.BaseComponent;
    import flash.display.DisplayObject;
    import flash.display.DisplayObjectContainer;
    import flash.geom.Rectangle;
@@ -75,7 +75,7 @@ package com.ankamagames.boufbowl.client.application.tooltip
       
       private function showTooltip(param1:ShowTooltipEvent) : void
       {
-         var icon:OrderSpellTooltipHandler = param1.displayObject as OrderSpellTooltipHandler;
+         var icon:BaseComponent = param1.displayObject as BaseComponent;
          var tapped:Boolean = icon != null && icon.tapTooltipRequested;
          if(this._pinned && !tapped) return;
          var toggleOff:Boolean = tapped && this._pinned && this._lastEvent != null &&
@@ -85,7 +85,7 @@ package com.ankamagames.boufbowl.client.application.tooltip
          this._lastEvent = param1;
          this._pinned = tapped;
          this._lastEvent.displayObject.addEventListener(Event.REMOVED_FROM_STAGE, this.sourceRemoved, false, 0, true);
-         this._lastEvent.displayObject.addEventListener(OrderSpellTooltipHandler.TOOLTIP_CONTENT_CHANGED, this.sourceRemoved, false, 0, true);
+         this._lastEvent.displayObject.addEventListener(BaseComponent.TOOLTIP_CONTENT_CHANGED, this.sourceRemoved, false, 0, true);
          if(tapped)
          {
             this.timerComplete(null);
@@ -144,7 +144,7 @@ package com.ankamagames.boufbowl.client.application.tooltip
          if(this._lastEvent != null)
          {
             this._lastEvent.displayObject.removeEventListener(Event.REMOVED_FROM_STAGE, this.sourceRemoved);
-            this._lastEvent.displayObject.removeEventListener(OrderSpellTooltipHandler.TOOLTIP_CONTENT_CHANGED, this.sourceRemoved);
+            this._lastEvent.displayObject.removeEventListener(BaseComponent.TOOLTIP_CONTENT_CHANGED, this.sourceRemoved);
             if(this._lastEvent.displayObject.hasEventListener(MouseEvent.ROLL_OUT))
             {
                this._lastEvent.displayObject.removeEventListener(MouseEvent.ROLL_OUT,this.rollOut);
