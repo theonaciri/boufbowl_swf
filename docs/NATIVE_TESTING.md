@@ -156,3 +156,16 @@ Use `game_frames` and process CPU/RSS (100% = one CPU). Match seeds/rosters/orde
 and result hashes; warm up and bracket recording ON with OFF runs. Frame-event,
 video and GPU FPS differ. Keep session-bearing logs/DBs private. Earlier videos
 do not validate later code. Results: [PERFORMANCE.md](PERFORMANCE.md).
+
+## Power description tooltips
+
+The team-panel power icon opens the existing description on click/tap. Click
+again or press elsewhere to dismiss; changing its description or removing the
+icon also dismisses it. Hover keeps its original 300ms delay. Power activation is
+unchanged. Shared sources: `OrderSpellTooltipHandler.as`, `TooltipFrameMediator.as`.
+
+A disposable compiled Ruffle probe passed 14 event-level checks: tap without hover,
+post-tap rollout, toggle, hover interference, another icon, outside press, content
+change, removal, empty/disabled icons, delayed hover, hover dismissal and pending
+hover cancellation. This checks AS3 event sequences; native Android touch delivery
+still requires an installed APK check.

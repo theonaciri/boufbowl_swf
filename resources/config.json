@@ -16,8 +16,8 @@
   "chrono": {
     "enabled": "true",
     "placementDuration": "60",
-    "firstTurnDuration": "60",
-    "turnDuration": "60"
+    "firstTurnDuration": "100",
+    "turnDuration": "100"
   },
   "3dActivated": "false",
   "optionsVisibility": [
