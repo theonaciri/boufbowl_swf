@@ -120,7 +120,7 @@
       "turns_per_period": 12,
       "class_ability_uses": 1,
       "placement_seconds": 60,
-      "planning_seconds": 60,
+      "planning_seconds": 100,
       "max_players_per_role": 3,
       "regenerate_between_turns": true,
       "restart_recovery": "reserves",

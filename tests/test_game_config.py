@@ -29,7 +29,7 @@ class GameConfigTests(unittest.TestCase):
         kara = resolve_stadium(config, "KARA")
         self.assertEqual(kara["match"]["turns_per_match"], 14)
         self.assertEqual(kara["match"]["class_ability_uses"], 2)
-        self.assertEqual(kara["match"]["planning_seconds"], 60)
+        self.assertEqual(kara["match"]["planning_seconds"], 100)
         kara["simulation"]["ball"]["base_range"] = 100
         self.assertEqual(resolve_stadium(config, "BONTA")["simulation"]["ball"]["base_range"], 7)
 
