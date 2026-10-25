@@ -12,6 +12,8 @@ import tempfile
 from tools.build_parallel import build_budget, cpu_job, cpu_run, parallel
 from tools.package_cache import Inputs, Receipt, digest, runtime_identity
 from tools.player_server import player_server
+from tools.release_version import release, record_artifact
+from tools.update_launcher import build_updaters
 from tools.player_branding import build_icons
 from tools.player_assets import website_stadium_preview
 from tools.build_tools import BuildError, ffdec_jar, java_binary
@@ -101,6 +103,7 @@ def windows_executable(archive, makensis=None):
                         '-DPAYLOAD_DIR=' + str((stage/'Boufbowl').resolve()),
                         '-DBUNDLE_REVISION=' + revision,
                         '-DAPP_ICON=' + str((icons/'icon.ico').resolve()),
+                        '-DAPP_VERSION=' + release(ROOT)['version'],
                         '-DOUTPUT_FILE=' + str(temporary.resolve()),
                         str(ROOT/'tools/players/windows.nsi')], check=True, timeout=600)
     temporary.replace(output)
@@ -128,6 +131,11 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
     if not selected or any(platform not in ('windows', 'linux') for platform in selected):
         raise ValueError('Select at least one desktop platform: windows or linux')
     server_url = player_server(root, server_url)
+    version = release(root)
+    settings_path=root/'resources/site.json'
+    settings=json.loads(settings_path.read_text()) if settings_path.is_file() else {}
+    update_origin=player_server(root,settings.get('site_url') or server_url)
+    updaters = build_updaters(root, selected)
     icons = build_icons(root, root/'.local/player-icons')
     player = (root / 'bin/flashplayer_32_sa.exe').read_bytes()
     bundled_files = []
@@ -157,6 +165,7 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
     common = {'files': {name: inputs.file(path) for name, path in bundled_files},
               'player': inputs.file(root/'bin/flashplayer_32_sa.exe'),
               'readme': hashlib.sha256(readme).hexdigest(), 'server_url': server_url,
+              'release': version, 'updater_recipe': inputs.file(Path(__file__).with_name('update_launcher.py')),
               'recipe': inputs.file(Path(__file__)), 'launcher': windows_launcher(), 'runtime': runtime_identity()}
     def package(platform):
         receipt = Receipt(root, 'package-'+platform)
@@ -170,7 +179,7 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
         extension = '.zip' if platform == 'windows' else '.tar.gz'
         output = folder/('Boufbowl Fan'+extension)
         executable = folder/('Boufbowl Fan.exe' if platform == 'windows' else 'Boufbowl Fan.run')
-        identity = {'common': common, 'platform': platform, 'client': inputs.file(client)}
+        identity = {'common': common, 'platform': platform, 'client': inputs.file(client), 'updater': inputs.file(updaters[platform])}
         if platform == 'windows':
             compiler = makensis or shutil.which('makensis')
             if not compiler:
@@ -183,17 +192,19 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
         else:
             identity['template'] = inputs.file(ROOT/'tools/players/linux.run.sh')
         fingerprint = digest(identity)
-        if receipt.current(fingerprint, [output, executable]):
+        if receipt.current(fingerprint, [output, executable, executable.with_suffix(executable.suffix+'.release.json')]):
             print('Reusing '+platform+' package: '+executable.name, flush=True)
             return executable
         print('Packaging '+platform, flush=True)
         if platform == 'windows':
             output = folder / 'Boufbowl Fan.zip'
-            launchers = {'Jouer.cmd': windows_launcher()}
+            launchers = {'Jouer-game.cmd': windows_launcher(), 'Jouer.cmd': '@echo off\r\n"%~dp0BoufbowlUpdater.exe"\r\n'}
             with cpu_job(), zipfile.ZipFile(output.with_suffix('.building'), 'w', zipfile.ZIP_DEFLATED) as archive:
                 for name, content in {'flashplayer.exe': player, **{name: launcher.encode('ascii') for name, launcher in launchers.items()},
                                       'LIRE-MOI.txt': readme}.items():
                     archive.writestr('Boufbowl/' + name, content)
+                archive.write(updaters[platform], 'Boufbowl/BoufbowlUpdater.exe')
+                archive.writestr('Boufbowl/update-client.json',json.dumps({'version':version['version'],'manifest':update_origin+'/updates.json','platform':platform}))
                 archive.write(client, 'Boufbowl/bin/boufbowl-client-1.9.6.swf')
                 for name, path in bundled_files:
                     archive.write(path, name)
@@ -203,17 +214,20 @@ def build(root, server_url=None, ffdec=None, java=None, makensis=None, platforms
             launcher += 'if ! command -v wine >/dev/null 2>&1; then\n  echo "Installez Wine avec la prise en charge 32 bits pour jouer." >&2\n  exit 1\nfi\n'
             launcher += 'exec wine cmd /d /c Jouer.cmd\n'
             with cpu_job(), tarfile.open(output.with_suffix('.building'), 'w:gz') as archive:
-                for name, content in {'flashplayer.exe': player, 'Jouer.cmd': windows_launcher().encode('ascii'), 'jouer.sh': launcher.encode(), 'LIRE-MOI.txt': readme}.items():
+                for name, content in {'flashplayer.exe': player, 'Jouer-game.cmd': windows_launcher().encode('ascii'), 'jouer-game.sh': launcher.replace('Jouer.cmd','Jouer-game.cmd').encode(), 'jouer.sh': b'#!/bin/sh\ncd -- "$(dirname -- "$0")"\nexec ./BoufbowlUpdater\n', 'update-client.json': json.dumps({'version':version['version'],'manifest':update_origin+'/updates.json','platform':platform}).encode(), 'LIRE-MOI.txt': readme}.items():
                     info = tarfile.TarInfo('Boufbowl/' + name)
                     info.size = len(content)
                     info.mode = 0o755 if name.endswith(('.sh', '.exe')) else 0o644
                     archive.addfile(info, BytesIO(content))
+                info=tarfile.TarInfo('Boufbowl/BoufbowlUpdater');info.size=updaters[platform].stat().st_size;info.mode=0o755
+                with updaters[platform].open('rb') as updater:archive.addfile(info,updater)
                 archive.add(client, 'Boufbowl/bin/boufbowl-client-1.9.6.swf')
                 for name, path in bundled_files:
                     archive.add(path, name)
         output.with_suffix('.building').replace(output)
         executable = windows_executable(output, makensis) if platform == 'windows' else linux_executable(output)
-        receipt.save(fingerprint, [output, executable])
+        record_artifact(executable,root)
+        receipt.save(fingerprint, [output, executable, executable.with_suffix(executable.suffix+'.release.json')])
         return executable
     outputs = dict(parallel(lambda platform: (platform, package(platform)), selected))
     return [outputs[platform] for platform in selected]

@@ -7,9 +7,15 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def inject_server(source, config, android=False, server_url=None):
-    imports = "   import flash.net.SharedObject;\n   import flash.net.URLRequestMethod;\n"
+    imports = "   import flash.net.navigateToURL;\n   import flash.net.SharedObject;\n   import flash.net.URLRequestMethod;\n"
     source = source.replace("   public class StartUpApplicationCommand", imports + "\n   public class StartUpApplicationCommand", 1)
     helper = (ROOT / "patches/ServerSupport.as.inc").read_text() + "\n" + (ROOT / "patches/ServerTracking.as.inc").read_text() + "\n" + (ROOT / "patches/FrontendFeatures.as.inc").read_text()
+    from tools.release_version import release
+    from urllib.parse import urlsplit
+    origin=json.loads((ROOT/'resources/site.json').read_text())['site_url'].rstrip('/')
+    parsed=urlsplit(origin)
+    if parsed.scheme!='https' or not parsed.netloc or parsed.path or parsed.query or parsed.fragment or parsed.username:raise ValueError('Updates require an HTTPS site origin')
+    helper += "\n"+(ROOT/'patches/ClientUpdates.as.inc').read_text().replace('@RELEASE_VERSION@',json.dumps(release(ROOT)['version'])).replace('@UPDATE_ORIGIN@',json.dumps(origin)).replace('@ANDROID_UPDATE@',str(android).lower())
     helper = helper.replace("@CLIENT_PLATFORM@", json.dumps("android" if android else "unknown"))
     helper = helper.replace("@CLIENT_RUNTIME@", json.dumps("air" if android else "flash"))
     helper=helper.replace("@LOCAL_UI@",json.dumps(json.loads((ROOT/'resources/local_ui.json').read_text()),ensure_ascii=True))
@@ -51,6 +57,7 @@ def inject_server(source, config, android=False, server_url=None):
          serverLivePlayersLabel.border=true;serverLivePlayersLabel.borderColor=0xb4a570;
          Stage(app.contextInjector.getInstance(Stage)).addChild(toolbar);
          serverLayoutToolbar();
+         checkClientUpdate();
          Stage(app.contextInjector.getInstance(Stage)).addEventListener(Event.RESIZE,function(event:Event):void { serverLayoutToolbar(); });
       }
 

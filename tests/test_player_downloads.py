@@ -7,8 +7,20 @@ import zipfile
 import shlex
 import json
 from tools.player_server import player_server
-from tools.build_player_downloads import build
+from tools.build_player_downloads import build as original_build
 from unittest.mock import patch
+
+
+def build(root,*args,**kwargs):
+    (root/'resources').mkdir(exist_ok=True)
+    (root/'resources/release.json').write_text(json.dumps({'version':'0.1.0','android_build':1000001}))
+    def updaters(root,platforms):
+        result={}
+        for platform in platforms:
+            file=root/('updater-'+platform);file.write_bytes(b'updater');file.chmod(0o755);result[platform]=file
+        return result
+    with patch('tools.build_player_downloads.build_updaters',side_effect=updaters):
+        return original_build(root,*args,**kwargs)
 
 
 def fake_executable(archive, *args):
@@ -44,16 +56,16 @@ class PlayerDownloadsTests(unittest.TestCase):
             with patch('tools.build_player_downloads.build_icons', return_value=root/'icons'):
                 windows, linux = build(root, makensis=root/'makensis')
             with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
-                launcher = archive.read('Boufbowl/Jouer.cmd').decode()
+                launcher = archive.read('Boufbowl/Jouer-game.cmd').decode()
                 self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
                 self.assertNotIn('https://', launcher)
                 self.assertEqual(archive.read('Boufbowl/bin/boufbowl-client-1.9.6.swf'), b'client')
-                self.assertEqual({name for name in archive.namelist() if name.lower().endswith('.cmd')}, {'Boufbowl/Jouer.cmd'})
+                self.assertEqual({name for name in archive.namelist() if name.lower().endswith('.cmd')}, {'Boufbowl/Jouer.cmd','Boufbowl/Jouer-game.cmd'})
                 self.assertEqual(archive.read('Boufbowl/assets/sounds/kick.mp3'), b'audio')
                 self.assertEqual(archive.read('Boufbowl/resources/config.json'), b'{}')
                 self.assertNotIn('Boufbowl/assets/site/home.webp', archive.namelist())
             with tarfile.open(linux.with_suffix('.tar.gz')) as archive:
-                self.assertIn('exec wine cmd /d /c Jouer.cmd', archive.extractfile('Boufbowl/jouer.sh').read().decode())
+                self.assertIn('exec wine cmd /d /c Jouer-game.cmd', archive.extractfile('Boufbowl/jouer-game.sh').read().decode())
                 self.assertEqual(archive.extractfile('Boufbowl/bin/boufbowl-client-1.9.6.swf').read(), b'client')
                 self.assertEqual(archive.extractfile('Boufbowl/assets/sounds/kick.mp3').read(), b'audio')
                 self.assertEqual(archive.extractfile('Boufbowl/resources/config.json').read(), b'{}')
@@ -85,19 +97,19 @@ class PlayerDownloadsTests(unittest.TestCase):
                 (root/'assets/change.bin').unlink()
                 build(root, 'https://game.example', makensis=root/'makensis')
             with zipfile.ZipFile(windows.with_suffix('.zip')) as archive:
-                self.assertEqual(set(archive.namelist()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
-                launcher = archive.read('Boufbowl/Jouer.cmd').decode()
+                self.assertEqual(set(archive.namelist()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd','Boufbowl/Jouer-game.cmd','Boufbowl/BoufbowlUpdater.exe','Boufbowl/update-client.json','Boufbowl/resources/release.json', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
+                launcher = archive.read('Boufbowl/Jouer-game.cmd').decode()
                 self.assertIn('bin\\boufbowl-client-1.9.6.swf', launcher)
                 self.assertIn('FlashPlayerTrust', launcher)
                 self.assertNotIn('https://', launcher)
                 self.assertNotIn('wine', launcher)
                 self.assertNotIn('python', launcher)
             with tarfile.open(linux.with_suffix('.tar.gz')) as archive:
-                self.assertEqual(set(archive.getnames()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe', 'Boufbowl/Jouer.cmd', 'Boufbowl/jouer.sh', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
+                self.assertEqual(set(archive.getnames()), {'Boufbowl/icon.png', 'Boufbowl/flashplayer.exe','Boufbowl/Jouer-game.cmd','Boufbowl/BoufbowlUpdater','Boufbowl/update-client.json','Boufbowl/resources/release.json', 'Boufbowl/jouer.sh','Boufbowl/jouer-game.sh', 'Boufbowl/LIRE-MOI.txt', 'Boufbowl/bin/boufbowl-client-1.9.6.swf'})
                 launcher = archive.extractfile('Boufbowl/jouer.sh').read().decode()
                 command = shlex.split(launcher.splitlines()[-1])
-                self.assertEqual(command, ['exec', 'wine', 'cmd', '/d', '/c', 'Jouer.cmd'])
-                self.assertIn('FlashPlayerTrust', archive.extractfile('Boufbowl/Jouer.cmd').read().decode())
+                self.assertEqual(command, ['exec', './BoufbowlUpdater'])
+                self.assertIn('FlashPlayerTrust', archive.extractfile('Boufbowl/Jouer-game.cmd').read().decode())
                 self.assertNotIn('python', launcher)
                 self.assertEqual(archive.getmember('Boufbowl/jouer.sh').mode, 0o755)
             for url in ('http://game.example', 'https://user:pass@game.example', 'https://game.example?query=1'):

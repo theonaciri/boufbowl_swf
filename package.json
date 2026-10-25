@@ -9,6 +9,8 @@
     "build:game": "bun tools/build.mjs --game-only",
     "serve:website": "bun tools/website/serve.mjs",
     "build:players": "bun tools/build-players.mjs",
-    "release": "bun tools/build-players.mjs --website-media"
+    "release": "bun tools/updates/keys.mjs && bun tools/build-players.mjs --website-media",
+    "version:bump": "python3 -m tools.release_version",
+    "updates:key": "bun tools/updates/keys.mjs"
   }
 }

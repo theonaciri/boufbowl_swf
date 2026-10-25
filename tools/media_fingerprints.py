@@ -26,7 +26,7 @@ def logic_fingerprint(root, original=None, config=None):
     for pattern in ('patches/*.as', 'patches/*.inc', 'tools/*codegen.py',
                     'tools/game_config.py', 'tools/visual_assets.py',
                     'tools/media_fingerprints.py', 'tools/client_patches.py', 'patches/rebuild.py',
-                    'resources/local_ui.json', 'resources/cosmetic_catalog.json'):
+                    'resources/local_ui.json', 'resources/cosmetic_catalog.json', 'resources/release.json', 'resources/site.json'):
         paths.update(p for p in root.glob(pattern) if p.is_file())
     rows = {p.relative_to(root).as_posix(): file_hash(p) for p in sorted(paths)}
     rows['base'] = file_hash(original or root/'bin/base/boufbowl-client-1.9.6.swf')

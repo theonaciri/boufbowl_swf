@@ -2,10 +2,10 @@
 Unicode true
 Name "Boufbowl Fan"
 Icon "${APP_ICON}"
-VIProductVersion "1.0.0.0"
+VIProductVersion "${APP_VERSION}.0"
 VIAddVersionKey "ProductName" "Boufbowl Fan"
 VIAddVersionKey "FileDescription" "Boufbowl Fan"
-VIAddVersionKey "FileVersion" "1.0.0"
+VIAddVersionKey "FileVersion" "${APP_VERSION}"
 OutFile "${OUTPUT_FILE}"
 RequestExecutionLevel user
 SilentInstall silent
@@ -21,6 +21,8 @@ FunctionEnd
 Section
   IfFileExists "$INSTDIR\.complete" 0 unpack
   IfFileExists "$INSTDIR\flashplayer.exe" 0 unpack
+  IfFileExists "$INSTDIR\BoufbowlUpdater.exe" 0 unpack
+  IfFileExists "$INSTDIR\update-client.json" 0 unpack
   IfFileExists "$INSTDIR\bin\boufbowl-client-1.9.6.swf" launch unpack
 unpack:
   SetOutPath "$INSTDIR"
@@ -35,7 +37,7 @@ unpack:
 launch:
   SetOutPath "$INSTDIR"
   ; nsExec keeps the CMD helper hidden and waits until Flash closes.
-  nsExec::ExecToStack '"$SYSDIR\cmd.exe" /d /s /c ""$INSTDIR\Jouer.cmd""'
+  nsExec::ExecToStack '"$INSTDIR\BoufbowlUpdater.exe"'
   Pop $0
   Pop $1
   StrCmp $0 "0" done

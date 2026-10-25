@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { legalPages } from "./legal.mjs";
+import { releaseManifest } from "./updates.mjs";
 import { rulesPage } from "./rules.mjs";
 import { responsiveImages } from "./responsive-images.mjs";
 
@@ -167,7 +168,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       const build = await Bun.build({
         entrypoints: [path.join(root, source)], minify: true, target: "browser",
         format: module ? "esm" : "iife", naming: "js/[name].[hash].[ext]",
-        define: { __SITE_ASSET_VERSION__: JSON.stringify(revision) },
+        define: { __SITE_ASSET_VERSION__: JSON.stringify(revision), __CLIENT_VERSION__: JSON.stringify(JSON.parse(await fs.readFile(path.join(root,"resources/release.json"),"utf8")).version) },
       });
       if (!build.success) throw new AggregateError(build.logs, `Cannot bundle ${source}`);
       let entry;
@@ -265,6 +266,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       await record("resources/config.json", JSON.stringify(config, null, 2) + "\n");
     }
     await record("resources/site-manifest.json", JSON.stringify(manifest, null, 2) + "\n");
+    await record("updates.json", await releaseManifest(root,files,origin,revision));
     await record("crossdomain.xml", '<cross-domain-policy><allow-access-from domain="*" secure="false"/><allow-http-request-headers-from domain="*" headers="Content-Type" secure="false"/></cross-domain-policy>');
     const entries = Object.fromEntries([...files].sort(([a], [b]) => a.localeCompare(b)));
     const report = { version: 2, asset_revision: revision, files: entries, file_count: files.size, bytes: [...files.values()].reduce((total, entry) => total + entry.bytes, 0), downloads: manifest.downloads };

@@ -10,7 +10,7 @@ cache=${XDG_CACHE_HOME:-"$HOME/.cache"}/boufbowl/player
 revision='@REVISION@'
 target=$cache/$revision
 ready() {
-    [ -f "$target/.complete" ] && [ -f "$target/flashplayer.exe" ] && [ -f "$target/bin/boufbowl-client-1.9.6.swf" ]
+    [ -f "$target/.complete" ] && [ -x "$target/BoufbowlUpdater" ] && [ -f "$target/update-client.json" ] && [ -f "$target/flashplayer.exe" ] && [ -f "$target/bin/boufbowl-client-1.9.6.swf" ]
 }
 if ! ready; then
     mkdir -p -- "$cache"
@@ -47,7 +47,7 @@ applications=$data_dir/applications
 icons=$data_dir/icons/hicolor/256x256/apps
 if mkdir -p -- "$applications" "$icons"; then
     cp -- "$target/icon.png" "$icons/boufbowl-fan.png"
-    desktop_exec=$(printf '%s' "$target/jouer.sh" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g; s/\$/\\$/g; s/%/%%/g')
+    desktop_exec=$(printf '%s' "$target/BoufbowlUpdater" | sed 's/\\/\\\\/g; s/"/\\"/g; s/`/\\`/g; s/\$/\\$/g; s/%/%%/g')
     {
         printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Boufbowl Fan'
         printf 'Exec="%s"\n' "$desktop_exec"
@@ -55,6 +55,6 @@ if mkdir -p -- "$applications" "$icons"; then
     } > "$applications/boufbowl-fan.desktop"
 fi
 cd -- "$target"
-exec ./jouer.sh
+exec ./BoufbowlUpdater
 exit 1
 __BOUFBOWL_PAYLOAD__

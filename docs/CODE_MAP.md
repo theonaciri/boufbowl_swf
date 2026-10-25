@@ -30,6 +30,7 @@ Start at the relevant entry point; read dependencies only as needed.
 | Field markers | `BoufbowlerFieldRepresentationView.hasBall` / `ClassOrderIndicatorUI` → elapsed-time 25FPS timelines | possession: 960ms; power: 560ms; detach removes callbacks |
 | French game rules page | `regles.html` → `tools/website/rules.mjs` + `rules-data.json` → `game_config.json` / `rulebook.json` | website build; [website](WEBSITE.md) |
 | Character lookup | `SceneModel.getBoufbowler` → identity map / equivalent-ID cache | shared smoke; full 64-bit IDs and removal |
+| Client updates/version | `resources/release.json` → `tools/release_version.py`; `tools/updates/updater.go`, `ClientUpdates.as.inc`, `client-updates.js` → signed `updates.json` | [updates](UPDATES.md); signature/cache/package tests |
 | Downloads/publication | `tools/build_players.py` → platform packages → `tools/website/build.mjs` | `bun run check:site` + package inspection |
 | Public competitions | `index.html` → `home-tournaments.js` → `Tournaments.public_tournaments`; `ladder.html` → `home-ladder.js` → `Progression.public_ladder` | public tournament/ladder tests + `bun run check:site`; [website](WEBSITE.md) |
 

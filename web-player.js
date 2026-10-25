@@ -1,3 +1,4 @@
+import { watchWebUpdates } from "./client-updates.js";
 export const WEB_PRESETS = Object.freeze({
   balanced: Object.freeze({ fps: 30, quality: "medium" }),
   quality: Object.freeze({ fps: 60, quality: "high" }),
@@ -12,6 +13,7 @@ if (typeof document !== "undefined") (async () => {
   const status = document.getElementById("status");
   const game = document.getElementById("game");
   const fullscreenButton = document.getElementById("fullscreen");
+  watchWebUpdates({version: typeof __CLIENT_VERSION__ === "undefined" ? "0.0.0" : __CLIENT_VERSION__,container:document.body});
   const launchOptions = new URLSearchParams(location.search);
   const qualityChoice = document.getElementById("web-quality");
   let storedQuality;

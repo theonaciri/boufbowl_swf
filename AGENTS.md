@@ -60,3 +60,14 @@ bun run release                                    # Explicit full delivery buil
   `game_frames` plus CPU; frame-event FPS differs from video/GPU FPS. Check capture
   ON/OFF, actual Wine client dimensions (`SetWindowPos`, not X11 clipping), and
   decoded video frames. Use H.264 YUV420P. Details: `docs/PERFORMANCE.md`.
+
+## Release versions
+
+Bump `resources/release.json` **only when client or game-server code changes**;
+website copy/styles/social images, documentation and build-only edits do not need
+a game version bump. Before committing a client/server change, run
+`bun run version:bump patch` (fix), `minor` (feature), or `major` (incompatible
+change). Batch related edits before bumping. This also increments Android's
+internal build number; never reset it or replace the signing certificate.
+Public versions use MAJOR.MINOR.PATCH. Rebuild/publish clients when releasing;
+a source bump alone does not update installations. See [updates](docs/UPDATES.md).

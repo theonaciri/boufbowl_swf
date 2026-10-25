@@ -19,10 +19,12 @@ from tools.build_tools import BuildError, air_sdk, android_sdk, jdk_directory, f
 from tools.game_config import DEFAULT_CONFIG, apply_resources, flashvars_source, load_config, startup_source
 from tools.visual_assets import palette_item_source
 from tools.package_cache import Inputs, Receipt, digest, copy_changed, sync_tree, runtime_identity
+from tools.release_version import release, android_descriptor, record_artifact
 from tools.player_assets import website_stadium_preview
 from tools.player_server import player_server
 from tools.android_signing import signing_credentials
 from tools.player_branding import build_icons
+from tools.release_version import release, android_descriptor, record_artifact
 from tools.player_assets import ignore_website_stadium_previews
 
 
@@ -122,6 +124,7 @@ def build_locked(args, parser):
                 'patch_registry': inputs.file(root/'tools/client_patches.py'),
                 'runtime_codegen': inputs.file(root/'tools/client_runtime_codegen.py'),
                 'common_patches': {p.name: inputs.file(p) for p in sorted((root/'patches').iterdir()) if p.is_file()},
+                'release_recipe': inputs.file(root/'tools/release_version.py'),
                 'helpers': {name: inputs.file(root/('tools/'+name+'.py')) for name in tools},
                 'descriptor': inputs.file(android/'application.xml'), 'server_url': args.server_url,
                 'arch': args.arch, 'debug': args.debug, 'diagnostic': args.diagnostic,
@@ -133,7 +136,7 @@ def build_locked(args, parser):
                 'ffmpeg': inputs.tool(ffmpeg)}
     fingerprint = digest(identity)
     receipt = Receipt(root, 'package-android'+suffix)
-    if receipt.current(fingerprint, [output]):
+    if receipt.current(fingerprint, [output, output.with_suffix(output.suffix+'.release.json')]):
         print('Reusing Android package: '+output.name, flush=True)
         if not args.no_website:
             from tools.refresh_website import refresh_website
@@ -242,14 +245,17 @@ def build_locked(args, parser):
             packaged_client = debug_client
         copy_changed(packaged_client, stage/'bin'/swf_name)
 
+    descriptor=build/"application-release.xml"
+    descriptor.write_text(android_descriptor(root))
     temporary_output = output.with_name("." + output.stem + ".building.apk")
     run([java, "-Xmx2g", "-jar", adt, "-package", *runtime_options(debug=args.debug, diagnostic=args.diagnostic),
          "-arch", args.arch, "-storetype", "pkcs12", "-keystore", certificate,
-         "-storepass", password, temporary_output, android / "application.xml",
+         "-storepass", password, temporary_output, descriptor,
          "-C", stage, "bin/" + swf_name, "assets", "resources", "icons",
          "-platformsdk", args.android_sdk.resolve()], env=env)
     temporary_output.replace(output)
-    receipt.save(fingerprint, [output])
+    record_artifact(output,root)
+    receipt.save(fingerprint, [output, output.with_suffix(output.suffix+'.release.json')])
     print("Built", output, "— default server:", args.server_url, flush=True)
     if not args.no_website:
         from tools.refresh_website import refresh_website
