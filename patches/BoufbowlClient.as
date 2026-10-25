@@ -144,7 +144,7 @@ package com.ankamagames.boufbowl
          this._fpsLabel.mouseEnabled = false;
          this._fpsLabel.x = 8;
          this._fpsLabel.y = 8;
-         this._fpsLabel.text = "FPS: --";
+         this._fpsLabel.text = "FPS: -- / " + Math.round(stage.frameRate);
          stage.addChild(this._fpsLabel);
          this._fpsWindowStart = getTimer();
          addEventListener(Event.ENTER_FRAME,this.updateFpsCounter,false,0,true);
@@ -157,7 +157,8 @@ package com.ankamagames.boufbowl
          var elapsed:int = now - this._fpsWindowStart;
          if(elapsed >= 500)
          {
-            this._fpsLabel.text = "FPS: " + Math.round(this._fpsFrames * 1000 / elapsed);
+            this._fpsLabel.text = "FPS: " + Math.round(this._fpsFrames * 1000 / elapsed) +
+               " / " + Math.round(stage.frameRate);
             this._fpsFrames = 0;
             this._fpsWindowStart = now;
          }

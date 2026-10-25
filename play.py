@@ -4,7 +4,7 @@ import argparse
 import hashlib
 import json
 from functools import partial
-from http.server import SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
 from pathlib import Path
 import shutil
@@ -12,8 +12,6 @@ import subprocess
 import threading
 from urllib.parse import parse_qs, urlsplit
 from tools.game_config import load_config
-from backend.server import Handler as BackendHandler, BackendHTTPServer, default_database
-from backend.service import Service
 from backend.storage import ServiceError
 
 
@@ -24,16 +22,34 @@ def main():
     parser.add_argument("--mode", choices=("menus", "tutorial", "mock", "server"), default=config["general"]["startup_mode"])
     parser.add_argument("--server-url", help="Use a standalone backend URL instead of starting a local backend")
     parser.add_argument("--profile", help="Local device profile name (otherwise use the saved selection)")
-    parser.add_argument("--fps-experiment", type=float, metavar="FPS", help="Launch a generated experimental client, e.g. --fps-experiment 240")
+    fps_modes = parser.add_mutually_exclusive_group()
+    fps_modes.add_argument("--fps-experiment", type=float, metavar="FPS", help="Launch a generated experimental client, e.g. --fps-experiment 240")
+    fps_modes.add_argument("--fps-probe", type=float, metavar="FPS", help="Measure a blank Flash runtime at this target, without starting the game or backend")
     parser.add_argument("--show-fps", action="store_true", help="Show the live calculated FPS in the top-left corner")
-    parser.add_argument("--database", type=Path, default=default_database())
+    parser.add_argument("--database", type=Path)
     parser.add_argument("--fixture", type=Path, help="Replay a local protocol fixture in mock mode")
     parser.add_argument("--scene-3d", action="store_true", help="Enable the original resolution animation scene for this launch")
     args = parser.parse_args()
+    if args.fps_probe is None:
+        from backend.server import Handler as BackendHandler, BackendHTTPServer, default_database
+        from backend.service import Service
+        if args.database is None:
+            args.database = default_database()
+    else:
+        # The blank counter needs only static files, not website/backend inputs.
+        BackendHandler = SimpleHTTPRequestHandler
+        BackendHTTPServer = ThreadingHTTPServer
     language_override=args.lang is not None
     if args.lang is None: args.lang=config["general"]["language"]
     root = Path(__file__).resolve().parent
     client = root / "bin/boufbowl-client-1.9.6.swf"
+    if args.fps_probe is not None:
+        from tools.runtime_fps_probe import build_runtime_probe
+        try:
+            client, _ = build_runtime_probe(args.fps_probe,root)
+        except (OSError, RuntimeError, ValueError) as error:
+            parser.error(str(error))
+        args.mode = "menus"
     if args.fps_experiment is not None:
         if not 25 <= args.fps_experiment <= 1000:
             parser.error("--fps-experiment must be between 25 and 1000")
@@ -127,6 +143,8 @@ def main():
             url = f"http://127.0.0.1:{port}{client_url}?{urlencode(parameters)}"
             language_label=args.lang if language_override else "saved language or " + args.lang
             experiment_label = f", experimental {args.fps_experiment:g} FPS target" if args.fps_experiment else ""
+            if args.fps_probe is not None:
+                experiment_label = f", blank runtime probe at {args.fps_probe:g} FPS target"
             fps_label = ", live FPS counter" if args.show_fps else ""
             print(f"Starting Boufbowl {args.mode}{experiment_label}{fps_label} with {client.name} ({language_label}). Logs: {logs}", flush=True)
             try:

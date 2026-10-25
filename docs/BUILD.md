@@ -86,6 +86,8 @@ explains individual patches.
 `--lang fr`, `--profile Alice`, and `--show-fps`.
 The in-game FPS slider requests 25–240 FPS, including 3D scenes; scene changes
 retain that target. Native default: 60. Runtime/display limits still apply.
+`--show-fps` displays measured / requested FPS. To isolate the runtime scheduler
+from game work, run `./play.sh --fps-probe 240`: a blank counter, no backend.
 
 ## Simulator
 
@@ -382,3 +384,6 @@ A failed build leaves its last successfully published executable/APK in place.
 `build:players` still validates dependencies and signing credentials at startup,
 and refreshes website download links after all selected builds succeed. Use
 `--no-website` when only building or measuring packages.
+It checks the game SWF hash and source/config fingerprint in `.local/game-build.json`
+before packaging: stale or unrecognized game code rebuilds; unchanged code reuses
+the compiled client. Assets retain their separate package fingerprints.

@@ -21,6 +21,7 @@ Start at the relevant entry point; read dependencies only as needed.
 | Original 3D effects | `turn_adapter.py` → interaction family, movement, modifiers, stun timing → `HitAndRunFunction.as` / original interaction scripts | [effects and unresolved grading](RESOLUTION_EFFECTS.md) |
 | Scene updates | `ResolutionMediator.as` → `SceneController.as` → UI, scripts, model | shared smoke + ResolutionDone/MATCH_END |
 | Sprite redraw | `BoufbowlerPresenter.positionUpdated` → `MovieClipSpritePresenter.as` → shared Away3D vertex | shared smoke; move/no-op/invalidate/swap |
+| Retained scene children | `View3D.render` → `SpriteSession.placeChild/render` | shared session smoke: depth order, culling, pooled shapes, lifecycle |
 | Animation timing | `FrameController.as` → frame/completion events → controlled movie clips | shared smoke; loop, completion, no-skip |
 | Running cadence | `Boufbowler.moveTo/Duration` → segment distance/duration → `FpsControler.setPlaybackRate` | shared Android/desktop compilation; visual gait verification |
 | Travel/idle pacing | `BoufbowlerMovementFunction.travelDuration/buildNodes` → ordinary route → remaining-slot wait; `MovingBoufbowlersByTickBuilder` → footsteps | minimum70% normal travel speed; interaction join time preserved |

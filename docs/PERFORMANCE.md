@@ -1,5 +1,33 @@
 # Client performance
 
+## Imported study improvements
+
+Selected production/tooling changes from `study/animation-framerate-interpolation`
+(`5c4298c`, `2772819`) are integrated. Research captures remain on that branch.
+Main retains its newer Android timer binding, render defaults and field-marker
+clocks; the older branch versions do not replace them.
+
+Away3D `SpriteSession` retains visible children between draws, reconciles painter
+order and removes culled children afterward. Previously every redraw detached and
+reattached character trees, triggering stage lifecycle and animation setup work.
+No server outcomes, action clocks or authored poses change.
+
+The study measured 1,017 → 720ms over 70 instrumented render calls in one Ruffle
+replay (~29%); the synthetic session loop improved ~75%. These are software-browser
+measurements, not Wine/Android gameplay FPS promises. Original evidence:
+`2772819:studies/framerate/RENDERING.md` and its `rendering/` captures.
+
+`./play.sh --fps-probe 240` runs a blank runtime counter without a backend.
+Use it to distinguish scheduler limits from game cost; frame events still do not
+prove displayed refresh rate. `--show-fps` shows measured / requested FPS in game.
+
+Integration check: game rebuilt and both application roots compiled. Native
+Flash32/Hangover/FEX at1024×600, target90, completed two 3D CPU turns with nine
+contacts and real `RESOLUTION_DONE`, reaching orders/turn3. Seeds2198647760 and
+2962694123. Private recording, patch/result hashes and summary:
+`~/.cache/boufbowl-desktop-testing/retained-scene/`. This was a correctness check,
+not a speed comparison or Android hardware test. No automated suite was rerun.
+
 ## Render FPS setting
 
 The in-game slider (25–240 FPS) controls the render target through 3D entry/exit;
