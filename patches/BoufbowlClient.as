@@ -9,7 +9,9 @@ package com.ankamagames.boufbowl
    import flash.display.StageAlign;
    import flash.display.StageScaleMode;
    import flash.events.Event;
+   import flash.events.MouseEvent;
    import flash.events.UncaughtErrorEvent;
+   import flash.geom.Point;
    import flash.net.SharedObject;
    import flash.net.URLVariables;
    import flash.text.TextField;
@@ -28,6 +30,7 @@ package com.ankamagames.boufbowl
       
       private var _uncaughtErrorsHandler:UncaughtErrorsHandler;
       private var _fpsLabel:TextField;
+      private var _wheelGameView:Sprite;
       private var _fpsFrames:int = 0;
       private var _fpsWindowStart:int = 0;
       
@@ -83,11 +86,32 @@ package com.ankamagames.boufbowl
             if(flash.external.ExternalInterface.available)
                flash.external.ExternalInterface.addCallback("setWebDisplay",this.setWebDisplay);
          }
-         addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));
+         // Zoom the application, keeping stage overlays (including FPS) fixed.
+         this._wheelGameView = new Sprite();
+         addChild(this._wheelGameView);
+         this._wheelGameView.addChild(new MainApp(this._uncaughtErrorsHandler,String(new embeddedVersionClass())));
+         stage.addEventListener(MouseEvent.MOUSE_WHEEL,this.onGameWheel,true,1000,false);
+         // Capture excludes the target itself: also handle empty stage regions.
+         stage.addEventListener(MouseEvent.MOUSE_WHEEL,this.onGameWheel,false,1000,false);
          if(this.launchFlagEnabled("showFps"))
          {
             this.showFpsCounter();
          }
+      }
+
+      private function onGameWheel(event:MouseEvent) : void
+      {
+         // SHOW_ALL keeps the authored canvas coordinates across window sizes.
+         var anchor:Point = this.globalToLocal(new Point(event.stageX,event.stageY));
+         if(anchor.x < 0 || anchor.y < 0 || anchor.x > 1920 || anchor.y > 1125) return;
+         var next:Object = wheelZoomTransform(this._wheelGameView.scaleX,
+            this._wheelGameView.x,this._wheelGameView.y,anchor.x,anchor.y,event.delta,1920,1125);
+         this._wheelGameView.scaleX = next.scale;
+         this._wheelGameView.scaleY = next.scale;
+         this._wheelGameView.x = next.x;
+         this._wheelGameView.y = next.y;
+         event.preventDefault();
+         event.stopImmediatePropagation();
       }
 
       private function launchFlagEnabled(name:String) : Boolean

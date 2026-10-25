@@ -41,7 +41,7 @@ package com.ankamagames.boufbowl
       private var _touchPoints:Dictionary = new Dictionary();
       private var _pinching:Boolean = false;
       private var _zoom:Number = 1;
-      private var _minimumZoom:Number = 0.7;
+      private var _minimumZoom:Number = 1;
       private var _maximumZoom:Number = 8;
       private var _backgroundSoundTransform:SoundTransform;
       
@@ -209,8 +209,8 @@ package com.ankamagames.boufbowl
                      }
                      this._gameView.scaleX = this._zoom;
                      this._gameView.scaleY = this._zoom;
-                     this._gameView.x = newMidX - localAnchor.x * this._zoom;
-                     this._gameView.y = newMidY - localAnchor.y * this._zoom;
+                     this._gameView.x = this._zoom == 1 ? 0 : Math.max(1024 * (1 - this._zoom),Math.min(0,newMidX - localAnchor.x * this._zoom));
+                     this._gameView.y = this._zoom == 1 ? 0 : Math.max(600 * (1 - this._zoom),Math.min(0,newMidY - localAnchor.y * this._zoom));
                   }
                }
             }

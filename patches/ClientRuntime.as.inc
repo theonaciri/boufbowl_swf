@@ -17,6 +17,26 @@
          }
       }
 
+      // Pure authored-canvas transform. Android retains its own pinch policy.
+      // Keep this arithmetic self-contained: tests execute this exact body.
+      public static function wheelZoomTransform(scale:Number, x:Number, y:Number,
+         anchorX:Number, anchorY:Number, delta:Number, width:Number, height:Number) : Object
+      {
+         // Flash wheel deltas normally use three units per notch. Bound large
+         // events, but retain fractional deltas delivered by browser runtimes.
+         var nextScale:Number = Math.max(1,Math.min(8,scale * Math.pow(1.12,Math.max(-30,Math.min(30,delta)) / 3)));
+         // Reciprocal wheel steps can leave a few floating-point ulps at 1.
+         if(nextScale <= 1.0000000001) return {scale:1,x:0,y:0};
+         var ratio:Number = nextScale / scale;
+         var nextX:Number = anchorX - (anchorX - x) * ratio;
+         var nextY:Number = anchorY - (anchorY - y) * ratio;
+         // The scaled canvas must cover the entire original viewport. At the
+         // edges this takes precedence over preserving the cursor anchor.
+         nextX = Math.max(width * (1 - nextScale),Math.min(0,nextX));
+         nextY = Math.max(height * (1 - nextScale),Math.min(0,nextY));
+         return {scale:nextScale,x:nextX,y:nextY};
+      }
+
       public static function readFrameRatePreference(preferences:Object) : Number
       {
          var requested:Number = Number(preferences.frameRateTarget);
