@@ -166,7 +166,7 @@
       "Le règlement et les horaires affichés sur la fiche du tournoi font foi. Le traitement des fins de ronde est une règle de la restauration."
     ],
     "C22": [
-      "Reconnexion : le match continue",
+      "Le match continue pendant votre déconnexion",
       "Après détection d’une déconnexion, le délai de retour est de {graceSeconds} secondes. Les chronomètres et l’adversaire continuent à jouer.",
       "La détection intervient actuellement après {heartbeatSeconds} secondes sans signal authentifié. L’expiration exacte et le règlement du score sont des choix de reconstruction ; si les deux joueurs expirent, {bothExpired}. Une panne serveur ne met pas ce délai en pause."
     ]
