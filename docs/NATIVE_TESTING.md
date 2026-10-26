@@ -190,7 +190,7 @@ opponent/rating ordering is unchanged. Tournament stadiums follow the event.
 python3 -m unittest tests.test_accounts_matchmaking tests.test_public_tournaments
 ```
 
-39 tests passed, including forced non-first stadium selection, disjoint pools and
+40 tests passed, including forced non-first stadium selection, disjoint pools and
 per-stadium waiting counts.
 Isolated Ruffle checks covered team/card updates, no-hover taps, hover stability,
 shared selection/reset, queue/cancel, tournament/cancel, challenge/cancel and CPU
@@ -202,3 +202,7 @@ self, blocks, tournament queues, expired searches and active matches are exclude
 One player may count on several stadiums; rating matching still applies. Counts
 travel in existing matchmaking metadata. Ruffle checks verified nine badges per
 tab, click-through selection and refresh after queue departures.
+
+The random-stadium option shows distinct waiting opponents across all enabled
+stadiums, rather than summing arena counts. Ruffle checks covered three/one/zero
+players and singular/plural text using the same metadata updates.

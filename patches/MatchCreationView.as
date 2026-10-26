@@ -53,6 +53,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       private var _pageTeam:TextField;
       private var _pageStatus:TextField;
       private var _pageRandom:Sprite;
+      private var _pageRandomWaiting:TextField;
       private var _pageCpu:Sprite;
       private var _pageCancel:Sprite;
       private var _pageStage:Stage;
@@ -146,6 +147,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          this._pageTeam=pageText("",34,245,190,42);
          pageButton("Changer d’équipe",34,290,this.nextServerTeam);
          this._pageRandom=pageButton("Stade aléatoire",34,332,this.randomServerStadium);
+         this._pageRandomWaiting=pageText("— en attente",34,365,190,20);
          this._pageCpu=pageButton("Contre l’ordinateur",34,392,function():void { thisPage.submitServerMatch("cpu_match"); });
          this._pageCancel=pageButton("Annuler la recherche",34,434,function():void { thisPage.submitServerMatch("queue_leave"); });
          var thisPage:MatchCreationView=this;
@@ -223,6 +225,9 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          for each(var team:Object in state.clubs)
             if(team.id == this._pageClub) this._pageTeam.text=team.name;
          this._pageCancel.visible=Boolean(state.waiting);
+         var randomCount:int=state.waiting_opponents == null ? 0 : int(state.waiting_opponents);
+         this._pageRandomWaiting.text=state.waiting_opponents == null ? "— en attente" : String(randomCount)+(randomCount == 1 ? " joueur en attente" : " joueurs en attente");
+         this._pageRandomWaiting.textColor=randomCount > 0 ? 0x365b2a : 0x463d2b;
          this._pageStatus.text=state.waiting ? "Recherche d’un adversaire en cours… Vous pouvez l’annuler à gauche." : "Autres joueurs en recherche de match libre. Un joueur peut apparaître sur plusieurs stades.";
          this.refreshStadiumWaiting();
          tabs.randomTab.playButton.compEnabled=!state.waiting;

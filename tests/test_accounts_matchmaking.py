@@ -160,8 +160,10 @@ class AccountMatchmakingTests(unittest.TestCase):
             self.command(c,stadiums=[2,4])
         counts=self.s.matchmaking_status(self.pid(self.a))['waiting_by_stadium']
         self.assertEqual(counts,{str(i):{2:1,4:2}.get(i,0) for i in range(1,10)})
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['waiting_opponents'],2)
         self.command(self.b,'queue_leave')
         self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['waiting_by_stadium']['4'],1)
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['waiting_opponents'],1)
 
     def test_stadium_waiting_counts_ignore_expired_tournament_and_blocked_entries(self):
         with patch.object(self.s,'match_queued_players'):
@@ -181,6 +183,13 @@ class AccountMatchmakingTests(unittest.TestCase):
         self.s.config['stadiums']['FARMSTEAD']['enabled']=False
         self.assertNotIn('1',self.s.waiting_stadium_counts(viewer))
         self.assertEqual(self.s.waiting_stadium_counts(viewer)['4'],1)
+
+    def test_random_waiting_count_ignores_disabled_only_stadium_choices(self):
+        self.command(self.b,stadiums=[1])
+        self.s.config['stadiums']['FARMSTEAD']['enabled']=False
+        status=self.s.matchmaking_status(self.pid(self.a))
+        self.assertEqual(status['waiting_opponents'],0)
+        self.assertFalse(any(status['waiting_by_stadium'].values()))
 
     def test_stadium_waiting_counts_ignore_stale_queue_for_active_match(self):
         other=self.pid(self.b)
