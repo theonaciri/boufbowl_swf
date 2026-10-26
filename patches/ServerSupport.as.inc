@@ -18,6 +18,7 @@
       private static var serverCommandFailures:uint = 0;
       private static var serverSendTimer:uint;
       private static var serverNames:Object = {};
+      private static var serverStadiumWaiting:Object;
       private static var serverTournamentId:String;
       private static var serverAbilities:Object = {};
       public static var serverZobalMasks:Object = {};
@@ -88,6 +89,7 @@
          stopMock();
          if(!resume)
          {
+            serverStadiumWaiting=null;
             var chat:com.ankamagames.boufbowl.client.chat.model.IChatModel = app.contextInjector.getInstance(com.ankamagames.boufbowl.client.chat.model.IChatModel);
             chat.clearMessages(); chat.clear();
          }
@@ -197,6 +199,7 @@
          if(response.profile != null) { serverAccountUsername = response.profile.account_username; if(response.profile.role != null) serverRole=String(response.profile.role); }
          if(response.matchmaking != null)
          {
+            serverStadiumWaiting=response.matchmaking.hasOwnProperty("waiting_by_stadium") ? response.matchmaking.waiting_by_stadium : null;
             var waiting:Boolean = response.matchmaking.status == "waiting";
             if(waiting) serverStatus("Searching for an opponent (" + response.matchmaking.waiting_players + " players). Play opens search controls.");
             else if(serverQueueWaiting) serverStatus(response.current_match != null ? "Opponent found" : "Search ended");
@@ -491,7 +494,7 @@
          for(var key:String in serverNames) clubs.push({id:key,name:String(serverNames[key])});
          clubs.sortOn("id",Array.NUMERIC);
          return {clubs:clubs,club_id:serverClubId,club:ClubModel(app.contextInjector.getInstance(ClubModel)).clubInformation,waiting:serverQueueWaiting,
-            stadiums:@ENABLED_STADIUMS@,tournament:@TOURNAMENT_ENABLED@};
+            stadiums:@ENABLED_STADIUMS@,waiting_by_stadium:serverStadiumWaiting,tournament:@TOURNAMENT_ENABLED@};
       }
 
       public static function serverMatchPageButton(parent:Sprite, label:String, x:int, y:int, width:int, callback:Function) : Sprite

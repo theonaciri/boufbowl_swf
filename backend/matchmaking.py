@@ -80,9 +80,28 @@ class Matchmaking:
                 self.create_match(first['profile_id'],second['profile_id'],stadium, tournament=int(first['tournament_id']) if first['tournament_id'] is not None else None, source="tournament" if first['tournament_id'] is not None else "matchmaking")
                 matched.update((first['profile_id'],second['profile_id']))
 
+    def waiting_stadium_counts(self, profile):
+        """Other live open-queue players accepting each enabled stadium."""
+        counts={str(i):0 for i,name in enumerate(STADIUMS,1) if self.config['stadiums'][name]['enabled']}
+        now=time.time();settings=self.matchmaking_settings()
+        rows=self.store.db.execute(
+            "SELECT q.stadiums_json FROM matchmaking_queue q WHERE q.profile_id<>? "
+            "AND q.tournament_id IS NULL AND q.heartbeat>=? AND q.joined>=? "
+            "AND NOT EXISTS(SELECT 1 FROM blocks b WHERE (b.owner=? AND b.target=q.profile_id) "
+            "OR (b.target=? AND b.owner=q.profile_id)) "
+            "AND NOT EXISTS(SELECT 1 FROM participants p JOIN matches m ON m.id=p.match_id "
+            "WHERE p.profile_id=q.profile_id AND json_extract(m.state_json,'$.phase')<>'ended')",
+            (profile,now-settings['heartbeat_timeout'],now-settings['search_timeout'],profile,profile))
+        for entry in rows:
+            for stadium in set(json.loads(entry['stadiums_json'])):
+                key=str(stadium)
+                if key in counts:counts[key]+=1
+        return counts
+
     def matchmaking_status(self, profile):
         row=self.store.db.execute('SELECT * FROM matchmaking_queue WHERE profile_id=?',(profile,)).fetchone()
         return {'status':'waiting' if row else 'idle', 'joined':row['joined'] if row else None,
                 'stadiums':json.loads(row['stadiums_json']) if row else [],
                 'tournament':row['tournament_id'] if row else None,
-                'waiting_players':self.store.db.execute('SELECT COUNT(*) FROM matchmaking_queue').fetchone()[0]}
+                'waiting_players':self.store.db.execute('SELECT COUNT(*) FROM matchmaking_queue').fetchone()[0],
+                'waiting_by_stadium':self.waiting_stadium_counts(profile)}

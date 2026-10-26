@@ -152,6 +152,43 @@ class AccountMatchmakingTests(unittest.TestCase):
         self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
         self.assertEqual(self.s.matchmaking_status(self.pid(self.b))['status'],'waiting')
 
+    def test_stadium_waiting_counts_exclude_self_and_update_after_leaving(self):
+        c=self.s.hello({'nickname':'Charlie','clubs':[initial_club()]})
+        with patch.object(self.s,'match_queued_players'):
+            self.command(self.a,stadiums=[1,4])
+            self.command(self.b,stadiums=[4])
+            self.command(c,stadiums=[2,4])
+        counts=self.s.matchmaking_status(self.pid(self.a))['waiting_by_stadium']
+        self.assertEqual(counts,{str(i):{2:1,4:2}.get(i,0) for i in range(1,10)})
+        self.command(self.b,'queue_leave')
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['waiting_by_stadium']['4'],1)
+
+    def test_stadium_waiting_counts_ignore_expired_tournament_and_blocked_entries(self):
+        with patch.object(self.s,'match_queued_players'):
+            self.command(self.b,stadiums=[1,4])
+        viewer=self.pid(self.a);other=self.pid(self.b)
+        self.assertEqual(self.s.waiting_stadium_counts(viewer)['4'],1)
+        for field,expired in [('heartbeat',time.time()-10000),('joined',time.time()-10000),('tournament_id','1')]:
+            with self.subTest(field=field):
+                old=self.s.store.db.execute('SELECT '+field+' FROM matchmaking_queue').fetchone()[0]
+                self.s.store.db.execute('UPDATE matchmaking_queue SET '+field+'=?',(expired,))
+                self.assertFalse(any(self.s.waiting_stadium_counts(viewer).values()))
+                self.s.store.db.execute('UPDATE matchmaking_queue SET '+field+'=?',(old,))
+        for owner,target in ((viewer,other),(other,viewer)):
+            self.s.store.db.execute('INSERT INTO blocks VALUES(?,?,?)',(owner,target,time.time()))
+            self.assertFalse(any(self.s.waiting_stadium_counts(viewer).values()))
+            self.s.store.db.execute('DELETE FROM blocks')
+        self.s.config['stadiums']['FARMSTEAD']['enabled']=False
+        self.assertNotIn('1',self.s.waiting_stadium_counts(viewer))
+        self.assertEqual(self.s.waiting_stadium_counts(viewer)['4'],1)
+
+    def test_stadium_waiting_counts_ignore_stale_queue_for_active_match(self):
+        other=self.pid(self.b)
+        self.s.create_match(other,None,4)
+        self.s.store.db.execute('INSERT INTO matchmaking_queue VALUES(?,?,?,?,NULL)',
+                               (other,'[4]',time.time(),time.time()))
+        self.assertFalse(any(self.s.waiting_stadium_counts(self.pid(self.a)).values()))
+
     def test_rating_search_widens(self):
         with self.s.store.transaction():
             stats=self.s.store.profile(self.pid(self.b))['statistics'];stats['rating']=1600

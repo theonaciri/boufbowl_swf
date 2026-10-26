@@ -26,6 +26,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
    import flash.text.TextField;
    import flash.text.TextFormat;
    import flash.filters.GlowFilter;
+   import flash.geom.Rectangle;
    import com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand;
    
    public class MatchCreationView extends MatchCreationUI
@@ -56,6 +57,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       private var _pageCancel:Sprite;
       private var _pageStage:Stage;
       private var _pageChallenge:Boolean;
+      private var _pageWaitingBadges:Array;
 
       public function MatchCreationView(param1:IStadiumsConfig, param2:ITranslator, param3:StadiumDescriptionTextBuilder)
       {
@@ -71,6 +73,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       internal function updateStadiums(param1:ILinkedMap) : void
       {
          this.fillStadiumsList(param1);
+         if(StartUpApplicationCommand.serverMode()) this.refreshStadiumWaiting();
       }
       
       internal function selectStadium(param1:int) : void
@@ -150,10 +153,54 @@ package com.ankamagames.boufbowl.client.matchmaking.view
             pageButton("Rejoindre un tournoi",34,477,function():void { thisPage.submitServerMatch("tournament_match"); });
          pageButton("Joueurs et amis",34,519,function():void { StartUpApplicationCommand.serverMatchPageCommunity(); });
          this._pageStatus=pageText("",650,504,320,55);
+         this.initWaitingBadges();
          addEventListener(Event.ADDED_TO_STAGE,this.serverPageAdded);
          addEventListener(Event.REMOVED_FROM_STAGE,this.serverPageRemoved);
          this.refreshServerPage();
          this.selectStadium(0);
+      }
+
+      private function initWaitingBadges() : void
+      {
+         this._pageWaitingBadges=[];
+         var selectors:Array=[tabs.randomTab.stadiumsSelector,tabs.challengeTab.stadiumSelector];
+         for(var tab:int=0;tab<selectors.length;tab++)
+         {
+            for(var index:int=0;index<12;index++)
+            {
+               var badge:Sprite=new Sprite();
+               badge.mouseEnabled=false;badge.mouseChildren=false;
+               var label:TextField=pageText("",0,-1,108,19);
+               var format:TextFormat=new TextFormat("Verdana",10,0xffffff,false);
+               format.align="center";label.defaultTextFormat=format;
+               badge.addChild(label);addChild(badge);
+               this._pageWaitingBadges.push({selector:selectors[tab],index:index,challenge:tab == 1,badge:badge,label:label});
+            }
+         }
+      }
+
+      private function refreshStadiumWaiting() : void
+      {
+         if(this._pageWaitingBadges == null) return;
+         var state:Object=StartUpApplicationCommand.serverMatchPageInfo();
+         for each(var entry:Object in this._pageWaitingBadges)
+         {
+            var preview:Sprite=entry.selector.getStadium(entry.index);
+            var id:int=entry.selector.getStadium(entry.index).stadiumId;
+            var badge:Sprite=entry.badge;
+            badge.visible=entry.challenge == this._pageChallenge && preview.visible && state.stadiums.indexOf(id) >= 0;
+            if(!badge.visible) continue;
+            var known:Boolean=state.waiting_by_stadium != null && state.waiting_by_stadium.hasOwnProperty(String(id));
+            var count:int=known ? int(state.waiting_by_stadium[String(id)]) : 0;
+            var bounds:Rectangle=preview.getBounds(this);
+            var width:Number=Math.max(70,Math.min(108,bounds.width-4));
+            badge.x=bounds.x+(bounds.width-width)/2;
+            badge.y=bounds.bottom-19;
+            badge.graphics.clear();badge.graphics.beginFill(count > 0 ? 0x365b2a : 0x343a33,.95);
+            badge.graphics.drawRoundRect(0,0,width,17,4);badge.graphics.endFill();
+            entry.label.width=width;
+            entry.label.text=(known ? String(count) : "—")+" en attente";
+         }
       }
 
       private function serverPageAdded(event:Event) : void
@@ -176,7 +223,8 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          for each(var team:Object in state.clubs)
             if(team.id == this._pageClub) this._pageTeam.text=team.name;
          this._pageCancel.visible=Boolean(state.waiting);
-         this._pageStatus.text=state.waiting ? "Recherche d’un adversaire en cours… Vous pouvez l’annuler à gauche." : "";
+         this._pageStatus.text=state.waiting ? "Recherche d’un adversaire en cours… Vous pouvez l’annuler à gauche." : "Autres joueurs en recherche de match libre. Un joueur peut apparaître sur plusieurs stades.";
+         this.refreshStadiumWaiting();
          tabs.randomTab.playButton.compEnabled=!state.waiting;
          if(state.club != null)
          {
@@ -207,6 +255,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          if(!StartUpApplicationCommand.serverMode()) return;
          this._pageChallenge=challenge;
          this._pageCpu.visible=!challenge;
+         this.refreshStadiumWaiting();
       }
 
       internal function submitServerMatch(operation:String) : void

@@ -190,8 +190,15 @@ opponent/rating ordering is unchanged. Tournament stadiums follow the event.
 python3 -m unittest tests.test_accounts_matchmaking tests.test_public_tournaments
 ```
 
-36 tests passed, including forced non-first stadium selection and disjoint pools.
+39 tests passed, including forced non-first stadium selection, disjoint pools and
+per-stadium waiting counts.
 Isolated Ruffle checks covered team/card updates, no-hover taps, hover stability,
 shared selection/reset, queue/cancel, tournament/cancel, challenge/cancel and CPU
 launch. Layout checked at the authored 1024×600 viewport. Native touch remains a
 phone check after installing the new APK.
+
+Stadium badges count other live regular-queue players who accept that stadium;
+self, blocks, tournament queues, expired searches and active matches are excluded.
+One player may count on several stadiums; rating matching still applies. Counts
+travel in existing matchmaking metadata. Ruffle checks verified nine badges per
+tab, click-through selection and refresh after queue departures.
