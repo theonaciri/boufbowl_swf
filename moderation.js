@@ -1,7 +1,6 @@
 (() => {
   const { $, el, date, number, api, init, stats, chart, status } = AdminConsole;
   let focus = null,
-    paused = false,
     busy = false,
     revision = 0,
     messages = new Map(),
@@ -35,14 +34,8 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !$("suspend-dialog").open) clearFocus();
   });
-  $("pause").onclick = () => {
-    paused = !paused;
-    $("pause").textContent = paused ? "Resume feed" : "Pause feed";
-    $("live-state").textContent = paused
-      ? "Feed paused"
-      : "Live · every 2 seconds";
-    if (!paused) refresh();
-  };
+  $("refresh-feed").onclick = () => refresh(true);
+  AdminConsole.autoRefresh($("auto-refresh"), () => refresh());
   let debounce;
   for (const id of ["search", "player-filter", "kind", "language"])
     $(id).addEventListener(
@@ -156,7 +149,7 @@
     oldest = rows.at(-1)?.id;
   }
   async function refresh(force = false, older = false) {
-    if ((paused && !force) || busy) {
+    if (busy) {
       if (force) setTimeout(() => refresh(true, older), 150);
       return;
     }
@@ -192,9 +185,6 @@
         ["Active senders", c.senders, "Last 24 hours"],
       ]);
       chart($("activity-chart"), data.activity);
-      $("live-state").textContent = paused
-        ? "Feed paused"
-        : "Live · every 2 seconds";
       status("");
       if (Date.now() - metadataAt > 10000) {
         await metadata();
@@ -202,7 +192,6 @@
       }
     } catch (error) {
       status(error);
-      $("live-state").textContent = "Connection issue · retrying";
     } finally {
       busy = false;
     }
@@ -341,8 +330,5 @@
   init(async () => {
     await metadata();
     await refresh(true);
-    setInterval(() => {
-      if (!document.hidden) refresh();
-    }, 2000);
   });
 })();

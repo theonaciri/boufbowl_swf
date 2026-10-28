@@ -74,6 +74,36 @@
     for (const [label, value] of entries) { const item = el("div"); item.append(el("span", label), el("strong", value)); numbers.append(item); }
     target.append(numbers);
   }
+  function bars(id, rows, series) {
+    const target = $(id); target.replaceChildren();
+    if (!rows.length) { target.textContent = "Aucune donnée observée pour cette période."; return; }
+    const maximum = Math.max(1, ...rows.flatMap(row => series.map(item => row[item.key] || 0)));
+    const graph = svg("svg", {viewBox:`0 0 700 ${Math.max(80, rows.length * 38 + 30)}`, role:"img", "aria-label":"Comparaison des données"});
+    rows.forEach((row, index) => {
+      const y = 20 + index * 38;
+      graph.append(svg("text", {x:0,y:y+11,fill:"#b4c5c7","font-size":11}, row.label));
+      series.forEach((item, j) => {
+        const value = row[item.key]; if (value == null) return;
+        const bar = svg("rect", {x:145,y:y+j*12,width:Math.max(1,500*value/maximum),height:10,fill:item.color,tabindex:0});
+        bar.append(svg("title", {}, `${row.label} · ${item.label} : ${number(value)}${row.note ? ' · '+row.note : ''}`)); graph.append(bar);
+      });
+    });
+    graph.style.width="100%"; graph.style.minWidth="500px"; graph.style.height=`${Math.max(80,rows.length*38+30)}px`;
+    target.append(graph);
+    const legend=el("p",series.map(item=>item.label).join(" · "),"footnote"); target.append(legend);
+    const details=el("details"), summary=el("summary","Voir les valeurs"), list=el("ul");
+    for(const row of rows) list.append(el("li",`${row.label} : ${series.map(item=>`${item.label} ${number(row[item.key])}`).join(' · ')}${row.note ? ' · '+row.note : ''}`));
+    details.append(summary,list); target.append(details);
+  }
+  function clientChart(data) {
+    const key = $("client-metric").value;
+    bars("client-chart", (data.game?.frames || []).filter(x=>x.phase==='3d').map(x=>({label:x.day+' '+x.platform,fps:x.fps,slow:x.slow_percent,note:`${x.samples} échantillons`})).slice(-20), [{key, label:key==='fps'?'FPS événements':'Images lentes %',color:'#97e7c2'}]);
+  }
+  function queueChart(rows) {
+    const selected = rows.filter(row => row.kind === $("queue-kind").value && (row.outcome === "matched" || row.outcome === "expired"));
+    bars("queue-chart", selected.map(row=>({label:row.day+' '+(row.outcome === 'matched' ? 'trouvés' : 'expirés'), median:row.p50_upper_seconds, p95:row.p95_upper_seconds,note:`${row.count} recherches ; bornes supérieures en secondes`})),
+      [{key:'median',label:'Médiane ≤ (s)',color:'#97e7c2'},{key:'p95',label:'p95 ≤ (s)',color:'#efd194'}]);
+  }
   function render(data) {
     latest = data; $("login").hidden = true; $("dashboard").hidden = false;
     $("updated").textContent = "Actualisé le " + date(data.generated_at);
@@ -89,6 +119,20 @@
     card(period, "Matchs commencés", data.matches.started, cmp ? comparison(data.matches.started, cmp.matches_started, cmp.start, cmp.end_exclusive) : "Sur la période", "#matches");
     card(period, "Pic en ligne", data.peak_online, "Présence maximale échantillonnée");
     activityChart(data.daily);
+    const availability = data.charts?.availability || [];
+    const grid = $("availability-chart"); grid.replaceChildren();
+    if (!availability.length) grid.textContent = "Aucun échantillon disponible.";
+    else {
+      const tableNode=el("table"), header=el("tr"); header.append(el("th","Jour UTC"));
+      for(let hour=0;hour<24;hour++) header.append(el("th",String(hour))); tableNode.append(header);
+      for(let day=1;day<=7;day++) { const key=day%7, tr=el("tr"); tr.append(el("th",["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"][key]));
+        for(let hour=0;hour<24;hour++) { const sample=availability.find(x=>x.weekday===key && x.hour===hour), cell=el("td",sample?number(sample.online):"—");
+          if(sample){cell.style.background=`rgba(93,205,147,${Math.min(.7,.1+sample.online/20)})`;cell.title=`${sample.samples} échantillons · ${number(sample.queued)} en recherche en moyenne`;cell.tabIndex=0;} tr.append(cell); } tableNode.append(tr); }
+      grid.append(tableNode);
+    }
+    bars("match-week-chart", (data.charts?.matches_by_week || []).map(x=>({label:x.week,ended:x.ended,surrendered:x.surrendered,ongoing:x.ongoing,note:`${x.started} matchs commencés`})), [{key:'ended',label:'Fin sans forfait',color:'#97e7c2'},{key:'surrendered',label:'Forfait',color:'#efd194'},{key:'ongoing',label:'En cours',color:'#a8baff'}]);
+    bars("retention-week-chart", (data.charts?.retention_by_week || []).map(x=>({label:x.week,d1:x.days['1'].eligible ? 100*x.days['1'].returned/x.days['1'].eligible : null,d7:x.days['7'].eligible ? 100*x.days['7'].returned/x.days['7'].eligible : null,d30:x.days['30'].eligible ? 100*x.days['30'].returned/x.days['30'].eligible : null,note:`éligibles J1/J7/J30 : ${x.days['1'].eligible}/${x.days['7'].eligible}/${x.days['30'].eligible}`})), [{key:'d1',label:'J1 %',color:'#97e7c2'},{key:'d7',label:'J7 %',color:'#efd194'},{key:'d30',label:'J30 %',color:'#a8baff'}]);
+    clientChart(data);
     table("activity-table", [["Jour UTC", r => r.day], ["Profils actifs", r => number(r.active_users)], ["Pic en ligne", r => number(r.peak_online)]], data.daily);
     $("history").textContent = "Avant le début de la collecte, l’historique est partiel. Collecte commencée le " + date(data.coverage.started_at) + ".";
     summaryValues($("match-summary"), [["Commencés", number(data.matches.started)], ["Contre l’ordinateur", number(data.matches.cpu)], ["Entre joueurs", number(data.matches.human)], ["Durée moyenne des matchs terminés", duration(data.matches.mean_duration_seconds)]]);
@@ -97,6 +141,7 @@
     table("stadiums", [["Terrain", r => r.name || r.stadium], ["Matchs commencés", r => number(r.matches)]], data.matches.stadiums);
     const queueKinds = { regular: "Match libre", tournament: "Tournoi" }, outcomes = { matched: "Adversaire trouvé", cancelled: "Annulée", expired: "Expirée", tournament_closed: "Tournoi fermé", replaced: "Remplacée", other: "Autre" };
     table("queue-waits", [["Jour UTC", r => r.day], ["Type", r => queueKinds[r.kind] || r.kind], ["Résultat", r => outcomes[r.outcome] || r.outcome], ["Recherches", r => number(r.count)], ["Moyenne", r => duration(r.mean_seconds)], ["p50 ≤", r => duration(r.p50_upper_seconds)], ["p95 ≤", r => duration(r.p95_upper_seconds)]], data.queue_waits?.rows || []);
+    queueChart(data.queue_waits?.rows || []);
     $("queue-coverage").textContent = data.queue_waits ? `Collecte commencée le ${date(data.queue_waits.coverage_started_at)} ; pas d’historique avant cette date.` : "Les mesures de recherche ne sont pas disponibles.";
     const retention = $("retention"); retention.replaceChildren();
     for (const item of data.retention?.days || []) { const box = el("div", null, "retention-item"); box.append(el("span", `Jour ${item.day}`), el("strong", item.rate == null ? "—" : number(item.rate) + " %"), el("small", `${number(item.returned)} sur ${number(item.eligible)} profils éligibles`)); retention.append(box); }
@@ -124,6 +169,7 @@
       const data = await api("metrics", { session, days: Number($("days").value) }); render(data); $("status").textContent = "";
       try {
         const result = await api("admin", { session, action: "tournaments" });
+        bars("tournament-chart", result.tournaments.slice(0,10).reverse().map(t=>({label:t.settings.name || String(t.id),interested:t.interested,participants:t.participants,matches:t.matches})), [{key:'interested',label:'Annoncés',color:'#97e7c2'},{key:'participants',label:'Participants',color:'#efd194'},{key:'matches',label:'Matchs',color:'#a8baff'}]);
         const next = result.tournaments.filter(t => (t.phase === "open" || t.phase === "upcoming") && t.settings.end_time * 1000 >= Date.now()).sort((a, b) => a.settings.start_time - b.settings.start_time)[0];
         $("next-tournament").textContent = next ? `${next.phase === "open" ? "Tournoi en cours" : "Prochain tournoi"} : ${next.settings.name || "Coupe du Boufbowl"} · ${date(next.settings.start_time)} · ${number(next.participants)} participants.` : "Aucun tournoi à venir.";
       } catch { $("next-tournament").textContent = "État des tournois indisponible."; }
@@ -137,8 +183,10 @@
   };
   $("device").onsubmit = event => { event.preventDefault(); session = $("session").value.trim(); sessionStorage.setItem("boufbowl-admin-session", session); window.dispatchEvent(new Event("admin-session-changed")); $("session").value = ""; refresh(); };
   $("refresh").onclick = refresh; $("days").onchange = refresh;
+  $("client-metric").onchange = () => { if (latest) clientChart(latest); };
+  $("queue-kind").onchange = () => { if (latest) queueChart(latest.queue_waits?.rows || []); };
   $("download").onclick = () => { if (!latest) return; const url = URL.createObjectURL(new Blob([JSON.stringify(latest, null, 2)], { type: "application/json" })), link = el("a"); link.href = url; link.download = `boufbowl-activite-${new Date().toISOString().slice(0, 10)}.json`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
   for (const button of document.querySelectorAll("[data-series]")) button.onclick = () => { const item = series[button.dataset.series]; item.on = !item.on; button.setAttribute("aria-pressed", String(item.on)); if (latest) activityChart(latest.daily); };
-  setInterval(() => { if ($("auto").checked && !document.hidden) refresh(); }, 60000);
+  AdminConsole.autoRefresh($("auto-refresh"), refresh);
   if (session) refresh();
 })();

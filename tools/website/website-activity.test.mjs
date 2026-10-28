@@ -16,7 +16,7 @@ test("website activity keeps aggregate metrics distinct and charts accessible", 
         classes: [{ name: "Crâ", count: 7 }], characters: [{ name: "Aria", count: 4 }],
         downloads: [{ name: "Android", count: 5 }], web: [{ name: "Navigateur", count: 2 }], asset_requests: [],
       };
-      window.AdminConsole = { $: id => document.getElementById(id), api: async () => fixture, init: callback => { document.getElementById("console-main").hidden = false; callback(fixture); } };
+      window.AdminConsole = { $: id => document.getElementById(id), api: async () => fixture, autoRefresh: () => {}, init: callback => { document.getElementById("console-main").hidden = false; callback(fixture); } };
     });
     await page.addScriptTag({ path: "website-activity.js" });
     expect(await page.locator("#website-stats strong").allTextContents()).toEqual(["15", "5", "2"]);

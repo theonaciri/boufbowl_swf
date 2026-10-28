@@ -21,5 +21,5 @@
  card.append(controls,view);list.append(card);}
  status('Actualisé à '+new Date().toLocaleTimeString());
  }catch(error){status(error);}finally{busy=false;}}
- $('assets-refresh').onclick=load;$('assets-state').onchange=load;init(async()=>{await load();setInterval(()=>{if(!document.hidden&&!previewOpen)load();},5000);});
+ $('assets-refresh').onclick=load;$('assets-state').onchange=load;AdminConsole.autoRefresh($('auto-refresh'),()=>{if(!previewOpen)load();});init(async()=>{await load();});
 })();

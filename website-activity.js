@@ -83,5 +83,6 @@
   $("website-days").onchange = refresh;
   $("website-section-metric").onchange = charts;
   $("website-interest-kind").onchange = charts;
-  init(data => { render(data); setInterval(() => { if (!document.hidden) refresh(); }, 60000); });
+  AdminConsole.autoRefresh($("auto-refresh"), refresh);
+  init(data => { render(data); });
 })();

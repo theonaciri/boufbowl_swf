@@ -42,13 +42,16 @@ class Admin:
                 result = self.moderate(actor, {**body, 'verb': 'ban', 'duration': duration})
             elif action == 'unsuspend':
                 result = self.moderate(actor, {**body, 'verb': 'unban'})
-            elif action in ('tournaments', 'schedule'):
+            elif action in ('tournaments', 'schedule', 'edit_tournament'):
                 if self.role(actor) != 'admin':
                     raise ServiceError('ADMIN_FORBIDDEN', 'Administrator role required')
                 if action == 'schedule':
                     self.admin_schedule(actor, body)
+                if action == 'edit_tournament':
+                    self.maintain_tournaments()
+                    self.admin_edit_tournament(actor, body)
                 self.maintain_tournaments()
-                if action == 'schedule':
+                if action in ('schedule', 'edit_tournament'):
                     for watcher in self.store.db.execute('SELECT profile_id FROM tournament_watchers').fetchall():
                         self.send_tournaments(watcher[0])
                 result = self.admin_tournaments()
@@ -106,6 +109,39 @@ class Admin:
     def tournament_settings(self):
         row = self.store.db.execute("SELECT value FROM admin_settings WHERE key='tournament'").fetchone()
         return json.loads(row[0]) if row else self.config['general']['tournament']
+
+    def admin_edit_tournament(self, actor, body):
+        identity = integer(body.get('tournament_id'), 1, 9223372036854775807, 'Tournament ID')
+        row = self.store.db.execute('SELECT * FROM tournaments WHERE id=?', (identity,)).fetchone()
+        if not row or row['phase'] not in ('upcoming', 'open'):
+            raise ServiceError('ADMIN_INPUT', 'Only upcoming or running tournaments can be edited')
+        cfg = json.loads(row['settings_json']); supplied = body.get('settings')
+        if not isinstance(supplied, dict) or set(supplied) != {'name', 'start_time', 'end_time', 'stadium'}:
+            raise ServiceError('ADMIN_INPUT', 'Tournament name, dates and stadium are required')
+        now = time.time(); start = integer(supplied['start_time'], 1, 4102444800, 'Start time')
+        end = integer(supplied['end_time'], int(now)+1, 4102444800, 'End time')
+        stadium = integer(supplied['stadium'], 1, len(STADIUMS), 'Stadium')
+        if not self.config['stadiums'][STADIUMS[stadium-1]]['enabled']:
+            raise ServiceError('ADMIN_INPUT', 'This stadium is disabled')
+        if row['phase'] == 'open' and (start != cfg['start_time'] or stadium != cfg['stadium']):
+            raise ServiceError('ADMIN_INPUT', 'The start time and stadium cannot change after the tournament starts')
+        if row['phase'] == 'upcoming' and start <= now:
+            raise ServiceError('ADMIN_INPUT', 'An upcoming tournament must start in the future')
+        if end-start < 300 or end-start > 604800:
+            raise ServiceError('ADMIN_INPUT', 'Duration must be between five minutes and seven days')
+        if cfg.get('format') == 'elimination' and cfg['qualification_seconds']+cfg['round_count']*cfg['round_seconds'] > end-start:
+            raise ServiceError('ADMIN_INPUT', 'The qualification and rounds must fit the tournament duration')
+        if row['phase'] == 'open' and cfg.get('format') == 'elimination':
+            _, state = self.round_state(identity)
+            if state and end < state['slot']['end']:
+                raise ServiceError('ADMIN_INPUT', 'The end cannot precede the current round')
+        if any(json.loads(other[0])['start_time'] < end and json.loads(other[0])['end_time'] > start for other in self.store.db.execute("SELECT settings_json FROM tournaments WHERE id<>? AND phase IN ('upcoming','open','closing')", (identity,))):
+            raise ServiceError('ADMIN_INPUT', 'Tournament dates overlap another scheduled event')
+        if row['phase'] == 'upcoming' and start != cfg['start_time']:
+            self.store.db.execute('DELETE FROM tournament_rounds WHERE tournament_id=?', (identity,))
+        cfg.update(name=self.name(supplied['name'],80), start_time=start, end_time=end, stadium=stadium)
+        self.store.db.execute('UPDATE tournaments SET settings_json=? WHERE id=?', (json.dumps(cfg), identity))
+        self.store.db.execute('INSERT INTO admin_events(actor,action,details,created) VALUES(?,?,?,?)', (actor,'edit_tournament',json.dumps({'id':identity,'settings':supplied}),now))
 
     def admin_schedule(self, actor, body):
         supplied = body.get('settings')
@@ -177,6 +213,8 @@ class Admin:
             cfg = json.loads(row['settings_json'])
             entries = self.tournament_entries(cfg)
             events.append({'id': row['id'], 'settings': cfg, 'phase': row['phase'],
+                           'interested': self.store.db.execute('SELECT COUNT(*) FROM tournament_intentions WHERE tournament_id=?', (row['id'],)).fetchone()[0],
+                           'matches': self.store.db.execute("SELECT COUNT(*) FROM matches WHERE json_extract(state_json,'$.tournament')=?", (row['id'],)).fetchone()[0],
                            'participants': len(entries), 'standings': [e for _,e in entries[:20]],
                            'rounds': self.admin_rounds(cfg), 'active_matches': active_by_tournament.get(row['id'], [])})
         return {'tournaments': events, 'schedule': self.tournament_settings(),

@@ -43,6 +43,24 @@ class AdminTests(unittest.TestCase):
             with self.assertRaises(ServiceError): self.api(action,settings=self.settings())
         with self.assertRaises(ServiceError): self.api('suspend',nickname='Bob',duration=0)
 
+    def test_edit_occurrence_preserves_identity_and_rejects_unsafe_changes(self):
+        self.grant(self.alice); self.allow_future_schedule()
+        result = self.api('schedule', settings=self.settings(repeat_seconds=0))
+        event = next(item for item in result['tournaments'] if item['phase'] == 'upcoming')
+        cfg = event['settings']; identity = event['id']
+        changed = {'name':'Edited cup', 'start_time':cfg['start_time']+60, 'end_time':cfg['end_time']+60, 'stadium':cfg['stadium']}
+        self.api('edit_tournament', tournament_id=identity, settings=changed)
+        saved = json.loads(self.service.store.db.execute('SELECT settings_json FROM tournaments WHERE id=?',(identity,)).fetchone()[0])
+        self.assertEqual(saved['name'],'Edited cup'); self.assertEqual(saved['start_time'],changed['start_time'])
+        self.service.store.db.execute("UPDATE tournaments SET phase='open' WHERE id=?", (identity,))
+        saved['start_time'] = int(time.time())-60
+        self.service.store.db.execute('UPDATE tournaments SET settings_json=? WHERE id=?',(json.dumps(saved),identity))
+        self.api('edit_tournament', tournament_id=identity, settings={'name':'Running', 'start_time':saved['start_time'], 'end_time':saved['end_time'], 'stadium':saved['stadium']})
+        with self.assertRaises(ServiceError):
+            self.api('edit_tournament', tournament_id=identity, settings={'name':'Bad', 'start_time':saved['start_time']+1, 'end_time':saved['end_time'], 'stadium':saved['stadium']})
+        self.grant(self.bob,'moderator')
+        with self.assertRaises(ServiceError): self.api('edit_tournament',account=self.bob,tournament_id=identity,settings=changed)
+
     def test_website_activity_requires_admin_and_accepts_legacy_action(self):
         for role in ('player', 'moderator'):
             self.grant(self.alice,role)

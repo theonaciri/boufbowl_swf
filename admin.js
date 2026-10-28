@@ -153,5 +153,20 @@ window.AdminConsole = (() => {
   function status(error) {
     $("page-status").textContent = error?.message || error || "";
   }
-  return { $, el, date, number, api, init, stats, chart, status };
+  function autoRefresh(container, callback) {
+    const label = el("label", "Actualisation automatique ");
+    const select = el("select");
+    select.setAttribute("aria-label", "Intervalle d’actualisation automatique");
+    for (const [value, text] of [[0,"Désactivée"],[5,"5 secondes"],[10,"10 secondes"],[30,"30 secondes"],[60,"1 minute"],[300,"5 minutes"]]) {
+      const option = el("option", text); option.value = value; select.append(option);
+    }
+    let timer = null;
+    select.onchange = () => {
+      clearInterval(timer); timer = null;
+      const seconds = Number(select.value);
+      if (seconds) timer = setInterval(() => { if (!document.hidden) callback(); }, seconds * 1000);
+    };
+    label.append(select); container.append(label);
+  }
+  return { $, el, date, number, api, init, stats, chart, status, autoRefresh };
 })();

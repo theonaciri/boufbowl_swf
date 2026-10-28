@@ -50,7 +50,7 @@
           <h1>Tournaments</h1>
           <p>Plan the next competition. Follow every round.</p>
         </div>
-        <span class="live">Updated every 10 seconds</span>
+        <div><span id="auto-refresh"></span> <button id="refresh-tournaments" class="secondary">Actualiser</button></div>
       </div>
       <div id="tournament-stats" class="stats"></div>
       <p id="page-status" class="status" role="status" aria-live="polite"></p>
@@ -72,6 +72,16 @@
               <span id="detail-phase" class="tag"></span>
             </div>
             <div id="detail-rules"></div>
+            <button id="edit-event" type="button" class="secondary">Edit tournament</button>
+            <form id="edit-event-form" class="form-grid" hidden>
+              <label class="field wide">Name<input name="name" maxlength="80" required></label>
+              <label class="field">Start (local time)<input name="start" type="datetime-local" step="1" required></label>
+              <label class="field">End (local time)<input name="end" type="datetime-local" step="1" required></label>
+              <label class="field">Stadium<select name="stadium" required></select></label>
+              <p class="wide">Changes apply only to this occurrence. For running tournaments, the start and stadium are fixed; existing matches keep their rules.</p>
+              <div class="wide"><button type="submit">Save changes</button> <button id="cancel-edit-event" type="button" class="secondary">Cancel</button></div>
+              <p id="edit-event-error" class="status wide" role="status"></p>
+            </form>
             <h3 style="margin-top: 24px">Round schedule</h3>
             <div id="rounds"></div>
             <h3 style="margin-top: 24px">Live matches</h3>

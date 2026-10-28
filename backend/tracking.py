@@ -394,6 +394,7 @@ class Tracking:
 
 def metrics_report(store, days=30):
     from backend.matchmaking_metrics import report as matchmaking_report
+    from backend.admin_charts import charts
     if type(days) is not int or not 1 <= days <= 365:
         raise ValueError('Choose between one and 365 days')
     now = time.time()
@@ -531,6 +532,7 @@ def metrics_report(store, days=30):
                       'mean_visit_seconds': visits[1], 'estimated_online_seconds': sum(d['online_seconds'] or 0 for d in daily.values())},
             'daily': list(daily.values()), 'matches': matches, 'match_cohort': match_cohort,
             'comparison': comparison, 'retention': retention, 'queue_waits': matchmaking_report(db, str(start)),
+            'charts': charts(db, start, today, collection_start),
             'platforms': platforms, 'versions': versions,
             'game': game_measurements.report(db,str(start)),
             'diagnostics': diagnostics, 'performance': list(performance.values()), 'errors': errors,

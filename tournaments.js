@@ -168,6 +168,8 @@
   }
   function details(event) {
     const cfg = event.settings;
+    $("edit-event").hidden = !["upcoming", "open"].includes(event.phase);
+    $("edit-event-form").hidden = true;
     $("detail-title").textContent = cfg.name || "Tournament #" + event.id;
     $("detail-phase").textContent = phaseLabel(event.phase);
     const rules = summary(cfg);
@@ -240,6 +242,34 @@
       $("standings").append(row);
     }
   }
+  const editForm = $("edit-event-form");
+  const localTime = seconds => {
+    const d = new Date(seconds * 1000);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+  };
+  $("edit-event").onclick = () => {
+    const event = data.tournaments.find(item => item.id === selected), cfg = event.settings;
+    editForm.elements.name.value = cfg.name || "";
+    editForm.elements.start.value = localTime(cfg.start_time);
+    editForm.elements.end.value = localTime(cfg.end_time);
+    editForm.elements.stadium.replaceChildren(...data.stadiums.map(item => { const option = el("option", item.name); option.value = item.id; return option; }));
+    editForm.elements.stadium.value = cfg.stadium;
+    editForm.elements.start.disabled = editForm.elements.stadium.disabled = event.phase === "open";
+    $("edit-event-error").textContent = ""; editForm.hidden = false;
+  };
+  $("cancel-edit-event").onclick = () => { editForm.hidden = true; };
+  editForm.onsubmit = async event => {
+    event.preventDefault();
+    const submit = editForm.querySelector('[type="submit"]'); submit.disabled = true;
+    try {
+      data = await api("edit_tournament", { tournament_id: selected, settings: {
+        name: editForm.elements.name.value, start_time: Math.floor(new Date(editForm.elements.start.value).getTime()/1000),
+        end_time: Math.floor(new Date(editForm.elements.end.value).getTime()/1000), stadium: Number(editForm.elements.stadium.value)
+      }});
+      render(); status("Tournament updated.");
+    } catch (error) { $("edit-event-error").textContent = error.message; }
+    finally { submit.disabled = false; }
+  };
   for (const button of document.querySelectorAll("[data-tab]"))
     button.onclick = () => {
       tab = button.dataset.tab;
@@ -363,8 +393,9 @@
     field("start").value = local.toISOString().slice(0, 16);
     form.oninput();
     render();
-    setInterval(async () => {
-      if (busy || document.hidden) return;
+  });
+  async function refreshTournaments() {
+      if (busy || !data) return;
       busy = true;
       try {
         data = await api("tournaments");
@@ -374,6 +405,9 @@
       } finally {
         busy = false;
       }
-    }, 10000);
+  }
+  $("refresh-tournaments").onclick = refreshTournaments;
+  AdminConsole.autoRefresh($("auto-refresh"), () => {
+    if (editForm.hidden && !$("schedule-dialog").open) refreshTournaments();
   });
 })();
