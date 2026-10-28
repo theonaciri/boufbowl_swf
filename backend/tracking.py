@@ -39,6 +39,7 @@ def init_schema(db):
           online_seconds REAL NOT NULL DEFAULT 0,observed INTEGER NOT NULL DEFAULT 0,
           PRIMARY KEY(day,profile_id));
         CREATE INDEX IF NOT EXISTS tracking_activity_profile ON tracking_activity(profile_id,day);
+        CREATE INDEX IF NOT EXISTS tracking_profiles_created ON profiles(created);
         CREATE TABLE IF NOT EXISTS tracking_visits(
           id TEXT PRIMARY KEY,profile_id TEXT NOT NULL,client_id TEXT NOT NULL,
           started REAL NOT NULL,last_seen REAL NOT NULL);
@@ -392,14 +393,18 @@ class Tracking:
 
 
 def metrics_report(store, days=30):
+    from backend.matchmaking_metrics import report as matchmaking_report
     if type(days) is not int or not 1 <= days <= 365:
         raise ValueError('Choose between one and 365 days')
     now = time.time()
     today = datetime.fromtimestamp(now, timezone.utc).date()
     start = today - timedelta(days=days - 1)
     since = datetime.combine(start, datetime.min.time(), timezone.utc).timestamp()
+    previous_start = start - timedelta(days=days)
+    previous_since = datetime.combine(previous_start, datetime.min.time(), timezone.utc).timestamp()
     db = store.db
     meta = dict(db.execute('SELECT key,value FROM tracking_meta').fetchall())
+    started_at = float(meta['started_at']) if 'started_at' in meta else None
     daily = {str(start + timedelta(days=i)): {'day': str(start + timedelta(days=i)), 'active_users': 0,
              'returning_users': 0, 'new_profiles': 0, 'new_accounts': 0, 'requests': 0, 'logins': 0,
              'reconnects': 0, 'connection_gaps': 0, 'online_seconds': None, 'peak_online': None,
@@ -429,6 +434,7 @@ def metrics_report(store, days=30):
             daily[row['day']]['peak_online'] = row['peak']
             peak = max(peak or 0, row['peak'])
     matches = {'started': 0, 'completed': 0, 'surrendered': 0, 'cpu': 0, 'human': 0}
+    match_cohort = {'started': 0, 'ended': 0, 'completed_without_surrender': 0, 'surrendered': 0, 'ongoing': 0}
     durations, turn_counts, stadiums = [], [], Counter()
     for row in db.execute('''SELECT m.state_json,(SELECT COUNT(*) FROM turns t WHERE t.match_id=m.id) AS turns
          FROM matches m WHERE json_extract(state_json,'$.created')>=? OR json_extract(state_json,'$.ended')>=?''', (since, since)):
@@ -436,6 +442,13 @@ def metrics_report(store, days=30):
         created, ended = match.get('created', 0), match.get('ended', 0)
         if since <= created <= now:
             matches['started'] += 1
+            match_cohort['started'] += 1
+            if match.get('phase') == 'ended':
+                match_cohort['ended'] += 1
+                if match.get('given_up') is not None: match_cohort['surrendered'] += 1
+                else: match_cohort['completed_without_surrender'] += 1
+            else:
+                match_cohort['ongoing'] += 1
             matches['human' if all(match.get('profiles', [])) else 'cpu'] += 1
             stadiums[match.get('stadium', 'unknown')] += 1
             daily[day_at(created)]['matches_started'] += 1
@@ -446,6 +459,34 @@ def metrics_report(store, days=30):
             daily[day_at(ended)]['matches_completed'] += 1
     matches['mean_duration_seconds'] = sum(durations) / len(durations) if durations else None
     matches['mean_turns'] = sum(turn_counts) / len(turn_counts) if turn_counts else None
+    match_cohort['completion_rate'] = 100 * match_cohort['ended'] / match_cohort['started'] if match_cohort['started'] else None
+    comparison = {
+        'start': str(previous_start), 'end_exclusive': str(start), 'current_period_includes_partial_day': True,
+        'activity_complete': started_at is not None and started_at <= previous_since,
+        'active_profiles': db.execute('SELECT COUNT(DISTINCT profile_id) FROM tracking_activity WHERE day>=? AND day<?', (str(previous_start), str(start))).fetchone()[0],
+        'matches_started': db.execute("SELECT COUNT(*) FROM matches WHERE json_extract(state_json,'$.created')>=? AND json_extract(state_json,'$.created')<?", (previous_since, since)).fetchone()[0],
+        'new_profiles': db.execute('SELECT COUNT(*) FROM profiles WHERE created>=? AND created<?', (previous_since, since)).fetchone()[0],
+    }
+    # Exclude the partial day when collection began and the current partial day.
+    # Only actual observations after collection began count as returns.
+    collection_start = datetime.fromtimestamp(started_at, timezone.utc).date() + timedelta(days=1) if started_at is not None else None
+    cohort_start = max(start, collection_start) if collection_start is not None else None
+    retention_days = []
+    for day in (1, 7, 30):
+        eligible_end = today - timedelta(days=day)
+        eligible = returned = 0
+        if cohort_start is not None and cohort_start < eligible_end:
+            row = db.execute('''SELECT COUNT(*), COALESCE(SUM(EXISTS(
+                SELECT 1 FROM tracking_activity a WHERE a.profile_id=p.id AND a.observed=1
+                  AND a.day=date(p.created,'unixepoch',?))),0)
+                FROM profiles p WHERE p.created>=? AND p.created<?''',
+                (f'+{day} days', datetime.combine(cohort_start, datetime.min.time(), timezone.utc).timestamp(),
+                 datetime.combine(eligible_end, datetime.min.time(), timezone.utc).timestamp())).fetchone()
+            eligible, returned = row
+        retention_days.append({'day': day, 'eligible': eligible, 'returned': returned,
+                               'rate': 100 * returned / eligible if eligible else None})
+    retention = {'cohort_start': str(cohort_start) if cohort_start is not None else None,
+                 'cohort_end': str(today), 'coverage_started_at': started_at, 'days': retention_days}
     from tools.game_config import STADIUMS
     matches['stadiums'] = [{'stadium': key, 'name': STADIUMS[key - 1] if type(key) is int and 1 <= key <= len(STADIUMS) else 'Unknown',
                            'matches': count} for key, count in stadiums.most_common()]
@@ -488,7 +529,9 @@ def metrics_report(store, days=30):
             'queued': db.execute('SELECT COUNT(*) FROM matchmaking_queue').fetchone()[0], 'peak_online': peak,
             'usage': {'active_users': len(active), 'returning_users': len(returning), 'visits': visits[0],
                       'mean_visit_seconds': visits[1], 'estimated_online_seconds': sum(d['online_seconds'] or 0 for d in daily.values())},
-            'daily': list(daily.values()), 'matches': matches, 'platforms': platforms, 'versions': versions,
+            'daily': list(daily.values()), 'matches': matches, 'match_cohort': match_cohort,
+            'comparison': comparison, 'retention': retention, 'queue_waits': matchmaking_report(db, str(start)),
+            'platforms': platforms, 'versions': versions,
             'game': game_measurements.report(db,str(start)),
             'diagnostics': diagnostics, 'performance': list(performance.values()), 'errors': errors,
             'resources': json.loads(meta['runtime']) if 'runtime' in meta else None}

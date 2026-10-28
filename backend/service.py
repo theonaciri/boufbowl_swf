@@ -273,7 +273,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             elif operation == "queue_join":
                 self.join_queue(profile, body.get("stadiums"))
             elif operation == "queue_leave":
-                self.leave_queue(profile)
+                self.leave_queue(profile, 'cancelled')
             elif operation == "cpu_match":
                 self.create_match(profile, None, body.get("stadium", 1))
             elif operation == "chat":
@@ -373,7 +373,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
                 raise ServiceError("MATCH_ACTIVE", "A participant already has an active match")
         for participant in (left, right):
             if participant:
-                self.leave_queue(participant)
+                self.leave_queue(participant, 'matched' if source in ('matchmaking', 'tournament') else 'other')
                 for offer in self.store.db.execute("SELECT * FROM challenges WHERE (host=? OR guest=?) AND status='pending'",(participant,participant)).fetchall():
                     self.cancel_offer(offer)
         rules = resolve_stadium(self.config, key)
@@ -550,7 +550,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
             match["score"][2 - side] = max(match["score"][2 - side], match["score"][side - 1] + 1)
             self.end_match(match, side)
         elif name == "CANCEL_MATCH_REQUEST":
-            self.leave_queue(profile)
+            self.leave_queue(profile, 'cancelled')
             self.cancel_challenges(profile)
         else:
             raise ServiceError("FEATURE_UNSUPPORTED", f"Unsupported client request: {name}")
@@ -1003,7 +1003,7 @@ class Service(Admin, TournamentRounds, Economy, Progression, Moderation, Tournam
                 if queue[0] < now - self.matchmaking_settings()["heartbeat_timeout"]:
                     if queue["tournament_id"] is not None:
                         self.emit(profile, "TOURNAMENT_OFFER_CANCELED", {})
-                    self.leave_queue(profile)
+                    self.leave_queue(profile, 'expired', now)
                 else:
                     self.store.db.execute("UPDATE matchmaking_queue SET heartbeat=? WHERE profile_id=?", (now, profile))
 

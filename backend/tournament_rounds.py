@@ -53,8 +53,9 @@ class TournamentRounds:
         if now<data['slot']['start']:return False
         if now<data['slot']['end']:return False
         queued=[r[0] for r in self.store.db.execute('SELECT profile_id FROM matchmaking_queue WHERE tournament_id=?',(str(identity),))]
-        self.store.db.execute('DELETE FROM matchmaking_queue WHERE tournament_id=?',(str(identity),))
-        for profile in queued:self.emit(profile,'TOURNAMENT_OFFER_CANCELED',{})
+        for profile in queued:
+            self.leave_queue(profile,'tournament_closed',now)
+            self.emit(profile,'TOURNAMENT_OFFER_CANCELED',{})
         if any(m['phase']!='ended' for m in matches):
             projection=math.ceil(now/60)*60+(settings['round_count']-number)*settings['round_seconds']
             if projection>settings['end_time']:

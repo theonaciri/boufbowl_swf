@@ -146,6 +146,8 @@ class Store:
         """)
         from backend.tracking import init_schema
         init_schema(self.db)
+        from backend.matchmaking_metrics import init_schema as init_matchmaking_metrics
+        init_matchmaking_metrics(self.db)
 
     @contextmanager
     def transaction(self):

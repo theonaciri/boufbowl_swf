@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch
 
 from backend.service import Service
+from backend.matchmaking_metrics import report as queue_report
 from backend.storage import ServiceError
 from tests.test_backend import initial_club
 from tools.game_config import load_config
@@ -49,6 +50,8 @@ class TournamentLifecycleTests(unittest.TestCase):
         self.assertEqual(self.service.matchmaking_status(self.pid(self.a))['status'],'waiting')
         self.advance(self.anchor+30)
         self.assertEqual(self.service.matchmaking_status(self.pid(self.a))['status'],'idle')
+        exits=queue_report(self.service.store.db,'2000-01-01')['rows']
+        self.assertEqual([(row['kind'],row['outcome'],row['count']) for row in exits], [('tournament','tournament_closed',1)])
         self.assertTrue(self.packet(self.a,'PAST_TOURNAMENTS')['tournaments'][0]['closed'])
         self.assertEqual(self.packet(self.a,'TOURNAMENT_CLOSED')['tournamentId'],'1')
         self.assertEqual(self.service.store.db.execute('SELECT COUNT(*) FROM tournament_rewards').fetchone()[0],0)

@@ -1,54 +1,70 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="robots" content="noindex,nofollow">
-  <link rel="icon" href="data:," />
-  <link rel="stylesheet" href="admin.css" />
-  <meta name="description" content="Administration privée des statistiques agrégées du site Boufbowl.">
-<title>Boufbowl · Website activity</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Administration privée de l’activité agrégée du site Boufbowl.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="admin.css">
+  <title>Boufbowl · Activité du site</title>
+  <style>
+    .website-intro { max-width: 65ch; }
+    .website-toolbar { display:flex; align-items:end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+    .website-toolbar .field { min-width:155px; }
+    .website-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .website-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
+    .website-stats .stat { min-width:0; }
+    .website-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; align-items:start; }
+    .website-panel-head { display:flex; justify-content:space-between; gap:16px; align-items:start; flex-wrap:wrap; margin-bottom:18px; }
+    .website-panel-head h2 { margin-bottom:4px; }
+    .website-bars { display:grid; gap:8px; margin:18px 0; }
+    .website-bar { display:grid; grid-template-columns:minmax(95px, 160px) minmax(30px,1fr) auto; align-items:center; gap:12px; width:100%; text-align:left; background:transparent; border:1px solid transparent; padding:7px; font-weight:400; }
+    .website-bar:hover, .website-bar:focus-visible, .website-bar[aria-pressed="true"] { background:#203436; border-color:#60927c; }
+    .website-bar span:first-child { overflow-wrap:anywhere; }
+    .website-track { height:9px; background:#2b3b3f; border-radius:9px; overflow:hidden; }
+    .website-fill { display:block; height:100%; background:var(--mint); border-radius:9px; }
+    .website-bar strong { min-width:4ch; text-align:right; font-variant-numeric:tabular-nums; }
+    .website-selection { min-height:2em; color:var(--muted); }
+    .website-privacy { max-width:85ch; margin-bottom:20px; }
+    .website-detail { margin-top:20px; }
+    .website-detail summary { margin-bottom:8px; }
+    @media(max-width:700px) { .website-stats { grid-template-columns:1fr; } .website-columns { grid-template-columns:1fr; gap:0; } .website-bar { grid-template-columns:minmax(80px,120px) minmax(20px,1fr) auto; gap:8px; } }
+  </style>
 </head>
 <body data-console="activity">
   <section id="console-login" class="panel login-panel">
-    <span class="eyebrow">Restricted access</span>
-    <h2>Sign in to the admin console</h2>
-    <p>Website activity is available to server administrators.</p>
+    <span class="eyebrow">Accès réservé</span>
+    <h2>Connexion à l’administration</h2>
+    <p>L’activité du site est réservée aux administrateurs du serveur.</p>
     <form id="console-account">
-      <label class="field">Username<input id="console-username" autocomplete="username" value="KrissKrass" required /></label>
-      <label class="field">Password<input id="console-password" type="password" autocomplete="current-password" required /></label>
-      <button>Sign in</button>
+      <label class="field">Identifiant<input id="console-username" autocomplete="username" value="KrissKrass" required></label>
+      <label class="field">Mot de passe<input id="console-password" type="password" autocomplete="current-password" required></label>
+      <button>Se connecter</button>
     </form>
-    <details style="margin-top:18px">
-      <summary>Use an existing administrator session</summary>
-      <form id="console-device">
-        <label class="field">Administrator session<input id="console-session" type="password" autocomplete="off" required /></label>
-        <button>Connect</button>
-      </form>
-    </details>
+    <details><summary>Utiliser une session administrateur existante</summary><form id="console-device">
+      <label class="field">Session<input id="console-session" type="password" autocomplete="off" required></label>
+      <button>Se connecter</button>
+    </form></details>
   </section>
   <p id="console-error" class="status" role="status" aria-live="polite"></p>
   <main id="console-main" hidden>
-    <div class="page-heading">
-      <div><span class="eyebrow">Public site · Aggregate usage</span><h1>Website activity</h1><p>Sections, restoration interests, downloads, web launches and assets loaded by the server.</p></div>
-      <button id="website-refresh" class="secondary">Refresh</button>
-    </div>
-    <div class="filters">
-      <label class="field">Period<select id="website-days"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">365 days</option></select></label>
-      <span id="website-updated" class="muted"></span>
-    </div>
+    <div class="page-heading"><div><span class="eyebrow">Site public · Données agrégées</span><h1>Activité du site</h1><p class="website-intro">Découvrez les sections consultées et les actions choisies sur le site.</p></div></div>
+    <div class="website-toolbar"><label class="field">Période · UTC<select id="website-days"><option value="7">7 jours</option><option value="30" selected>30 jours</option><option value="90">90 jours</option><option value="365">365 jours</option></select></label><div class="website-actions"><span id="website-updated" class="muted"></span><button id="website-refresh" class="secondary">Actualiser</button></div></div>
     <p id="website-status" class="status" role="status" aria-live="polite"></p>
-    <section class="panel"><h2>Section interest</h2><p>Views count when a section enters the screen. Time is approximate visible time.</p><div id="website-sections" class="scroll"></div></section>
-    <div class="workspace">
-      <section class="panel"><h2>Class interests</h2><div id="website-classes" class="scroll"></div></section>
-      <section class="panel"><h2>Character interests</h2><div id="website-characters" class="scroll"></div></section>
+    <p class="notice website-privacy">Ces événements sont agrégés : ils ne représentent pas des personnes uniques. Un clic ne garantit pas un téléchargement ou une partie, et ne peut pas être relié à un joueur.</p>
+    <div id="website-stats" class="website-stats" aria-label="Actions observées pendant la période"></div>
+    <section class="panel">
+      <div class="website-panel-head"><div><h2>Quelles sections sont consultées ?</h2><p>Une vue est comptée lorsqu’une section entre à l’écran. Le temps affiché est approximatif.</p></div><label class="field">Mesure<select id="website-section-metric"><option value="views">Vues de section</option><option value="seconds">Temps visible cumulé</option></select></label></div>
+      <div id="website-section-bars" class="website-bars" aria-label="Sections les plus consultées"></div><p id="website-section-selection" class="website-selection" aria-live="polite"></p>
+      <details class="website-detail"><summary>Voir toutes les sections</summary><div id="website-sections" class="scroll"></div></details>
+    </section>
+    <div class="website-columns">
+      <section class="panel"><div class="website-panel-head"><div><h2>Centres d’intérêt</h2><p>Sélections dans les espaces de découverte.</p></div><label class="field">Afficher<select id="website-interest-kind"><option value="classes">Classes</option><option value="characters">Personnages</option></select></label></div><div id="website-interest-bars" class="website-bars" aria-label="Centres d’intérêt"></div><p id="website-interest-selection" class="website-selection" aria-live="polite"></p><details class="website-detail"><summary>Voir toutes les classes et personnages</summary><h3>Classes</h3><div id="website-classes" class="scroll"></div><h3>Personnages</h3><div id="website-characters" class="scroll"></div></details></section>
+      <section class="panel"><h2>Comment jouer ?</h2><p>Clics sur les boutons du site, pas installations ni sessions de jeu.</p><h3>Téléchargements</h3><div id="website-downloads" class="scroll"></div><h3>Jeu dans le navigateur</h3><div id="website-web" class="scroll"></div></section>
     </div>
-    <div class="workspace">
-      <section class="panel"><h2>Download clicks</h2><div id="website-downloads" class="scroll"></div></section>
-      <section class="panel"><h2>Web game clicks</h2><div id="website-web" class="scroll"></div></section>
-    </div>
-    <section class="panel"><h2>Assets loaded from this server</h2><p>Browser-cached files do not create a server request.</p><div id="website-assets" class="scroll"></div></section>
-    <p id="website-coverage" class="muted"></p>
+    <details class="panel"><summary>Requêtes de ressources au serveur</summary><p>Les fichiers servis depuis le cache du navigateur ne génèrent pas de requête. Les 100 ressources les plus demandées sont affichées.</p><div id="website-asset_requests" class="scroll"></div></details>
+    <p class="muted">Données agrégées sans identifiant de visiteur. L’activité réelle peut être différente si le navigateur ne transmet pas un événement.</p>
   </main>
   <script src="admin.js" defer></script>
   <script src="website-activity.js" defer></script>

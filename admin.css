@@ -568,8 +568,13 @@ dialog::backdrop {
   .admin-nav nav {
     order: 3;
     width: 100%;
+    min-width: 0;
+    overflow-x: auto;
     height: 38px;
     justify-content: space-between;
+  }
+  .admin-nav nav a {
+    flex: 0 0 auto;
   }
   .nav-right {
     font-size: 11px;

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <application xmlns="http://ns.adobe.com/air/application/51.4">
   <id>org.boufbowl.offline</id>
-  <versionNumber>1.0.11</versionNumber>
-  <versionLabel>0.6.1</versionLabel>
+  <versionNumber>1.0.12</versionNumber>
+  <versionLabel>0.7.0</versionLabel>
   <filename>Boufbowl Fan</filename>
   <name>Boufbowl Fan</name>
   <description>Boufbowl Fan: restored game, online matches, character customization and tutorial.</description>

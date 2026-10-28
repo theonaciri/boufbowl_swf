@@ -1,5 +1,12 @@
 # Game measurements
 
+Matchmaking exit statistics are anonymous daily aggregates, collected from the
+time this version starts. They separate regular and tournament queues and record
+matched, cancelled, expired, tournament-closed, replaced and other exits. Time
+ends at the expiry deadline for expired searches; ongoing searches are excluded.
+The p50 and p95 values are upper bucket bounds, not exact percentiles (a duration
+above the largest bucket has no upper bound). Aggregates expire after 400 days.
+
 The private `admin.html` dashboard combines authenticated client timing reports
 with authoritative counters from newly resolved turns. Historical matches are
 not backfilled. The report exposes its collection start time and coverage notes;
@@ -47,6 +54,20 @@ counts, not averages of percentages. Zero attempts produce no rate. Counts
 compare observed play, not equivalent opponents or a controlled balance test.
 Daily match starts/endings can involve different matches and are not a cohort
 completion rate. Endings include surrender.
+
+The admin overview separately groups matches by their start date. Its completion
+rate counts those now ended, including forfeits and both-offline endings; ongoing
+games make recent cohorts incomplete. “Without surrender” only means no surrender
+was recorded and can include other early endings.
+
+Return rates use profiles created in the selected UTC period and activity exactly
+1, 7 or 30 calendar days later. Each denominator includes only profiles whose
+return day has fully elapsed. Collection's first partial day and backfilled return
+events are excluded. Deleted profiles disappear from cohorts, and interruptions
+or lost buffers can make observations incomplete. The prior-period coverage flag
+only indicates that collection began by the start of that period; it cannot detect
+outages or deletions. Current-day values are partial. Profile counts do not
+establish unique people.
 
 ## Verification and boundaries
 

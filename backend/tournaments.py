@@ -250,8 +250,9 @@ class Tournaments:
             if finished:phase='closing'
             if phase=='closing':
                 queued=self.store.db.execute('SELECT profile_id FROM matchmaking_queue WHERE tournament_id=?',(str(settings['id']),)).fetchall()
-                self.store.db.execute('DELETE FROM matchmaking_queue WHERE tournament_id=?',(str(settings['id']),))
-                for p in queued:self.emit(p[0],'TOURNAMENT_OFFER_CANCELED',{})
+                for p in queued:
+                    self.leave_queue(p[0],'tournament_closed',now)
+                    self.emit(p[0],'TOURNAMENT_OFFER_CANCELED',{})
                 active=any(json.loads(m[0]).get('tournament')==settings['id'] and json.loads(m[0])['phase']!='ended' for m in self.store.db.execute('SELECT state_json FROM matches'))
                 if not active:
                     self.finalize_tournament(row);phase='ended'

@@ -3,6 +3,7 @@ import json
 import secrets
 import time
 from backend.storage import ServiceError
+from backend.matchmaking_metrics import record as record_queue_exit
 from tools.game_config import STADIUMS
 
 DEFAULTS={'rating_window':200,'widen_per_second':5,'heartbeat_timeout':90,'search_timeout':300}
@@ -12,7 +13,14 @@ class Matchmaking:
     def matchmaking_settings(self):
         return {**DEFAULTS,**self.config['general'].get('matchmaking',{})}
 
-    def leave_queue(self, profile):
+    def leave_queue(self, profile, outcome='other', ended=None):
+        entry=self.store.db.execute('SELECT joined,heartbeat,tournament_id FROM matchmaking_queue WHERE profile_id=?',(profile,)).fetchone()
+        if entry:
+            now=time.time() if ended is None else ended
+            if outcome=='expired':
+                settings=self.matchmaking_settings()
+                now=min(now,entry['heartbeat']+settings['heartbeat_timeout'],entry['joined']+settings['search_timeout'])
+            record_queue_exit(self.store.db,entry,outcome,now)
         self.store.db.execute('DELETE FROM matchmaking_queue WHERE profile_id=?',(profile,))
 
     def join_queue(self, profile, stadiums=None, tournament=None):
@@ -36,6 +44,8 @@ class Matchmaking:
             raise ServiceError('PLAYER_BUSY','Stop spectating before searching')
         self.cancel_challenges(profile)
         now=time.time()
+        existing=self.store.db.execute('SELECT tournament_id FROM matchmaking_queue WHERE profile_id=?',(profile,)).fetchone()
+        if existing and existing['tournament_id'] != tournament: self.leave_queue(profile,'replaced',now)
         self.store.db.execute('INSERT INTO matchmaking_queue(profile_id,stadiums_json,joined,heartbeat,tournament_id) VALUES(?,?,?,?,?) ON CONFLICT(profile_id) DO UPDATE SET stadiums_json=excluded.stadiums_json,joined=CASE WHEN matchmaking_queue.tournament_id IS excluded.tournament_id THEN matchmaking_queue.joined ELSE excluded.joined END,heartbeat=excluded.heartbeat,tournament_id=excluded.tournament_id',
                               (profile,json.dumps(sorted(set(stadiums))),now,now,tournament))
         if tournament is not None: self.register_tournament(profile,settings)
@@ -46,8 +56,7 @@ class Matchmaking:
         expired=self.store.db.execute('SELECT profile_id,tournament_id FROM matchmaking_queue WHERE heartbeat<? OR joined<?',(now-settings['heartbeat_timeout'],now-settings['search_timeout'])).fetchall()
         for entry in expired:
             if entry['tournament_id'] is not None:self.emit(entry['profile_id'],'TOURNAMENT_OFFER_CANCELED',{})
-        self.store.db.execute('DELETE FROM matchmaking_queue WHERE heartbeat<? OR joined<?',
-                              (now-settings['heartbeat_timeout'],now-settings['search_timeout']))
+            self.leave_queue(entry['profile_id'],'expired',now)
         rows=self.store.db.execute('SELECT * FROM matchmaking_queue ORDER BY joined,profile_id').fetchall()
         available=[]
         for row in rows:
@@ -57,7 +66,7 @@ class Matchmaking:
                     tournament=self.tournament_config(row['tournament_id'])
                     if not tournament['start_time'] <= now < tournament['end_time']: raise ServiceError('TOURNAMENT_CLOSED','Tournament ended')
                 except ServiceError:
-                    self.leave_queue(row['profile_id']);continue
+                    self.leave_queue(row['profile_id'],'tournament_closed',now);continue
             available.append(row)
         matched=set()
         for i,first in enumerate(available):

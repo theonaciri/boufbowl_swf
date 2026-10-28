@@ -33,12 +33,12 @@ window.AdminConsole = (() => {
   brand.href = "admin.html";
   brand.append(el("span", "B", "brand-mark"), el("span", "BOUFBOWL"));
   const links = el("nav");
-  links.setAttribute("aria-label", "Administrator pages");
+  links.setAttribute("aria-label", "Pages d’administration");
   for (const [href, label] of [
-    ["admin.html", "Overview"],
-    ["website-activity.html", "Website"],
-    ["moderation.html", "Moderation"],
-    ["tournaments.html", "Tournaments"],
+    ["admin.html", "Vue d’ensemble"],
+    ["website-activity.html", "Site web"],
+    ["moderation.html", "Modération"],
+    ["tournaments.html", "Tournois"],
     ["assets-admin.html", "Assets"],
   ]) {
     const link = el("a", label);
@@ -49,8 +49,12 @@ window.AdminConsole = (() => {
   }
   const right = el("div", null, "nav-right");
   right.append(el("span", "ADMIN CONSOLE", "eyebrow"));
-  const signout = el("button", "Sign out", "secondary small");
+  const signout = el("button", "Déconnexion", "secondary small");
   signout.hidden = !token;
+  window.addEventListener("admin-session-changed", () => {
+    token = sessionStorage.getItem("boufbowl-admin-session") || "";
+    signout.hidden = !token;
+  });
   signout.onclick = () => {
     sessionStorage.removeItem("boufbowl-admin-session");
     location.reload();

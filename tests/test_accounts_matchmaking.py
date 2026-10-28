@@ -104,9 +104,9 @@ class AccountMatchmakingTests(unittest.TestCase):
 
     def test_two_accounts_or_devices_match_and_finish_as_humans(self):
         self.a=self.register(self.a);self.b=self.register(self.b,'bob-account')
-        self.assertEqual(self.command(self.a)['matchmaking']['status'],'waiting')
+        self.assertEqual(self.command(self.a,stadiums=[1])['matchmaking']['status'],'waiting')
         self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
-        self.command(self.b)
+        self.command(self.b,stadiums=[1])
         match=self.s.store.active_match(self.pid(self.a))
         self.assertEqual(match['profiles'],[self.pid(self.a),self.pid(self.b)])
         for player in (self.a,self.b):self.protocol(player,'PLACEMENT',{'turn':1,'boufbowlerPositions':[]})

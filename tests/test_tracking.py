@@ -1,6 +1,6 @@
 """Durable tracking, recovered history, access controls and hot-path overhead."""
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 from pathlib import Path
 import sqlite3
@@ -45,6 +45,77 @@ class TrackingTests(unittest.TestCase):
         self.assertEqual(report['usage']['active_users'], 2)
         for days in (0, 366, True, '7'):
             with self.assertRaises(ValueError): self.service.metrics({**body, 'days': days})
+
+    def test_cohorts_compare_like_periods_and_exclude_immature_returns(self):
+        db = self.service.store.db
+        alice, bob = self.identity(self.alice), self.identity(self.bob)
+        stamp = lambda day: datetime(2026, 10, day, 12, tzinfo=timezone.utc).timestamp()
+        now = stamp(28)
+        db.execute("UPDATE tracking_meta SET value=? WHERE key='started_at'", (str(stamp(1)),))
+        db.execute('DELETE FROM tracking_activity')
+        db.execute('UPDATE profiles SET created=? WHERE id=?', (stamp(20), alice))
+        db.execute('UPDATE profiles SET created=? WHERE id=?', (stamp(26), bob))
+        for day, profile in [('2026-10-19', alice), ('2026-10-21', alice), ('2026-10-27', alice), ('2026-10-27', bob), ('2026-10-28', bob)]:
+            db.execute('INSERT INTO tracking_activity(day,profile_id,first_seen,last_seen,observed) VALUES(?,?,?,?,1)',
+                       (day, profile, now, now))
+        for created, phase, given_up in [(19, 'ended', None), (20, 'ended', None), (23, 'ended', 1), (25, 'planning', None)]:
+            state = {'created': stamp(created), 'phase': phase, 'ended': stamp(26) if phase == 'ended' else 0,
+                     'given_up': given_up, 'profiles': [alice, bob]}
+            db.execute('INSERT INTO matches(state_json,updated) VALUES(?,?)', (json.dumps(state), now))
+        with patch('backend.tracking.time.time', return_value=now):
+            report = metrics_report(self.service.store, 9)
+        self.assertEqual(report['comparison']['start'], '2026-10-11')
+        self.assertEqual(report['comparison']['end_exclusive'], '2026-10-20')
+        self.assertEqual((report['comparison']['active_profiles'], report['comparison']['matches_started'], report['comparison']['new_profiles']), (1, 1, 0))
+        self.assertTrue(report['comparison']['activity_complete'])
+        cohort = report['match_cohort']
+        self.assertEqual((cohort['started'], cohort['ended'], cohort['completed_without_surrender'], cohort['surrendered'], cohort['ongoing']), (3, 2, 1, 1, 1))
+        self.assertAlmostEqual(cohort['completion_rate'], 200 / 3)
+        retention = {row['day']: row for row in report['retention']['days']}
+        self.assertEqual((retention[1]['eligible'], retention[1]['returned'], retention[1]['rate']), (2, 2, 100))
+        self.assertEqual((retention[7]['eligible'], retention[7]['returned'], retention[7]['rate']), (1, 1, 100))
+        self.assertEqual((retention[30]['eligible'], retention[30]['rate']), (0, None))
+
+    def test_retention_excludes_partial_collection_day_and_recovered_activity(self):
+        db = self.service.store.db
+        alice, bob = self.identity(self.alice), self.identity(self.bob)
+        stamp = lambda day: datetime(2026, 10, day, 12, tzinfo=timezone.utc).timestamp()
+        db.execute("UPDATE tracking_meta SET value=? WHERE key='started_at'", (str(stamp(20)),))
+        db.execute('DELETE FROM tracking_activity')
+        db.execute('UPDATE profiles SET created=? WHERE id=?', (stamp(20), alice))
+        db.execute('UPDATE profiles SET created=? WHERE id=?', (stamp(21), bob))
+        for day, profile in [('2026-10-21', alice), ('2026-10-22', bob)]:
+            db.execute('INSERT INTO tracking_activity(day,profile_id,first_seen,last_seen,observed) VALUES(?,?,?,?,0)',
+                       (day, profile, stamp(22), stamp(22)))
+        with patch('backend.tracking.time.time', return_value=stamp(28)):
+            report = metrics_report(self.service.store, 9)
+        first_day = report['retention']['days'][0]
+        self.assertEqual(report['retention']['cohort_start'], '2026-10-21')
+        self.assertFalse(report['comparison']['activity_complete'])
+        self.assertEqual((first_day['eligible'], first_day['returned'], first_day['rate']), (1, 0, 0))
+
+    def test_retention_thirty_day_cutoff_and_deleted_profiles(self):
+        db = self.service.store.db
+        alice, bob = self.identity(self.alice), self.identity(self.bob)
+        now = datetime(2026, 10, 28, 12, tzinfo=timezone.utc)
+        db.execute("UPDATE tracking_meta SET value=? WHERE key='started_at'", (str((now - timedelta(days=100)).timestamp()),))
+        db.execute('DELETE FROM tracking_activity')
+        db.execute('UPDATE profiles SET created=? WHERE id=?', ((now - timedelta(days=31)).timestamp(), alice))
+        db.execute('UPDATE profiles SET created=? WHERE id=?', ((now - timedelta(days=30)).timestamp(), bob))
+        db.execute('INSERT INTO profiles VALUES(?,?,?,?,?)', ('deleted-test', 'Deleted test', '{}', '{}', (now - timedelta(days=31)).timestamp()))
+        for profile, day in ((alice, '2026-10-27'), (bob, '2026-10-28'), ('deleted-test', '2026-10-27')):
+            db.execute('INSERT INTO tracking_activity(day,profile_id,first_seen,last_seen,observed) VALUES(?,?,?,?,1)',
+                       (day, profile, now.timestamp(), now.timestamp()))
+        with patch('backend.tracking.time.time', return_value=now.timestamp()):
+            before = metrics_report(self.service.store, 90)
+            db.execute('DELETE FROM tracking_activity WHERE profile_id=?', ('deleted-test',))
+            db.execute('DELETE FROM profiles WHERE id=?', ('deleted-test',))
+            after = metrics_report(self.service.store, 90)
+        before30, after30 = before['retention']['days'][2], after['retention']['days'][2]
+        self.assertEqual((before30['eligible'], before30['returned']), (2, 2))
+        self.assertEqual((after30['eligible'], after30['returned']), (1, 1))
+        plan = db.execute('EXPLAIN QUERY PLAN SELECT id FROM profiles WHERE created>=? AND created<?', (0, now.timestamp())).fetchall()
+        self.assertTrue(any('tracking_profiles_created' in row['detail'] for row in plan))
 
     def test_polls_buffer_activity_without_writes_and_flush_survives_restart(self):
         profile = self.identity(self.alice)
@@ -226,7 +297,7 @@ class TrackingTests(unittest.TestCase):
                 return json.load(response)
         try:
             with urlopen(origin + '/admin.html') as response:
-                self.assertIn('Server activity', response.read().decode())
+                self.assertIn('Tableau de bord', response.read().decode())
             denied = post('/api/metrics', {'session': self.bob['session']})
             self.assertEqual(denied['code'], 'ACTIVITY_FORBIDDEN')
             accepted = post('/api/telemetry', {'session': self.alice['session'], 'events': [

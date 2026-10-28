@@ -2,13 +2,13 @@
 (() => {
   const colors = ["#75ddc6", "#f0cd87", "#a8baff", "#ee93b5", "#88c7ff"];
   const metrics = {
-    fps: ["Measured frame-event FPS", "FPS"],
-    p95_frame_ms: ["p95 frame interval upper bound", "ms"],
-    slow_percent: ["Slow frames", "%"],
-    fall_percent: ["Falls / risky movement tests", "%"],
-    pass_percent: ["Completed / attempted passes", "%"],
-    falls: ["Falls", "events"], goals: ["Goals", "events"],
-    interceptions: ["Interceptions", "events"], passes: ["Pass attempts", "events"],
+    fps: ["Images par seconde · événements", "FPS"],
+    p95_frame_ms: ["Borne supérieure p95 des intervalles", "ms"],
+    slow_percent: ["Images lentes", "%"],
+    fall_percent: ["Chutes / tests de déplacement risqués", "%"],
+    pass_percent: ["Passes réussies / tentées", "%"],
+    falls: ["Chutes", "événements"], goals: ["Buts", "événements"],
+    interceptions: ["Interceptions", "événements"], passes: ["Passes tentées", "événements"],
   };
   const number = value => value == null ? "—" : Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 });
   const element = (name, text) => { const node = document.createElement(name); if (text != null) node.textContent = text; return node; };
@@ -23,7 +23,7 @@
     svg.replaceChildren();
     svg.setAttribute("aria-label", label);
     const values = series.flatMap(s => s.values.filter(v => v != null && Number.isFinite(v)));
-    if (!values.length) { svg.append(svgElement("text", { x: 40, y: 105, fill: "#aebdc3" }, "No measured data in this period.")); return; }
+    if (!values.length) { svg.append(svgElement("text", { x: 40, y: 105, fill: "#aebdc3" }, "Aucune mesure sur cette période.")); return; }
     const maximum = Math.max(1, ...values) * 1.1;
     const x = i => 65 + i * 825 / Math.max(1, days.length - 1);
     const y = value => 190 - value * 145 / maximum;
@@ -52,7 +52,7 @@
   }
   function table(id, headings, rows) {
     const target = document.getElementById(id); target.replaceChildren();
-    if (!rows.length) { target.textContent = "No measured data in this period."; return; }
+    if (!rows.length) { target.textContent = "Aucune mesure sur cette période."; return; }
     const node = element("table"), header = element("tr");
     headings.forEach(heading => header.append(element("th", heading)));
     const head = element("thead"); head.append(header); node.append(head);
@@ -80,31 +80,31 @@
     }).filter(row => row.team_turns);
   }
   function render(data) {
-    const game = data.game || { frames: [], gameplay: [], coverage: "Game measurement collection is unavailable on this server version." };
+    const game = data.game || { frames: [], gameplay: [], coverage: "La collecte des mesures de jeu est indisponible sur cette version du serveur." };
     const days = data.daily.map(row => row.day);
-    document.getElementById("game-coverage").textContent = game.coverage + (game.started_at ? " Collection started " + new Date(game.started_at * 1000).toLocaleString() + "." : "");
+    document.getElementById("game-coverage").textContent = "Les mesures de fluidité sont déclarées par le client et ne correspondent pas aux images affichées par le GPU. Les actions proviennent des tours enregistrés après le début de cette collecte ; les petits échantillons sont incertains." + (game.started_at ? " Collecte commencée le " + new Date(game.started_at * 1000).toLocaleString("fr-FR", { timeZone: "UTC" }) + " UTC." : "");
     const phase = document.getElementById("game-phase").value;
     const metric = document.getElementById("game-frame-metric").value;
     const frames = combineFrames(game.frames.filter(row => row.phase === phase));
     const frameSeries = [...new Set(frames.map(row => row.runtime))].map(runtime => {
       const byDay = new Map(frames.filter(row => row.runtime === runtime).map(row => [row.day, row]));
-      return { name: runtime, values: days.map(day => byDay.get(day)?.[metric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).samples} windows, ${byDay.get(day).frames} frames` : "") };
+      return { name: runtime, values: days.map(day => byDay.get(day)?.[metric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).samples} échantillons, ${byDay.get(day).frames} images` : "") };
     });
     const [frameLabel, frameUnit] = metrics[metric];
-    chart("game-frames-chart", days, frameSeries, frameLabel + (metric === "p95_frame_ms" ? " (worst platform bound)" : ""), frameUnit);
-    table("game-frame-details", ["UTC day", "Runtime / platform", "Phase", "Windows / frames", "Measured / target FPS", "p95 ≤ ms", "Slow %", "Max gap ms", "Peak runtime MB"],
+    chart("game-frames-chart", days, frameSeries, frameLabel + (metric === "p95_frame_ms" ? " (borne la plus élevée des plateformes)" : ""), frameUnit);
+    table("game-frame-details", ["Jour UTC", "Moteur / plateforme", "Vue", "Échantillons / images", "FPS mesurés / cible", "p95 ≤ ms", "Lentes %", "Intervalle max. ms", "Mémoire max. Mo"],
       game.frames.map(row => [row.day, row.runtime + " / " + row.platform, row.phase, `${row.samples} / ${row.frames}`, `${number(row.fps)} / ${number(row.target_fps)}`, number(row.p95_frame_ms), number(row.slow_percent), number(row.max_frame_ms), number(row.memory_max_mb)]));
     const gameplayMetric = document.getElementById("game-play-metric").value;
     const [gameLabel, gameUnit] = metrics[gameplayMetric];
     chart("game-play-chart", days, ["cpu", "human"].map(controller => {
       const byDay = new Map(game.gameplay.filter(row => row.controller === controller).map(row => [row.day, row]));
-      return { name: controller === "cpu" ? "CPU teams" : "Human teams", values: days.map(day => byDay.get(day)?.[gameplayMetric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).team_turns} team-turns` : "") };
+      return { name: controller === "cpu" ? "Équipes ordinateur" : "Équipes humaines", values: days.map(day => byDay.get(day)?.[gameplayMetric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).team_turns} tours équipe` : "") };
     }), gameLabel, gameUnit);
-    table("game-play-details", ["Controller", "Team-turns", "Move steps", "Risk tests", "Falls", "Fall %", "Passes", "Completed", "Pass %", "Interceptions", "Goals"],
+    table("game-play-details", ["Type", "Tours équipe", "Étapes déplacées", "Tests risqués", "Chutes", "Chutes %", "Passes", "Réussies", "Passes %", "Interceptions", "Buts"],
       gameplayTotals(game.gameplay).map(row => [row.controller, row.team_turns, row.moves, row.risk_tests, row.falls, number(row.fall_percent), row.passes, row.completed_passes, number(row.pass_percent), row.interceptions, row.goals]));
-    chart("game-matches-chart", days, [["matches_started", "Started"], ["matches_completed", "Ended (includes surrender)"]].map(([key, name]) => ({ name, values: data.daily.map(row => row[key]) })), "Daily match starts and endings", "matches");
+    chart("game-matches-chart", days, [["matches_started", "Commencés"], ["matches_completed", "Terminés (forfaits inclus)"]].map(([key, name]) => ({ name, values: data.daily.map(row => row[key]) })), "Matchs commencés et terminés par jour", "matchs");
     const startup = data.performance.filter(row => row.kind === "game_startup");
-    table("game-startup", ["SWF start → first server connection", "Samples", "Mean ms", "p95 ≤ ms"], startup.map(row => [row.name, row.count, number(row.mean_ms), number(row.p95_bucket_ms)]));
+    table("game-startup", ["Début SWF → première connexion serveur", "Échantillons", "Moyenne ms", "p95 ≤ ms"], startup.map(row => [row.name, row.count, number(row.mean_ms), number(row.p95_bucket_ms)]));
   }
   let latest;
   globalThis.AdminGameMeasurements = { combineFrames, gameplayTotals, render(data) {
