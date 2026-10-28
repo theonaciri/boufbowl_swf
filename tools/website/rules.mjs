@@ -50,6 +50,7 @@ export async function rulesPage(root) {
   ]);
   const rules = config.rules, match = rules.match, sim = rules.simulation, policy = sim.rulebook;
   if (!policy || policy.id !== registry.id) throw new Error("The French rules page requires the active registered rulebook");
+  if (policy.connection.both_expired !== "finish-current-score") throw new Error("Translate both-offline settlement");
   const indexed = new Map(registry.rules.map((rule) => [rule.id, rule]));
   const covered = copy.groups.flatMap(([, , ids]) => ids);
   if (new Set(covered).size !== covered.length || covered.length !== indexed.size || covered.some((id) => !indexed.has(id))) throw new Error("Translate and group every rulebook case exactly once");
@@ -69,7 +70,7 @@ export async function rulesPage(root) {
     receptionBonus: policy.maneuvers ? `Une réception normale, large ou critique donne respectivement ${[1,2,3].map(n=>number(n*policy.maneuvers.reception_throw_bonus)).join(', ')} point(s) au prochain lancer du même tour. Ces valeurs sont provisoires.` : "Le profil ne donne pas de bonus au lancer suivant.",
     stunFormula: `max(${number(policy.status.minimum_ticks)}, plafond(${number(policy.status.base_ticks)} − Eau × ${number(policy.status.water_reduction)})) pas de ${number(tick)} seconde`,
     graceSeconds: policy.connection.grace_seconds, heartbeatSeconds: policy.connection.heartbeat_timeout,
-    bothExpired: policy.connection.both_expired === "finish-current-score" ? "la partie est arrêtée au score courant" : (() => { throw new Error("Translate both-offline settlement"); })(),
+    bothExpired: "la partie est arrêtée au score courant",
     restartRecovery: match.restart_recovery === "reserves" ? "À une remise en place, les réservistes vivants retrouvent leurs PV maximum. Les joueurs qui étaient sur le terrain gardent leurs PV courants." : "À une remise en place, le profil actuel rétablit les PV des joueurs de terrain.",
     criticalDodge: policy.combat.critical_dodge_down ? "Le profil actuel met au sol après une esquive critique." : "Le profil actuel étourdit après une esquive critique, sans mise au sol automatique.",
     targetedEffects: policy.combat.official_effects ? "Quand le vainqueur poursuivait explicitement le perdant, les dégâts et conséquences suivent la branche « contact ciblé » du tableau ci-dessous." : "Le profil actuel désactive le tableau de conséquences documenté et utilise l’ancien modèle expérimental indiqué ci-dessous.",

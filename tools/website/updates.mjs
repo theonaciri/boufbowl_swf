@@ -3,8 +3,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { privateKeyPath } from '../updates/keys.mjs';
 
-export async function releaseManifest(root, files, origin, revision) {
-  const release=JSON.parse(await fs.readFile(path.join(root,'resources/release.json'),'utf8'));
+export async function releaseManifest(root, files, origin, revision, release) {
   const platforms={web:{version:release.version,revision,url:`${origin}/play.html`}};
   const artifacts={android:['android/build/Boufbowl Fan.apk','downloads/Boufbowl Fan.apk'],windows:['windows/build/Boufbowl Fan.exe','downloads/Boufbowl Fan.exe'],linux:['linux/build/Boufbowl Fan.run','downloads/Boufbowl Fan.run']};
   for(const [platform,[source,target]] of Object.entries(artifacts)) {

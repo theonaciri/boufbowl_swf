@@ -12,9 +12,8 @@ package com.ankamagames.boufbowl.client.matchmaking.view
    import com.ankamagames.boufbowl.config.IStadiumsConfig;
    import com.ankamagames.boufbowl.config.StadiumSpecificData;
    import com.ankamagames.boufbowl.ui.components.matchcreation.stadium.StadiumSelector;
+   import com.ankamagames.boufbowl.ui.components.matchcreation.stadium.StadiumPreviewWithAvailability;
    import com.ankamagames.boufbowl.ui.components.matchcreation.stadium.StadiumViewData;
-   import com.ankamagames.xgaming.font.Verdana;
-   import com.ankamagames.xgaming.ui.components.TextZone;
    import com.ankamagames.xgaming.utils.event.IndexEvent;
    import com.ankamagames.xgaming.utils.i18n.ITranslator;
    import com.ankamagames.xgaming.utils.logging.LoggerFactory;
@@ -44,10 +43,6 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       
       private var _stadiumDescriptionTextBuilder:StadiumDescriptionTextBuilder;
       
-      private var _challengeDescriptionText:TextZone;
-      
-      private var _randomDescriptionText:TextZone;
-      
       private var _pageClub:String;
       private var _pageStadium:int;
       private var _pageTeam:TextField;
@@ -74,7 +69,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       internal function updateStadiums(param1:ILinkedMap) : void
       {
          this.fillStadiumsList(param1);
-         if(StartUpApplicationCommand.serverMode()) this.refreshStadiumWaiting();
+         if(StartUpApplicationCommand.serverMode()) this.refreshStadiumWaiting(StartUpApplicationCommand.serverMatchPageInfo());
       }
       
       internal function selectStadium(param1:int) : void
@@ -88,7 +83,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          var description:String=this._pageStadium == 0 ? "<span fontWeight=\"bold\">Stade aléatoire</span><br />Le stade sera choisi parmi les terrains disponibles." : "<span fontWeight=\"bold\">"+this._translator.getEnumTranslation(LangConstants.STADIUM_NAME_ENUM,this._pageStadium)+"</span><br />Ce terrain sera utilisé pour votre match.";
          tabs.randomTab.descriptionTextZone.setContent(description);
          tabs.challengeTab.descriptionTextZone.setContent(description);
-         var rules:String=this._pageStadium > 0 ? this.getStadiumRulesText(this._pageStadium) : "Chaque stade possède ses propres règles. Touchez sa miniature pour le choisir.";
+         var rules:String=this._pageStadium > 0 ? this._stadiumDescriptionTextBuilder.buildDescription(this._pageStadium) : "Chaque stade possède ses propres règles. Touchez sa miniature pour le choisir.";
          tabs.randomTab.rulesTextZone.setContent(rules);
          tabs.challengeTab.rulesTextZone.setContent(rules);
          if(this._pageRandom != null) this._pageRandom.filters=this._pageStadium == 0 ? [new GlowFilter(0x79963a,.6,4,4,2)] : [];
@@ -101,12 +96,8 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          tabs.randomTab.championshipButton.visible = false;
          tabs.randomTab.buyStadiumsButton.visible = false;
          tabs.challengeTab.buyStadiumsButton.visible = false;
-         this._challengeDescriptionText = new TextZone();
-         this._challengeDescriptionText.defaultFontFamily = Verdana.NAME;
          tabs.randomTab.playButton.componentLabel = this._translator.getText(LangConstants.MATCHMAKING_PLAY_BUTTON);
          tabs.challengeTab.playButton.componentLabel = this._translator.getText(LangConstants.MATCHMAKING_PLAY_BUTTON);
-         this._randomDescriptionText = new TextZone();
-         this._randomDescriptionText.defaultFontFamily = Verdana.NAME;
          tabs.randomTabButton.addEventListener(MouseEvent.CLICK,this.randomTabButtonClickHandler);
          tabs.challengeTabButton.addEventListener(MouseEvent.CLICK,this.challengeTabButtonClickHandler);
          tabs.randomTab.stadiumsSelector.addEventListener(StadiumSelector.STADIUM_ROLLED_OVER,this.randomMatchStadiumRolledOverHandler);
@@ -181,14 +172,13 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          }
       }
 
-      private function refreshStadiumWaiting() : void
+      private function refreshStadiumWaiting(state:Object) : void
       {
          if(this._pageWaitingBadges == null) return;
-         var state:Object=StartUpApplicationCommand.serverMatchPageInfo();
          for each(var entry:Object in this._pageWaitingBadges)
          {
-            var preview:Sprite=entry.selector.getStadium(entry.index);
-            var id:int=entry.selector.getStadium(entry.index).stadiumId;
+            var preview:StadiumPreviewWithAvailability=entry.selector.getStadium(entry.index);
+            var id:int=preview.stadiumId;
             var badge:Sprite=entry.badge;
             badge.visible=entry.challenge == this._pageChallenge && preview.visible && state.stadiums.indexOf(id) >= 0;
             if(!badge.visible) continue;
@@ -229,7 +219,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          this._pageRandomWaiting.text=state.waiting_opponents == null ? "— en attente" : String(randomCount)+(randomCount == 1 ? " joueur en attente" : " joueurs en attente");
          this._pageRandomWaiting.textColor=randomCount > 0 ? 0x365b2a : 0x463d2b;
          this._pageStatus.text=state.waiting ? "Recherche d’un adversaire en cours… Vous pouvez l’annuler à gauche." : "Autres joueurs en recherche de match libre. Un joueur peut apparaître sur plusieurs stades.";
-         this.refreshStadiumWaiting();
+         this.refreshStadiumWaiting(state);
          tabs.randomTab.playButton.compEnabled=!state.waiting;
          if(state.club != null)
          {
@@ -260,7 +250,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          if(!StartUpApplicationCommand.serverMode()) return;
          this._pageChallenge=challenge;
          this._pageCpu.visible=!challenge;
-         this.refreshStadiumWaiting();
+         this.refreshStadiumWaiting(StartUpApplicationCommand.serverMatchPageInfo());
       }
 
       internal function submitServerMatch(operation:String) : void
@@ -289,10 +279,11 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          var _loc5_:StadiumSpecificData = null;
          var _loc2_:IMap = new LinkedMap();
          var _loc3_:IIterator = param1.getIterator();
+         var enabled:Array=StartUpApplicationCommand.serverMode() ? StartUpApplicationCommand.serverMatchPageInfo().stadiums : null;
          while(_loc3_.hasNext())
          {
             _loc4_ = _loc3_.getNext();
-            if(StartUpApplicationCommand.serverMode() && StartUpApplicationCommand.serverMatchPageInfo().stadiums.indexOf(_loc4_.stadium) < 0) continue;
+            if(enabled != null && enabled.indexOf(_loc4_.stadium) < 0) continue;
             _loc5_ = this._stadiumsConfig.getStadiumData(_loc4_.stadium);
             if(_loc5_ == null)
             {
@@ -311,19 +302,14 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       {
          tabs.challengeTab.stadiumSelector.selectedStadium = param1;
          tabs.challengeTab.descriptionTextZone.setContent(param1 > 0 ? "<span fontWeight=\"bold\">" + this._translator.getEnumTranslation(LangConstants.STADIUM_NAME_ENUM,param1) + "</span><br /><br />" + this._translator.getEnumTranslation(LangConstants.STADIUM_DESCRIPTION_ENUM,param1) : "");
-         tabs.challengeTab.rulesTextZone.setContent(param1 > 0 ? this.getStadiumRulesText(param1) : "");
+         tabs.challengeTab.rulesTextZone.setContent(param1 > 0 ? this._stadiumDescriptionTextBuilder.buildDescription(param1) : "");
       }
       
       private function randomMatchStadiumRolledOverHandler(param1:IndexEvent) : void
       {
          if(StartUpApplicationCommand.serverMode()) return;
          tabs.randomTab.descriptionTextZone.setContent("<span fontWeight=\"bold\">" + this._translator.getEnumTranslation(LangConstants.STADIUM_NAME_ENUM,param1.index) + "</span><br /><br />" + this._translator.getEnumTranslation(LangConstants.STADIUM_DESCRIPTION_ENUM,param1.index));
-         tabs.randomTab.rulesTextZone.setContent(this.getStadiumRulesText(param1.index));
-      }
-      
-      private function getStadiumRulesText(param1:int) : String
-      {
-         return this._stadiumDescriptionTextBuilder.buildDescription(param1);
+         tabs.randomTab.rulesTextZone.setContent(this._stadiumDescriptionTextBuilder.buildDescription(param1.index));
       }
       
       private function friendlyMatchStadiumClickedHandler(param1:IndexEvent) : void
@@ -342,10 +328,6 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          dispatchEvent(new InterfaceSoundEvent(InterfaceSoundEvents.MATCHMAKING_TABBUTTON_CLICKED));
       }
       
-      private function tournamentTabButtonClicked(param1:MouseEvent) : void
-      {
-         dispatchEvent(new InterfaceSoundEvent(InterfaceSoundEvents.MATCHMAKING_TABBUTTON_CLICKED));
-      }
    }
 }
 

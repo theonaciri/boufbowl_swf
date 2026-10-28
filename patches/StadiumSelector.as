@@ -75,19 +75,21 @@ package com.ankamagames.boufbowl.ui.components.matchcreation.stadium
          while(_loc1_.hasNext())
          {
             _loc3_ = _loc1_.getNext();
-            this.getStadium(_loc2_).visible = true;
-            this.getStadium(_loc2_).update(_loc1_.getKey(),_loc3_.availability);
-            this.getStadium(_loc2_).addEventListener(MouseEvent.ROLL_OVER,this.stadiumRollOverHandler);
-            this.getStadium(_loc2_).addEventListener(MouseEvent.CLICK,this.stadiumClickHandler);
+            var preview:StadiumPreviewWithAvailability = this.getStadium(_loc2_);
+            preview.visible = true;
+            preview.update(_loc1_.getKey(),_loc3_.availability);
+            preview.addEventListener(MouseEvent.ROLL_OVER,this.stadiumRollOverHandler);
+            preview.addEventListener(MouseEvent.CLICK,this.stadiumClickHandler);
             _loc2_++;
          }
          if(_loc2_ < this._stadiumsSpritesAmount)
          {
             while(_loc2_ < this._stadiumsSpritesAmount)
             {
-               this.getStadium(_loc2_).visible = false;
-               this.getStadium(_loc2_).removeEventListener(MouseEvent.ROLL_OVER,this.stadiumRollOverHandler);
-               this.getStadium(_loc2_).removeEventListener(MouseEvent.CLICK,this.stadiumClickHandler);
+               preview = this.getStadium(_loc2_);
+               preview.visible = false;
+               preview.removeEventListener(MouseEvent.ROLL_OVER,this.stadiumRollOverHandler);
+               preview.removeEventListener(MouseEvent.CLICK,this.stadiumClickHandler);
                _loc2_++;
             }
          }

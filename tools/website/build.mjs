@@ -55,40 +55,6 @@ function versionUrl(value, revision) {
   return `${pathname}?${params}`;
 }
 
-async function siteManifest(root, files) {
-  const settingsPath = path.join(root, "resources/site.json");
-  const settings = await exists(settingsPath) ? JSON.parse(await fs.readFile(settingsPath, "utf8")) : {};
-  function publicUrl(key) {
-    try {
-      const url = new URL(settings[key]);
-      return url.protocol === "https:" && !url.username && !url.password ? settings[key] : null;
-    } catch { return null; }
-  }
-  const downloads = {};
-  for (const [platform, [source, target]] of Object.entries(DOWNLOADS)) {
-    const local = await downloadFile(root, source);
-    const external = publicUrl(`${platform}_download_url`);
-    const artifact = local && files.get(target);
-    downloads[platform] = {
-      url: external || (artifact ? `${encodeURI("/" + target)}?v=${artifact.sha256.slice(0, 16)}` : null), local: Boolean(artifact && !external),
-      size: artifact && !external ? artifact.bytes : null,
-      description: platform === "android" ? "APK · Android 6+ · ARM64" : platform === "windows" ? "Windows" : external ? "Desktop · client Flash" : "Linux x86-64",
-    };
-  }
-  return { ok: true, downloads, contact_url: publicUrl("contact_url"), tot_quote_source_url: publicUrl("tot_quote_source_url") };
-}
-
-// Source templates use the production origin; deployment metadata comes from one setting.
-async function siteOrigin(root) {
-  const settings = path.join(root, "resources/site.json");
-  const config = await exists(settings) ? JSON.parse(await fs.readFile(settings, "utf8")) : {};
-  const url = new URL(config.site_url ?? "https://boufbowl-fan.fr");
-  if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
-    throw new Error("site_url must be an HTTPS origin without credentials, a path, query, or fragment");
-  }
-  return url.origin;
-}
-
 function pageMetadata(html, name, origin) {
   return html.replace(/<head\b[^>]*>[\s\S]*?<\/head>/i, (head) => {
     head = head.replace(/https:\/\/(?:boufbowl-fan\.fr|[a-z0-9-]+\.trycloudflare\.com)(?=[/:#?"'<>\s]|$)/gi, origin);
@@ -116,7 +82,21 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
   if (await exists(output) && (await fs.readdir(output)).length && !await exists(path.join(output, "delivery.json"))) {
     throw new Error("Refusing to replace an output folder without delivery.json");
   }
-  const origin = await siteOrigin(root);
+  const settingsPath = path.join(root, "resources/site.json");
+  const settings = await exists(settingsPath) ? JSON.parse(await fs.readFile(settingsPath, "utf8")) : {};
+  const siteUrl = settings.site_url ?? "https://boufbowl-fan.fr";
+  const url = URL.parse(siteUrl);
+  if (!url || url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+    throw new Error("site_url must be an HTTPS origin without credentials, a path, query, or fragment");
+  }
+  const origin = url.origin;
+  const publicUrls = {};
+  for (const key of ["android_download_url", "desktop_download_url", "windows_download_url", "contact_url", "tot_quote_source_url"]) {
+    const value = settings[key];
+    const parsed = URL.parse(value);
+    publicUrls[key] = parsed?.protocol === "https:" && !parsed.username && !parsed.password ? value : null;
+  }
+  const release = JSON.parse(await fs.readFile(path.join(root, "resources/release.json"), "utf8"));
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "boufbowl-web-"));
   await fs.mkdir(path.dirname(output), { recursive: true });
   const stage = await fs.mkdtemp(path.join(path.dirname(output), ".website-stage-"));
@@ -163,7 +143,16 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       }
       return versionUrl(url, revision);
     };
-    const manifest = await siteManifest(root, files);
+    const downloads = {};
+    for (const [platform, [, target]] of Object.entries(DOWNLOADS)) {
+      const artifact = files.get(target), external = publicUrls[`${platform}_download_url`];
+      downloads[platform] = {
+        url: external || (artifact ? `${encodeURI("/" + target)}?v=${artifact.sha256.slice(0, 16)}` : null), local: Boolean(artifact && !external),
+        size: artifact && !external ? artifact.bytes : null,
+        description: platform === "android" ? "APK · Android 6+ · ARM64" : platform === "windows" ? "Windows" : external ? "Desktop · client Flash" : "Linux x86-64",
+      };
+    }
+    const manifest = { ok: true, downloads, contact_url: publicUrls.contact_url, tot_quote_source_url: publicUrls.tot_quote_source_url };
     const scripts = new Map();
     const buildScript = async (source, module) => {
       const key = `${source}:${module}`;
@@ -171,7 +160,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       const build = await Bun.build({
         entrypoints: [path.join(root, source)], minify: true, target: "browser",
         format: module ? "esm" : "iife", naming: "js/[name].[hash].[ext]",
-        define: { __SITE_ASSET_VERSION__: JSON.stringify(revision), __CLIENT_VERSION__: JSON.stringify(JSON.parse(await fs.readFile(path.join(root,"resources/release.json"),"utf8")).version) },
+        define: { __SITE_ASSET_VERSION__: JSON.stringify(revision), __CLIENT_VERSION__: JSON.stringify(release.version) },
       });
       if (!build.success) throw new AggregateError(build.logs, `Cannot bundle ${source}`);
       let entry;
@@ -269,7 +258,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
       await record("resources/config.json", JSON.stringify(config, null, 2) + "\n");
     }
     await record("resources/site-manifest.json", JSON.stringify(manifest, null, 2) + "\n");
-    await record("updates.json", await releaseManifest(root,files,origin,revision));
+    await record("updates.json", await releaseManifest(root,files,origin,revision,release));
     await record("crossdomain.xml", '<cross-domain-policy><allow-access-from domain="*" secure="false"/><allow-http-request-headers-from domain="*" headers="Content-Type" secure="false"/></cross-domain-policy>');
     const entries = Object.fromEntries([...files].sort(([a], [b]) => a.localeCompare(b)));
     const report = { version: 2, asset_revision: revision, files: entries, file_count: files.size, bytes: [...files.values()].reduce((total, entry) => total + entry.bytes, 0), downloads: manifest.downloads };

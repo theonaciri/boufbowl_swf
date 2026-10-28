@@ -145,14 +145,8 @@ package com.ankamagames.boufbowl.client.application.tooltip
          {
             this._lastEvent.displayObject.removeEventListener(Event.REMOVED_FROM_STAGE, this.sourceRemoved);
             this._lastEvent.displayObject.removeEventListener(BaseComponent.TOOLTIP_CONTENT_CHANGED, this.sourceRemoved);
-            if(this._lastEvent.displayObject.hasEventListener(MouseEvent.ROLL_OUT))
-            {
-               this._lastEvent.displayObject.removeEventListener(MouseEvent.ROLL_OUT,this.rollOut);
-            }
-            if(this._lastEvent.displayObject.hasEventListener(MouseEvent.MOUSE_MOVE))
-            {
-               this._lastEvent.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE,this.mouseMove);
-            }
+            this._lastEvent.displayObject.removeEventListener(MouseEvent.ROLL_OUT,this.rollOut);
+            this._lastEvent.displayObject.removeEventListener(MouseEvent.MOUSE_MOVE,this.mouseMove);
             this._lastEvent = null;
          }
          this.clearTimer();

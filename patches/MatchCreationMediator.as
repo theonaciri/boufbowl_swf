@@ -99,11 +99,6 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          dispatchToModules(new DisplayMatchCreationTypeEvent(MatchCreationType.CHALLENGE,this._view.tabs.challengeTab.opponentName));
       }
       
-      private function tournamentTabButtonClickHandler(param1:MouseEvent) : void
-      {
-         dispatchToModules(new DisplayMatchCreationTypeEvent(MatchCreationType.TOURNAMENT));
-      }
-      
       private function randomTabPlayButtonClickHandler(param1:MouseEvent) : void
       {
          if(StartUpApplicationCommand.serverMode()) this._view.submitServerMatch("queue_join");

@@ -11,12 +11,12 @@ test('signs exact payload and advertises actual artifact versions only',async()=
   const {privateKey,publicKey}=generateKeyPairSync('ed25519');const keyfile=path.join(root,'private.pem');
   await writeFile(keyfile,privateKey.export({type:'pkcs8',format:'pem'}));process.env.BOUFBOWL_UPDATE_KEY=keyfile;
   await writeFile(path.join(root,'resources/update-key.json'),JSON.stringify({public_key:publicKey.export({type:'spki',format:'der'}).subarray(-32).toString('hex')}));
-  await writeFile(path.join(root,'resources/release.json'),JSON.stringify({version:'0.2.0',android_build:1000002}));
+  const release={version:'0.2.0',android_build:1000002};
   const files=new Map([['downloads/Boufbowl Fan.apk',{sha256:'a'.repeat(64),bytes:30}]]);
-  let envelope=JSON.parse(await releaseManifest(root,files,'https://example.com','revision'));
+  let envelope=JSON.parse(await releaseManifest(root,files,'https://example.com','revision',release));
   expect(JSON.parse(envelope.payload).platforms.android).toBeUndefined();
   await writeFile(path.join(root,'android/build/Boufbowl Fan.apk.release.json'),JSON.stringify({version:'0.1.0',android_build:1000001,sha256:'a'.repeat(64),bytes:30}));
-  envelope=JSON.parse(await releaseManifest(root,files,'https://example.com','revision'));
+  envelope=JSON.parse(await releaseManifest(root,files,'https://example.com','revision',release));
   expect(verify(null,Buffer.from(envelope.payload),publicKey,Buffer.from(envelope.signature,'base64'))).toBe(true);
   const payload=JSON.parse(envelope.payload);expect(payload.platforms.web.version).toBe('0.2.0');expect(payload.platforms.android.version).toBe('0.1.0');
   expect(verify(null,Buffer.from(envelope.payload+' '),publicKey,Buffer.from(envelope.signature,'base64'))).toBe(false);
