@@ -106,7 +106,8 @@ class AccountMatchmakingTests(unittest.TestCase):
         self.a=self.register(self.a);self.b=self.register(self.b,'bob-account')
         self.assertEqual(self.command(self.a,stadiums=[1])['matchmaking']['status'],'waiting')
         self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
-        self.command(self.b,stadiums=[1])
+        with patch('backend.matchmaking.secrets.choice',return_value=1):
+            self.command(self.b,stadiums=[1])
         match=self.s.store.active_match(self.pid(self.a))
         self.assertEqual(match['profiles'],[self.pid(self.a),self.pid(self.b)])
         for player in (self.a,self.b):self.protocol(player,'PLACEMENT',{'turn':1,'boufbowlerPositions':[]})
@@ -131,26 +132,35 @@ class AccountMatchmakingTests(unittest.TestCase):
         self.command(self.b)
         self.assertIsNone(self.s.store.active_match(self.pid(self.b)))
 
-    def test_stadium_intersection_and_rating_window(self):
-        self.command(self.a,stadiums=[1]);self.command(self.b,stadiums=[2])
-        self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
-        self.command(self.b,stadiums=[1,2])
-        self.assertEqual(self.s.store.active_match(self.pid(self.a))['stadium'],1)
-
-    def test_random_stadium_draws_from_shared_enabled_pool(self):
-        self.command(self.a,stadiums=[1,4])
-        with patch('backend.matchmaking.secrets.choice',return_value=4) as draw:
-            self.command(self.b,stadiums=[1,3,4])
-        draw.assert_called_once_with([1,4])
-        self.assertEqual(self.s.store.active_match(self.pid(self.a))['stadium'],4)
-
-    def test_disjoint_stadium_choices_do_not_create_or_draw_a_match(self):
+    def test_open_search_ignores_old_client_stadium_selections(self):
         self.command(self.a,stadiums=[1])
-        with patch('backend.matchmaking.secrets.choice') as draw:
-            self.command(self.b,stadiums=[4])
-        draw.assert_not_called()
-        self.assertIsNone(self.s.store.active_match(self.pid(self.a)))
-        self.assertEqual(self.s.matchmaking_status(self.pid(self.b))['status'],'waiting')
+        with patch('backend.matchmaking.secrets.choice',return_value=4) as draw:
+            self.command(self.b,stadiums=[2])
+        draw.assert_called_once_with(list(range(1,10)))
+        match=self.s.store.active_match(self.pid(self.a))
+        self.assertEqual(match['stadium'],4)
+        self.assertEqual(self.s.store.active_match(self.pid(self.b))['id'],match['id'])
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['status'],'idle')
+
+    def test_persisted_disjoint_queues_match_after_upgrade(self):
+        with patch.object(self.s,'match_queued_players'):
+            self.command(self.a);self.command(self.b)
+        self.s.store.db.execute('UPDATE matchmaking_queue SET stadiums_json=? WHERE profile_id=?',('[1]',self.pid(self.a)))
+        self.s.store.db.execute('UPDATE matchmaking_queue SET stadiums_json=? WHERE profile_id=?',('[4]',self.pid(self.b)))
+        self.s.match_queued_players()
+        self.assertEqual(self.s.store.active_match(self.pid(self.a))['id'],self.s.store.active_match(self.pid(self.b))['id'])
+
+    def test_stadium_live_counts_exclude_waiting_offline_and_ended_players(self):
+        self.command(self.a)
+        self.assertFalse(any(self.s.matchmaking_status(self.pid(self.b))['playing_by_stadium'].values()))
+        self.command(self.b)
+        match=self.s.store.active_match(self.pid(self.a))
+        stadium=str(match['stadium'])
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['playing_by_stadium'][stadium],2)
+        self.s.store.db.execute('UPDATE presence SET seen=0 WHERE profile_id=?',(self.pid(self.b),))
+        self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['playing_by_stadium'][stadium],1)
+        match['phase']='ended';self.s.store.save_match(match)
+        self.assertFalse(any(self.s.matchmaking_status(self.pid(self.a))['playing_by_stadium'].values()))
 
     def test_stadium_waiting_counts_exclude_self_and_update_after_leaving(self):
         c=self.s.hello({'nickname':'Charlie','clubs':[initial_club()]})
@@ -159,7 +169,7 @@ class AccountMatchmakingTests(unittest.TestCase):
             self.command(self.b,stadiums=[4])
             self.command(c,stadiums=[2,4])
         counts=self.s.matchmaking_status(self.pid(self.a))['waiting_by_stadium']
-        self.assertEqual(counts,{str(i):{2:1,4:2}.get(i,0) for i in range(1,10)})
+        self.assertEqual(counts,{str(i):2 for i in range(1,10)})
         self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['waiting_opponents'],2)
         self.command(self.b,'queue_leave')
         self.assertEqual(self.s.matchmaking_status(self.pid(self.a))['waiting_by_stadium']['4'],1)
@@ -184,12 +194,13 @@ class AccountMatchmakingTests(unittest.TestCase):
         self.assertNotIn('1',self.s.waiting_stadium_counts(viewer))
         self.assertEqual(self.s.waiting_stadium_counts(viewer)['4'],1)
 
-    def test_random_waiting_count_ignores_disabled_only_stadium_choices(self):
+    def test_open_waiting_count_survives_old_stadium_becoming_disabled(self):
         self.command(self.b,stadiums=[1])
         self.s.config['stadiums']['FARMSTEAD']['enabled']=False
         status=self.s.matchmaking_status(self.pid(self.a))
-        self.assertEqual(status['waiting_opponents'],0)
-        self.assertFalse(any(status['waiting_by_stadium'].values()))
+        self.assertEqual(status['waiting_opponents'],1)
+        self.assertNotIn('1',status['waiting_by_stadium'])
+        self.assertTrue(all(status['waiting_by_stadium'].values()))
 
     def test_stadium_waiting_counts_ignore_stale_queue_for_active_match(self):
         other=self.pid(self.b)

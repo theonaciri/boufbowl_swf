@@ -47,8 +47,6 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       private var _pageStadium:int;
       private var _pageTeam:TextField;
       private var _pageStatus:TextField;
-      private var _pageRandom:Sprite;
-      private var _pageRandomWaiting:TextField;
       private var _pageCpu:Sprite;
       private var _pageCancel:Sprite;
       private var _pageStage:Stage;
@@ -78,15 +76,14 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          this._pageStadium=param1 > 0 ? param1 : 0;
          var enabled:Array=StartUpApplicationCommand.serverMatchPageInfo().stadiums;
          if(enabled.indexOf(this._pageStadium) < 0) this._pageStadium=0;
-         tabs.randomTab.stadiumsSelector.selectedStadium=this._pageStadium;
+         tabs.randomTab.stadiumsSelector.selectedStadium=0;
          tabs.challengeTab.stadiumSelector.selectedStadium=this._pageStadium;
          var description:String=this._pageStadium == 0 ? "<span fontWeight=\"bold\">Stade aléatoire</span><br />Le stade sera choisi parmi les terrains disponibles." : "<span fontWeight=\"bold\">"+this._translator.getEnumTranslation(LangConstants.STADIUM_NAME_ENUM,this._pageStadium)+"</span><br />Ce terrain sera utilisé pour votre match.";
-         tabs.randomTab.descriptionTextZone.setContent(description);
+         tabs.randomTab.descriptionTextZone.setContent("Le stade de votre match libre sera choisi au hasard parmi les terrains disponibles.");
          tabs.challengeTab.descriptionTextZone.setContent(description);
          var rules:String=this._pageStadium > 0 ? this._stadiumDescriptionTextBuilder.buildDescription(this._pageStadium) : "Chaque stade possède ses propres règles. Touchez sa miniature pour le choisir.";
-         tabs.randomTab.rulesTextZone.setContent(rules);
+         tabs.randomTab.rulesTextZone.setContent("Survolez un stade pour consulter ses règles.");
          tabs.challengeTab.rulesTextZone.setContent(rules);
-         if(this._pageRandom != null) this._pageRandom.filters=this._pageStadium == 0 ? [new GlowFilter(0x79963a,.6,4,4,2)] : [];
       }
       
       private function init() : void
@@ -123,9 +120,8 @@ package com.ankamagames.boufbowl.client.matchmaking.view
       {
          tabs.randomTabButton.componentLabel="Trouver un match";
          tabs.challengeTabButton.componentLabel="Défier un joueur";
-         tabs.randomTab.title="Touchez un stade pour le choisir, ou gardez le tirage au sort.";
-         tabs.randomTab.stadiumsSelector.selectableStadiums=true;
-         tabs.randomTab.stadiumsSelector.addEventListener(StadiumSelector.STADIUM_CLICKED,this.friendlyMatchStadiumClickedHandler);
+         tabs.randomTab.title="Le stade sera choisi au hasard.";
+         tabs.randomTab.stadiumsSelector.selectableStadiums=false;
          tabs.challengeTab.explain="";
          tabs.challengeTab.opponentExplain="Pseudo exact du joueur à inviter";
          tabs.challengeTab.playButton.componentLabel="DÉFIER";
@@ -137,8 +133,6 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          pageText("VOTRE ÉQUIPE",34,218,190,24,true);
          this._pageTeam=pageText("",34,245,190,42);
          pageButton("Changer d’équipe",34,290,this.nextServerTeam);
-         this._pageRandom=pageButton("Stade aléatoire",34,332,this.randomServerStadium);
-         this._pageRandomWaiting=pageText("— en attente",34,365,190,20);
          this._pageCpu=pageButton("Contre l’ordinateur",34,392,function():void { thisPage.submitServerMatch("cpu_match"); });
          this._pageCancel=pageButton("Annuler la recherche",34,434,function():void { thisPage.submitServerMatch("queue_leave"); });
          var thisPage:MatchCreationView=this;
@@ -182,8 +176,8 @@ package com.ankamagames.boufbowl.client.matchmaking.view
             var badge:Sprite=entry.badge;
             badge.visible=entry.challenge == this._pageChallenge && preview.visible && state.stadiums.indexOf(id) >= 0;
             if(!badge.visible) continue;
-            var known:Boolean=state.waiting_by_stadium != null && state.waiting_by_stadium.hasOwnProperty(String(id));
-            var count:int=known ? int(state.waiting_by_stadium[String(id)]) : 0;
+            var known:Boolean=state.playing_by_stadium != null && state.playing_by_stadium.hasOwnProperty(String(id));
+            var count:int=known ? int(state.playing_by_stadium[String(id)]) : 0;
             var bounds:Rectangle=preview.getBounds(this);
             var width:Number=Math.max(70,Math.min(108,bounds.width-4));
             badge.x=bounds.x+(bounds.width-width)/2;
@@ -191,7 +185,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
             badge.graphics.clear();badge.graphics.beginFill(count > 0 ? 0x365b2a : 0x343a33,.95);
             badge.graphics.drawRoundRect(0,0,width,17,4);badge.graphics.endFill();
             entry.label.width=width;
-            entry.label.text=(known ? String(count) : "—")+" en attente";
+            entry.label.text=(known ? String(count) : "—")+" en jeu";
          }
       }
 
@@ -215,10 +209,7 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          for each(var team:Object in state.clubs)
             if(team.id == this._pageClub) this._pageTeam.text=team.name;
          this._pageCancel.visible=Boolean(state.waiting);
-         var randomCount:int=state.waiting_opponents == null ? 0 : int(state.waiting_opponents);
-         this._pageRandomWaiting.text=state.waiting_opponents == null ? "— en attente" : String(randomCount)+(randomCount == 1 ? " joueur en attente" : " joueurs en attente");
-         this._pageRandomWaiting.textColor=randomCount > 0 ? 0x365b2a : 0x463d2b;
-         this._pageStatus.text=state.waiting ? "Recherche d’un adversaire en cours… Vous pouvez l’annuler à gauche." : "Autres joueurs en recherche de match libre. Un joueur peut apparaître sur plusieurs stades.";
+         this._pageStatus.text=state.waiting ? "Recherche d’un adversaire en cours…" : "Le stade est choisi au hasard pour les matchs libres.";
          this.refreshStadiumWaiting(state);
          tabs.randomTab.playButton.compEnabled=!state.waiting;
          if(state.club != null)
@@ -238,11 +229,6 @@ package com.ankamagames.boufbowl.client.matchmaking.view
          this._pageClub=clubs[index].id;
          StartUpApplicationCommand.serverMatchPageRequest("select_club",this._pageClub);
          this.refreshServerPage();
-      }
-
-      private function randomServerStadium() : void
-      {
-         dispatchEvent(new IndexEvent(STADIUM_CLICKED,0));
       }
 
       internal function serverPageMode(challenge:Boolean) : void

@@ -37,7 +37,7 @@ class Matchmaking:
             stadiums=[settings['stadium']]
             tournament=str(settings['id'])
         enabled={i for i,name in enumerate(STADIUMS,1) if self.config['stadiums'][name]['enabled']}
-        if stadiums is None: stadiums=sorted(enabled)
+        if tournament is None: stadiums=sorted(enabled)
         if not isinstance(stadiums,list) or not stadiums or any(not isinstance(i,int) or isinstance(i,bool) or i not in enabled for i in stadiums):
             raise ServiceError('INVALID_STADIUM','Choose one or more enabled stadiums')
         if self.spectator_match(profile):
@@ -77,7 +77,12 @@ class Matchmaking:
                 if second['profile_id'] in matched or self.blocked(first['profile_id'], second['profile_id']): continue
                 if first['tournament_id'] != second['tournament_id']: continue
                 if first['tournament_id'] is not None and not self.knockout_pair_allowed(first['tournament_id'],first['profile_id'],second['profile_id']):continue
-                common=set(json.loads(first['stadiums_json'])) & set(json.loads(second['stadiums_json']))
+                if first['tournament_id'] is None:
+                    # Older clients may have queued for disjoint stadiums. Open search
+                    # has one shared pool; tournaments retain their configured ground.
+                    common=set(range(1,len(STADIUMS)+1))
+                else:
+                    common=set(json.loads(first['stadiums_json'])) & set(json.loads(second['stadiums_json']))
                 common={n for n in common if self.config['stadiums'][STADIUMS[n-1]]['enabled']}
                 if not common: continue
                 distance=abs(rating-self.store.profile(second['profile_id'])['statistics']['rating'])
@@ -103,7 +108,7 @@ class Matchmaking:
             (profile,now-settings['heartbeat_timeout'],now-settings['search_timeout'],profile,profile))
         total=0
         for entry in rows:
-            accepted={str(stadium) for stadium in json.loads(entry['stadiums_json'])} & counts.keys()
+            accepted=counts.keys()
             if accepted:total+=1
             for key in accepted:counts[key]+=1
         return counts,total
@@ -114,8 +119,11 @@ class Matchmaking:
     def matchmaking_status(self, profile):
         row=self.store.db.execute('SELECT * FROM matchmaking_queue WHERE profile_id=?',(profile,)).fetchone()
         counts,total=self.waiting_stadium_summary(profile)
+        playing={str(i):0 for i,name in enumerate(STADIUMS,1) if self.config['stadiums'][name]['enabled']}
+        for entry in self.store.db.execute("SELECT json_extract(m.state_json,'$.stadium') AS stadium, COUNT(DISTINCT p.profile_id) AS players FROM matches m JOIN participants p ON p.match_id=m.id JOIN presence pr ON pr.profile_id=p.profile_id WHERE json_extract(m.state_json,'$.phase') <> 'ended' AND pr.seen >= ? GROUP BY stadium",(time.time()-self.matchmaking_settings()['heartbeat_timeout'],)):
+            if str(entry['stadium']) in playing: playing[str(entry['stadium'])]=entry['players']
         return {'status':'waiting' if row else 'idle', 'joined':row['joined'] if row else None,
                 'stadiums':json.loads(row['stadiums_json']) if row else [],
                 'tournament':row['tournament_id'] if row else None,
                 'waiting_players':self.store.db.execute('SELECT COUNT(*) FROM matchmaking_queue').fetchone()[0],
-                'waiting_by_stadium':counts,'waiting_opponents':total}
+                'waiting_by_stadium':counts,'waiting_opponents':total,'playing_by_stadium':playing}

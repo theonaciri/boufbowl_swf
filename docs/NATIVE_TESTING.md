@@ -176,33 +176,22 @@ Native Android touch delivery still requires an installed APK check.
 
 ## Match setup page
 
-Play uses the original full-page matchmaking view. Match/challenge tabs share
-one stadium selection; zero means a random enabled stadium. Hover previews do
-not change selection, and a click needs no preceding hover. The left panel
-contains team selection, random choice, CPU, queue cancellation, tournament entry
-and community access. State updates use existing server metadata events.
+Play uses the original full-page view. Open search uses every enabled stadium;
+its thumbnails show rules on hover and cannot select a ground. Challenges keep
+stadium selection. CPU, team selection, cancellation, tournaments and community
+controls remain on the page. Open-queue entries from older clients are compatible
+regardless of their saved stadium choices. Rating, blocks and tournament matching
+still apply.
 
-CPU/challenge requests draw one enabled stadium when random is selected. Human
-matchmaking draws from the intersection of both players’ accepted stadiums;
-opponent/rating ordering is unchanged. Tournament stadiums follow the event.
+Badges show distinct human participants with a recent heartbeat in unfinished
+matches at each stadium, including the viewer. CPU players, spectators, queued
+players, offline participants and ended matches do not count. The waiting-player
+label and random-stadium selection button have been removed.
 
 ```sh
-python3 -m unittest tests.test_accounts_matchmaking tests.test_public_tournaments
+python3 -m unittest tests.test_accounts_matchmaking tests.test_matchmaking_metrics tests.test_public_tournaments
 ```
 
-40 tests passed, including forced non-first stadium selection, disjoint pools and
-per-stadium waiting counts.
-Isolated Ruffle checks covered team/card updates, no-hover taps, hover stability,
-shared selection/reset, queue/cancel, tournament/cancel, challenge/cancel and CPU
-launch. Layout checked at the authored 1024×600 viewport. Native touch remains a
-phone check after installing the new APK.
-
-Stadium badges count other live regular-queue players who accept that stadium;
-self, blocks, tournament queues, expired searches and active matches are excluded.
-One player may count on several stadiums; rating matching still applies. Counts
-travel in existing matchmaking metadata. Ruffle checks verified nine badges per
-tab, click-through selection and refresh after queue departures.
-
-The random-stadium option shows distinct waiting opponents across all enabled
-stadiums, rather than summing arena counts. Ruffle checks covered three/one/zero
-players and singular/plural text using the same metadata updates.
+After rebuilding, check queue/cancel with two distinct accounts, hover rules,
+challenge selection, live counts after disconnect/end and both application roots.
+A single account on two devices is one player and cannot match itself.

@@ -20,6 +20,7 @@
       private static var serverNames:Object = {};
       private static var serverStadiumWaiting:Object;
       private static var serverRandomWaiting:Object;
+      private static var serverStadiumPlaying:Object;
       private static var serverTournamentId:String;
       private static var serverAbilities:Object = {};
       public static var serverZobalMasks:Object = {};
@@ -90,7 +91,7 @@
          stopMock();
          if(!resume)
          {
-            serverStadiumWaiting=null;serverRandomWaiting=null;
+            serverStadiumWaiting=null;serverRandomWaiting=null;serverStadiumPlaying=null;
             var chat:com.ankamagames.boufbowl.client.chat.model.IChatModel = app.contextInjector.getInstance(com.ankamagames.boufbowl.client.chat.model.IChatModel);
             chat.clearMessages(); chat.clear();
          }
@@ -201,6 +202,7 @@
          if(response.matchmaking != null)
          {
             serverStadiumWaiting=response.matchmaking.hasOwnProperty("waiting_by_stadium") ? response.matchmaking.waiting_by_stadium : null;
+            serverStadiumPlaying=response.matchmaking.hasOwnProperty("playing_by_stadium") ? response.matchmaking.playing_by_stadium : null;
             serverRandomWaiting=response.matchmaking.hasOwnProperty("waiting_opponents") ? response.matchmaking.waiting_opponents : null;
             var waiting:Boolean = response.matchmaking.status == "waiting";
             if(waiting) serverStatus("Searching for an opponent (" + response.matchmaking.waiting_players + " players). Play opens search controls.");
@@ -496,7 +498,7 @@
          for(var key:String in serverNames) clubs.push({id:key,name:String(serverNames[key])});
          clubs.sortOn("id",Array.NUMERIC);
          return {clubs:clubs,club_id:serverClubId,club:ClubModel(app.contextInjector.getInstance(ClubModel)).clubInformation,waiting:serverQueueWaiting,
-            stadiums:@ENABLED_STADIUMS@,waiting_by_stadium:serverStadiumWaiting,waiting_opponents:serverRandomWaiting,tournament:@TOURNAMENT_ENABLED@};
+            stadiums:@ENABLED_STADIUMS@,playing_by_stadium:serverStadiumPlaying,waiting_by_stadium:serverStadiumWaiting,waiting_opponents:serverRandomWaiting,tournament:@TOURNAMENT_ENABLED@};
       }
 
       public static function serverMatchPageButton(parent:Sprite, label:String, x:int, y:int, width:int, callback:Function) : Sprite
@@ -519,7 +521,7 @@
          var enabled:Array=@ENABLED_STADIUMS@;
          if(stadium != 0 && enabled.indexOf(stadium) < 0) { serverStatus("Ce stade n’est pas disponible.",true);return false; }
          var request:Object={operation:operation,club_id:club};
-         if(operation == "queue_join") request.stadiums=stadium == 0 ? enabled : [stadium];
+         if(operation == "queue_join") request.stadiums=enabled;
          else if(operation == "cpu_match" || operation == "challenge")
          {
             request.stadium=stadium == 0 ? enabled[int(Math.random()*enabled.length)] : stadium;
