@@ -118,8 +118,6 @@ package com.ankamagames.xgaming.ui.components
          if(hasTooltip)
          {
             addEventListener(MouseEvent.ROLL_OVER,this.rollOver,false,0,true);
-            // Ordinary button actions run first. Never cancel or swallow their click.
-            addEventListener(MouseEvent.CLICK,this.showOnTap,false,-100,true);
          }
          else
          {
