@@ -1,6 +1,6 @@
 .ladder-section { background: var(--paper); border-bottom: 1px solid var(--line); }
 .ladder-page { background: var(--paper); }
-.ladder-page h1 { font: 800 clamp(44px, 4.8vw, 76px)/1 var(--heading); margin: 20px 0 0; }
+.ladder-page h1 { font: 800 clamp(44px, 4.8vw, 76px)/1 var(--heading); margin: 0; }
 .ladder-home-link { font-size: 11px; font-weight: 600; letter-spacing: .5px; }
 .ladder-footer { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; padding: 30px 7%; font-size: 12px; }
 .ladder-section .section-heading > p { color: #4f5c4e; }
@@ -23,7 +23,7 @@
 .ladder-table tr[data-rank="1"] { background: #edcf7a55; }
 .ladder-table tr[data-rank="2"] { background: #d9dfe055; }
 .ladder-table tr[data-rank="3"] { background: #e6c7ad55; }
-.ladder-pagination { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 20px 0 0; }
+.ladder-pagination { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 0; }
 .ladder-pagination button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--ink); background: transparent; font-size: 11px; font-weight: 600; }
 .ladder-pagination button:hover:enabled { background: var(--ink); color: var(--paper); }
 .ladder-pagination button:disabled { opacity: .4; cursor: default; }
@@ -41,3 +41,6 @@
   .ladder-pagination p { order: -1; flex-basis: 100%; }
   .ladder-pagination button { flex: 1; }
 }
+
+.ladder-page .section-heading { align-items: start; }
+.ladder-page .section-heading > p { max-width: 48ch; line-height: 1.65; }

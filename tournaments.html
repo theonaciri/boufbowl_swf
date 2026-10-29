@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,38 +7,34 @@
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="admin.css" />
     <meta name="description" content="Console privée de gestion des tournois Boufbowl.">
-<title>Boufbowl · Tournaments</title>
+<title>Boufbowl · Tournois</title>
   </head>
   <body data-console="tournaments">
     <section id="console-login" class="panel login-panel">
-      <span class="eyebrow">Restricted access</span>
-      <h2>Sign in to the admin console</h2>
-      <p>Use your administrator account or an existing session.</p>
+      <h2>Connexion à l’administration</h2>
+      <p>Connectez-vous avec votre compte administrateur ou une session existante.</p>
       <form id="console-account">
         <label class="field"
-          >Username<input
+          >Identifiant<input
             id="console-username"
             autocomplete="username"
-            value="KrissKrass"
-            required /></label
-        ><label class="field"
-          >Password<input
+
+            required /></label><label class="field"
+          >Mot de passe<input
             id="console-password"
             type="password"
             autocomplete="current-password"
-            required /></label
-        ><button>Sign in</button>
+            required /></label><button>Se connecter</button>
       </form>
       <details style="margin-top: 18px">
-        <summary>Use an existing session</summary>
+        <summary>Utiliser une session existante</summary>
         <form id="console-device">
           <label class="field"
-            >Administrator session<input
+            >Session administrateur<input
               id="console-session"
               type="password"
               required
-              autocomplete="off" /></label
-          ><button>Connect</button>
+              autocomplete="off" /></label><button>Se connecter</button>
         </form>
       </details>
     </section>
@@ -46,9 +42,8 @@
     <main id="console-main" hidden>
       <div class="page-heading">
         <div>
-          <span class="eyebrow">Competition management</span>
-          <h1>Tournaments</h1>
-          <p>Plan the next competition. Follow every round.</p>
+          <h1>Tournois</h1>
+          <p>Consultez les tournois, modifiez une occurrence ou publiez un nouveau calendrier.</p>
         </div>
         <div><span id="auto-refresh"></span> <button id="refresh-tournaments" class="secondary">Actualiser</button></div>
       </div>
@@ -56,45 +51,43 @@
       <p id="page-status" class="status" role="status" aria-live="polite"></p>
       <div class="workspace tournament-workspace">
         <div>
-          <div class="tabbar" role="tablist" aria-label="Tournament period">
+          <div class="tabbar" role="tablist" aria-label="Période des tournois">
             <button role="tab" data-tab="current" aria-selected="true">
-              Current</button
-            ><button role="tab" data-tab="upcoming" aria-selected="false">
-              Upcoming</button
-            ><button role="tab" data-tab="previous" aria-selected="false">
-              Previous
+              En cours</button><button role="tab" data-tab="upcoming" aria-selected="false">
+              À venir</button><button role="tab" data-tab="previous" aria-selected="false">
+              Terminés
             </button>
           </div>
           <div id="events"></div>
           <section id="event-detail" class="panel" hidden>
             <div class="panel-title">
-              <h2 id="detail-title">Tournament details</h2>
+              <h2 id="detail-title">Détail du tournoi</h2>
               <span id="detail-phase" class="tag"></span>
             </div>
             <div id="detail-rules"></div>
-            <button id="edit-event" type="button" class="secondary">Edit tournament</button>
+            <button id="edit-event" type="button" class="secondary">Modifier ce tournoi</button>
             <form id="edit-event-form" class="form-grid" hidden>
-              <label class="field wide">Name<input name="name" maxlength="80" required></label>
-              <label class="field">Start (local time)<input name="start" type="datetime-local" step="1" required></label>
-              <label class="field">End (local time)<input name="end" type="datetime-local" step="1" required></label>
-              <label class="field">Stadium<select name="stadium" required></select></label>
-              <p class="wide">Changes apply only to this occurrence. For running tournaments, the start and stadium are fixed; existing matches keep their rules.</p>
-              <div class="wide"><button type="submit">Save changes</button> <button id="cancel-edit-event" type="button" class="secondary">Cancel</button></div>
+              <label class="field wide">Nom<input name="name" maxlength="80" required></label>
+              <label class="field">Début (heure locale)<input name="start" type="datetime-local" step="1" required></label>
+              <label class="field">Fin (heure locale)<input name="end" type="datetime-local" step="1" required></label>
+              <label class="field">Stade<select name="stadium" required></select></label>
+              <p class="wide">Les modifications concernent ce tournoi uniquement. Après son début, le stade et l’heure de départ sont fixes. Les matchs existants conservent leurs règles.</p>
+              <div class="wide"><button type="submit">Enregistrer les modifications</button> <button id="cancel-edit-event" type="button" class="secondary">Annuler</button></div>
               <p id="edit-event-error" class="status wide" role="status"></p>
             </form>
-            <h3 style="margin-top: 24px">Round schedule</h3>
+            <h3 style="margin-top: 24px">Déroulement des rondes</h3>
             <div id="rounds"></div>
-            <h3 style="margin-top: 24px">Live matches</h3>
+            <h3 style="margin-top: 24px">Matchs en cours</h3>
             <div id="matches"></div>
-            <h3 style="margin-top: 24px">Standings</h3>
+            <h3 style="margin-top: 24px">Classement</h3>
             <div class="scroll">
               <table>
                 <thead>
                   <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
+                    <th>Rang</th>
+                    <th>Joueur</th>
                     <th>Points</th>
-                    <th>Status</th>
+                    <th>État</th>
                   </tr>
                 </thead>
                 <tbody id="standings"></tbody>
@@ -104,88 +97,74 @@
         </div>
         <aside>
           <section class="panel">
-            <span class="eyebrow">Schedule builder</span>
-            <h2 style="margin-top: 8px">Create a tournament</h2>
+            <h2 style="margin-top: 8px">Publier un calendrier</h2>
             <p>
-              One event or a recurring series. Times use your local timezone.
+              Planifiez un événement unique ou une série. Les heures sont celles de votre appareil.
             </p>
             <form id="schedule-form" class="form-grid" style="margin-top: 20px">
               <label class="field wide"
-                >Tournament name<input
+                >Nom du tournoi<input
                   name="name"
                   maxlength="80"
                   required
-                  placeholder="e.g. Friday Night Cup" /></label
-              ><label class="field wide"
-                >Starts at<input
+                  placeholder="Ex. : Coupe du samedi" /></label><label class="field wide"
+                >Début<input
                   name="start"
                   type="datetime-local"
-                  required /></label
-              ><label class="field"
-                >Duration (minutes)<input
+                  required /></label><label class="field"
+                >Durée (minutes)<input
                   name="minutes"
                   type="number"
                   min="5"
                   max="10080"
                   value="45"
-                  required /></label
-              ><label class="field"
-                >Recurrence<select name="repeat">
-                  <option value="0">One-time event</option>
-                  <option value="3600">Hourly</option>
-                  <option value="86400">Daily</option>
-                  <option value="604800">Weekly</option>
-                </select></label
-              ><label class="field"
-                >Stadium<select id="stadium" name="stadium"></select></label
-              ><label class="field"
+                  required /></label><label class="field"
+                >Récurrence<select name="repeat">
+                  <option value="0">Événement unique</option>
+                  <option value="3600">Chaque heure</option>
+                  <option value="86400">Chaque jour</option>
+                  <option value="604800">Chaque semaine</option>
+                </select></label><label class="field"
+                >Stade<select id="stadium" name="stadium"></select></label><label class="field"
                 >Format<select id="format" name="format">
-                  <option value="league">League · points</option>
-                  <option value="elimination">Qualification + knockout</option>
-                </select></label
-              ><label class="field"
-                >Minimum rating<input
+                  <option value="league">Championnat aux points</option>
+                  <option value="elimination">Qualifications puis élimination directe</option>
+                </select></label><label class="field"
+                >Cote minimale<input
                   name="min_rating"
                   type="number"
                   min="0"
                   max="100000"
                   value="0"
-                  required /></label
-              ><label class="field"
-                >Maximum rating<input
+                  required /></label><label class="field"
+                >Cote maximale<input
                   name="max_rating"
                   type="number"
                   min="0"
                   max="100000"
                   value="100000"
-                  required /></label
-              ><small class="wide"
-                >Limits use the player’s numerical rating, not their position in
-                the leaderboard.</small
-              >
+                  required /></label><small class="wide"
+                >Ces limites portent sur la cote du joueur, pas sur son rang au classement.</small>
               <div id="knockout" class="wide form-grid" hidden>
                 <label class="field"
-                  >Qualification (minutes)<input
+                  >Qualifications (minutes)<input
                     name="qualification"
                     type="number"
                     min="1"
-                    value="15" /></label
-                ><label class="field"
-                  >Qualifying players<input
+                    value="15" /></label><label class="field"
+                  >Joueurs qualifiés<input
                     name="qualifying_top"
                     type="number"
                     min="2"
                     max="64"
-                    value="4" /></label
-                ><label class="field"
-                  >Knockout rounds<input
+                    value="4" /></label><label class="field"
+                  >Rondes éliminatoires<input
                     name="round_count"
                     type="number"
                     min="1"
                     max="6"
-                    value="2" /></label
-                ><label class="field"
-                  >Each round (minutes)<input
+                    value="2" /></label><label class="field"
+                  >Durée d’une ronde (minutes)<input
                     name="round_minutes"
                     type="number"
                     min="1"
@@ -193,101 +172,90 @@
                 /></label>
               </div>
               <details class="wide">
-                <summary>Special match rules</summary>
+                <summary>Règles des matchs</summary>
                 <div class="form-grid">
                   <label class="field"
-                    >Turns per match<input
+                    >Tours par match<input
                       name="turns_per_match"
                       type="number"
                       min="2"
                       max="100"
                       value="24"
-                      required /></label
-                  ><label class="field"
-                    >Turns per period<input
+                      required /></label><label class="field"
+                    >Tours par période<input
                       name="turns_per_period"
                       type="number"
                       min="1"
                       max="100"
                       value="12"
-                      required /></label
-                  ><label class="field"
-                    >Planning (seconds)<input
+                      required /></label><label class="field"
+                    >Préparation des ordres (secondes)<input
                       name="planning_seconds"
                       type="number"
                       min="1"
                       max="300"
                       value="60"
-                      required /></label
-                  ><label class="field"
-                    >Placement (seconds)<input
+                      required /></label><label class="field"
+                    >Placement (secondes)<input
                       name="placement_seconds"
                       type="number"
                       min="1"
                       max="300"
                       value="60"
-                      required /></label
-                  ><label class="field"
-                    >Class ability uses<input
+                      required /></label><label class="field"
+                    >Utilisations du pouvoir de classe<input
                       name="class_ability_uses"
                       type="number"
                       min="0"
                       max="100"
                       value="1"
-                      required /></label
-                  ><label class="field"
-                    >Regeneration<select name="regenerate_between_turns">
-                      <option value="true">Enabled</option>
-                      <option value="false">Disabled</option>
-                    </select></label
-                  >
+                      required /></label><label class="field"
+                    >Régénération<select name="regenerate_between_turns">
+                      <option value="true">Activée</option>
+                      <option value="false">Désactivée</option>
+                    </select></label>
                 </div>
               </details>
               <details class="wide">
-                <summary>Points & champion’s prize</summary>
+                <summary>Points et récompense du vainqueur</summary>
                 <div class="form-grid">
                   <label class="field"
-                    >Win points<input
+                    >Points par victoire<input
                       name="win_points"
                       type="number"
                       min="0"
                       max="100"
                       value="3"
-                      required /></label
-                  ><label class="field"
-                    >Draw points<input
+                      required /></label><label class="field"
+                    >Points par match nul<input
                       name="draw_points"
                       type="number"
                       min="0"
                       max="100"
                       value="1"
-                      required /></label
-                  ><label class="field"
-                    >Loss points<input
+                      required /></label><label class="field"
+                    >Points par défaite<input
                       name="loss_points"
                       type="number"
                       min="0"
                       max="100"
                       value="0"
-                      required /></label
-                  ><label class="field"
-                    >Glory<input
+                      required /></label><label class="field"
+                    >Gloire<input
                       name="glory"
                       type="number"
                       min="0"
                       max="1000000"
                       value="20"
-                      required /></label
-                  ><label class="field"
+                      required /></label><label class="field"
                     >Influence<input
                       name="influence"
                       type="number"
                       min="0"
                       max="1000000"
                       value="10"
-                      required /></label
-                  ><label class="field"
-                    >Coins<input
+                      required /></label><label class="field"
+                    >Pièces<input
                       name="coins"
                       type="number"
                       min="0"
@@ -297,37 +265,31 @@
                   /></label>
                 </div>
                 <p class="footer-note">
-                  Awarded once through the tournament wallet. Other places
-                  retain standard reward bands. A completed human match is
-                  required.
+                  Récompense attribuée une seule fois dans le portefeuille de tournoi. Les autres places conservent leurs récompenses habituelles. Un match terminé entre joueurs est requis.
                 </p>
               </details>
               <div class="notice wide">
-                Publishing replaces the upcoming schedule, including its
-                recurrence. Current tournaments and results are preserved. Late
-                matches may delay subsequent events.
+                La publication remplace les tournois à venir et leur récurrence. Les tournois en cours et leurs résultats sont conservés. Un match qui se prolonge peut décaler les événements suivants.
               </div>
               <p id="schedule-preview" class="wide footer-note"></p>
-              <button class="wide">Review schedule</button>
+              <button class="wide">Vérifier avant publication</button>
             </form>
           </section>
           <section class="panel">
-            <h2>Published schedule</h2>
+            <h2>Calendrier publié</h2>
             <div id="published"></div>
           </section>
         </aside>
       </div>
       <dialog id="schedule-dialog">
-        <span class="eyebrow">Review publication</span>
-        <h2>Publish this schedule?</h2>
+        <h2>Remplacer le calendrier à venir ?</h2>
         <div id="schedule-summary"></div>
         <p class="notice" style="margin-top: 18px">
-          This replaces every upcoming tournament and the recurring schedule.
+          Tous les tournois à venir seront remplacés par ce calendrier, y compris sa récurrence.
         </p>
         <p id="schedule-error" class="status" role="status"></p>
         <div class="dialog-actions">
-          <button id="cancel-schedule" class="secondary">Cancel</button
-          ><button id="confirm-schedule">Publish schedule</button>
+          <button id="cancel-schedule" class="secondary">Annuler</button><button id="confirm-schedule">Remplacer et publier</button>
         </div>
       </dialog>
     </main>

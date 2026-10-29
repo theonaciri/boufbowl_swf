@@ -2,7 +2,7 @@
 (() => {
   const colors = ["#75ddc6", "#f0cd87", "#a8baff", "#ee93b5", "#88c7ff"];
   const metrics = {
-    fps: ["Images par seconde · événements", "FPS"],
+    fps: ["Cadence mesurée du moteur", "FPS"],
     p95_frame_ms: ["Borne supérieure p95 des intervalles", "ms"],
     slow_percent: ["Images lentes", "%"],
     fall_percent: ["Chutes / tests de déplacement risqués", "%"],
@@ -10,7 +10,7 @@
     falls: ["Chutes", "événements"], goals: ["Buts", "événements"],
     interceptions: ["Interceptions", "événements"], passes: ["Passes tentées", "événements"],
   };
-  const number = value => value == null ? "—" : Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 });
+  const number = value => value == null ? "—" : Number(value).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
   const element = (name, text) => { const node = document.createElement(name); if (text != null) node.textContent = text; return node; };
   function svgElement(name, attrs = {}, text) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -33,6 +33,8 @@
       svg.append(svgElement("text", { x: 58, y: y(value) + 4, "text-anchor": "end", fill: "#aebdc3", "font-size": 12 }, number(value)));
     }
     svg.append(svgElement("text", { x: 65, y: 20, fill: "#aebdc3" }, unit));
+    const chartHeight = 250 + series.length * 38;
+    svg.setAttribute("viewBox", `0 0 960 ${chartHeight}`); svg.style.height = chartHeight + "px";
     series.forEach((s, index) => {
       const color = colors[index % colors.length];
       let path = "", previous = false;
@@ -42,9 +44,14 @@
         const dot = svgElement("circle", { cx: x(i), cy: y(value), r: 3, fill: color, tabindex: 0 });
         dot.append(svgElement("title", {}, `${days[i]} · ${s.name}: ${number(value)} ${unit}${s.notes?.[i] ? " · " + s.notes[i] : ""}`));
         svg.append(dot);
+        const stride = Math.max(1, Math.ceil(days.length / 8));
+        if (i % stride === 0 || i === days.length - 1) svg.append(svgElement("text", { x:x(i), y:y(value)+(index%2 ? 16 : -9), "text-anchor":"middle", fill:color, "font-size":12 }, number(value)));
       });
       svg.prepend(svgElement("path", { d: path, fill: "none", stroke: color, "stroke-width": 2 }));
-      svg.append(svgElement("text", { x: 65 + index * 185, y: 248, fill: color, "font-size": 12 }, s.name));
+      const last = s.values.findLastIndex(value => value != null);
+      const detail = last < 0 ? "aucune mesure" : `${days[last]} : ${number(s.values[last])} ${unit}${s.notes?.[last] ? " · " + s.notes[last] : ""}`;
+      svg.append(svgElement("text", { x:65, y:248+index*38, fill:color, "font-size":13 }, s.name));
+      svg.append(svgElement("text", { x:65, y:264+index*38, fill:"#b4c5c7", "font-size":12 }, detail));
     });
     for (const index of new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])) {
       svg.append(svgElement("text", { x: x(index), y: 217, "text-anchor": index ? "end" : "start", fill: "#aebdc3", "font-size": 12 }, days[index]));
@@ -88,17 +95,18 @@
     const frames = combineFrames(game.frames.filter(row => row.phase === phase));
     const frameSeries = [...new Set(frames.map(row => row.runtime))].map(runtime => {
       const byDay = new Map(frames.filter(row => row.runtime === runtime).map(row => [row.day, row]));
-      return { name: runtime, values: days.map(day => byDay.get(day)?.[metric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).samples} échantillons, ${byDay.get(day).frames} images` : "") };
+      return { name: runtime, values: days.map(day => byDay.get(day)?.[metric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).samples} échantillon(s), ${byDay.get(day).frames} événements d’image` : "") };
     });
     const [frameLabel, frameUnit] = metrics[metric];
     chart("game-frames-chart", days, frameSeries, frameLabel + (metric === "p95_frame_ms" ? " (borne la plus élevée des plateformes)" : ""), frameUnit);
-    table("game-frame-details", ["Jour UTC", "Moteur / plateforme", "Vue", "Échantillons / images", "FPS mesurés / cible", "p95 ≤ ms", "Lentes %", "Intervalle max. ms", "Mémoire max. Mo"],
+    table("game-frame-details", ["Jour UTC", "Moteur / plateforme", "Vue", "Échantillons / événements d’image", "FPS mesurés / cible", "p95 ≤ ms", "Lentes %", "Intervalle max. ms", "Mémoire max. Mo"],
       game.frames.map(row => [row.day, row.runtime + " / " + row.platform, row.phase, `${row.samples} / ${row.frames}`, `${number(row.fps)} / ${number(row.target_fps)}`, number(row.p95_frame_ms), number(row.slow_percent), number(row.max_frame_ms), number(row.memory_max_mb)]));
     const gameplayMetric = document.getElementById("game-play-metric").value;
     const [gameLabel, gameUnit] = metrics[gameplayMetric];
+    document.getElementById("game-play-help").textContent = gameplayMetric === "fall_percent" ? "Chutes divisées par les tests de déplacement comportant un risque non nul. Une valeur élevée indique davantage de chutes sur les mouvements risqués tentés ; elle ne mesure pas à elle seule la difficulté du jeu." : gameplayMetric === "pass_percent" ? "Passes rattrapées par un coéquipier divisées par les passes tentées. Une interception adverse n’est pas une réussite. Sans tentative, aucun taux n’est calculé." : "Nombre d’événements enregistrés dans les tours résolus chaque jour UTC. Le volume dépend du nombre de matchs et de tours joués : comparez-le aux effectifs du tableau.";
     chart("game-play-chart", days, ["cpu", "human"].map(controller => {
       const byDay = new Map(game.gameplay.filter(row => row.controller === controller).map(row => [row.day, row]));
-      return { name: controller === "cpu" ? "Équipes ordinateur" : "Équipes humaines", values: days.map(day => byDay.get(day)?.[gameplayMetric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).team_turns} tours équipe` : "") };
+      return { name: controller === "cpu" ? "Équipes ordinateur" : "Équipes humaines", values: days.map(day => byDay.get(day)?.[gameplayMetric] ?? null), notes: days.map(day => byDay.has(day) ? `${byDay.get(day).team_turns} tours d’équipe · ${byDay.get(day).passes} passes tentées · ${byDay.get(day).risk_tests} tests risqués` : "") };
     }), gameLabel, gameUnit);
     table("game-play-details", ["Type", "Tours équipe", "Étapes déplacées", "Tests risqués", "Chutes", "Chutes %", "Passes", "Réussies", "Passes %", "Interceptions", "Buts"],
       gameplayTotals(game.gameplay).map(row => [row.controller, row.team_turns, row.moves, row.risk_tests, row.falls, number(row.fall_percent), row.passes, row.completed_passes, number(row.pass_percent), row.interceptions, row.goals]));

@@ -79,6 +79,7 @@
   <link rel="stylesheet" href="contributions.css" />
   <link rel="stylesheet" href="restoration.css" />
   <link rel="stylesheet" href="home-tournaments.css" />
+  <link rel="stylesheet" href="orbis-banner.css" />
 </head>
 
 <body>
@@ -109,25 +110,16 @@
           de jeu grâce à ce projet de restauration et de préservation mené
           bénévolement par des fans, sans but commercial.
         </p>
-        <p>
-          En le rendant à nouveau jouable, nous voulons aussi comprendre l’intérêt
-          des joueurs pour ces jeux tactiques où les deux équipes préparent leurs
-          ordres puis agissent simultanément. Essayez, partagez le projet et
-          dites-nous ce qui vous donne envie de continuer ou vous freine.
-        </p>
-        <p>
-          Ce projet n’est pas affilié à Ankama et n’a pas vocation à concurrencer
-          ses jeux ou ses services. Le jeu et son univers restent ceux de leurs
-          ayants droit.
-        </p>
+        <p class="hero-context">Un projet bénévole et non commercial, indépendant d’Ankama.
+          <a href="#interest-title">Pourquoi restaurer ce jeu ?</a></p>
         <div class="hero-actions">
-          <a class="button" href="#telecharger">CHOISIR MON CLIENT <span>↓</span></a><button class="text-button"
+          <a class="button" href="#telecharger">Choisir une version <span>↓</span></a><button class="text-button"
             data-video-open>
-            <span class="play-circle">▷</span> VOIR LE JEU
+            <span class="play-circle">▷</span> Voir le tutoriel
           </button>
         </div>
         <p class="hero-platforms">
-          <a href="#telecharger">▣ Desktop</a><a href="#telecharger">♧ Android</a><a href="play.html">◎ Web
+          <a href="#telecharger">Ordinateur</a><a href="#telecharger">Android</a><a href="play.html">Navigateur
             expérimental</a><span class="alpha">VERSION EN RESTAURATION</span>
         </p>
       </div>
@@ -141,7 +133,6 @@
               aria-label="Animation originale du jeu"></video>
           </div>
           <div class="carousel-caption">
-            <span class="eyebrow">CAPTURES & ANIMATIONS ORIGINALES DU JEU</span>
             <h2 id="carousel-title">OBJECTIF : MARQUER UN ESSAI</h2>
             <p id="carousel-description">
               Deux équipes de cinq joueurs s’affrontent. Le but est de porter le ballon jusqu’à la ligne d’en-but
@@ -203,8 +194,7 @@
     </section>
     <section id="telecharger" class="section download-section">
       <div class="download-header reveal">
-        <span class="eyebrow">01 / TÉLÉCHARGEMENT ET ACCÈS WEB</span>
-        <h2>Choisissez votre version<br /><em>pour ordinateur, Android ou navigateur.</em></h2>
+        <h2>Jouer sur ordinateur,<br /><em>Android ou navigateur.</em></h2>
         <p>
           Pour jouer dans les meilleures conditions, privilégiez le client
           Desktop ou l’application Android. Le client Web passe par une couche
@@ -215,27 +205,26 @@
       <div class="platform-grid">
         <article class="platform-card reveal recommended">
           <img class="platform-icon" src="assets/site/platform-desktop.svg" alt="" width="42" height="42"
-            loading="lazy" /><span id="desktop-status" class="platform-status">BUILD DISPONIBLE</span>
-          <h3>DESKTOP</h3>
+            loading="lazy" /><span id="desktop-status" class="platform-status">Disponible</span>
+          <h3>Ordinateur</h3>
           <p>
-            Le client Desktop est recommandé pour jouer. Il se connecte au
-            serveur du jeu.
-            Les builds Windows et Linux incluent les assets du jeu.
+            Les applications Windows et Linux incluent les ressources disponibles
+            et se connectent au serveur du jeu.
             Lancez le fichier .exe sous Windows ; sous Linux, autorisez
             l’exécution du fichier .run puis ouvrez-le. Les versions équipées
             de l’outil de mise à jour vérifient et installent automatiquement
             les mises à jour au lancement.
           </p>
-          <a id="download-desktop" class="button" href="/downloads/Boufbowl%20Fan.run" download>LINUX · TÉLÉCHARGER
+          <a id="download-desktop" class="button" href="/downloads/Boufbowl%20Fan.run" download>Télécharger pour Linux
             ↗</a><small id="desktop-detail">Linux x86-64</small>
-          <span id="windows-status" hidden>BUILD DISPONIBLE</span>
-          <a id="download-windows" class="button" href="/downloads/Boufbowl%20Fan.exe" download>WINDOWS · TÉLÉCHARGER
+          <span id="windows-status" hidden>Disponible</span>
+          <a id="download-windows" class="button" href="/downloads/Boufbowl%20Fan.exe" download>Télécharger pour Windows
             ↗</a><small id="windows-detail">Windows</small>
         </article>
         <article class="platform-card reveal recommended">
           <img class="platform-icon" src="assets/site/platform-android.svg" alt="" width="42" height="42"
-            loading="lazy" /><span id="android-status" class="platform-status">BUILD DISPONIBLE</span>
-          <h3>ANDROID</h3>
+            loading="lazy" /><span id="android-status" class="platform-status">Disponible</span>
+          <h3>Android</h3>
           <p>
             Le client Android inclut les ressources du jeu disponibles pour
             éviter de les télécharger pendant les parties. Le zoom à deux
@@ -244,12 +233,12 @@
             confirmation dans Android.
           </p>
           <a id="download-android" class="button button-outline" href="/downloads/Boufbowl%20Fan.apk"
-            download>TÉLÉCHARGER L’APK ↗</a><small id="android-detail">APK · Android 6+ · ARM64</small>
+            download>Télécharger pour Android ↗</a><small id="android-detail">APK · Android 6+ · ARM64</small>
         </article>
         <article class="platform-card reveal web-experimental">
           <img class="platform-icon" src="assets/site/platform-web.svg" alt="" width="42" height="42"
             loading="lazy" /><span class="platform-status">EXPÉRIMENTAL</span>
-          <h3>WEB</h3>
+          <h3>Navigateur</h3>
           <p>
             Le client Flash tourne ici avec l’émulateur Ruffle, sans installation.
             Une mise à jour détectée propose de recharger la page, avec votre
@@ -259,7 +248,7 @@
             <strong>À savoir</strong> — La version Web est 3 fois plus lente
             que les autres clients.
           </aside>
-          <a class="button button-outline" href="play.html">ESSAYER LA VERSION WEB <span>↗</span></a><small>Version
+          <a class="button button-outline" href="play.html">Jouer dans le navigateur <span>↗</span></a><small>Version
             expérimentale · 3× plus lente que les autres clients</small>
         </article>
       </div>
@@ -319,16 +308,15 @@ bun run build:players --platform android</code></pre>
       </p>
       <button class="text-button"
         data-volunteer="Compatibilité Web : Ruffle, Flash/AS3, rendu et performances navigateur">
-        AIDER À RENDRE LE WEB JOUABLE
+        Contribuer aux performances Web
       </button>
     </section>
       <section id="tournois" class="section tournament-section" aria-labelledby="tournament-heading">
         <div class="section-heading">
           <div>
-            <span class="eyebrow">TOURNOIS DU SAMEDI, DE 14 H À 18 H</span>
-            <h2 id="tournament-heading">Participez aux tournois<br /><em>et suivez le classement.</em></h2>
+            <h2 id="tournament-heading">Les tournois du samedi</h2>
           </div>
-          <p>Choisissez votre prochain tournoi, annoncez votre participation et suivez les dix meilleurs joueurs en direct.</p>
+          <p>Le samedi de 14 h à 18 h, consultez les règles et annoncez votre participation. Les horaires de chaque tournoi sont indiqués ci-dessous.</p>
         </div>
         <div class="tournament-toolbar">
           <p id="tournament-status" role="status">Chargement des tournois…</p>
@@ -343,9 +331,8 @@ bun run build:players --platform android</code></pre>
     <section id="le-jeu" class="section game-section">
       <div class="section-heading reveal">
         <div>
-          <span class="eyebrow">02 / LE SPORT TACTIQUE À ORDRES SIMULTANÉS</span>
           <h2>
-            Préparez vos ordres,<br /><em>puis regardez les deux équipes agir.</em>
+            Deux équipes,<br /><em>un tour simultané.</em>
           </h2>
         </div>
         <p>
@@ -362,14 +349,13 @@ bun run build:players --platform android</code></pre>
             srcset="assets/site/responsive/tutorial-poster-768.avif 768w, assets/site/responsive/tutorial-poster-1024.avif 1024w"
             sizes="(max-width: 780px) max(88vw, 816px), 1024px" data-responsive-cover
             alt="Une scène des archives animées du tutoriel original" width="1024" height="452" loading="lazy" /><span
-            class="video-shade"></span><span class="video-badge">ARCHIVES DU JEU / TUTORIEL ORIGINAL</span><span
-            class="big-play">▷</span><span class="video-caption">DÉCOUVRIR LE JEU.<br /><strong>LE TUTORIEL ORIGINAL.</strong><span>REGARDER LES IMAGES</span></span>
+            class="video-shade"></span><span class="video-badge">Tutoriel original</span><span
+            class="big-play">▷</span><span class="video-caption"><strong>Le tutoriel original</strong><span>Regarder la vidéo</span></span>
         </button>
         <div class="game-features">
           <article class="feature reveal">
-            <span class="feature-number">01</span>
             <div>
-              <h3>PLANIFIER ET ANTICIPER.</h3>
+              <h3>Préparer ses actions</h3>
               <p>
                 Des actions à préparer, des passes à tenter et des pouvoirs de
                 classe à bien placer. Anticipez les intentions adverses :
@@ -378,9 +364,8 @@ bun run build:players --platform android</code></pre>
             </div>
           </article>
           <article class="feature reveal">
-            <span class="feature-number">02</span>
             <div>
-              <h3>COMPOSER SON ÉQUIPE.</h3>
+              <h3>Composer son équipe</h3>
               <p>
                 Créez vos personnages, ajustez leur apparence et rassemblez un
                 club qui vous ressemble, avec des rôles et des classes
@@ -389,9 +374,8 @@ bun run build:players --platform android</code></pre>
             </div>
           </article>
           <article class="feature reveal">
-            <span class="feature-number">03</span>
             <div>
-              <h3>RETROUVER D’AUTRES JOUEURS.</h3>
+              <h3>Jouer et suivre ses résultats</h3>
               <p>
                 Matchs, tournois ponctuels ou récurrents : le
                 <a href="ladder.html">classement général</a> permet de suivre les résultats.
@@ -402,12 +386,18 @@ bun run build:players --platform android</code></pre>
         </div>
       </div>
     </section>
+    <section class="orbis-banner orbis-stars" aria-labelledby="orbis-banner-title">
+      <div>
+        <h2 id="orbis-banner-title">Les tours simultanés vous plaisent ? Découvrez Orbis.</h2>
+        <p>Un jeu de billes de deux à quatre joueurs, plus simple à prendre en main. Préparez votre tir, anticipez les autres et regardez vos trajectoires se rencontrer. Une recréation de Cestos 2 : Party Time.</p>
+      </div>
+      <a href="/orbis/">Découvrir Orbis <svg class="orbis-icon" aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 18 12-12M6 6h12v12" /></svg></a>
+    </section>
     <section id="le-chantier" class="section chantier-section">
       <div class="section-heading reveal">
         <div>
-          <span class="eyebrow">03 / JOURNAL DE BORD</span>
           <h2>
-            Suivez la restauration<br /><em>et les éléments encore manquants.</em>
+            Où en est la restauration ?
           </h2>
         </div>
         <span class="stamp">RESTAURATION<br />EN COURS</span>
@@ -427,7 +417,7 @@ bun run build:players --platform android</code></pre>
       </div>
       <div class="status-grid">
         <article class="status-card reveal">
-          <div class="status-label green">● ÇA TOURNE DÉJÀ</div>
+          <div class="status-label green">Disponible</div>
           <h3>Les fonctionnalités disponibles</h3>
           <ul>
             <li>Création et personnalisation des personnages</li>
@@ -439,7 +429,7 @@ bun run build:players --platform android</code></pre>
           <span class="card-foot">UNE BASE JOUABLE, ENCORE EN RESTAURATION.</span>
         </article>
         <article class="status-card orange-card reveal">
-          <div class="status-label">◒ RESSOURCES MANQUANTES</div>
+          <div class="status-label">Ressources manquantes</div>
           <h3>Les personnages à compléter</h3>
           <p>
             Les personnages du tutoriel sont complets : Crâ homme et femme,
@@ -455,7 +445,7 @@ bun run build:players --platform android</code></pre>
           <span class="card-foot">VOS ARCHIVES ET VOS COMPÉTENCES PEUVENT AIDER.</span>
         </article>
         <article class="status-card reveal">
-          <div class="status-label orange">AU BANC D’ESSAI</div>
+          <div class="status-label orange">À vérifier</div>
           <h3>Les règles et animations à vérifier</h3>
           <p>
             Les pouvoirs, les probabilités de lancer, de réception et de chute
@@ -483,8 +473,7 @@ bun run build:players --platform android</code></pre>
     <section id="vestiaires" class="section locker-section">
       <div class="section-heading reveal">
         <div>
-          <span class="eyebrow">04 / RESTAURATION</span>
-          <h2>RECONSTITUONS LES ARCHIVES</h2>
+          <h2>Explorer les archives du jeu</h2>
         </div>
         <p>
           Explorez les vrais dessins, terrains et sons du jeu.<br />Et tout ce
@@ -493,12 +482,10 @@ bun run build:players --platform android</code></pre>
       </div>
       <div id="restauration" class="restoration-explorer">
         <div class="restoration-heading">
-          <span class="eyebrow">PERSONNAGES, STADES ET SONS À RESTAURER</span>
-          <h3>Consultez les ressources disponibles et manquantes.</h3>
+          <h3>Personnages, terrains et sons</h3>
           <p>
-            Choisissez un personnage, un stade ou un son. Ici, on compte les
-            ressources retrouvées, on montre les remplacements et on vous
-            laisse écouter ce qui a survécu.
+            Choisissez un atelier pour consulter les ressources retrouvées,
+            les remplacements et les éléments encore manquants.
           </p>
           <nav aria-label="Ateliers de restauration">
             <a href="#pantins-fonctionnels">Les pantins</a><a href="#atelier-personnages">Personnages</a><a
@@ -512,7 +499,6 @@ bun run build:players --platform android</code></pre>
         </div>
         <section class="puppet-gallery" id="pantins-fonctionnels" aria-labelledby="puppet-gallery-title">
           <div class="puppet-gallery-heading">
-            <span class="eyebrow">CINQ PANTINS FONCTIONNELS</span>
             <h3 id="puppet-gallery-title">Cinq personnages prennent vie.</h3>
             <p>
               Crâ homme et femme, Enutrof femme, Eniripsa femme et Iop homme :
@@ -810,7 +796,6 @@ bun run build:players --platform android</code></pre>
       </div>
       <div id="asset-contributions" class="asset-contributions">
         <div class="restoration-heading">
-          <span class="eyebrow">CONTRIBUER À LA RESTAURATION</span>
           <h3>Proposer une ressource retrouvée.</h3>
           <p>
             Un original dort dans vos archives ? Proposez le fichier exact
@@ -827,7 +812,6 @@ bun run build:players --platform android</code></pre>
     </section>
     <section id="benevoles" class="section volunteer-section">
       <div class="volunteer-main reveal">
-        <span class="eyebrow">05 / CONTRIBUER BÉNÉVOLEMENT</span>
         <h2>
           Aidez à restaurer le jeu<br /><em>selon vos compétences.</em>
         </h2>
@@ -837,14 +821,13 @@ bun run build:players --platform android</code></pre>
           selon vos envies et ce que vous savez faire.
         </p>
         <button class="button button-cream" data-volunteer="Je veux aider">
-          JE REJOINS LE CHANTIER</button><a class="discord-note" data-project-contact
+          Proposer mon aide</button><a class="discord-note" data-project-contact
           href="https://discord.com/invite/dofus-3-1255519861275230280" target="_blank" rel="noopener">RETROUVEZ-NOUS
           SUR LE DISCORD DOFUS 3 ↗</a>
         <span class="volunteer-note">BÉNÉVOLAT · PRÉSERVATION · PROJET NON COMMERCIAL</span>
       </div>
       <div class="volunteer-jobs reveal">
         <button data-volunteer="Graphisme et animation">
-          <span>01</span>
           <div>
             <h3>GRAPHISME ET ANIMATION</h3>
             <p>
@@ -854,7 +837,6 @@ bun run build:players --platform android</code></pre>
             </p>
           </div>
         </button><button data-volunteer="Sons, musiques et archives">
-          <span>02</span>
           <div>
             <h3>SONS, MUSIQUES ET ARCHIVES</h3>
             <p>
@@ -863,7 +845,6 @@ bun run build:players --platform android</code></pre>
             </p>
           </div>
         </button><button data-volunteer="Tests et équilibrage">
-          <span>03</span>
           <div>
             <h3>TESTS ET FIDÉLITÉ AU JEU</h3>
             <p>
@@ -872,7 +853,6 @@ bun run build:players --platform android</code></pre>
             </p>
           </div>
         </button><button data-volunteer="Vidéo de lancement et mise en relation">
-          <span>04</span>
           <div>
             <h3>VIDÉO ET PRÉSENTATION DU PROJET</h3>
             <p>
@@ -884,8 +864,7 @@ bun run build:players --platform android</code></pre>
       </div>
     </section>
     <section class="section project-interest" aria-labelledby="interest-title">
-      <span class="eyebrow">POURQUOI LE REMETTRE EN JEU ?</span>
-      <h2 id="interest-title">QUELLE PLACE POUR<br /><em>LE SPORT TACTIQUE À ORDRES SIMULTANÉS ?</em></h2>
+      <h2 id="interest-title">Ce genre de jeu vous donne-t-il envie de jouer ?</h2>
       <p>Nous aimerions savoir qui a envie de jouer à ce mélange de sport et
         de tactique WEGO. Sa richesse mérite d’être découverte : un accès plus
         simple, des explications claires et des clients plus confortables
@@ -905,7 +884,6 @@ bun run build:players --platform android</code></pre>
       <p id="share-status" role="status"></p>
     </section>
     <section class="section manifesto-section reveal">
-      <span class="eyebrow">PRÉSERVER UN JEU, PAR PASSION</span>
       <h2>Nous préservons le jeu bénévolement,<br /><em>sans but commercial.</em></h2>
       <div class="manifesto-values">
         <span>✳ ZÉRO PUBLICITÉ</span><span>✳ AUCUNE BOUTIQUE</span><span>✳ AUCUN BUT D’ENRICHISSEMENT</span>
@@ -930,8 +908,8 @@ bun run build:players --platform android</code></pre>
       </details>
     </section>
     <section class="final-cta">
-      <p>ENVIE DE RETROUVER LE BOUFBOWL ?</p>
-      <a href="play.html">À VOUS DE <em>JOUER.</em> <span>↗</span></a><span>DESKTOP ET ANDROID RECOMMANDÉS · WEB EXPÉRIMENTAL</span>
+      <p>Choisissez la version adaptée à votre appareil.</p>
+      <a href="#telecharger">Rejouer au <em>Boufbowl</em> <span aria-hidden="true">↓</span></a><span>DESKTOP ET ANDROID RECOMMANDÉS · WEB EXPÉRIMENTAL</span>
     </section>
   </main>
   <footer class="site-footer">
@@ -939,7 +917,7 @@ bun run build:players --platform android</code></pre>
         srcset="assets/site/responsive/logo-240.avif 240w, assets/site/responsive/logo-630.avif 630w"
         sizes="(max-width: 750px) 120px, (max-width: 1250px) 16vw, 200px" alt="Boufbowl" width="630" height="232" /></a>
     <p>
-      RESSUSCITÉ PAR DES FANS.<br />Fan game, tous droits réservés à Ankama
+      Restauré par des fans.<br />Fan game, tous droits réservés à Ankama
       Games<br />Artistes du jeu originel: Fabrice Nzini, Sephyka
     </p>
     <div>
@@ -953,7 +931,6 @@ bun run build:players --platform android</code></pre>
   <dialog id="video-dialog" class="video-dialog" aria-labelledby="video-title">
     <div class="dialog-header">
       <div>
-        <span class="eyebrow">LES ARCHIVES DU JEU ORIGINAL</span>
         <h2 id="video-title">Le Boufbowl en images</h2>
       </div>
       <button data-close-dialog aria-label="Fermer la vidéo">×</button>
@@ -980,8 +957,7 @@ bun run build:players --platform android</code></pre>
     </p>
   </dialog>
   <dialog id="volunteer-dialog" aria-labelledby="volunteer-title">
-    <div class="dialog-header">
-      <span class="eyebrow">PROPOSER VOTRE AIDE À LA RESTAURATION</span><button data-close-dialog
+    <div class="dialog-header"><button data-close-dialog
         aria-label="Fermer la candidature">×</button>
     </div>
     <h2 id="volunteer-title">CONTRIBUER À LA RESTAURATION.</h2>

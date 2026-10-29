@@ -9,12 +9,12 @@ window.AdminConsole = (() => {
   };
   const date = (value) =>
     value
-      ? new Date(value * 1000).toLocaleString([], {
+      ? new Date(value * 1000).toLocaleString("fr-FR", {
           dateStyle: "medium",
           timeStyle: "short",
         })
-      : "Indefinite";
-  const number = (value) => new Intl.NumberFormat().format(value ?? 0);
+      : "Sans échéance";
+  const number = (value) => new Intl.NumberFormat("fr-FR").format(value ?? 0);
   let token = sessionStorage.getItem("boufbowl-admin-session") || "";
   async function api(action, fields = {}) {
     const response = await fetch("api/admin", {
@@ -23,15 +23,17 @@ window.AdminConsole = (() => {
       body: JSON.stringify({ session: token, action, ...fields }),
       cache: "no-store",
     });
-    if (!response.ok) throw Error("Server returned HTTP " + response.status);
+    if (!response.ok) throw Error(response.status === 403
+      ? "Accès refusé. Vérifiez les droits de votre compte ou reconnectez-vous."
+      : "La demande n’a pas abouti (HTTP " + response.status + "). Réessayez dans un instant.");
     const data = await response.json();
-    if (!data.ok) throw Error(data.error || "Request failed");
+    if (!data.ok) throw Error(data.error || "La demande a échoué. Réessayez.");
     return data;
   }
   const nav = el("header", null, "admin-nav");
   const brand = el("a", null, "brand");
   brand.href = "admin.html";
-  brand.append(el("span", "B", "brand-mark"), el("span", "BOUFBOWL"));
+  brand.append(el("span", "Boufbowl"));
   const links = el("nav");
   links.setAttribute("aria-label", "Pages d’administration");
   for (const [href, label] of [
@@ -39,7 +41,7 @@ window.AdminConsole = (() => {
     ["website-activity.html", "Site web"],
     ["moderation.html", "Modération"],
     ["tournaments.html", "Tournois"],
-    ["assets-admin.html", "Assets"],
+    ["assets-admin.html", "Ressources"],
   ]) {
     const link = el("a", label);
     link.href = href;
@@ -48,7 +50,6 @@ window.AdminConsole = (() => {
     links.append(link);
   }
   const right = el("div", null, "nav-right");
-  right.append(el("span", "ADMIN CONSOLE", "eyebrow"));
   const signout = el("button", "Déconnexion", "secondary small");
   signout.hidden = !token;
   window.addEventListener("admin-session-changed", () => {
@@ -91,7 +92,7 @@ window.AdminConsole = (() => {
       event.preventDefault();
       const button = event.submitter;
       button.disabled = true;
-      $("console-error").textContent = "Signing in…";
+      $("console-error").textContent = "Connexion…";
       try {
         const r = await fetch("api/account", {
           method: "POST",
@@ -142,14 +143,21 @@ window.AdminConsole = (() => {
     }));
     for (const bucket of buckets)
       bucket.count = activity.find((r) => r.hour === bucket.hour)?.count || 0;
-    const max = Math.max(1, ...buckets.map((r) => r.count));
-    for (const row of buckets) {
-      const bar = el("div", null, "bar");
-      bar.style.height = Math.max(3, (row.count / max) * 100) + "%";
-      bar.title = date(row.hour) + " · " + number(row.count) + " messages";
-      node.append(bar);
+    const max = Math.max(1, ...buckets.map(row => row.count));
+    const ns = "http://www.w3.org/2000/svg", graph = document.createElementNS(ns, "svg");
+    graph.setAttribute("viewBox", "0 0 1200 190"); graph.style.minWidth = "1200px"; graph.style.height = "190px";
+    for (const [index, row] of buckets.entries()) {
+      const x = 10 + index * 49, height = row.count * 110 / max;
+      const bar = document.createElementNS(ns, "rect");
+      for (const [key, value] of Object.entries({x,y:145-height,width:30,height,fill:"#75b99b",tabindex:0})) bar.setAttribute(key,value);
+      const title = document.createElementNS(ns,"title"); title.textContent = date(row.hour) + " · " + number(row.count) + " messages"; bar.append(title);
+      const count = document.createElementNS(ns,"text"); count.setAttribute("x",x+15); count.setAttribute("y",135-height); count.setAttribute("text-anchor","middle"); count.setAttribute("fill","#e4eeed"); count.setAttribute("font-size",12); count.textContent=number(row.count);
+      const hour = document.createElementNS(ns,"text"); hour.setAttribute("x",x+15); hour.setAttribute("y",170); hour.setAttribute("text-anchor","middle"); hour.setAttribute("fill","#a6b9bc"); hour.setAttribute("font-size",12); hour.textContent=new Date(row.hour*1000).toLocaleTimeString("fr-FR",{hour:"2-digit",timeZone:"UTC"});
+      graph.append(bar,count,hour);
     }
+    node.append(graph);
   }
+
   function status(error) {
     $("page-status").textContent = error?.message || error || "";
   }

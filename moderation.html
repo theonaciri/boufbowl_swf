@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,38 +7,34 @@
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="admin.css" />
     <meta name="description" content="Console privée de modération du serveur de jeu Boufbowl.">
-<title>Boufbowl · Moderation</title>
+<title>Boufbowl · Modération</title>
   </head>
   <body data-console="moderation">
     <section id="console-login" class="panel login-panel">
-      <span class="eyebrow">Restricted access</span>
-      <h2>Sign in to the admin console</h2>
-      <p>Use your administrator account or an existing session.</p>
+      <h2>Connexion à l’administration</h2>
+      <p>Connectez-vous avec votre compte administrateur ou une session existante.</p>
       <form id="console-account">
         <label class="field"
-          >Username<input
+          >Identifiant<input
             id="console-username"
             autocomplete="username"
-            value="KrissKrass"
-            required /></label
-        ><label class="field"
-          >Password<input
+
+            required /></label><label class="field"
+          >Mot de passe<input
             id="console-password"
             type="password"
             autocomplete="current-password"
-            required /></label
-        ><button>Sign in</button>
+            required /></label><button>Se connecter</button>
       </form>
       <details style="margin-top: 18px">
-        <summary>Use an existing session</summary>
+        <summary>Utiliser une session existante</summary>
         <form id="console-device">
           <label class="field"
-            >Administrator session<input
+            >Session administrateur<input
               id="console-session"
               type="password"
               required
-              autocomplete="off" /></label
-          ><button>Connect</button>
+              autocomplete="off" /></label><button>Se connecter</button>
         </form>
       </details>
     </section>
@@ -46,9 +42,8 @@
     <main id="console-main" hidden>
       <div class="page-heading">
         <div>
-          <span class="eyebrow">Community & safety</span>
-          <h1>Moderation</h1>
-          <p>A live view of conversations across the pitch.</p>
+          <h1>Modération</h1>
+          <p>Consultez les conversations et les signalements, puis examinez les actions nécessaires.</p>
         </div>
         <span id="auto-refresh"></span>
       </div>
@@ -58,64 +53,60 @@
         <div>
           <section id="conversation-panel" class="panel">
             <div class="panel-title">
-              <h2>Message stream</h2>
+              <h2>Messages</h2>
               <button id="refresh-feed" class="secondary small">Actualiser</button>
             </div>
             <div class="filters">
-              <input
+              <label class="field">Rechercher un message<input
                 id="search"
-                aria-label="Search messages"
-                placeholder="Search messages…"
-              /><input
+                aria-label="Rechercher dans les messages"
+                placeholder="Rechercher un message…"
+              /></label><label class="field">Filtrer par joueur<input
                 id="player-filter"
-                aria-label="Filter by player"
-                placeholder="Player name…"
-              /><select id="kind" aria-label="Channel filter">
-                <option value="">All channels</option>
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-                <option value="match">Match</option></select
-              ><select id="language" aria-label="Language filter">
-                <option value="">All languages</option>
-                <option value="en">English</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="es">Spanish</option>
-              </select>
+                aria-label="Filtrer par joueur"
+                placeholder="Pseudo du joueur…"
+              /></label><label class="field">Canal<select id="kind" aria-label="Canal">
+                <option value="">Tous les canaux</option>
+                <option value="public">Publics</option>
+                <option value="private">Privés</option>
+                <option value="match">Matchs</option></select></label><label class="field">Langue<select id="language" aria-label="Langue">
+                <option value="">Toutes les langues</option>
+                <option value="en">Anglais</option>
+                <option value="fr">Français</option>
+                <option value="de">Allemand</option>
+                <option value="es">Espagnol</option>
+              </select></label>
             </div>
             <div id="conversation-focus" class="focus-bar" hidden>
-              <span id="focus-label"></span
-              ><button id="clear-focus" class="secondary small">
-                Clear focus ×
+              <span id="focus-label"></span><button id="clear-focus" class="secondary small">
+                Quitter la conversation
               </button>
             </div>
             <p class="footer-note">
-              Select a private or match message for conversation context. Click
-              outside this panel or press Escape to clear focus. Newest messages
-              first.
+              Sélectionnez un message privé ou de match pour voir sa conversation. Échap permet de quitter cette vue. Les messages les plus récents apparaissent en premier.
             </p>
-            <div id="feed" class="feed" aria-label="Chat messages"></div>
+            <div id="feed" class="feed" aria-label="Messages de discussion"></div>
             <button
               id="older"
               class="secondary"
               style="width: 100%; margin-top: 15px"
               hidden
             >
-              Load older messages
+              Charger les messages précédents
             </button>
           </section>
           <section class="panel">
-            <h2>Moderation history</h2>
+            <h2>Historique de modération</h2>
             <div class="scroll">
               <table>
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Player</th>
+                    <th>Date</th>
+                    <th>Joueur</th>
                     <th>Action</th>
-                    <th>Moderator</th>
-                    <th>Reason</th>
-                    <th>Until</th>
+                    <th>Modérateur</th>
+                    <th>Motif</th>
+                    <th>Échéance</th>
                   </tr>
                 </thead>
                 <tbody id="audit"></tbody>
@@ -125,68 +116,61 @@
         </div>
         <aside class="sidebar">
           <section class="panel">
-            <span class="eyebrow">Player action</span>
-            <h2 style="margin-top: 8px">Suspend a player</h2>
+            <h2 style="margin-top: 8px">Suspendre un joueur</h2>
             <form id="suspension-form" class="stack">
               <label class="field"
-                >Player<input
+                >Joueur<input
                   id="suspend-player"
                   list="players"
-                  placeholder="Select a player"
-                  required /><datalist id="players"></datalist></label
-              ><label class="field"
-                >Duration<select id="duration">
-                  <option value="86400">1 day</option>
-                  <option value="604800">7 days</option>
-                  <option value="0">Indefinitely · admins only</option>
-                </select></label
-              ><label class="field"
-                >Reason<textarea
+                  placeholder="Pseudo exact du joueur"
+                  required /><datalist id="players"></datalist></label><label class="field"
+                >Durée<select id="duration">
+                  <option value="86400">1 jour</option>
+                  <option value="604800">7 jours</option>
+                  <option value="0">Sans échéance · administrateurs uniquement</option>
+                </select></label><label class="field"
+                >Motif<textarea
                   id="reason"
                   rows="3"
                   maxlength="500"
                   required
-                  placeholder="Explain the reason for the suspension"
-                ></textarea></label
-              ><button class="danger">Review suspension</button>
+                  placeholder="Décrivez le motif de la suspension"
+                ></textarea></label><button class="danger">Vérifier la suspension</button>
             </form>
             <p class="footer-note">
-              Suspensions block sign-in and disconnect the player from
-              matchmaking. An active match is forfeited.
+              La suspension bloque la connexion et retire le joueur de la recherche de match. Toute partie en cours se termine par un forfait.
             </p>
           </section>
           <section class="panel">
-            <h2>Message activity</h2>
-            <p>Messages per hour · last 24 hours</p>
+            <h2>Activité des discussions</h2>
+            <p>Nombre de messages par heure UTC, sur les dernières 24 heures. Chaque barre affiche son total. Faites défiler le graphique pour parcourir les heures.</p>
             <div
               id="activity-chart"
               class="chart"
               role="img"
-              aria-label="Hourly message volume over the last 24 hours"
+              aria-label="Messages par heure sur les dernières 24 heures"
             ></div>
             <div class="chart-axis">
-              <span>24 hours ago</span><span>Now</span>
+              <span>Il y a 24 h</span><span>Maintenant</span>
             </div>
           </section>
           <section class="panel">
-            <h2>Active suspensions</h2>
+            <h2>Suspensions actives</h2>
             <div id="sanctions"></div>
           </section>
           <section class="panel">
-            <h2>Recent player reports</h2>
+            <h2>Signalements récents</h2>
             <div id="reports"></div>
           </section>
         </aside>
       </div>
       <dialog id="suspend-dialog">
-        <span class="eyebrow">Review player action</span>
-        <h2>Confirm suspension</h2>
+        <h2>Confirmer la suspension</h2>
         <p id="suspend-summary"></p>
         <p id="suspend-reason"></p>
         <p id="suspend-error" class="status" role="status"></p>
         <div class="dialog-actions">
-          <button id="cancel-suspend" class="secondary">Cancel</button
-          ><button id="confirm-suspend" class="danger">Suspend player</button>
+          <button id="cancel-suspend" class="secondary">Annuler</button><button id="confirm-suspend" class="danger">Suspendre le joueur</button>
         </div>
       </dialog>
     </main>

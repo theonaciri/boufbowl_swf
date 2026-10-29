@@ -250,7 +250,7 @@ export async function buildSite({ root = ROOT, output = path.join(root, ".local/
     const xmlEscape = (value) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]);
     await record("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
       [...sitemapUrls].sort().map((url) => `  <url><loc>${xmlEscape(url)}</loc></url>`).join("\n") + "\n</urlset>\n");
-    await record("robots.txt", `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`);
+    await record("robots.txt", `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\nSitemap: ${origin}/orbis/sitemap.xml\n`);
     const configPath = path.join(stage, "resources/config.json");
     if (await exists(configPath)) {
       const config = JSON.parse(await fs.readFile(configPath, "utf8"));

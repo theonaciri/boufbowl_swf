@@ -1,0 +1,16 @@
+.orbis-banner { --astral-night:#141225; --astral-paper:#fbf2df; --astral-muted:#c6bfd7; --astral-lilac:#d4b9fc; color:var(--astral-paper); background:var(--astral-night); font:400 18px/1.65 Barlow,sans-serif; }
+.orbis-banner ::selection { color:#141225; background:#d4b9fc; }
+.orbis-banner a:focus-visible { outline:3px solid #d4b9fc; outline-offset:6px; }
+.orbis-banner::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; background:url("assets/site/orbis-banner-stars.svg") center / 720px 440px; opacity:.6; }
+.orbis-banner .orbis-icon { flex-shrink:0; }
+
+.orbis-banner { position: relative; isolation: isolate; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 40px; padding: 64px 7%; overflow: hidden; }
+.orbis-banner::after { content: ""; position: absolute; right: 6%; top: 50%; width: 540px; aspect-ratio: 1; border: 1px solid #8d75a15c; border-radius: 50%; transform: translateY(-50%); z-index: -1; pointer-events: none; }
+.orbis-banner h2 { font: 600 clamp(28px, 3.4vw, 44px)/1.15 Barlow, sans-serif; color: var(--astral-paper); letter-spacing: -.025em; max-width: 24ch; text-wrap: balance; }
+.orbis-banner p { margin: 18px 0 0; max-width: 61ch; color: var(--astral-muted); }
+.orbis-banner a { position: relative; display: inline-flex; align-items: center; gap: 22px; padding: 15px 22px; color: var(--astral-night); background: var(--astral-lilac); border-radius: 7px; font-weight: 600; white-space: nowrap; }
+.orbis-banner a:hover { background: #e7d6ff; }
+
+@media (min-width: 1440px) { .orbis-banner { padding-left: max(7%, calc((100vw - 1240px)/2)); padding-right: max(7%, calc((100vw - 1240px)/2)); } }
+
+@media (max-width:720px) { .orbis-banner {grid-template-columns:1fr; padding:42px 6%; gap:26px;} .orbis-banner a {justify-self:start;} }

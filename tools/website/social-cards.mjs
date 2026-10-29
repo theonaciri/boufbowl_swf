@@ -38,6 +38,7 @@ export function publicSocialPages(pages) {
 
 // All content is embedded; generation needs no server, network, SWF export or media rebuild.
 export function socialCardHtml(recipe, { image, heading, body }) {
+  const imageType = { png: "image/png", webp: "image/webp", avif: "image/avif" }[path.extname(recipe.image).slice(1)];
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>
 @font-face{font-family:Heading;src:url(data:font/woff2;base64,${heading})}
 @font-face{font-family:Body;src:url(data:font/woff2;base64,${body})}
@@ -53,7 +54,7 @@ footer{position:absolute;bottom:0;left:0;width:100%;height:80px;background:#193e
 </style></head><body><div class="copy"><div class="brand">BOUFBOWL FAN</div>
 <div class="label">${escape(recipe.label)}</div><h1>${escape(recipe.title)}</h1>
 <div class="note">Un projet de préservation bénévole et non commercial.</div></div>
-<div class="picture"><img src="data:${recipe.image.endsWith('.png') ? 'image/png' : 'image/webp'};base64,${image}" alt=""></div>
+<div class="picture"><img src="data:${imageType};base64,${image}" alt=""></div>
 <div class="rule"></div><footer><span>Images du jeu original · © Ankama</span><span>Projet non affilié à Ankama</span></footer></body></html>`;
 }
 

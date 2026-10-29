@@ -34,11 +34,10 @@
 </head>
 <body data-console="activity">
   <section id="console-login" class="panel login-panel">
-    <span class="eyebrow">Accès réservé</span>
     <h2>Connexion à l’administration</h2>
     <p>L’activité du site est réservée aux administrateurs du serveur.</p>
     <form id="console-account">
-      <label class="field">Identifiant<input id="console-username" autocomplete="username" value="KrissKrass" required></label>
+      <label class="field">Identifiant<input id="console-username" autocomplete="username"  required></label>
       <label class="field">Mot de passe<input id="console-password" type="password" autocomplete="current-password" required></label>
       <button>Se connecter</button>
     </form>
@@ -49,7 +48,7 @@
   </section>
   <p id="console-error" class="status" role="status" aria-live="polite"></p>
   <main id="console-main" hidden>
-    <div class="page-heading"><div><span class="eyebrow">Site public · Données agrégées</span><h1>Activité du site</h1><p class="website-intro">Découvrez les sections consultées et les actions choisies sur le site.</p></div></div>
+    <div class="page-heading"><div><h1>Activité du site</h1><p class="website-intro">Découvrez les sections consultées et les actions choisies sur le site.</p></div></div>
     <div class="website-toolbar"><label class="field">Période · UTC<select id="website-days"><option value="7">7 jours</option><option value="30" selected>30 jours</option><option value="90">90 jours</option><option value="365">365 jours</option></select></label><div class="website-actions"><span id="website-updated" class="muted"></span><span id="auto-refresh"></span><button id="website-refresh" class="secondary">Actualiser</button></div></div>
     <p id="website-status" class="status" role="status" aria-live="polite"></p>
     <p class="notice website-privacy">Ces événements sont agrégés : ils ne représentent pas des personnes uniques. Un clic ne garantit pas un téléchargement ou une partie, et ne peut pas être relié à un joueur.</p>

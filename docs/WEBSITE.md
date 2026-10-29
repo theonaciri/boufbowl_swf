@@ -81,6 +81,15 @@ for the logo and 768/1024 px for the tutorial poster. `srcset`/`sizes` retain th
 full 630/1024-pixel candidates for dense screens. The poster's cover crop is
 included in its source-size calculation to avoid upscaling undersized images.
 
+## Orbis side project
+
+Boufbowl remains the default site and builds solely from its own sources/assets.
+Its homepage banner links to `/orbis/`; the Orbis repository owns that website,
+Web player and downloads. Run `bun run build:website` in `~/projects/orbis` to
+publish Orbis independently to its `.local/website/dist`. Nginx mounts that
+separate directory at `/orbis/`, and preserves the earlier Orbis URL redirects.
+Rebuilding either website does not build or replace the other.
+
 ## Automatic media updates
 
 The same `bun run build:website` command detects changes to media inputs, palettes,

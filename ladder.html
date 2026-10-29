@@ -33,8 +33,8 @@
     <main id="contenu">
       <section id="classement" class="section ladder-section" aria-labelledby="ladder-heading">
         <div class="section-heading">
-          <div><span class="eyebrow">LES CRAMPONS AU SOMMET</span><h1 id="ladder-heading">LE CLASSEMENT.<br /><em>À VOUS LA PREMIÈRE PLACE.</em></h1></div>
-          <p>Le classement général des joueurs, par cote. Les parties classées font la différence ; les entraînements restent au vestiaire.</p>
+          <div><h1 id="ladder-heading">Le classement des joueurs</h1></div>
+          <p>Le classement général des joueurs, par cote. Seuls les matchs classés comptent ; les entraînements sont exclus.</p>
         </div>
         <div class="ladder-toolbar"><p id="ladder-status" role="status">Chargement du classement…</p><button type="button" id="ladder-refresh" class="text-button">ACTUALISER ↻</button></div>
         <div class="ladder-board" id="ladder-board" aria-busy="true">
@@ -43,7 +43,7 @@
             <thead><tr><th scope="col">RANG</th><th scope="col">JOUEUR / CLUB</th><th scope="col">COTE</th><th scope="col" class="ladder-record">VICTOIRES</th><th scope="col" class="ladder-record">NULS</th><th scope="col" class="ladder-record">DÉFAITES</th></tr></thead>
             <tbody id="ladder-players"></tbody>
           </table>
-          <p id="ladder-empty" class="ladder-empty" hidden>Aucun joueur dans le classement pour le moment. À vous d’ouvrir le bal !</p>
+          <p id="ladder-empty" class="ladder-empty" hidden>Aucun joueur classé pour le moment. Le classement apparaîtra après les premiers matchs.</p>
         </div>
         <div class="ladder-pagination" aria-label="Pages du classement"><button type="button" id="ladder-prev" disabled>← PRÉCÉDENT</button><p id="ladder-page" aria-live="polite">10 joueurs par page</p><button type="button" id="ladder-next" disabled>SUIVANT →</button></div>
         <p class="ladder-note">Actualisation automatique toutes les 30 minutes. Les joueurs en cours de qualification sont signalés.</p>

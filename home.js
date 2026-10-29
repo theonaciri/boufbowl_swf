@@ -35,19 +35,6 @@ import { assetUrl } from "./tools/website/asset-url.js";
     });
   }
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  if (!reducedMotion.matches)
-    document.documentElement.classList.add("js-motion");
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries)
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        }
-    },
-    { threshold: 0.08 },
-  );
-  document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
   $("menu-toggle").onclick = () => {
     const open = $("menu-toggle").getAttribute("aria-expanded") !== "true";
     $("menu-toggle").setAttribute("aria-expanded", String(open));
@@ -479,7 +466,7 @@ import { assetUrl } from "./tools/website/asset-url.js";
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeExpanded();
   });
-  showScene(0);
+  showScene(reducedMotion.matches ? Math.max(0, scenes.findIndex(scene => scene.image)) : 0);
 
   const screens = {
     team: {

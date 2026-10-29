@@ -9,14 +9,16 @@
     field = (name) => form.elements.namedItem(name);
   const phaseLabel = (phase) =>
     ({
-      open: "Running",
-      upcoming: "Upcoming",
-      closing: "Finishing matches",
-      ended: "Completed",
+      open: "En cours",
+      upcoming: "À venir",
+      closing: "Matchs à terminer",
+      ended: "Terminés",
     })[phase] || phase;
-  const stadiumName = (id) =>
-    data?.stadiums.find((s) => s.id === id)?.name.replaceAll("_", " ") ||
-    "Stadium " + id;
+  const stadiumNames = { FARMSTEAD: "Cania", BRAKMAR: "Brâkmar", BONTA: "Bonta", BEACH: "La Plage", FRIGOST: "Frigost", KARA: "Kara", FOREST: "La Forêt", BALLOTIN: "Saint-Ballotin", PIXEL: "Pixel" };
+  const stadiumName = (id) => {
+    const name = data?.stadiums.find((s) => s.id === id)?.name;
+    return stadiumNames[name] || name?.replaceAll("_", " ") || "Stade " + id;
+  };
   const duration = (seconds) => {
     for (const [size, unit] of [
       [86400, "day"],
@@ -25,32 +27,32 @@
     ]) {
       if (seconds >= size || size === 60) {
         const count = Math.max(1, Math.floor(seconds / size));
-        return count + " " + unit + (count === 1 ? "" : "s");
+        return count + " " + ({day:"jour",hour:"heure",minute:"minute"}[unit]) + (count === 1 ? "" : "s");
       }
     }
   };
   function summary(cfg) {
     const box = el("div");
     for (const text of [
-      cfg.name || "Tournament #" + cfg.id,
+      cfg.name || "Tournoi n°" + cfg.id,
       date(cfg.start_time) + " → " + date(cfg.end_time),
       cfg.repeat_seconds
-        ? "Repeats every " + duration(cfg.repeat_seconds)
-        : "One-time event",
-      stadiumName(cfg.stadium) + " · " + cfg.format,
+        ? "Récurrence : tous les " + duration(cfg.repeat_seconds)
+        : "Événement unique",
+      stadiumName(cfg.stadium) + " · " + (cfg.format === "elimination" ? "Élimination directe" : "Championnat aux points"),
       number(cfg.min_rating || 0) +
         "–" +
         number(cfg.max_rating ?? 100000) +
-        " rating",
+        " de cote",
       cfg.prizes
-        ? "Champion: " +
+        ? "Vainqueur : " +
           number(cfg.prizes.glory) +
-          " glory · " +
+          " gloire · " +
           number(cfg.prizes.influence) +
           " influence · " +
           number(cfg.prizes.coins) +
-          " coins"
-        : "Standard reward bands",
+          " pièces"
+        : "Récompenses habituelles",
     ])
       box.append(el("p", text));
     return box;
@@ -63,14 +65,14 @@
         .sort((a, b) => a.settings.start_time - b.settings.start_time),
       past = events.filter((e) => e.phase === "ended");
     stats($("tournament-stats"), [
-      ["Running", current.length, "Including matches finishing"],
-      ["Upcoming", next.length, "Scheduled occurrences"],
+      ["En cours", current.length, "Y compris les matchs à terminer"],
+      ["À venir", next.length, "Événements programmés"],
       [
         "Participants",
         current.reduce((sum, e) => sum + e.participants, 0),
-        "Across running tournaments",
+        "Tournois en cours",
       ],
-      ["Completed", past.length, "Most recent 100 events"],
+      ["Terminés", past.length, "100 événements récents"],
     ]);
     const rows = tab === "current" ? current : tab === "upcoming" ? next : past;
     if (!rows.some((e) => e.id === selected)) selected = rows[0]?.id || null;
@@ -87,12 +89,12 @@
             card.setAttribute("role", "button");
             card.setAttribute(
               "aria-label",
-              "View " + (cfg.name || "Tournament #" + event.id),
+              "Voir " + (cfg.name || "Tournoi n°" + event.id),
             );
             card.setAttribute("aria-pressed", String(selected === event.id));
             const head = el("div", null, "event-head");
             head.append(
-              el("h3", cfg.name || "Tournament #" + event.id),
+              el("h3", cfg.name || "Tournoi n°" + event.id),
               el("span", phaseLabel(event.phase), "tag " + event.phase),
             );
             card.append(
@@ -102,12 +104,12 @@
             const info = el("div", null, "event-info");
             for (const text of [
               stadiumName(cfg.stadium),
-              cfg.format === "elimination" ? "Knockout" : "League",
-              number(event.participants) + " players",
+              cfg.format === "elimination" ? "Élimination directe" : "Championnat",
+              number(event.participants) + " joueurs",
               number(cfg.min_rating || 0) +
                 "–" +
                 number(cfg.max_rating ?? 100000) +
-                " rating",
+                " de cote",
             ])
               info.append(el("span", text));
             card.append(info);
@@ -129,14 +131,14 @@
               el(
                 "small",
                 event.phase === "upcoming"
-                  ? "Starts in " +
+                  ? "Début dans " +
                       duration(Math.max(60, cfg.start_time - data.generated_at))
                   : event.phase === "open"
-                    ? "Entry closes in " +
+                    ? "Inscriptions closes dans " +
                       duration(Math.max(60, cfg.end_time - data.generated_at))
                     : event.phase === "closing"
-                      ? "Waiting for active matches to finish"
-                      : "Results finalized",
+                      ? "En attente de la fin des matchs en cours"
+                      : "Résultats définitifs",
               ),
             );
             const select = () => {
@@ -155,9 +157,7 @@
         : [
             el(
               "div",
-              "No " +
-                tab +
-                " tournaments. Use the schedule builder to plan the next event.",
+              tab === "current" ? "Aucun tournoi en cours." : tab === "upcoming" ? "Aucun tournoi à venir. Vous pouvez publier un calendrier depuis le formulaire." : "Aucun tournoi terminé dans l’historique disponible.",
               "panel empty",
             ),
           ]),
@@ -170,7 +170,7 @@
     const cfg = event.settings;
     $("edit-event").hidden = !["upcoming", "open"].includes(event.phase);
     $("edit-event-form").hidden = true;
-    $("detail-title").textContent = cfg.name || "Tournament #" + event.id;
+    $("detail-title").textContent = cfg.name || "Tournoi n°" + event.id;
     $("detail-phase").textContent = phaseLabel(event.phase);
     const rules = summary(cfg);
     if (cfg.match_rules) {
@@ -178,7 +178,7 @@
       rules.append(
         el(
           "p",
-          `${m.turns_per_match} turns · ${m.turns_per_period} per period · ${m.planning_seconds}s planning · ${m.placement_seconds}s placement · ${m.class_ability_uses} class ability uses · regeneration ${m.regenerate_between_turns ? "on" : "off"}`,
+          `${m.turns_per_match} tours · ${m.turns_per_period} par période · ${m.planning_seconds} s de préparation · ${m.placement_seconds} s de placement · ${m.class_ability_uses} utilisations du pouvoir · régénération ${m.regenerate_between_turns ? "activée" : "désactivée"}`,
         ),
       );
     }
@@ -188,7 +188,7 @@
         ? event.rounds.map((r, i) =>
             el(
               "p",
-              (r.label || "Round " + (i + 1)) +
+              (r.label || "Ronde " + (i + 1)) +
                 " · " +
                 date(r.startTime / 1000) +
                 " → " +
@@ -198,7 +198,7 @@
         : [
             el(
               "p",
-              "League format: matches count throughout the entry window.",
+              "Championnat : les matchs comptent pendant toute la période d’inscription.",
             ),
           ]),
     );
@@ -215,7 +215,7 @@
                 m.score.join(" : "),
             ),
           )
-        : [el("p", "No matches currently in progress.")]),
+        : [el("p", "Aucun match en cours.")]),
     );
     $("standings").replaceChildren(
       ...event.standings.map((entry) => {
@@ -225,10 +225,10 @@
           entry.player.nickname,
           entry.tournamentPoints,
           entry.eliminated
-            ? "Eliminated"
+            ? "Éliminé"
             : event.phase === "ended"
-              ? "Final"
-              : "In contention",
+              ? "Définitif"
+              : "En lice",
         ])
           row.append(el("td", value));
         return row;
@@ -236,7 +236,7 @@
     );
     if (!event.standings.length) {
       const row = el("tr"),
-        cell = el("td", "No entrants yet.");
+        cell = el("td", "Aucun participant pour le moment.");
       cell.colSpan = 4;
       row.append(cell);
       $("standings").append(row);
@@ -252,7 +252,7 @@
     editForm.elements.name.value = cfg.name || "";
     editForm.elements.start.value = localTime(cfg.start_time);
     editForm.elements.end.value = localTime(cfg.end_time);
-    editForm.elements.stadium.replaceChildren(...data.stadiums.map(item => { const option = el("option", item.name); option.value = item.id; return option; }));
+    editForm.elements.stadium.replaceChildren(...data.stadiums.map(item => { const option = el("option", stadiumName(item.id)); option.value = item.id; return option; }));
     editForm.elements.stadium.value = cfg.stadium;
     editForm.elements.start.disabled = editForm.elements.stadium.disabled = event.phase === "open";
     $("edit-event-error").textContent = ""; editForm.hidden = false;
@@ -266,7 +266,7 @@
         name: editForm.elements.name.value, start_time: Math.floor(new Date(editForm.elements.start.value).getTime()/1000),
         end_time: Math.floor(new Date(editForm.elements.end.value).getTime()/1000), stadium: Number(editForm.elements.stadium.value)
       }});
-      render(); status("Tournament updated.");
+      render(); status("Tournoi modifié.");
     } catch (error) { $("edit-event-error").textContent = error.message; }
     finally { submit.disabled = false; }
   };
@@ -317,13 +317,13 @@
   form.oninput = () => {
     const cfg = settings();
     $("schedule-preview").textContent = cfg.start_time
-      ? "Preview: " +
+      ? "Aperçu : " +
         date(cfg.start_time) +
         " → " +
         date(cfg.start_time + cfg.duration_seconds) +
         (cfg.repeat_seconds
-          ? " · every " + duration(cfg.repeat_seconds)
-          : " · one-time")
+          ? " · tous les " + duration(cfg.repeat_seconds)
+          : " · événement unique")
       : "";
   };
   form.onsubmit = (event) => {
@@ -332,18 +332,18 @@
     pending.end_time = pending.start_time + pending.duration_seconds;
     const error =
       pending.start_time <= Date.now() / 1000
-        ? "Choose a future start time."
+        ? "Choisissez une date de début dans le futur."
         : pending.min_rating > pending.max_rating
-          ? "Minimum rating must not exceed maximum rating."
+          ? "La cote minimale doit être inférieure ou égale à la cote maximale."
           : pending.repeat_seconds &&
               pending.repeat_seconds < pending.duration_seconds
-            ? "Recurrence must be at least the event duration."
+            ? "L’intervalle entre les événements doit être au moins égal à leur durée."
             : pending.format === "elimination" &&
                 (pending.qualification_seconds +
                   pending.round_count * pending.round_seconds >
                   pending.duration_seconds ||
                   pending.qualifying_top > 2 ** pending.round_count)
-              ? "Qualification and knockout rounds must fit the duration and bracket capacity."
+              ? "Les qualifications et les rondes doivent tenir dans la durée prévue et accueillir tous les joueurs qualifiés."
               : null;
     if (error) {
       status(error);
@@ -365,7 +365,7 @@
         b.setAttribute("aria-selected", String(b.dataset.tab === tab));
       selected = null;
       render();
-      status("Schedule published. Upcoming events now use these settings.");
+      status("Calendrier publié. Les tournois à venir utilisent ces paramètres.");
     } catch (error) {
       $("schedule-error").textContent = error.message;
     } finally {

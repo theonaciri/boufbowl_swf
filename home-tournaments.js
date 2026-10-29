@@ -42,7 +42,7 @@ import { assetUrl } from "./tools/website/asset-url.js";
     return line;
   }
   function rules(event) {
-    const details = el("details", null, "tournament-rules"), summary = el("summary", "RÈGLES DU TOURNOI +");
+    const details = el("details", null, "tournament-rules"), summary = el("summary", "Règles du tournoi");
     const list = el("ul"), m = event.match_rules;
     const lines = [
       event.format === "elimination" ? `Qualifications de ${Math.round(event.qualification_seconds / 60)} min, puis élimination directe. Les ${event.qualifying_top} meilleurs se qualifient.` : "Championnat : cumulez des points pendant toute la durée du tournoi.",
@@ -66,9 +66,9 @@ import { assetUrl } from "./tools/website/asset-url.js";
   }
   function standings(event) {
     const board = el("div", null, "tournament-leaderboard");
-    board.append(el("h4", "LE TOP 10"), el("p", "Le top 5 à l’affiche. Les trois premières places sur le podium.", "tournament-small"));
+    board.append(el("h4", "Classement du tournoi"), el("p", "Les dix premiers joueurs, classés par points.", "tournament-small"));
     if (!event.standings.length) {
-      board.append(el("p", "Le classement s’affichera dès l’arrivée des premiers participants. À vous d’ouvrir le score !", "tournament-empty"));
+      board.append(el("p", "Le classement apparaîtra après les premières participations.", "tournament-empty"));
       return board;
     }
     const list = el("ol", null, "tournament-ranking");
@@ -99,7 +99,7 @@ import { assetUrl } from "./tools/website/asset-url.js";
     title.append(el("span", phase[event.phase], "tournament-phase"), el("span", live ? `${event.participants} joueur(s)` : `${event.interested} présence(s) annoncée(s)`, "tournament-small"));
     const dates = el("dl", null, "tournament-dates");
     dates.append(scheduleDate("DÉBUT", event.start_time), scheduleDate("FIN", event.end_time));
-    const action = el("button", event.participating ? "JE PARTICIPE ✓" : "JE PARTICIPE ↗", "button tournament-join");
+    const action = el("button", event.participating ? "Participation annoncée ✓" : "Annoncer ma participation", "button tournament-join");
     action.type = "button"; action.dataset.join = event.id;
     action.setAttribute("aria-pressed", String(event.participating));
     action.setAttribute("aria-label", `${event.participating ? "Annuler ma participation à" : "Annoncer ma participation à"} ${event.name}, ${date(event.start_time)}`);
@@ -127,15 +127,15 @@ import { assetUrl } from "./tools/website/asset-url.js";
     const focused = document.activeElement?.dataset.join;
     const fragments = [];
     for (const [label, matches] of [
-      ["LE TOURNOI EN COURS", result.tournaments.filter((e) => e.phase !== "upcoming").slice(0, 1)],
-      ["LE PROCHAIN RENDEZ-VOUS", result.tournaments.filter((e) => e.phase === "upcoming").slice(0, 1)],
+      ["Le tournoi en cours", result.tournaments.filter((e) => e.phase !== "upcoming").slice(0, 1)],
+      ["Le prochain tournoi", result.tournaments.filter((e) => e.phase === "upcoming").slice(0, 1)],
     ]) {
       if (!matches.length) continue;
       const group = el("div", null, "tournament-group"), cards = el("div", null, "tournament-cards");
       group.append(el("h3", label, "tournament-group-title"), cards);
       cards.append(...matches.map(card)); fragments.push(group);
     }
-    if (!fragments.length) fragments.push(el("p", "Aucun tournoi annoncé pour le moment. Revenez bientôt pour le prochain coup d’envoi.", "tournament-empty"));
+    if (!fragments.length) fragments.push(el("p", "Aucun tournoi annoncé pour le moment. Consultez cette section plus tard.", "tournament-empty"));
     events.replaceChildren(...fragments);
     for (const article of events.querySelectorAll("article")) if (openRules.has(article.dataset.tournament)) article.querySelector("details").open = true;
     if (focused) events.querySelector(`[data-join="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });
@@ -167,7 +167,7 @@ import { assetUrl } from "./tools/website/asset-url.js";
     if (button) button.disabled = true;
     try {
       render(await request("api/tournaments", { action: "participate", session: token, tournament_id: id, participating }));
-      status.textContent = participating ? "Votre présence est annoncée ! Retrouvez ce tournoi dans le jeu au coup d’envoi." : "Votre annonce de participation est annulée.";
+      status.textContent = participating ? "Votre participation est annoncée. Rejoignez le tournoi depuis le jeu à l’heure indiquée." : "Votre annonce de participation est annulée.";
     } catch (error) {
       if (error.code === "SESSION_INVALID") { saveToken(""); pending = id; openLogin(); }
       status.textContent = error.message;

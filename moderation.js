@@ -83,9 +83,9 @@
         el(
           "span",
           kind === "private"
-            ? "PRIVATE"
+            ? "PRIVÉ"
             : kind === "match"
-              ? "MATCH #" + row.match_id
+              ? "MATCH N°" + row.match_id
               : (row.language || "Public").toUpperCase(),
           "tag " + kind,
         ),
@@ -93,8 +93,8 @@
       if (row.recipient)
         meta.append(el("span", "→ " + row.recipient_name, "muted"));
       body.append(meta, el("p", row.message));
-      const button = el("button", "Suspend", "secondary small");
-      button.setAttribute("aria-label", "Suspend " + row.sender_name);
+      const button = el("button", "Suspendre", "secondary small");
+      button.setAttribute("aria-label", "Suspendre " + row.sender_name);
       button.onclick = (event) => {
         event.stopPropagation();
         selectPlayer(row.sender_name);
@@ -106,17 +106,17 @@
         card.setAttribute("role", "button");
         card.setAttribute(
           "aria-label",
-          "View " +
+          "Voir " +
             (kind === "private"
-              ? row.sender_name + " and " + row.recipient_name + " conversation"
-              : "match " + row.match_id + " conversation"),
+              ? row.sender_name + " et " + row.recipient_name + " : conversation"
+              : "match " + row.match_id + " : conversation"),
         );
         const select = () => {
           focus = row.id;
           $("focus-label").textContent =
             kind === "private"
               ? row.sender_name + " ↔ " + row.recipient_name
-              : "Match #" + row.match_id + " · all participants";
+              : "Match n°" + row.match_id + " · tous les participants";
           $("conversation-focus").hidden = false;
           reset();
         };
@@ -139,7 +139,7 @@
         : [
             el(
               "div",
-              "No messages match these filters. New messages will appear here.",
+              "Aucun message ne correspond à ces filtres. Modifiez les filtres ou actualisez la liste.",
               "empty",
             ),
           ]),
@@ -179,10 +179,10 @@
       if (changed || !messages.size) renderFeed();
       const c = data.counts;
       stats($("moderation-stats"), [
-        ["Messages", c.total, "Last 24 hours"],
-        ["Private messages", c.private, "Last 24 hours"],
-        ["Match messages", c.match, "Last 24 hours"],
-        ["Active senders", c.senders, "Last 24 hours"],
+        ["Messages", c.total, "Dernières 24 heures"],
+        ["Messages privés", c.private, "Dernières 24 heures"],
+        ["Messages de match", c.match, "Dernières 24 heures"],
+        ["Joueurs ayant écrit", c.senders, "Dernières 24 heures"],
       ]);
       chart($("activity-chart"), data.activity);
       status("");
@@ -218,9 +218,9 @@
           row.action === "ban"
             ? "Suspension"
             : row.action === "unban"
-              ? "Reinstated"
+              ? "Suspension levée"
               : row.action,
-          row.actor_name || "Local operator",
+          row.actor_name || "Opérateur local",
           row.reason,
           row.action === "ban" ? date(row.expires) : "—",
         ])
@@ -230,7 +230,7 @@
     );
     if (!data.audit.length) {
       const tr = el("tr"),
-        td = el("td", "No moderation actions yet.");
+        td = el("td", "Aucune action de modération enregistrée.");
       td.colSpan = 6;
       tr.append(td);
       $("audit").append(tr);
@@ -243,18 +243,18 @@
             entry.append(
               el("strong", row.nickname),
               el("p", row.reason),
-              el("p", "Until: " + date(row.expires)),
+              el("p", "Échéance : " + date(row.expires)),
             );
-            const button = el("button", "Lift suspension", "secondary small");
+            const button = el("button", "Lever la suspension", "secondary small");
             button.onclick = async () => {
               button.disabled = true;
               try {
                 await api("unsuspend", {
                   nickname: row.nickname,
-                  reason: "Suspension lifted through admin console",
+                  reason: "Suspension levée depuis l’administration",
                 });
                 await metadata();
-                status("Suspension lifted for " + row.nickname);
+                status("Suspension levée pour " + row.nickname);
               } catch (error) {
                 status(error);
               } finally {
@@ -264,7 +264,7 @@
             entry.append(button);
             return entry;
           })
-        : [el("p", "No active suspensions.")]),
+        : [el("p", "Aucune suspension active.")]),
     );
     $("reports").replaceChildren(
       ...(data.reports.length
@@ -275,10 +275,10 @@
               el("p", row.reason),
               el(
                 "p",
-                "Reported by " + row.reporter + " · " + date(row.created),
+                "Signalé par " + row.reporter + " · " + date(row.created),
               ),
             );
-            const button = el("button", "Review player", "secondary small");
+            const button = el("button", "Examiner le joueur", "secondary small");
             button.onclick = () => {
               $("player-filter").value = row.target;
               selectPlayer(row.target);
@@ -287,7 +287,7 @@
             entry.append(button);
             return entry;
           })
-        : [el("p", "No player reports.")]),
+        : [el("p", "Aucun signalement.")]),
     );
   }
   $("older").onclick = () => refresh(true, true);
@@ -300,14 +300,14 @@
     };
     $("suspend-summary").textContent =
       pending.nickname +
-      " will be suspended " +
+      " sera suspendu " +
       (pending.duration === 0
-        ? "indefinitely"
+        ? "sans échéance"
         : pending.duration === 86400
-          ? "for 1 day"
-          : "for 7 days") +
-      ". Active matches will be forfeited.";
-    $("suspend-reason").textContent = "Reason: " + pending.reason;
+          ? "pour 1 jour"
+          : "pour 7 jours") +
+      ". Toute partie en cours se terminera par un forfait.";
+    $("suspend-reason").textContent = "Motif : " + pending.reason;
     $("suspend-error").textContent = "";
     $("suspend-dialog").showModal();
   };
@@ -320,7 +320,7 @@
       $("suspend-dialog").close();
       $("reason").value = "";
       await metadata();
-      status("Suspended " + pending.nickname + ".");
+      status("Suspension appliquée à " + pending.nickname + ".");
     } catch (error) {
       $("suspend-error").textContent = error.message;
     } finally {

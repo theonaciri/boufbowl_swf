@@ -20,6 +20,7 @@
   --paper: #f4f0e5;
   --ink: #24312b;
   --orange: #ed653b;
+  --accent-text: #a33f20;
   --on-orange: #18251f;
   --line: #cfcfc0;
   --muted: #657064;
@@ -96,14 +97,14 @@ h3 {
   letter-spacing: -0.02em;
 }
 h2 {
-  font-size: clamp(44px, 4.8vw, 76px);
+  font-size: clamp(36px, 4.4vw, 64px);
 }
 h3 {
   font-size: 27px;
 }
 em {
   font-style: normal;
-  color: var(--orange);
+  color: var(--accent-text);
 }
 .site-header {
   height: 92px;
@@ -127,7 +128,7 @@ em {
   line-height: 1;
 }
 .wordmark > span:not(.brand-ball) {
-  color: var(--orange);
+  color: var(--accent-text);
 }
 .wordmark sup {
   font:
@@ -196,21 +197,21 @@ em {
   font-weight: 700;
   letter-spacing: 0.6px;
   border: 1px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: none;
   transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+    background-color 0.2s,
+    color 0.2s;
 }
 .button > span {
   font-size: 22px;
   line-height: 1;
 }
 .button:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--ink);
+  background: var(--ink);
+  color: var(--paper);
 }
 .button:active {
-  transform: translate(4px, 4px);
+  transform: translateY(1px);
   box-shadow: none;
 }
 .button-small {
@@ -284,8 +285,8 @@ em {
   display: block;
 }
 .hero h1 {
-  font-size: clamp(72px, 7.9vw, 129px);
-  line-height: 0.88;
+  font-size: clamp(56px, 6.8vw, 96px);
+  line-height: 0.98;
   letter-spacing: -0.035em;
   margin: 30px 0 26px;
   position: relative;
@@ -313,7 +314,7 @@ em {
   right: -75px;
   bottom: 10px;
   transform: rotate(-10deg);
-  color: var(--orange);
+  color: var(--accent-text);
 }
 .hero-copy > p {
   color: #5b665d;
@@ -500,7 +501,7 @@ em {
   margin-bottom: 45px;
 }
 .section-heading h2 {
-  margin-top: 20px;
+  margin-top: 0;
 }
 .section-heading > p {
   max-width: 290px;
@@ -525,7 +526,7 @@ em {
   min-height: 390px;
   transform: rotate(-1.5deg);
   border: 1px solid var(--ink);
-  box-shadow: 8px 8px 0 #deded0;
+  box-shadow: none;
 }
 .video-card > img {
   width: 100%;
@@ -604,7 +605,7 @@ em {
   padding-bottom: 0;
 }
 .feature-number {
-  color: var(--orange);
+  color: var(--accent-text);
   font-family: var(--heading);
   font-size: 23px;
 }
@@ -732,7 +733,7 @@ em {
 }
 .stamp {
   border: 2px solid var(--orange);
-  color: var(--orange);
+  color: var(--accent-text);
   font: 800 26px/1 var(--heading);
   padding: 12px 18px;
   transform: rotate(9deg);
@@ -774,7 +775,7 @@ em {
   color: var(--green);
 }
 .orange {
-  color: var(--orange);
+  color: var(--accent-text);
 }
 .status-card p,
 .status-card ul {
@@ -801,7 +802,7 @@ em {
   transform: rotate(1deg);
 }
 .orange-card p {
-  color: #382f25;
+  color: var(--on-orange);
 }
 .orange-card .card-foot {
   border-color: #ad4f32;
@@ -891,31 +892,32 @@ em {
   flex: 1;
 }
 .platform-card > .button {
-  font-size: 9px;
+  font-size: 13px;
   width: 100%;
   padding: 15px 13px;
   gap: 7px;
 }
 .platform-card small {
-  font-size: 9px;
+  font-size: 12px;
   margin-top: 15px;
-  color: #56604e;
+  color: #3c4a25;
 }
 #download-windows {
   margin-top: 18px;
 }
 .volunteer-section {
+  color: var(--on-orange);
   background: var(--orange);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 90px;
 }
 .volunteer-main h2 {
-  font-size: clamp(65px, 6.5vw, 100px);
+  font-size: clamp(44px, 5vw, 72px);
   margin: 25px 0;
 }
 .volunteer-main em {
-  color: var(--paper);
+  color: var(--on-orange);
 }
 .volunteer-main > p {
   max-width: 365px;
@@ -1036,7 +1038,7 @@ em {
   align-items: center;
   gap: 20px;
   justify-content: space-between;
-  font: 800 clamp(56px, 8vw, 130px)/1.2 var(--heading);
+  font: 800 clamp(44px, 7vw, 96px)/1.2 var(--heading);
 }
 .final-cta > a > em {
   color: #984018;
@@ -1115,17 +1117,6 @@ em {
   opacity: 1;
   transform: none;
 }
-.js-motion .reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition:
-    opacity 0.6s,
-    transform 0.6s;
-}
-.js-motion .reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
 .motion-paused *,
 .motion-paused *:before,
 .motion-paused *:after {
@@ -1145,7 +1136,7 @@ em {
   pointer-events: none;
   z-index: 100;
   font: 800 55px var(--heading);
-  color: var(--orange);
+  color: var(--accent-text);
   text-shadow: 2px 2px 0 var(--paper);
   animation: pop 0.9s ease-out forwards;
 }
@@ -1157,7 +1148,7 @@ dialog {
   padding: 30px;
   max-height: 90svh;
   overflow: auto;
-  box-shadow: 10px 10px 0 var(--ink);
+  box-shadow: none;
 }
 dialog::backdrop {
   background: #13241ce6;
@@ -1259,7 +1250,7 @@ dialog textarea {
     padding-bottom: 90px;
   }
   .hero h1 {
-    font-size: 145px;
+    font-size: 96px;
   }
 }
 @media (max-width: 1100px) {
@@ -1275,7 +1266,7 @@ dialog textarea {
     padding-bottom: 40px;
   }
   .hero h1 {
-    font-size: 90px;
+    font-size: 80px;
   }
   .hero-actions {
     gap: 15px;
@@ -1396,7 +1387,7 @@ dialog textarea {
     padding: 40px 6% 35px;
   }
   .hero h1 {
-    font-size: clamp(77px, 15vw, 112px);
+    font-size: clamp(52px, 12vw, 80px);
     margin: 25px 0;
   }
   .hero-copy > p {
@@ -1566,7 +1557,7 @@ dialog textarea {
     gap: 45px;
   }
   .volunteer-main h2 {
-    font-size: clamp(52px, 17vw, 75px);
+    font-size: clamp(40px, 10vw, 60px);
   }
   .volunteer-main > p {
     max-width: 100%;
@@ -1686,7 +1677,7 @@ dialog textarea {
     margin-right: 5px;
   }
   .hero h1 {
-    font-size: 70px;
+    font-size: 60px;
   }
 }
 
@@ -1705,7 +1696,7 @@ dialog textarea {
   background: var(--ink);
   color: var(--paper);
   border: 2px solid var(--ink);
-  box-shadow: 9px 10px 0 #24312b24;
+  box-shadow: none;
   transform: rotate(1deg);
 }
 .hero-art.game-carousel:after {
@@ -1875,3 +1866,40 @@ body:has(.carousel-stage.is-expanded) {
 .project-interest h2 { margin: 22px 0; }
 .share-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-top: 25px; }
 .share-actions [hidden] { display: none; }
+
+/* Reading rhythm and control affordances shared by public pages. */
+::selection { background: var(--green); color: var(--ink); }
+input, textarea { caret-color: var(--ink); }
+html { scrollbar-color: #73836b var(--paper); }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+.hero-copy > p { max-width: 56ch; padding-right: 24px; }
+.hero-copy > p + p { margin-top: 16px; }
+.hero-context { font-size: 14px; }
+.hero-context a, .section p a:not(.button), .section li a { text-decoration: underline; text-underline-offset: .2em; }
+button:disabled { cursor: default; }
+.text-button { min-height: 44px; }
+.hero-actions .text-button { font-size: 13px; }
+.hero-platforms a { padding-block: 8px; }
+.restoration-intro p + p, .project-interest > p + p { margin-top: 18px; }
+.platform-card > p, .feature p { font-size: 16px; line-height: 1.65; }
+.platform-card > p { max-width: 36ch; }
+.site-footer > p { font-size: 12px; letter-spacing: 0; }
+@media (max-width: 780px) {
+  .hero { max-height: none; }
+  .hero-copy > p { padding-right: 0; }
+  .hero-actions { gap: 18px; }
+  .section-heading { gap: 20px; }
+}
+
+.site-header .button, .hero-actions .button, .carousel-categories button,
+.carousel-caption .eyebrow, .platform-status, .platform-card small,
+.video-badge, .video-caption > span, .status-label, .card-foot,
+.workshop-modes button, .workshop-help, .manifesto-values, .quote-details summary,
+.site-footer a, #motion-toggle { font-size: 12px; letter-spacing: .02em; }
+.carousel-categories { flex-wrap: wrap; }
+.hero-bottom { font-size: 11px; letter-spacing: .02em; }
+.hero-bottom > span { max-width: 65ch; }
+.carousel-controls button { min-height: 44px; min-width: 44px; }
+.volunteer-main > p, .volunteer-jobs p { color: var(--on-orange); }
+.platform-grid { align-items: stretch; }

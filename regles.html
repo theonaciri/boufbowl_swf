@@ -32,8 +32,7 @@
   </header>
   <main id="contenu" class="rules-main">
     <section class="rules-hero" aria-labelledby="rules-heading">
-      <span class="eyebrow">LE RÈGLEMENT / LA RESTAURATION</span>
-      <h1 id="rules-heading">LE BEAU JEU.<br /><em>LES RÈGLES AU CLAIR.</em></h1>
+      <h1 id="rules-heading">Les règles du Boufbowl</h1>
       <p class="rules-intro">Comment jouer au Boufbowl, et ce que nous savons vraiment de son fonctionnement d’origine.</p>
       <p class="rules-counts">{{COUNTS}}</p>
       <div class="rules-legend" aria-label="Comment lire les indications de fidélité">
@@ -47,7 +46,7 @@
       <aside class="rules-toc"><nav aria-label="Sommaire du règlement"><strong>SUR LE TERRAIN</strong><a href="#essentiel">L’essentiel pour jouer</a>{{TOC}}</nav></aside>
       <div class="rules-content">
         <section class="rules-section" id="essentiel" aria-labelledby="heading-essentiel">
-          <div class="rules-section-title"><span class="eyebrow">AVANT LE COUP D’ENVOI</span><h2 id="heading-essentiel">L’essentiel pour jouer</h2></div>
+          <div class="rules-section-title"><h2 id="heading-essentiel">L’essentiel pour jouer</h2></div>
           <div class="rules-facts"><div><strong>5 contre 5</strong><span>sur le terrain</span></div><div><strong>3 ordres</strong><span>élémentaires par joueur</span></div><div><strong>{{MATCH_TURNS}} tours</strong><span>par défaut, selon le stade</span></div><div><strong>{{PLAN_SECONDS}} secondes</strong><span>pour préparer ses ordres</span></div></div>
           <ol class="rules-steps">
             <li><strong>Composez et placez votre équipe.</strong> Un club de dix joueurs, cinq sur le terrain, des rôles à équilibrer.</li>
@@ -60,7 +59,7 @@
         </section>
         {{CASES}}
         <section class="rules-section" id="classes" aria-labelledby="heading-classes">
-          <div class="rules-section-title"><span class="eyebrow">LE VESTIAIRE</span><h2 id="heading-classes">Classes et pouvoirs</h2></div>
+          <div class="rules-section-title"><h2 id="heading-classes">Classes et pouvoirs</h2></div>
           <p class="rules-lead"><span class="rule-badge provisional">Équilibrage historique non certifié</span> Ces valeurs et effets sont ceux du profil configuré. Ils ne constituent pas une table des sorts d’origine retrouvée.</p>
           {{ATTRIBUTES}}
           <p class="rule-note">¹ Intervalle de régénération configuré, en tours. La régénération entre les tours est {{REGENERATION}}. Les rôles sont documentés ; les valeurs d’équilibrage et leurs modalités restent propres au profil restauré.</p>
@@ -68,12 +67,12 @@
           <p class="rules-notice">Les soins sont plafonnés aux PV maximum. Si un profil accorde des boucliers ou des PV temporaires, les dégâts les consomment avant les PV permanents, dans cet ordre ; ils expirent en fin de tour. Cette gestion de la protection est reconstruite. Les pouvoirs ne ciblent pas un joueur déjà mort au début de leur phase ; l’ordre exact des soins simultanés reste incertain.</p>
         </section>
         <section class="rules-section" id="stades" aria-labelledby="heading-stades">
-          <div class="rules-section-title"><span class="eyebrow">À CHAQUE TERRAIN SON MATCH</span><h2 id="heading-stades">Les variantes des stades</h2></div>
+          <div class="rules-section-title"><h2 id="heading-stades">Les variantes des stades</h2></div>
           <p class="rules-lead">Les charges sont comptées par joueur. Un touchdown ne les recharge pas. Les chiffres ci-dessous suivent les stades activés dans la configuration de la restauration ; leur fidélité historique complète n’est pas certifiée.</p>
           {{STADIUMS}}
         </section>
         <section class="rules-section rules-uncertain" id="incertitudes" aria-labelledby="heading-incertitudes">
-          <div class="rules-section-title"><span class="eyebrow">LES ZONES D’OMBRE</span><h2 id="heading-incertitudes">Ce qui reste à confirmer</h2></div>
+          <div class="rules-section-title"><h2 id="heading-incertitudes">Ce qui reste à confirmer</h2></div>
           <p class="rules-lead">Une règle testée peut être cohérente sans être identique à celle de 2012. Les points suivants restent ouverts :</p>
           <ul class="rules-open-questions">{{UNRESOLVED}}</ul>
           <details class="rules-calculations"><summary>Voir les calculs de remplacement actuels</summary><p>Dans ces formules, « Air », « Eau » et « Feu » désignent les caractéristiques ; « ordres » désigne les allocations du tour. Les probabilités sont exprimées entre 0 et 1. Les bornes indiquées s’appliquent aux tests de ballon, pas à toutes les règles du jeu.</p>{{FORMULAS}}</details>
