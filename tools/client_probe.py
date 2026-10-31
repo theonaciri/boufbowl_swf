@@ -81,11 +81,18 @@ def probe_root(platform, native=False, root=ROOT):
                return {events:measuredEvents};
             });
          }''')
+    for name in ['flash.display.BitmapData', 'flash.display.Shape', 'flash.geom.Rectangle']:
+        source = source.replace('   import ', f'   import {name};\n   import ', 1)
+    if not native:
+        source = replace_once(source, 'flash.external.ExternalInterface.addCallback("probeStats",',
+                              'flash.external.ExternalInterface.addCallback("probeRenderingCache", runBrowserRenderSmoke);\n'
+                              '            flash.external.ExternalInterface.addCallback("probeStats",')
     position = source.rfind('   }')
     if position < 0:
         raise ValueError('Application root closing brace was not found')
     return source[:position]+(root/'tools/shared_client_smoke.as.inc').read_text()+\
-        (root/'tools/shared_client_bench.as.inc').read_text()+source[position:]
+        (root/'tools/shared_client_bench.as.inc').read_text()+\
+        (root/'tools/browser_render_smoke.as.inc').read_text()+source[position:]
 
 
 def build_probe(platform='desktop', native=False, root=ROOT):

@@ -83,6 +83,40 @@ package away3d.core.session
       private var browserBitmapWidth:Number;
       private var browserBitmapHeight:Number;
 
+      // Browser-only experiments. Defaults match the production subdivision path.
+      private static var browserDetail:String = "original";
+      private static var browserCacheEnabled:Boolean = false;
+      private static var browserNativeUVT:Boolean = false;
+      private static var browserStatsEnabled:Boolean = false;
+      private static var browserCalls:Number = 0;
+      private static var browserCacheHits:Number = 0;
+      private static var browserLeaves:Number = 0;
+      private static var browserNativeCalls:Number = 0;
+      private var browserTolerance:Number = 6;
+      private var browserDepth:int = 5;
+      private var browserGeometry:Object = {};
+      private var browserGeometryEntries:int = 0;
+      private var browserGeometryCommands:int = 0;
+      private var browserBitmapIds:Dictionary = new Dictionary(true);
+      private var browserNextBitmapId:int = 0;
+      private var browserCapture:Vector.<IGraphicsData>;
+
+      public static function configureBrowserRendering(detail:String, cache:Boolean, nativeUVT:Boolean, diagnostics:Boolean) : void
+      {
+         browserDetail = ["original","quality","low","medium","high"].indexOf(detail) >= 0 ? detail : "original";
+         browserCacheEnabled = cache;
+         browserNativeUVT = nativeUVT;
+         browserStatsEnabled = diagnostics;
+         browserCalls = browserCacheHits = browserLeaves = browserNativeCalls = 0;
+      }
+
+      public static function browserRenderStats() : Object
+      {
+         return {calls:browserCalls,cacheHits:browserCacheHits,affineTriangles:browserLeaves,
+            nativeCalls:browserNativeCalls};
+      }
+
+
       private var _renderers:Dictionary = new Dictionary(true);
       
       private var _renderer:Renderer;
@@ -611,9 +645,38 @@ package away3d.core.session
          this._vertices[uint(3)] = param3[uint(this._index1 + 1)];
          this._vertices[uint(4)] = param3[this._index2];
          this._vertices[uint(5)] = param3[uint(this._index2 + 1)];
-         if(Capabilities.playerType == "PlugIn")
+         if(Capabilities.playerType == "PlugIn" && !browserNativeUVT)
          {
+            if(browserStatsEnabled) browserCalls++;
+            var detail:String = browserDetail;
+            if(detail == "quality")
+               detail = this._sprite != null && this._sprite.stage != null ? this._sprite.stage.quality.toLowerCase() : "high";
+            this.browserTolerance = detail == "low" ? 24 : (detail == "medium" ? 12 : 6);
+            this.browserDepth = detail == "low" ? 3 : (detail == "medium" ? 4 : 5);
             var targetGraphics:Graphics = param9 ? param9 : this.graphics;
+            var geometryKey:String;
+            if(browserCacheEnabled)
+            {
+               if(this.browserBitmapIds[param1] == null)
+               {
+                  this.browserNextBitmapId += 1;
+                  this.browserBitmapIds[param1] = this.browserNextBitmapId;
+               }
+               // Exact projected coordinates, UVT, size and sampling policy: camera,
+               // geometry and quality changes miss automatically. Fills retain the
+               // live BitmapData, so pixel/palette changes don't stale the cache.
+               geometryKey = this.browserBitmapIds[param1]+":"+param1.width+":"+param1.height+":"+
+                  this._vertices.join(",")+":"+param2.join(",")+":"+param7+":"+param8+":"+detail;
+               var cached:Vector.<IGraphicsData> = this.browserGeometry[geometryKey];
+               if(cached != null)
+               {
+                  if(browserStatsEnabled) browserCacheHits++;
+                  targetGraphics.lineStyle();
+                  targetGraphics.drawGraphicsData(cached);
+                  return;
+               }
+               this.browserCapture = new Vector.<IGraphicsData>();
+            }
             // Ruffle ignores GraphicsTrianglePath.uvtData. Use affine bitmap
             // fills on adaptively subdivided triangles to preserve perspective.
             if(this.browserVertices == null)
@@ -636,8 +699,22 @@ package away3d.core.session
             this.browserBitmapHeight=param1.height;
             targetGraphics.lineStyle();
             browserTriangle(targetGraphics,param1,this.browserVertices[0],this.browserVertices[1],this.browserVertices[2],param8,param7,0);
+            if(browserCacheEnabled)
+            {
+               // Bound each session's command cache; moving views cannot grow it indefinitely.
+               if(this.browserGeometryEntries >= 128 || this.browserGeometryCommands + this.browserCapture.length > 32768)
+               {
+                  this.browserGeometry = {};
+                  this.browserGeometryEntries = this.browserGeometryCommands = 0;
+               }
+               this.browserGeometry[geometryKey] = this.browserCapture;
+               this.browserGeometryEntries += 1;
+               this.browserGeometryCommands += this.browserCapture.length;
+               this.browserCapture = null;
+            }
             return;
          }
+         if(Capabilities.playerType == "PlugIn" && browserStatsEnabled) browserNativeCalls++;
          this.path.vertices = this._vertices;
          this.path.uvtData = param2;
          if(param9)
@@ -668,7 +745,7 @@ package away3d.core.session
          var maximum:Number = Math.max(a[4],b[4],c[4]);
          var extent:Number = Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]),
             Math.abs(a[0]-c[0]),Math.abs(a[1]-c[1]),Math.abs(b[0]-c[0]),Math.abs(b[1]-c[1]));
-         if(level < 5 && minimum > 0 && extent*(maximum/minimum-1) > 6)
+         if(level < this.browserDepth && minimum > 0 && extent*(maximum/minimum-1) > this.browserTolerance)
          {
             var offset:int=3+level*3;
             var ab:Vector.<Number> = this.browserVertices[offset];
@@ -703,6 +780,14 @@ package away3d.core.session
          mapping.d=(dy2*du1-dy1*du2)/determinant;
          mapping.tx=a[0]-mapping.a*u0-mapping.c*v0;
          mapping.ty=a[1]-mapping.b*u0-mapping.d*v0;
+         if(browserStatsEnabled) browserLeaves++;
+         if(this.browserCapture != null)
+         {
+            this.browserCapture.push(new GraphicsBitmapFill(bitmap,mapping.clone(),repeat,smooth));
+            this.browserCapture.push(new GraphicsPath(Vector.<int>([1,2,2,2]),
+               Vector.<Number>([a[0],a[1],b[0],b[1],c[0],c[1],a[0],a[1]])));
+            this.browserCapture.push(new GraphicsEndFill());
+         }
          g.beginBitmapFill(bitmap,mapping,repeat,smooth);
          g.moveTo(a[0],a[1]);
          g.lineTo(b[0],b[1]);
