@@ -1,5 +1,8 @@
 # Client performance
 
+Latest browser-runtime review: [October 31 nightly audit](RUFFLE_RENDERING.md).
+Chat layout and scale9 artwork defects still reproduce without our workarounds.
+
 ## Web chat layout
 
 Ruffle can render a wrapped FTE `TextLine` at multiple rows while TLF reserves

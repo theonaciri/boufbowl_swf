@@ -20,6 +20,7 @@ The standalone static server does not implement `/api/client` or game APIs.
 | Renderer | `renderBackend=webgpu`, `wgpu-webgl`, `webgl` or `auto` | Compare Ruffle backends. Selection is a preference: inspect Ruffle's console for the actual backend/fallback. Direct WebGL may lose effects. |
 | Subdivision | `triangleDetail=low`, `medium`, `high`, `quality` or `original` | Low: error threshold24/depth3; medium12/4; high and original6/5. `quality` follows stage quality. These are existing heuristic screen-space units, not guaranteed pixel-error bounds. |
 | Projected geometry cache | `geometryCache=1` | Reuse subdivision and affine matrices for exactly identical projected triangles. Does not cache whole stadium bitmaps or reduce draw calls. |
+| Retained layers | `retainLayers=1` | Keep unchanged ordered triangle layers; exact texture checks prevent stale pixels. See [browser benchmark](BROWSER_BENCHMARK.md). |
 | Original perspective path (control) | `perspective=native` | Bypass subdivision and send original `GraphicsTrianglePath.uvtData`. **Incorrect on the bundled nightly**; illustrates the cost of the workaround. Not an upstream perspective-support implementation or an equal-quality speed comparison. |
 
 `renderDiagnostics=1` shows cumulative calls, cache hits, newly calculated affine
@@ -63,3 +64,5 @@ SwiftShader timings on this server are not representative of hardware browsers.
   This diagnostic intentionally changes experiment settings; reload afterward.
 - Both application roots compiled successfully. Isolated website build/check passed.
 - NativeUVT support in Ruffle remains unimplemented. No upstream fix claimed.
+
+Sequential scene benchmark: `bun run benchmark:browser`; open the printed URL.

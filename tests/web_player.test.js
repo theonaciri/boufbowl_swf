@@ -13,7 +13,7 @@ test('missing and inherited names safely select the balanced preset',()=>{
 
 import {renderingExperiments} from '../web-player.js';
 test('rendering experiments are off by default and reject unknown URL values',()=>{
- const defaults={renderer:'auto',detail:'original',cache:false,perspective:'subdivide',diagnostics:false};
+ const defaults={renderer:'auto',detail:'original',cache:false,retain:false,perspective:'subdivide',diagnostics:false};
  expect(renderingExperiments(new URLSearchParams())).toEqual(defaults);
  expect(renderingExperiments(new URLSearchParams('renderBackend=canvas&triangleDetail=NaN&geometryCache=true&perspective=wrong&renderDiagnostics=yes'))).toEqual(defaults);
 });
@@ -23,5 +23,5 @@ test('experiments can be enabled independently and combined',()=>{
  for (const detail of ['quality','low','medium','high'])
   expect(renderingExperiments(new URLSearchParams({triangleDetail:detail})).detail).toBe(detail);
  expect(renderingExperiments(new URLSearchParams('geometryCache=1&perspective=native&renderDiagnostics=1')))
-  .toEqual({renderer:'auto',detail:'original',cache:true,perspective:'native',diagnostics:true});
+  .toEqual({renderer:'auto',detail:'original',cache:true,retain:false,perspective:'native',diagnostics:true});
 });

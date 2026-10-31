@@ -16,6 +16,7 @@ export function renderingExperiments(params) {
     renderer: pick("renderBackend", ["auto", "webgpu", "wgpu-webgl", "webgl"], "auto"),
     detail: pick("triangleDetail", ["original", "quality", "low", "medium", "high"], "original"),
     cache: params.get("geometryCache") === "1",
+    retain: params.get("retainLayers") === "1",
     perspective: pick("perspective", ["subdivide", "native"], "subdivide"),
     diagnostics: params.get("renderDiagnostics") === "1",
   };
@@ -30,7 +31,7 @@ if (typeof document !== "undefined") (async () => {
   const experiment = renderingExperiments(launchOptions);
   const experimentForm = document.getElementById("render-experiments");
   for (const [name, value] of Object.entries({renderBackend:experiment.renderer,
-    triangleDetail:experiment.detail,geometryCache:experiment.cache ? "1" : "0",
+    triangleDetail:experiment.detail,geometryCache:experiment.cache ? "1" : "0",retainLayers:experiment.retain ? "1" : "0",
     perspective:experiment.perspective,renderDiagnostics:experiment.diagnostics ? "1" : "0"})) {
     experimentForm.elements.namedItem(name).value = value;
   }
@@ -42,7 +43,7 @@ if (typeof document !== "undefined") (async () => {
   });
   document.getElementById("reset-render-experiments").addEventListener("click", () => {
     const url = new URL(location.href);
-    for (const name of ["renderBackend","triangleDetail","geometryCache","perspective","renderDiagnostics"])
+    for (const name of ["renderBackend","triangleDetail","geometryCache","retainLayers","perspective","renderDiagnostics"])
       url.searchParams.delete(name);
     location.assign(url);
   });
@@ -143,6 +144,7 @@ if (typeof document !== "undefined") (async () => {
         webFps: String(preset.fps),
         triangleDetail: experiment.detail,
         geometryCache: experiment.cache ? "1" : "0",
+        retainLayers: experiment.retain ? "1" : "0",
         perspective: experiment.perspective,
         renderDiagnostics: experiment.diagnostics ? "1" : "0",
         clientOS:
@@ -177,7 +179,7 @@ if (typeof document !== "undefined") (async () => {
         try { stats = player.ruffle().callExternalInterface("browserRenderStats"); }
         catch { diagnostics.textContent = "Compteurs en attente du client expérimental…"; return; }
         diagnostics.textContent = stats ?
-          `Demandé : ${experiment.renderer} · appels ${stats.calls} · cache ${stats.cacheHits} · triangles calculés ${stats.affineTriangles} · UVT natif ${stats.nativeCalls}` :
+          `Demandé : ${experiment.renderer} · appels ${stats.calls} · cache ${stats.cacheHits} · triangles calculés ${stats.affineTriangles} · calques conservés ${stats.layersReused} · redessinés ${stats.layersRedrawn} · UVT natif ${stats.nativeCalls}` :
           "Compteurs indisponibles : reconstruire le client expérimental.";
       };
       updateDiagnostics();

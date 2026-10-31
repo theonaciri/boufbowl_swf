@@ -11,6 +11,8 @@
     "build:players": "bun tools/build-players.mjs",
     "release": "bun tools/updates/keys.mjs && bun tools/build-players.mjs --website-media",
     "version:bump": "python3 -m tools.release_version",
-    "updates:key": "bun tools/updates/keys.mjs"
+    "updates:key": "bun tools/updates/keys.mjs",
+    "benchmark:browser": "python3 -m tools.browser_benchmark",
+    "benchmark:profile": "bun tools/browser-benchmark/profile.mjs"
   }
 }

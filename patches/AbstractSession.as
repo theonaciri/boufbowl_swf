@@ -88,6 +88,16 @@ package away3d.core.session
       private static var browserCacheEnabled:Boolean = false;
       private static var browserNativeUVT:Boolean = false;
       private static var browserStatsEnabled:Boolean = false;
+      private static var browserRetainEnabled:Boolean = false;
+      private static var browserLayersReused:Number = 0;
+      private static var browserLayersRedrawn:Number = 0;
+      private var browserLayerRecords:Dictionary = new Dictionary(true);
+      private var browserPendingLayers:Array = [];
+      private var browserDefer:Boolean = false;
+      private static var browserTextureSnapshots:Dictionary = new Dictionary(true);
+      private static var browserSnapshotPixels:Number = 0;
+      private static var browserSnapshotEpoch:int = 0;
+      private var browserComparedTextures:Dictionary = new Dictionary(true);
       private static var browserCalls:Number = 0;
       private static var browserCacheHits:Number = 0;
       private static var browserLeaves:Number = 0;
@@ -101,21 +111,108 @@ package away3d.core.session
       private var browserNextBitmapId:int = 0;
       private var browserCapture:Vector.<IGraphicsData>;
 
-      public static function configureBrowserRendering(detail:String, cache:Boolean, nativeUVT:Boolean, diagnostics:Boolean) : void
+      public static function configureBrowserRendering(detail:String, cache:Boolean, nativeUVT:Boolean, diagnostics:Boolean, retainLayers:Boolean = false) : void
       {
          browserDetail = ["original","quality","low","medium","high"].indexOf(detail) >= 0 ? detail : "original";
          browserCacheEnabled = cache;
          browserNativeUVT = nativeUVT;
          browserStatsEnabled = diagnostics;
+         browserRetainEnabled = retainLayers && !nativeUVT;
+         browserLayersReused = browserLayersRedrawn = 0;
          browserCalls = browserCacheHits = browserLeaves = browserNativeCalls = 0;
       }
 
       public static function browserRenderStats() : Object
       {
          return {calls:browserCalls,cacheHits:browserCacheHits,affineTriangles:browserLeaves,
-            nativeCalls:browserNativeCalls};
+            nativeCalls:browserNativeCalls,layersReused:browserLayersReused,layersRedrawn:browserLayersRedrawn};
       }
 
+
+      // Preserve the Graphics object itself. These buffers cover only textured
+      // triangle layers; any other draw operation falls back for the entire layer.
+      protected function clearBrowserGraphics(g:Graphics) : void
+      {
+         if(!browserRetainEnabled || Capabilities.playerType != "PlugIn") { g.clear(); return; }
+         var record:Object = this.browserLayerRecords[g];
+         if(record == null) record = this.browserLayerRecords[g] = {previousKeys:[],previousChunks:[],active:false,valid:false};
+         if(!record.active) this.browserPendingLayers.push(g);
+         record.keys = [];record.chunks = [];record.fallback = false;record.active = true;
+      }
+
+      // Ruffle does not always refresh a retained bitmap fill after pixel mutation.
+      // Compare once per texture/session frame, with a global64MiB snapshot budget.
+      private function browserTextureRevision(bitmap:BitmapData) : String
+      {
+         var memo:Object = this.browserComparedTextures[bitmap];
+         if(memo != null) return String(memo);
+         var snapshot:Object = browserTextureSnapshots[bitmap];
+         if(snapshot == null)
+         {
+            if(browserSnapshotPixels + bitmap.width*bitmap.height > 16777216)
+            {
+               for each(var old:Object in browserTextureSnapshots) old.bitmap.dispose();
+               browserTextureSnapshots = new Dictionary(true);browserSnapshotPixels = 0;browserSnapshotEpoch++;
+            }
+            snapshot = browserTextureSnapshots[bitmap] = {bitmap:bitmap.clone(),revision:0};
+            browserSnapshotPixels += bitmap.width*bitmap.height;
+         }
+         else
+         {
+            var difference:Object = bitmap.compare(snapshot.bitmap);
+            if(difference !== 0)
+            {
+               if(difference is BitmapData) BitmapData(difference).dispose();
+               snapshot.bitmap.dispose();snapshot.bitmap = bitmap.clone();snapshot.revision++;
+            }
+         }
+         var revision:String = browserSnapshotEpoch+":"+snapshot.revision;
+         this.browserComparedTextures[bitmap] = revision;
+         return revision;
+      }
+
+      private function browserLayer(g:Graphics) : Object
+      {
+         var record:Object = this.browserLayerRecords[g];
+         if(record == null || !record.active) this.clearBrowserGraphics(g);
+         return this.browserLayerRecords[g];
+      }
+
+      private function cancelBrowserLayer(g:Graphics) : void
+      {
+         if(!browserRetainEnabled || Capabilities.playerType != "PlugIn") return;
+         var record:Object = this.browserLayer(g);
+         if(record.fallback) return;
+         g.clear();g.lineStyle();
+         for each(var chunk:Vector.<IGraphicsData> in record.chunks) g.drawGraphicsData(chunk);
+         record.fallback = true;record.valid = false;record.previousKeys = [];record.previousChunks = [];
+         record.chunks = [];record.keys = [];
+      }
+
+      private function finishBrowserLayers() : void
+      {
+         for each(var g:Graphics in this.browserPendingLayers)
+         {
+            var record:Object = this.browserLayerRecords[g];
+            if(!record.fallback)
+            {
+               var same:Boolean = record.valid && record.keys.length == record.previousKeys.length;
+               for(var index:int=0;same && index<record.keys.length;index++)
+                  same = record.keys[index] == record.previousKeys[index];
+               if(!same)
+               {
+                  g.clear();g.lineStyle();
+                  for each(var chunk:Vector.<IGraphicsData> in record.chunks) g.drawGraphicsData(chunk);
+                  if(browserStatsEnabled) browserLayersRedrawn++;
+               }
+               else if(browserStatsEnabled) browserLayersReused++;
+               record.previousKeys = record.keys;record.previousChunks = record.chunks;record.valid = true;
+            }
+            record.active = false;
+         }
+         this.browserPendingLayers.length = 0;
+         this.browserComparedTextures = new Dictionary(true);
+      }
 
       private var _renderers:Dictionary = new Dictionary(true);
       
@@ -449,7 +546,7 @@ package away3d.core.session
             while(this.i--)
             {
                this._shape = this._shapeActive.pop();
-               this._shape.graphics.clear();
+               this.clearBrowserGraphics(this._shape.graphics);
                this._shape.filters = [];
                this._shape.blendMode = BlendMode.NORMAL;
                this._shape.transform.colorTransform = this._defaultColorTransform;
@@ -461,7 +558,7 @@ package away3d.core.session
             while(this.i--)
             {
                this._sprite = this._spriteActive.pop();
-               this._sprite.graphics.clear();
+               this.clearBrowserGraphics(this._sprite.graphics);
                this._sprite.filters = [];
                while(this._sprite.numChildren)
                {
@@ -483,6 +580,7 @@ package away3d.core.session
          {
             this.getRenderer(param1).render();
          }
+         if(browserRetainEnabled) this.finishBrowserLayers();
          delete param1.arcane::_updatedSessions[this];
       }
       
@@ -585,6 +683,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          this.graphics.lineStyle(param5,param6,param7);
          this.graphics.moveTo(param1,param2);
          this.graphics.lineTo(param3,param4);
@@ -596,6 +695,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(param11 ? param11 : this.graphics);
          this._index0 = param6[param7] * 2;
          this._index1 = param6[uint(param7 + 1)] * 2;
          this._index2 = param6[uint(param7 + 2)] * 2;
@@ -655,7 +755,15 @@ package away3d.core.session
             this.browserDepth = detail == "low" ? 3 : (detail == "medium" ? 4 : 5);
             var targetGraphics:Graphics = param9 ? param9 : this.graphics;
             var geometryKey:String;
-            if(browserCacheEnabled)
+            this.browserDefer = false;
+            var retained:Object = null;
+            if(browserRetainEnabled)
+            {
+               retained = this.browserLayer(targetGraphics);
+               if(retained.fallback) retained = null;
+               this.browserDefer = retained != null;
+            }
+            if(browserCacheEnabled || retained != null)
             {
                if(this.browserBitmapIds[param1] == null)
                {
@@ -667,12 +775,23 @@ package away3d.core.session
                // live BitmapData, so pixel/palette changes don't stale the cache.
                geometryKey = this.browserBitmapIds[param1]+":"+param1.width+":"+param1.height+":"+
                   this._vertices.join(",")+":"+param2.join(",")+":"+param7+":"+param8+":"+detail;
-               var cached:Vector.<IGraphicsData> = this.browserGeometry[geometryKey];
+               if(retained != null) geometryKey += ":pixels:"+this.browserTextureRevision(param1);
+               if(retained != null)
+               {
+                  var triangleIndex:int = retained.keys.length;
+                  retained.keys.push(geometryKey);
+                  if(retained.valid && triangleIndex < retained.previousKeys.length && retained.previousKeys[triangleIndex] == geometryKey)
+                  {
+                     retained.chunks.push(retained.previousChunks[triangleIndex]);
+                     return;
+                  }
+               }
+               var cached:Vector.<IGraphicsData> = browserCacheEnabled ? this.browserGeometry[geometryKey] : null;
                if(cached != null)
                {
                   if(browserStatsEnabled) browserCacheHits++;
-                  targetGraphics.lineStyle();
-                  targetGraphics.drawGraphicsData(cached);
+                  if(retained != null) retained.chunks.push(cached);
+                  else { targetGraphics.lineStyle();targetGraphics.drawGraphicsData(cached); }
                   return;
                }
                this.browserCapture = new Vector.<IGraphicsData>();
@@ -697,8 +816,9 @@ package away3d.core.session
             }
             this.browserBitmapWidth=param1.width;
             this.browserBitmapHeight=param1.height;
-            targetGraphics.lineStyle();
+            if(!this.browserDefer) targetGraphics.lineStyle();
             browserTriangle(targetGraphics,param1,this.browserVertices[0],this.browserVertices[1],this.browserVertices[2],param8,param7,0);
+            if(retained != null) retained.chunks.push(this.browserCapture);
             if(browserCacheEnabled)
             {
                // Bound each session's command cache; moving views cannot grow it indefinitely.
@@ -710,8 +830,8 @@ package away3d.core.session
                this.browserGeometry[geometryKey] = this.browserCapture;
                this.browserGeometryEntries += 1;
                this.browserGeometryCommands += this.browserCapture.length;
-               this.browserCapture = null;
             }
+            this.browserCapture = null;
             return;
          }
          if(Capabilities.playerType == "PlugIn" && browserStatsEnabled) browserNativeCalls++;
@@ -788,6 +908,7 @@ package away3d.core.session
                Vector.<Number>([a[0],a[1],b[0],b[1],c[0],c[1],a[0],a[1]])));
             this.browserCapture.push(new GraphicsEndFill());
          }
+         if(this.browserDefer) return;
          g.beginBitmapFill(bitmap,mapping,repeat,smooth);
          g.moveTo(a[0],a[1]);
          g.lineTo(b[0],b[1]);
@@ -804,6 +925,7 @@ package away3d.core.session
             this.createLayer();
          }
          var _loc7_:Graphics = param5 ? param5 : this.graphics;
+         this.cancelBrowserLayer(_loc7_);
          _loc7_.lineStyle();
          _loc7_.beginFill(param1,param2);
          if(param6 == 1)
@@ -825,6 +947,7 @@ package away3d.core.session
             this.createLayer();
          }
          var _loc9_:Graphics = param8 ? param8 : this.graphics;
+         this.cancelBrowserLayer(_loc9_);
          if(param7 - param6 > 3)
          {
             _loc9_.lineStyle();
@@ -871,6 +994,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          this.graphics.lineStyle(param1,param2,param3);
          this.i = param7;
          if(param8 - param7 > 3)
@@ -918,6 +1042,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          if(param5 > 0)
          {
             this.graphics.lineStyle(param1,param4,param5);
@@ -979,6 +1104,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          this.graphics.lineStyle(param1,param2,param3);
          this._spriteVO = param6.primitiveElements[param4] as SpriteVO;
          this._scale = param6.primitiveProperties[uint(param4 * 9 + 8)];
@@ -1007,6 +1133,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          this.graphics.lineStyle();
          this._spriteVO = param5.primitiveElements[param3] as SpriteVO;
          this._scale = param5.primitiveProperties[uint(param3 * 9 + 8)];
@@ -1039,6 +1166,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          this.graphics.lineStyle();
          this._spriteVO = param5.primitiveElements[param3] as SpriteVO;
          this._scale = param5.primitiveProperties[uint(param3 * 9 + 8)];
@@ -1074,6 +1202,7 @@ package away3d.core.session
          {
             this.createLayer();
          }
+         this.cancelBrowserLayer(this.graphics);
          this.graphics.lineStyle();
          this.graphics.beginFill(param1,param2);
          this.graphics.drawRect(param3,param5,param4 - param3,param6 - param5);

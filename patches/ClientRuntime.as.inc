@@ -12,7 +12,7 @@
          {
             AbstractSession.configureBrowserRendering(
                String(loaderInfo.parameters.triangleDetail),loaderInfo.parameters.geometryCache == "1",
-               loaderInfo.parameters.perspective == "native",loaderInfo.parameters.renderDiagnostics == "1");
+               loaderInfo.parameters.perspective == "native",loaderInfo.parameters.renderDiagnostics == "1",loaderInfo.parameters.retainLayers == "1");
             if(flash.external.ExternalInterface.available)
                flash.external.ExternalInterface.addCallback("browserRenderStats",AbstractSession.browserRenderStats);
          }

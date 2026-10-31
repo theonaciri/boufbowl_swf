@@ -105,7 +105,7 @@ package away3d.core.session
                this._container.y = this._clip.minY - 1;
             }
             this._container.cacheAsBitmap = false;
-            graphics.clear();
+            this.clearBrowserGraphics(graphics);
             this._childIndex = 0;
          }
          else

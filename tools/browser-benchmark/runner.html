@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#171717;width:100%;height:100%;overflow:hidden}ruffle-player{width:100%;height:100%;display:block}</style>
+<script>
+window.benchmarkContexts=[];const Base=window.AudioContext;
+if(Base) window.AudioContext=class extends Base{constructor(...args){super(...args);benchmarkContexts.push(this)}};
+window.addEventListener('unhandledrejection',event=>window.benchmarkError=String(event.reason));
+window.addEventListener('error',event=>window.benchmarkError=event.message);
+window.benchmarkNotices=[];window.benchmarkLogs=[];
+window.benchmarkNotice=text=>{benchmarkNotices.push({text,at:performance.now()});};
+for(const level of ['log','info','debug','warn','error']){const original=console[level];console[level]=(...args)=>{benchmarkLogs.push(args.map(String).join(' '));original.apply(console,args)}};
+</script><script src="/vendor/ruffle/ruffle.js"></script><script type="module" src="/tools/browser-benchmark/runner.js"></script>
