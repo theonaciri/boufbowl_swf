@@ -88,3 +88,9 @@ Profiler outputs `.cpuprofile`, optional `.trace.json`, `profiles.json` and
 file IO; multithreaded CPU seconds may exceed wall time. Tracing changes execution
 cost: use separate unprofiled runs for performance comparisons. Software results
 must not be extrapolated to hardware GPUs. Raw local captures remain ignored.
+
+Cleanup acceptance (v0.9.2): six focused benchmark/player tests and eight shared
+build-tool tests passed; desktop and Android application roots compiled. Both
+browser variants completed the full fixture with ten moving actors, verified
+music, all three cutscenes and the next field. Game and static website builds,
+including `check:site`, passed. These checks did not package native downloads.
