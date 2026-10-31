@@ -119,12 +119,6 @@
         padding: 0.45rem 0.6rem;
         font-size: 12px;
       }
-      #display-options { max-width: min(38rem, calc(100vw - 2rem)); max-height: 80dvh; overflow-y: auto; }
-      #display-options p { max-width: 42em; line-height: 1.5; }
-      #display-options button { margin: 0.75rem 0.4rem 0 0; padding: 0.5rem; }
-      #render-diagnostics { display: block; overflow-wrap: anywhere; margin-top: 0.5rem; }
-      #render-diagnostics[hidden] { display: none; }
-      #native-perspective-warning { color: #ffd48a; }
       #display-options summary { cursor: pointer; }
       #display-options label { display: block; margin-top: 0.6rem; }
       #display-options select { margin-left: 0.5rem; font: inherit; }
@@ -140,42 +134,6 @@
         <option value="quality">Élevée · 60 FPS</option>
         <option value="performance">Performance · 25 FPS</option>
       </select></label>
-      <details>
-        <summary>Expériences de rendu navigateur</summary>
-        <form id="render-experiments">
-          <label>Moteur <select name="renderBackend">
-            <option value="auto">Automatique (référence)</option>
-            <option value="webgpu">WebGPU</option>
-            <option value="wgpu-webgl">WGPU → WebGL</option>
-            <option value="webgl">WebGL direct (compatibilité réduite)</option>
-          </select></label>
-          <label>Subdivision des textures <select name="triangleDetail">
-            <option value="original">Actuelle (référence)</option>
-            <option value="quality">Suivre la qualité du jeu</option>
-            <option value="low">Réduite · distorsion possible</option>
-            <option value="medium">Intermédiaire</option>
-            <option value="high">Précise (comme la référence)</option>
-          </select></label>
-          <label>Cache de géométrie projetée <select name="geometryCache">
-            <option value="0">Désactivé (référence)</option><option value="1">Activé</option>
-          </select></label>
-          <label>Calques inchangés <select name="retainLayers">
-            <option value="0">Redessiner (référence)</option><option value="1">Conserver les commandes</option>
-          </select></label>
-          <label>Perspective <select name="perspective">
-            <option value="subdivide">Correction par subdivision (référence)</option>
-            <option value="native">UVT natif · témoin actuellement incorrect</option>
-          </select></label>
-          <label>Compteurs cumulés <select name="renderDiagnostics">
-            <option value="0">Masqués</option><option value="1">Afficher</option>
-          </select></label>
-          <button type="submit">Appliquer et relancer</button>
-          <button type="button" id="reset-render-experiments">Réinitialiser</button>
-        </form>
-        <p>Comparer une option à la fois, avec les mêmes FPS et la même qualité. Le navigateur peut utiliser un moteur de secours : vérifier le moteur effectif dans la console Ruffle.</p>
-        <p id="native-perspective-warning" hidden>Le nightly actuel ignore les coordonnées UVT : ce témoin déforme les textures. Ce n’est pas une correction de Ruffle.</p>
-        <output id="render-diagnostics" hidden aria-live="off"></output>
-      </details>
     </details>
     <p id="status" role="status">Chargement de Boufbowl…</p>
     <script src="vendor/ruffle/ruffle.js"></script>

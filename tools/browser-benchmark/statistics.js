@@ -14,8 +14,8 @@ export function aggregate(runs) {
    const seen = new Set();
    for (const phase of run.phases) {
     const key=run.option.id+':'+phase.id;
-    if(!groups.has(key)) groups.set(key,{option:run.option,phase:phase.id,samples:[],raf:[],runs:0,renderers:[],layerReuses:0});
-    const group=groups.get(key);group.layerReuses+=(phase.renderAfter?.layersReused||0)-(phase.renderBefore?.layersReused||0);const renderer=run.actualRenderer||'non identifié';if(!group.renderers.includes(renderer))group.renderers.push(renderer);group.samples.push(...phase.samples);group.raf.push(...phase.raf);if(!seen.has(key)){group.runs++;seen.add(key);}
+    if(!groups.has(key)) groups.set(key,{option:run.option,phase:phase.id,samples:[],raf:[],runs:0,renderers:[]});
+    const group=groups.get(key);const renderer=run.actualRenderer||'non identifié';if(!group.renderers.includes(renderer))group.renderers.push(renderer);group.samples.push(...phase.samples);group.raf.push(...phase.raf);if(!seen.has(key)){group.runs++;seen.add(key);}
   }
   }
   return [...groups.values()].map(({samples,raf,...group})=>({...group,game:summarize(samples),display:summarize(raf)}));
@@ -24,12 +24,6 @@ export function caseOrder(options, rounds) {
   return Array.from({length:rounds},(_,n)=>(n%2 ? [...options].reverse() : options)).flat();
 }
 export const OPTIONS = [
-  {id:'baseline',label:'Référence',renderer:'auto',cache:false,retain:false},
-  {id:'grid-layer',label:'Grille en un calque',renderer:'auto',cache:false,retain:false,client:'/benchmark-grid-layer.swf'},
-  {id:'vector-grid',label:'Grille vectorielle',renderer:'auto',cache:false,retain:false,client:'/benchmark-vector-grid.swf'},
-  {id:'geometry',label:'Cache de géométrie',renderer:'auto',cache:true,retain:false},
-  {id:'layers',label:'Calques conservés',renderer:'auto',cache:false,retain:true},
-  {id:'combined',label:'Géométrie + calques',renderer:'auto',cache:true,retain:true},
-  {id:'webgpu',label:'WebGPU seul',renderer:'webgpu',cache:false,retain:false},
-  {id:'wgpu',label:'WGPU/WebGL seul',renderer:'wgpu-webgl',cache:false,retain:false},
+  {id:'baseline',label:'Référence sans cache global',client:'/benchmark-reference.swf'},
+  {id:'grid-layer',label:'Rendu actuel · grille en un calque'},
 ];

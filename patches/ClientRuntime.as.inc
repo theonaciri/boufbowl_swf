@@ -8,14 +8,6 @@
          measurementRoot = this;
          measurementLaunchAt = getTimer();
          ruffleRuntime = allowBrowser && loaderInfo.parameters.clientRuntime == "ruffle";
-         if(ruffleRuntime)
-         {
-            AbstractSession.configureBrowserRendering(
-               String(loaderInfo.parameters.triangleDetail),loaderInfo.parameters.geometryCache == "1",
-               loaderInfo.parameters.perspective == "native",loaderInfo.parameters.renderDiagnostics == "1",loaderInfo.parameters.retainLayers == "1");
-            if(flash.external.ExternalInterface.available)
-               flash.external.ExternalInterface.addCallback("browserRenderStats",AbstractSession.browserRenderStats);
-         }
          if(ruffleRuntime && flash.external.ExternalInterface.available)
             flash.external.ExternalInterface.addCallback("setMeasurementActive",setMeasurementActive);
          if(ruffleRuntime && loaderInfo.parameters.webFps != null)

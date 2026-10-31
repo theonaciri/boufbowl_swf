@@ -3,12 +3,12 @@ const $=id=>document.getElementById(id), storageKey='boufbowl.browser-benchmark.
 const phases={menu:'Menu',orders:'Ordres',stadium:'3D · 10 acteurs',cinematics:'Animations plein écran'};
 let report={version:1,runs:[]},controller,frame,expectedViewport,runGeneration=0,storageAvailable=true,activeTicket=null;
 try { report=JSON.parse(localStorage.getItem(storageKey)) || report; } catch {}
-for(const option of OPTIONS){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='option';input.value=option.id;input.checked=['baseline','layers'].includes(option.id);label.append(input,option.label);$('variants').append(label);}
+for(const option of OPTIONS){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='option';input.value=option.id;input.checked=['baseline','grid-layer'].includes(option.id);label.append(input,option.label);$('variants').append(label);}
 const escape=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 const number=x=>Number.isFinite(x)?x.toFixed(1):'—';
 function render(){
  const groups=aggregate(report.runs),max=Math.max(1,...groups.map(x=>Math.max(x.game?.meanMs||0,x.game?.p95Ms||0)));
- $('results').innerHTML='<table><thead><tr><th>Variante / scène</th><th>Passages</th><th>Trames</th><th>FPS moyens</th><th>Moyenne ms</th><th>P50 ms</th><th>P95 ms</th><th>P99 ms</th><th>Max ms</th><th>&gt;50 ms</th><th>Calques 3D réutilisés</th></tr></thead><tbody>'+groups.map(g=>`<tr><td>${escape(g.option.label)} · ${phases[g.phase]}<br><small>${escape(g.renderers.join(', '))}</small></td><td>${g.runs}</td><td>${g.game?.frames||0}</td>${['fps','meanMs','medianMs','p95Ms','p99Ms','maxMs','over50'].map(key=>`<td>${number(g.game?.[key])}</td>`).join('')}<td>${g.layerReuses}</td></tr>`).join('')+'</tbody></table>';
+ $('results').innerHTML='<table><thead><tr><th>Variante / scène</th><th>Passages</th><th>Trames</th><th>FPS moyens</th><th>Moyenne ms</th><th>P50 ms</th><th>P95 ms</th><th>P99 ms</th><th>Max ms</th><th>&gt;50 ms</th></tr></thead><tbody>'+groups.map(g=>`<tr><td>${escape(g.option.label)} · ${phases[g.phase]}<br><small>${escape(g.renderers.join(', '))}</small></td><td>${g.runs}</td><td>${g.game?.frames||0}</td>${['fps','meanMs','medianMs','p95Ms','p99Ms','maxMs','over50'].map(key=>`<td>${number(g.game?.[key])}</td>`).join('')}</tr>`).join('')+'</tbody></table>';
  $('chart').innerHTML=groups.length?`<p>Temps moyen <span style="color:#ace1cc">■</span> et P95 <span style="color:#f3bf70">■</span>, en millisecondes. Plus court = plus fluide.</p><svg role="img" aria-label="Comparaison des temps de trame moyens et P95" viewBox="0 0 1024 ${groups.length*52+20}">${groups.map((g,i)=>`<g transform="translate(0 ${i*52+10})"><text x="0" y="16" fill="#e5ecf7" font-size="13">${escape(g.option.label)} · ${phases[g.phase]}</text><rect x="300" y="0" width="${(g.game?.meanMs||0)/max*580}" height="14" fill="#ace1cc"/><text x="${310+(g.game?.meanMs||0)/max*580}" y="12" fill="#e5ecf7" font-size="12">${number(g.game?.meanMs)}</text><rect x="300" y="20" width="${(g.game?.p95Ms||0)/max*580}" height="14" fill="#f3bf70"/><text x="${310+(g.game?.p95Ms||0)/max*580}" y="32" fill="#e5ecf7" font-size="12">${number(g.game?.p95Ms)}</text></g>`).join('')}</svg>`:'';
  $('environment').textContent=JSON.stringify({...report,runs:report.runs.map(({phases,...run})=>({...run,phases:phases.map(({samples,raf,...phase})=>({...phase,gameFrames:samples.length,browserCallbacks:raf.length}))}))},null,2);
  if(storageAvailable)try{localStorage.setItem(storageKey,JSON.stringify(report));}catch{storageAvailable=false;$('storage-warning').hidden=false;}
@@ -40,7 +40,7 @@ async function measure(id,seconds,complete){
  try {if(complete)await until(complete,120000);else await wait(seconds*1000);}finally{cancelAnimationFrame(rafId);}
  const after=api('benchmarkSample','stop');
  if(id==='stadium'&&after.movedActors!==10)throw new Error(`Les dix acteurs ne sont pas en mouvement (${after.movedActors}/10).`);
- return {id,movedActors:after.movedActors,positionsBefore:before.positions,positionsAfter:after.positions,samples:after.samples,raf,targetFps:after.target,wallMs:performance.now()-started,renderBefore:before.render,renderAfter:after.render};
+ return {id,movedActors:after.movedActors,positionsBefore:before.positions,positionsAfter:after.positions,samples:after.samples,raf,targetFps:after.target,wallMs:performance.now()-started};
 }
 async function run(option,settings,prime=false){
  $('status').textContent=`${report.current} · chargement du lecteur`;
@@ -49,8 +49,6 @@ async function run(option,settings,prime=false){
  frame.scrollIntoView({block:'center'});
  await until(()=>new URL(frame.contentWindow.location.href).searchParams.get('run')===ticket && frame.contentWindow.benchmarkLoaded && frame.contentWindow.benchmarkAPI);
  await until(()=>{try{return state()?.views.some(x=>['MatchCreationView','MatchmakingView','WelcomeView'].some(name=>x.includes(name)));}catch{return false;}});
- const correctness=api('benchmarkCorrectness');
- if(!correctness || Object.values(correctness).some(x=>x!==true))throw new Error('Échec des invariants de rendu : '+JSON.stringify(correctness));
  for(const context of frame.contentWindow.benchmarkContexts)context.resume();
  if(frame.contentWindow.benchmarkContexts.some(x=>x.state==='suspended')){
   $('status').textContent='Cliquez dans le lecteur pour autoriser la musique, puis le benchmark continuera.';
@@ -62,10 +60,11 @@ async function run(option,settings,prime=false){
  measured.push(await measure('menu',settings.seconds));
  api('benchmarkStart');
  await until(()=>frame.contentWindow.benchmarkNotices.some(x=>x.text.startsWith('Incoming FIELD_STATE')) && state()?.views.some(x=>x.includes('FieldView')));
+ if(state().gridCached !== (option.id==='grid-layer'))throw new Error('Le cache de grille ne correspond pas à la variante demandée.');
  await wait(settings.warmup*1000);
  measured.push(await measure('orders',settings.seconds));
  api('benchmarkResolve');
- await until(()=>state()?.phase==='3d' && state().actors===10 && api('browserRenderStats').calls>0);
+ await until(()=>state()?.phase==='3d' && state().actors===10);
  await until(()=>frame.contentWindow.benchmarkNotices.filter(x=>x.text.startsWith('Actor moving ')).length===10);
  await wait(settings.warmup*1000);
  measured.push(await measure('stadium',settings.seconds));
@@ -85,7 +84,7 @@ async function run(option,settings,prime=false){
  const music=resources.filter(x=>x.name.includes('/sounds/music/')).map(x=>x.name);
  const audio=frame.contentWindow.benchmarkContexts.map(x=>x.state);
  const logs=frame.contentWindow.benchmarkLogs;
- return structuredClone({completionMs:performance.now()-finishing,option,prime,correctness,actualRenderer:logs.join('\n').match(/Used renderer: ([^)]+)/)?.[1] || 'non identifié',phases:measured,music,audio,audioVerified:['music_tactic_loop_01.mp3','music_resolution_loop_01.mp3'].every(name=>music.some(url=>url.endsWith(name)))&&audio.includes('running'),wallMs:performance.now()-started,
+ return structuredClone({completionMs:performance.now()-finishing,option,prime,actualRenderer:logs.join('\n').match(/Used renderer: ([^)]+)/)?.[1] || 'non identifié',phases:measured,music,audio,audioVerified:['music_tactic_loop_01.mp3','music_resolution_loop_01.mp3'].every(name=>music.some(url=>url.endsWith(name)))&&audio.includes('running'),wallMs:performance.now()-started,
   resolutionDone:true,actors:10,notices:frame.contentWindow.benchmarkNotices,rendererLogs:logs.filter(x=>/renderer|webgpu|webgl|adapter/i.test(x)),
   visibility:'visible',viewport:{width:frame.clientWidth,height:frame.clientHeight,dpr:devicePixelRatio}});
 }

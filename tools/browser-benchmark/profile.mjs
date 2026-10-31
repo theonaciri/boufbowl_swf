@@ -13,7 +13,7 @@ try{
  page.on('pageerror',e=>console.log('PAGE ERROR '+e.message));
  await page.goto(values.url);
  for(const [name,value] of [['seconds','8'],['warmup','2'],['rounds','1']])await page.locator(`[name=${name}]`).fill(value);
- await page.locator('[name=prime]').uncheck();await page.locator('[name=option][value=layers]').uncheck();
+ await page.locator('[name=prime]').uncheck();await page.locator('[name=option][value=baseline]').uncheck();
  await session.send('Profiler.enable');await session.send('Profiler.setSamplingInterval',{interval:1000});
  await page.locator('#start').click();
  for(const [id,label] of [['menu',' · Menu'],['orders',' · Ordres'],['stadium',' · 3D · 10 acteurs'],['cinematics',' · Animations plein écran']]){

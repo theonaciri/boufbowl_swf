@@ -15,5 +15,4 @@ def client_root_source(source, root=ROOT):
         if '   import ' not in source:
             raise ValueError('Expected application-root import block')
         source = source.replace('   import ', timer_import+'\n   import ', 1)
-    source = source.replace("   import ", "   import away3d.core.session.AbstractSession;\n   import ", 1)
     return source.replace(MARKER, (root/'patches/ClientRuntime.as.inc').read_text().rstrip())

@@ -39,7 +39,7 @@
          {
             removeEventListener(Event.ENTER_FRAME,benchmarkFrame);benchmarkRecording = false;
          }
-         return {movedActors:benchmarkMotionCount,positions:benchmarkPositions(),samples:benchmarkFrameTimes,target:stage.frameRate,render:AbstractSession.browserRenderStats()};
+         return {movedActors:benchmarkMotionCount,positions:benchmarkPositions(),samples:benchmarkFrameTimes,target:stage.frameRate};
       }
 
       private function benchmarkPositions() : Object
@@ -61,12 +61,14 @@
       {
          var views:Array = [];
          var pending:Array = [stage];
+         var gridCached:Object = null;
          while(pending.length > 0)
          {
             var object:DisplayObject = pending.pop();
             var name:String = getQualifiedClassName(object);
             if((name.indexOf("MatchCreationView") >= 0 || name.indexOf("MatchmakingView") >= 0 || name.indexOf("WelcomeView") >= 0) || name.indexOf("FieldView") >= 0 || name.indexOf("ResolutionView") >= 0)
                views.push(name);
+            if(name.indexOf("::FieldView") >= 0) gridCached = Object(object).cellsLayer.cacheAsBitmap;
             var container:DisplayObjectContainer = object as DisplayObjectContainer;
             if(container != null) for(var i:int=0;i<container.numChildren;i++) pending.push(container.getChildAt(i));
          }
@@ -78,7 +80,7 @@
             while(actorIterator.hasNext()) { actorIterator.getNext();actors++; }
          }
          return {views:views,actors:actors,
-            phase:measurementPhase,cutsceneDone:benchmarkCutsceneDone};
+            gridCached:gridCached,phase:measurementPhase,cutsceneDone:benchmarkCutsceneDone};
       }
 
       private function benchmarkCutscene(key:String) : void

@@ -9,45 +9,12 @@ export function displayPreset(name) {
   return Object.hasOwn(WEB_PRESETS, name) ? WEB_PRESETS[name] : WEB_PRESETS.balanced;
 }
 
-// URL is the experiment boundary; defaults preserve the normal player.
-export function renderingExperiments(params) {
-  const pick = (key, choices, fallback) => choices.includes(params.get(key)) ? params.get(key) : fallback;
-  return {
-    renderer: pick("renderBackend", ["auto", "webgpu", "wgpu-webgl", "webgl"], "auto"),
-    detail: pick("triangleDetail", ["original", "quality", "low", "medium", "high"], "original"),
-    cache: params.get("geometryCache") === "1",
-    retain: params.get("retainLayers") === "1",
-    perspective: pick("perspective", ["subdivide", "native"], "subdivide"),
-    diagnostics: params.get("renderDiagnostics") === "1",
-  };
-}
-
 if (typeof document !== "undefined") (async () => {
   const status = document.getElementById("status");
   const game = document.getElementById("game");
   const fullscreenButton = document.getElementById("fullscreen");
   watchWebUpdates({version: typeof __CLIENT_VERSION__ === "undefined" ? "0.0.0" : __CLIENT_VERSION__,container:document.body});
   const launchOptions = new URLSearchParams(location.search);
-  const experiment = renderingExperiments(launchOptions);
-  const experimentForm = document.getElementById("render-experiments");
-  for (const [name, value] of Object.entries({renderBackend:experiment.renderer,
-    triangleDetail:experiment.detail,geometryCache:experiment.cache ? "1" : "0",retainLayers:experiment.retain ? "1" : "0",
-    perspective:experiment.perspective,renderDiagnostics:experiment.diagnostics ? "1" : "0"})) {
-    experimentForm.elements.namedItem(name).value = value;
-  }
-  experimentForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const url = new URL(location.href);
-    for (const [name, value] of new FormData(experimentForm)) url.searchParams.set(name, value);
-    location.assign(url);
-  });
-  document.getElementById("reset-render-experiments").addEventListener("click", () => {
-    const url = new URL(location.href);
-    for (const name of ["renderBackend","triangleDetail","geometryCache","retainLayers","perspective","renderDiagnostics"])
-      url.searchParams.delete(name);
-    location.assign(url);
-  });
-  document.getElementById("display-options").hidden = false;
   const qualityChoice = document.getElementById("web-quality");
   let storedQuality;
   try { storedQuality = localStorage.getItem("boufbowl.webQuality"); } catch {}
@@ -128,7 +95,6 @@ if (typeof document !== "undefined") (async () => {
       url: client.url,
       allowScriptAccess: true,
       quality: preset.quality,
-      ...(experiment.renderer === "auto" ? {} : {preferredRenderer: experiment.renderer}),
       backgroundExecutionMode: "none",
       scale: "showAll",
       forceScale: true,
@@ -142,11 +108,6 @@ if (typeof document !== "undefined") (async () => {
         clientPlatform: "browser",
         clientRuntime: "ruffle",
         webFps: String(preset.fps),
-        triangleDetail: experiment.detail,
-        geometryCache: experiment.cache ? "1" : "0",
-        retainLayers: experiment.retain ? "1" : "0",
-        perspective: experiment.perspective,
-        renderDiagnostics: experiment.diagnostics ? "1" : "0",
         clientOS:
           navigator.userAgentData?.platform || navigator.platform || "",
         clientBrowser: (() => {
@@ -167,25 +128,6 @@ if (typeof document !== "undefined") (async () => {
       },
     });
     status.hidden = true;
-    const diagnostics = document.getElementById("render-diagnostics");
-    if (experiment.perspective === "native") {
-      document.getElementById("native-perspective-warning").hidden = false;
-    }
-    if (experiment.diagnostics) {
-      diagnostics.hidden = false;
-      const updateDiagnostics = () => {
-        // Runtime initialization and older clients are an external boundary.
-        let stats;
-        try { stats = player.ruffle().callExternalInterface("browserRenderStats"); }
-        catch { diagnostics.textContent = "Compteurs en attente du client expérimental…"; return; }
-        diagnostics.textContent = stats ?
-          `Demandé : ${experiment.renderer} · appels ${stats.calls} · cache ${stats.cacheHits} · triangles calculés ${stats.affineTriangles} · calques conservés ${stats.layersReused} · redessinés ${stats.layersRedrawn} · UVT natif ${stats.nativeCalls}` :
-          "Compteurs indisponibles : reconstruire le client expérimental.";
-      };
-      updateDiagnostics();
-      const timer = setInterval(updateDiagnostics, 2000);
-      window.addEventListener("pagehide", () => clearInterval(timer), {once:true});
-    }
     const reportVisibility = () => {
       try { player.ruffle().callExternalInterface("setMeasurementActive", !document.hidden); } catch {}
     };

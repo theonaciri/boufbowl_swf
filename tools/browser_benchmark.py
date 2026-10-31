@@ -4,12 +4,10 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import hashlib
 import json
-import subprocess
 from urllib.parse import unquote, urlsplit
 from pathlib import Path
 
 from tools.client_probe import compile_probe, ROOT
-from tools.build_tools import ffdec_jar, java_binary
 from tools.client_runtime_codegen import client_root_source
 from tools.game_config import load_config, startup_source
 from tools.build_mock_fixture import build_fixture
@@ -57,11 +55,6 @@ def build():
     anchor = 'this.initializeClientRuntime(true);'
     assert source.count(anchor) == 1
     source = source.replace(anchor, anchor + '''
-         flash.external.ExternalInterface.addCallback("benchmarkCorrectness",function():Object {
-            var result:Object = new AbstractSession().benchmarkLayerCorrectness();
-            AbstractSession.configureBrowserRendering("original",loaderInfo.parameters.geometryCache == "1",false,true,loaderInfo.parameters.retainLayers == "1");
-            return result;
-         });
          flash.external.ExternalInterface.addCallback("benchmarkViewScale",function(scale:Number):Object {
             if(isNaN(scale) || scale < 1 || scale > 8) throw new Error("Benchmark scale must be1..8");
             _wheelGameView.scaleX = scale;_wheelGameView.scaleY = scale;
@@ -95,13 +88,7 @@ def build():
     changes = [('com.ankamagames.boufbowl.BoufbowlClient', source),
                ('com.ankamagames.boufbowl.client.application.controller.StartUpApplicationCommand', startup)]
     # Build only touched overrides; do not replace production clients/packages.
-    layer_changes = []
-    for name in ['AbstractSession', 'SpriteSession']:
-        patch = (ROOT / f'patches/{name}.as').read_text()
-        if name == 'AbstractSession':
-            pos = patch.rfind('   }')
-            patch = patch[:pos] + (ROOT / 'tools/browser-benchmark/layer-smoke.as.inc').read_text() + patch[pos:]
-        layer_changes.append(('away3d.core.session.' + name, patch))
+    probe_changes = []
     actor = (ROOT / 'patches/Boufbowler.as').read_text()
     actor = actor.replace('   import ', '   import flash.external.ExternalInterface;\n   import ', 1)
     actor = actor.replace('      private var _uid:uint;', '      private var _uid:uint;\n      private var benchmarkMoved:Boolean = false;')
@@ -110,40 +97,26 @@ def build():
     actor = actor.replace(marker, marker + '''
          if(!benchmarkMoved) { benchmarkMoved=true;ExternalInterface.call("benchmarkNotice","Actor moving "+this._uid); }
 ''')
-    layer_changes.append(('com.ankamagames.boufbowl.resolution.display.model.Boufbowler', actor))
-    layer_changes.append(('com.ankamagames.boufbowl.client.match.controller.ChooseMusicCommand',
+    probe_changes.append(('com.ankamagames.boufbowl.resolution.display.model.Boufbowler', actor))
+    probe_changes.append(('com.ankamagames.boufbowl.client.match.controller.ChooseMusicCommand',
                           (ROOT / 'tools/browser-benchmark/ChooseMusicCommand.as').read_text()))
-    print('Preparing cached layer overrides…', flush=True)
-    layer_base, _ = compile_probe(ROOT / 'bin/boufbowl-client-1.9.6.swf', layer_changes)
+    print('Preparing cached scene instrumentation…', flush=True)
+    probe_base, _ = compile_probe(ROOT / 'bin/boufbowl-client-1.9.6.swf', probe_changes)
     print('Preparing cached benchmark controls…', flush=True)
-    client, reused = compile_probe(layer_base, changes)
-    field_file = ROOT / 'patches/FieldView.as'
-    if not field_file.is_file():
-        # FieldView need not have a production override in a clean checkout.
-        export = output / 'field-sources' / hashlib.sha256(client.read_bytes()).hexdigest()
-        field_class = 'com.ankamagames.boufbowl.client.match.strategic.view.field.FieldView'
-        field_file = export / 'scripts' / Path(*field_class.split('.')).with_suffix('.as')
-        if not field_file.is_file():
-            export.mkdir(parents=True, exist_ok=True)
-            with (export / 'export.log').open('w') as log:
-                subprocess.run([str(java_binary()), '-jar', str(ffdec_jar()), '-selectclass',
-                                field_class, '-export', 'script', str(export), str(client)],
-                               stdout=log, stderr=subprocess.STDOUT, check=True, timeout=180)
-    field = field_file.read_text()
-    marker = '_loc4_.cacheAsBitmap = true;'
+    client, reused = compile_probe(probe_base, changes)
+    field = (ROOT / 'patches/FieldView.as').read_text()
+    marker = 'this._cellsLayer.cacheAsBitmap = Capabilities.playerType == "PlugIn";'
     assert field.count(marker) == 1
-    vector_client, _ = compile_probe(client, [('com.ankamagames.boufbowl.client.match.strategic.view.field.FieldView', field.replace(marker, '_loc4_.cacheAsBitmap = false;'))])
-    layer_marker = 'this._cellsLayer.mouseChildren = false;'
-    assert field.count(layer_marker) == 1
-    grid_client, _ = compile_probe(client, [('com.ankamagames.boufbowl.client.match.strategic.view.field.FieldView', field.replace(layer_marker, layer_marker+'\n         this._cellsLayer.cacheAsBitmap = true;'))])
+    reference, _ = compile_probe(client, [
+        ('com.ankamagames.boufbowl.client.match.strategic.view.field.FieldView',
+         field.replace(marker, 'this._cellsLayer.cacheAsBitmap = false;'))])
     manifest = {'fixture_sha256': hashlib.sha256(data).hexdigest(),
                 'client_sha256': hashlib.sha256(client.read_bytes()).hexdigest(),
                 'ruffle': json.loads((ROOT / 'vendor/ruffle/package.json').read_text())['version'],
-                'vector_grid_client_sha256': hashlib.sha256(vector_client.read_bytes()).hexdigest(),
-                'grid_layer_client_sha256': hashlib.sha256(grid_client.read_bytes()).hexdigest(),
+                'reference_client_sha256': hashlib.sha256(reference.read_bytes()).hexdigest(),
                 'actors': 10, 'stadium': 'Cania', 'turn_ticks': 800}
     (output / 'manifest.json').write_text(json.dumps(manifest))
-    return client, output, reused, vector_client, grid_client
+    return client, output, reused, reference
 
 
 def main():
@@ -154,7 +127,7 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error('port must be between1 and65535')
-    client, output, reused, vector_client, grid_client = build()
+    client, output, reused, reference = build()
     print(json.dumps({'client': str(client), 'reused': reused}), flush=True)
     if args.build_only:
         return
@@ -167,8 +140,7 @@ def main():
             route = unquote(urlsplit(self.path).path)
             files = {'/': ROOT / 'tools/browser-benchmark/index.html',
                      '/benchmark-client.swf': client,
-                     '/benchmark-vector-grid.swf': vector_client,
-                     '/benchmark-grid-layer.swf': grid_client,
+                     '/benchmark-reference.swf': reference,
                      '/benchmark-runner.html': ROOT / 'tools/browser-benchmark/runner.html',
                      '/benchmark-fixture.json': output / 'fixture.json',
                      '/benchmark-manifest.json': output / 'manifest.json'}

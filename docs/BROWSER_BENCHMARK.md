@@ -1,113 +1,90 @@
-# Browser rendering benchmark
+# Browser performance
 
 ```sh
-bun run benchmark:browser
-# Open http://127.0.0.1:9927/
-# For another machine/phone on your network:
-bun run benchmark:browser --host 0.0.0.0 --port 9927
+bun run build                     # Rebuild after client changes
+bun run benchmark:browser         # Open http://127.0.0.1:9927/
+# Phone / another machine:
+bun run benchmark:browser --host 0.0.0.0
+# Separate terminal, optional CPU profiling:
+bun run benchmark:profile --headed
+bun run benchmark:profile --software --trace  # Large GPU trace files
 ```
 
-The command builds a cached diagnostic SWF under `.local/client-probes` and serves
-an isolated, read-only asset server. It does not modify production SWFs, website
-output, accounts, packages or databases. Existing compiled game client and normal
-Java/FFDec discovery are required. AS3 changes are compiled into the probe directly.
+The benchmark compares current browser rendering (whole-grid caching) against a
+reference with only that cache disabled. Both use Ruffle's default backend, HIGH
+quality, original perspective subdivision and the same resolution/FPS target.
+Native clients retain their original per-cell caches without a parent cache.
+Child changes invalidate the browser's parent cache. The cache covers cells only;
+players, ball and order arrows remain in separate layers.
 
-Choose variants, duration, warmup and repetitions; click **Lancer le benchmark**.
-Defaults compare baseline/retained layers at60FPS, high quality, original
-perspective accuracy. Other existing experiments can be selected without reducing
-quality. Resetting or selecting lower quality on the normal player has no effect
-here. Keep the tab visible and viewport unchanged. Allow audio if prompted.
+## Workload and interpretation
 
-## Fixed workload
+The command compiles cached diagnostic SWFs under `.local/client-probes`, then
+serves a local read-only asset server. No real accounts, backend or production
+packages are involved. Requirements: existing compiled client, Java/FFDec, assets.
 
-- Current match-setup menu, then tactical orders on the actual field.
-- Cania3D; ten maleIop actors follow identical zigzag routes for800 game ticks (40s of game time).
-  A one-time per-actor movement notice gates sampling; frame observations verify
-  that all ten actually move, without endpoint aliasing on repeated routes.
-  This is a rendering fixture, not an authoritative simulation/combat benchmark.
-- Original fullscreen brawl, throw and reception illustrations, using the real
-  cutscene controller while the game clock is paused; music continues.
-  Tactic/resolution music is pinned to loop01 in a diagnostic-only override.
-- Accelerate only the unmeasured remainder, then require the actual `ResolutionDoneMessage` and next field.
+Each fresh player runs match setup, orders, ten Iop actors following fixed zigzags
+in Cania3D with music, and the original brawl/throw/reception fullscreen animations.
+It requires actual movement of all ten actors, cutscene completion, real
+`ResolutionDoneMessage` and the next field. This is a rendering fixture, not a
+combat/simulator benchmark. Tactic/resolution music is fixed to loop01.
+The orders phase verifies that the actual grid-cache flag matches its variant.
 
-The preliminary unmeasured run warms common assets. Every case creates a fresh
-Ruffle instance, then each menu/orders/3D phase warms up again. Repetitions reverse
-case order on alternate rounds. This reduces first-run bias; it cannot remove
-thermal throttling, browser JIT variation or all cache effects.
+Use three repetitions with warmup. Alternate rounds reverse option order.
+Keep viewport, DPR and tab visibility unchanged; changes invalidate the comparison.
+Unloading closes audio contexts and removes the old player. Errors remain failures,
+not measurements; music needs loaded resources and an active WebAudio context.
 
-JSON includes fixture/client SHA256, Ruffle version, requested backend and actual
-renderer log, viewport/DPR, audio state/music requests, scene notices, per-phase
-render counters and raw intervals. No measurements are claimed for a failed run.
-Completed runs are retained in localStorage and exportable as JSON/CSV.
+FPS =1000/mean AS3 `ENTER_FRAME` interval. P95/P99 use nearest ranks, not confidence
+intervals. Aggregation pools raw intervals; rAF callbacks are recorded separately.
+Neither counter measures GPU-presented frames. Compare slow-frame percentages,
+not raw counts when sample sizes differ. The production100ms game-clock clamp
+remains active, so severe stalls can slow scene progression.
 
-## Reading results
+JSON/CSV exports and localStorage preserve results. JSON also records fixture and
+client hashes, actual renderer logs, audio, positions and completion notices.
+CSV alone cannot establish renderer fallback or per-run variance.
 
-Game samples are AS3 `ENTER_FRAME` intervals measured with `getTimer` (1ms
-resolution). FPS =1000/mean interval. P50/P95/P99 use nearest rank; P95 is a frame-time
-percentile, **not a95% confidence interval**. Lower times are better. Long frames
-above50/100ms, maximum and1%low FPS are in JSON. Aggregation pools raw intervals,
-not average FPS values. Browser `requestAnimationFrame` intervals are separate:
-neither counter directly measures GPU-presented frames. Long loading phases,
-user-paused audio setup and per-case total duration remain distinguishable.
+## Experiments retained and removed — October 2026
 
-Fullscreen results include all three animation sequences, with keys preserved in
-the raw data. Audio verification requires a loaded game music resource and a
-running WebAudio context; it does not prove loudspeaker output. No audio-disabled
-run should be presented as fulfilling the music workload.
+Two user hardware comparisons, three runs per variant:
 
-## Retained layers (`retainLayers=1`)
+| Orders screen | First comparison FPS | Second comparison FPS | Decision |
+| --- | ---: | ---: | --- |
+| Reference | 38.78 | 35.87 | Control |
+| Whole-grid cache | 45.30 | 45.61 | Keep:17–27% higher mean cadence |
+| Requested WebGPU | 40.73 | 36.64 | Remove override: inconsistent benefit |
 
-Ruffle retained fills did not reflect live bitmap mutation in the pixel test.
-Exact BitmapData comparisons detect changes once per texture/session frame; shared
-snapshots have a64MiB budget. This adds CPU work and memory, measured in the test.
+Grid caching's rare stalls remain a limitation: second comparison P95 improved
+32→28ms, but P99 worsened44→51ms; frames over50ms rose0.23→1.27%.
+3D/cinematic gains were small. Normal, DPR2 and4×/8× diagnostic screenshots
+retained similar grid detail, with minor rasterization differences.
 
-Projection/culling upstream still runs; this experiment avoids clearing and
-reissuing unchanged drawing commands, rather than caching the whole scene.
+Removed experiments and associated controls, callbacks and probe-only checks:
 
-Only graphics consisting exclusively of bitmap triangles are retained. Compare
-the complete ordered sequence of texture identities, UVT, projected coordinates,
-size and sampling policy. If unchanged, keep the existing Graphics commands and
-avoid clearing/reissuing them. Any changed/reordered/removed triangle redraws the
-layer. Mixed vector/fog/mask/sprite operations flush pending triangles and use the
-original path. Display-object ordering, filters, alpha, camera and resolution are
-unchanged; no rasterization, reduced resolution or reduced animation cadence.
+- Projected-geometry cache: slower, around56→42FPS in one hardware3D comparison.
+- Retained triangle layers:198 layer redraws skipped in the server fixture, but
+  average3D cadence10.06→9.80FPS. Texture snapshots/comparison added overhead.
+- Vector grid without per-cell caches: slower on server and hardware.
+- Explicit WebGPU/WGPU/WebGL selection: no reliable overall win; default Ruffle
+  selection remains. This server's WebGPU also failed mapped-buffer allocation.
+- Reduced subdivision and native UVT bypass: rejected quality compromises. Original
+  fixed subdivision remains essential; see [Ruffle audit](RUFFLE_RENDERING.md).
 
-The probe checks exact pixels, live texture mutation, camera-coordinate changes,
-mixed-operation fallback and empty-layer clearing before each measured variant.
-`layersReused`/`layersRedrawn` quantify whether a scene benefits. A zero reuse count
-means this optimization did not engage; higher FPS alone is insufficient evidence.
+The benchmark and optional profiler remain; rejected algorithms are not shipped.
+Historical variants can be recovered from experiment commits13dccf4/00a9d24.
 
-Results from this ARM server use SwiftShader software graphics and are diagnostic;
-repeat on a normal hardware-accelerated browser before choosing a default.
+## Profile findings
 
-Additional options: **Grille en un calque** caches the complete cells layer while
-keeping the original per-cell caches; **Grille vectorielle** disables per-cell
-caches. They use separate diagnostic SWFs and leave production `FieldView` intact.
-The3D-reuse counter does not count native grid bitmap caches.
-[CPU/GPU profiles, grid comparisons and profiling commands](BROWSER_BOTTLENECKS.md).
+ARM64 four-core server, Chromium156/SwiftShader,638×373/DPR1: GPU-process CPU
+accounted for85–94% of measured Chrome CPU across scenes. This is software graphics
+CPU, not physical GPU utilization. Menu traces showed990 command-buffer waits
+(2.60s in5.39s). Native-call wall samples can include blocking; nested traces overlap.
+Timeline processing was a secondary candidate (22.5% of renderer wall samples
+in3D,28.2% in cutscenes), not a demonstrated safe optimization.
 
-Runtime data is copied out of its iframe before unloading. Audio contexts are
-closed and the player removed between cases; iframe navigation is generation-gated
-so readiness from the previous run cannot satisfy the next run. Visibility or
-viewport/DPR changes stop the comparison. Unsupported/failed cases are listed,
-excluded from aggregates, and do not silently become successful measurements.
-The production100ms slow-frame clock clamp remains enabled: under severe load,
-scene progression can slow down. Sampling windows use wall time and the fixed
-route/position evidence is retained; results are not a pixel-identical timedemo.
-
-## Host measurement —2026-10-31
-
-ARM64, four cores, Chromium156, wgpu-webgl/SwiftShader,638×373 CSS pixels, DPR1; high quality,60FPS target. One preliminary pass; two repetitions per option, A–B–B–A;5s menu/orders/3D sampling and1s warmup. Three original fullscreen sequences sampled in full.
-
-| Scene | Option | Event FPS | Mean ms | P95 ms | P99 ms | N |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| menu | baseline | 11.51 | 86.9 | 257 | 531 | 114 |
-| orders | baseline | 4.68 | 213.6 | 388 | 394 | 45 |
-| stadium | baseline | 10.06 | 99.4 | 186 | 237 | 99 |
-| cinematics | baseline | 6.79 | 147.2 | 269 | 394 | 149 |
-| menu | layers | 11.47 | 87.2 | 405 | 441 | 113 |
-| orders | layers | 4.63 | 215.9 | 406 | 514 | 45 |
-| stadium | layers | 9.80 | 102.1 | 183 | 234 | 97 |
-| cinematics | layers | 6.93 | 144.3 | 212 | 367 | 148 |
-
-All four measured runs passed texture/pixel checks, ten-actor movement evidence, audio verification, original cutscene completion, ResolutionDone and next field. Retention reused198 layers during3D sampling and4 during cutscenes. It avoided the repeated affine draws, but did not demonstrate an average FPS gain. Leave disabled. Two repetitions and software graphics do not establish hardware-browser performance or statistical significance. No screenshot/video capture occurred during sampled phases. One screenshot was taken during unmeasured completion of the preliminary pass.
+Profiler outputs `.cpuprofile`, optional `.trace.json`, `profiles.json` and
+`benchmark.json` under `.local/browser-profiling`. `cpuWallSeconds` excludes trace
+file IO; multithreaded CPU seconds may exceed wall time. Tracing changes execution
+cost: use separate unprofiled runs for performance comparisons. Software results
+must not be extrapolated to hardware GPUs. Raw local captures remain ignored.
