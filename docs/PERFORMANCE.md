@@ -174,3 +174,16 @@ External caches retain scripts, build hashes, SQLite, raw samples and recordings
 
 Test runtimes/backend stopped; disposable Android OS data/images removed.
 Logs/DBs contain local sessions; redact before publishing.
+
+## Missing stadium music
+
+`SoundComp` retries a failed stadium tactical/resolution MP3 with the numbered
+Cania loop, preserving its URL prefix and query. Example: `mexico_tactique_02.mp3`
+falls back to `music_tactic_loop_02.mp3`. Unnumbered tracks use01; indices above04
+wrap across the four available loops. Original tracks are always tried first.
+Default loops and nonmusic sounds never retry. Pending playback/loop counts are
+preserved; a stopped or closed sound is not restarted by a later load failure.
+
+```sh
+bun test tests/music_fallback.test.js
+```
