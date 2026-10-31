@@ -227,6 +227,10 @@ def startup_source(source, config, android=False, server_url=None):
         raise ConfigError("Startup patch layout changed; review configuration injection")
     source = source.replace(marker, helper + marker, 1)
     statements = ["rules.classAttributes = attributes;"]
+    simulation = config['rules']['simulation']
+    statements.extend([f"Rules.passBaseRange = {simulation['ball']['base_range']};",
+                       f"Rules.passAirRangeModifier = {simulation['actions']['element_effects']['air']['range_modifier']};",
+                       f"Rules.passRangeMultiplier = {simulation['ball'].get('range_multiplier', 1)};"])
     match = config["rules"]["match"]
     statements.extend([f"rules.maxBoufbowlerCountPerRole = {match['max_players_per_role']};",
                        f"rules.placementDuration = {match['placement_seconds']};",

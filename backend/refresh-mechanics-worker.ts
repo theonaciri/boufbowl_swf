@@ -3,7 +3,7 @@
  * if the retained bundle layout changes. CPU overlays are refreshed separately.
  */
 import {resolve} from "node:path";
-import {guardContactThrows,rulebookOverlay} from "./simulator/overlays";
+import {guardContactThrows,rulebookOverlay,passRangeOverlay} from "./simulator/overlays";
 const root = import.meta.dir, file = resolve(root, "build/engine.js");
 const transpiler = new Bun.Transpiler({loader: "ts", target: "bun"});
 let bundle = await Bun.file(file).text();
@@ -28,6 +28,7 @@ const shared = transpiler.transformSync(strip(await Bun.file(resolve(root,"simul
 const risk = transpiler.transformSync(strip(await Bun.file(resolve(root,"movement-risk.ts")).text())).replace(/^export /gm, "");
 bundle = bundle.slice(0,riskStart)+rulebookMarker+"\n"+shared+"\n"+movementMarker+"\n"+risk+"\n"+bundle.slice(riskEnd);
 bundle = guardContactThrows(bundle);
+bundle = passRangeOverlay('rules',passRangeOverlay('turnTick',bundle));
 bundle = rulebookOverlay("turnTick",rulebookOverlay("engine",bundle));
 const anchor = 'result.simulation_version += "+movement-risk-1";';
 if (!bundle.includes(anchor)) throw new Error("Retained worker version boundary changed");
@@ -42,6 +43,8 @@ if (bundle.includes(suffix)) {
 } else bundle = bundle.replace(anchor, anchor + "\n    " + versionStatement);
 const bookVersion = 'if (cfg.rulebook) result.simulation_version += "+rulebook:" + cfg.rulebook.id;';
 if (!bundle.includes(bookVersion)) bundle = bundle.replace(suffix,suffix+"\n    "+bookVersion);
+const rangeVersion = 'if (cfg.ball.range_multiplier !== undefined || cfg.ball.attempt_out_of_range) result.simulation_version += "+pass-range-1";';
+if (!bundle.includes(rangeVersion)) bundle = bundle.replace(bookVersion,bookVersion+"\n    "+rangeVersion);
 // Syntax validation happens before touching the retained runtime artifact.
 new Bun.Transpiler({loader: "js", target: "bun"}).transformSync(bundle);
 await Bun.write(file, bundle);

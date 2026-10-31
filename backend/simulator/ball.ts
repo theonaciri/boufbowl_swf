@@ -6,7 +6,7 @@ import type {
   BallFlight,
 } from "../types";
 import { hexDistance, hexRound } from "../hex";
-import { canThrow, canPickup, throwInRange } from "../rules";
+import { canThrow, canPickup, maxThrowRange } from "../rules";
 import type { DeterministicRNG } from "../rng";
 import { fixed, fractional, withinRadius, distanceSquared, SCALE } from "./movement";
 import type { MovementTable } from "./movement";
@@ -74,7 +74,8 @@ export function resolveThrows(
       !e ||
       !active(e) ||
       state.ball.holder_entity_id !== e.id ||
-      !canThrow(e.elements)
+      !canThrow(e.elements) ||
+      tick < (action.params.release_tick ?? 0)
     )
       continue;
     const targetEntity = state.entities.find(
@@ -83,10 +84,27 @@ export function resolveThrows(
     const start = fractional(point(e));
     const throwingCfg = {...cfg,ball:{...cfg.ball,throw_speed_cells_per_sec:rulebookThrowSpeed(cfg,e.elements)}};
     const predicted = targetEntity ? targetedThrow(throwingCfg, start, targetEntity, movements?.get(targetEntity.id)) : undefined;
-    const target = predicted?.target ?? action.params.target_position;
-    if (!target || !throwInRange({...cfg, ball: {...cfg.ball, base_range: cfg.ball.base_range + ((e as any).range_bonus ?? 0)}}, start, target, e.elements)) continue;
+    const intendedTarget = predicted?.target ?? action.params.target_position;
+    if (!intendedTarget) continue;
+    const range = maxThrowRange(cfg,e.elements) + ((e as any).range_bonus ?? 0);
+    const intendedDistance = hexDistance(start,intendedTarget);
+    const rangeLimited = intendedDistance > range;
+    if (rangeLimited && !(cfg.ball as any).attempt_out_of_range) continue;
+    let target = intendedTarget;
+    if (rangeLimited) {
+      let reach = Math.max(0,range);
+      target = hexRound({q:start.q+(intendedTarget.q-start.q)*reach/intendedDistance,
+                         r:start.r+(intendedTarget.r-start.r)*reach/intendedDistance});
+      // Rounding to a ground cell can exceed a fractional range. Step inward
+      // before rounding again; the flight must never gain range from rounding.
+      if (hexDistance(start,target)>range) {
+        reach = Math.max(0,reach-1);
+        target = hexRound({q:start.q+(intendedTarget.q-start.q)*reach/intendedDistance,
+                           r:start.r+(intendedTarget.r-start.r)*reach/intendedDistance});
+      }
+    }
     const distance = hexDistance(start, target);
-    const landTick = tick + (predicted?.flightTicks ?? Math.max(1, Math.ceil(
+    const landTick = tick + ((!rangeLimited && predicted?.flightTicks) || Math.max(1, Math.ceil(
       distance / throwingCfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds,
     )));
     let distances=throwDistances.get(state);
@@ -111,8 +129,11 @@ export function resolveThrows(
         distance * cfg.simulation.distance_penalty,
     );
     const test = rollRulebookManeuver(cfg,e,precision,rng,'throw');
+    const accurate = test.success;
+    // An accurate underthrow is an ordinary miss, not a critical fumble.
+    if (rangeLimited && test.success) {test.success=false;test.tier='normal';}
     const success = test.success;
-    const landing = hexRound(!success && (cfg as any).rulebook?.passing?.scatter_failures
+    const landing = hexRound(!accurate && (cfg as any).rulebook?.passing?.scatter_failures
       ? rulebookScatter(start,target,rng.nextFloat()) : target);
     events.push({
       tick,
@@ -125,6 +146,7 @@ export function resolveThrows(
         success,
         precision:test.probability ?? precision,
         ...((cfg as any).rulebook?.maneuvers ? test : {}),
+        ...(rangeLimited ? {range_limited:true,max_range:range,intended_target_position:intendedTarget} : {}),
         land_tick: landTick,
         arc_height: cfg.ball.arc_height_cells,
       },

@@ -44,6 +44,7 @@ for await (const line of createInterface({ input: process.stdin })) {
     if (cfg.ball.interception_uses_fire_stat || cfg.ball.require_arrival_before_turn_end || cfg.ball.contact_cancels_pending_throw ||
         Object.values(cfg.abilities ?? {}).some((r: any) => r.redirect_enemy_heal)) result.simulation_version += "+forum-semantics-2012-1";
     if (cfg.rulebook) result.simulation_version += "+rulebook:" + cfg.rulebook.id;
+    if (cfg.ball.range_multiplier !== undefined || cfg.ball.attempt_out_of_range) result.simulation_version += "+pass-range-1";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + "\n");
   } catch (error) {
     process.stdout.write(JSON.stringify({ ok: false, error: String(error) }) + "\n");

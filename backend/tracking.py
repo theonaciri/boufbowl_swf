@@ -71,8 +71,12 @@ def init_schema(db):
           day TEXT NOT NULL,kind TEXT NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL DEFAULT 0,
           duration_seconds REAL NOT NULL DEFAULT 0,PRIMARY KEY(day,kind,name));
         CREATE INDEX IF NOT EXISTS website_analytics_day ON website_analytics(day,kind);
+        CREATE TABLE IF NOT EXISTS website_analytics_minute(
+          minute INTEGER NOT NULL,kind TEXT NOT NULL,name TEXT NOT NULL,count INTEGER NOT NULL DEFAULT 0,
+          duration_seconds REAL NOT NULL DEFAULT 0,PRIMARY KEY(minute,kind,name));
     ''')
 
+    db.execute("INSERT OR IGNORE INTO tracking_meta VALUES('website_minute_started', ?)", (str(time.time()),))
     game_measurements.init_schema(db)
 
 
@@ -246,7 +250,7 @@ class Tracking:
         return {'ok': True, 'accepted': len(accepted)}
 
     def _website_event(self, kind, name, duration=0.0):
-        key = (day_at(time.time()), kind, name)
+        key = (int(time.time() // 60), kind, name)
         with self.lock:
             row = self.website_rows.setdefault(key, [0, 0.0])
             row[0] += 1
@@ -363,15 +367,18 @@ class Tracking:
                 for minute, row in self.samples.items():
                     db.execute('''INSERT INTO tracking_samples VALUES(?,?,?,?,?) ON CONFLICT(minute) DO UPDATE SET
                       online=MAX(online,excluded.online),active_matches=MAX(active_matches,excluded.active_matches),queued=MAX(queued,excluded.queued)''', (minute, *row))
-                for (day, kind, name), row in self.website_rows.items():
+                for (minute, kind, name), row in self.website_rows.items():
                     db.execute('''INSERT INTO website_analytics VALUES(?,?,?,?,?) ON CONFLICT(day,kind,name) DO UPDATE SET
                       count=count+excluded.count,duration_seconds=duration_seconds+excluded.duration_seconds''',
-                               (day, kind, name, *row))
+                               (day_at(minute * 60), kind, name, *row))
+                    db.execute('''INSERT INTO website_analytics_minute VALUES(?,?,?,?,?) ON CONFLICT(minute,kind,name) DO UPDATE SET
+                      count=count+excluded.count,duration_seconds=duration_seconds+excluded.duration_seconds''', (minute, kind, name, *row))
                 db.execute("INSERT OR REPLACE INTO tracking_meta VALUES('runtime',?)", (json.dumps(self.resources()),))
                 db.execute('DELETE FROM tracking_receipts WHERE created<?', (time.time() - 7 * 86400,))
                 db.execute('DELETE FROM game_frame_measurements WHERE day<?', (day_at(time.time() - 400 * 86400),))
                 db.execute('DELETE FROM game_turn_measurements WHERE day<?', (day_at(time.time() - 400 * 86400),))
                 db.execute('DELETE FROM website_analytics WHERE day<?', (day_at(time.time() - 400 * 86400),))
+                db.execute('DELETE FROM website_analytics_minute WHERE minute<?', (int(time.time() // 60) - 2 * 1440,))
             self.activity_rows.clear(); self.visits.clear(); self.clients.clear()
             self.performance.clear(); self.errors.clear(); self.samples.clear()
             self.website_rows.clear()
@@ -539,15 +546,23 @@ def metrics_report(store, days=30):
             'resources': json.loads(meta['runtime']) if 'runtime' in meta else None}
 
 
-def website_metrics_report(store, days=30):
+def website_metrics_report(store, days=30, hours=None):
     if type(days) is not int or not 1 <= days <= 365:
         raise ValueError('Choose between one and 365 days')
+    if hours is not None and (type(hours) is not int or hours not in (1,24)):
+        raise ValueError('Choose one or 24 hours')
     now = time.time()
     today = datetime.fromtimestamp(now, timezone.utc).date()
     start = (today - timedelta(days=days - 1)).isoformat()
-    rows = [dict(row) for row in store.db.execute('''SELECT kind,name,SUM(count) AS count,
-        ROUND(SUM(duration_seconds),1) AS duration_seconds FROM website_analytics WHERE day>=?
-        GROUP BY kind,name ORDER BY count DESC,name''', (start,))]
+    if hours is None:
+        table, column, lower = 'website_analytics', 'day', start
+        coverage_start = None
+    else:
+        table, column, lower = 'website_analytics_minute', 'minute', int((now-hours*3600)//60)
+        coverage_start = float(store.db.execute("SELECT value FROM tracking_meta WHERE key='website_minute_started'").fetchone()[0])
+    rows = [dict(row) for row in store.db.execute(f'''SELECT kind,name,SUM(count) AS count,
+        ROUND(SUM(duration_seconds),1) AS duration_seconds FROM {table} WHERE {column}>=?
+        GROUP BY kind,name ORDER BY count DESC,name''', (lower,))]
     by_kind = {}
     for kind in ('section_view', 'section_time', 'class_interest', 'character_interest',
                  'download_click', 'web_click', 'asset_request'):
@@ -559,7 +574,7 @@ def website_metrics_report(store, days=30):
         section = sections.setdefault(row['name'], {'name': row['name'], 'views': 0, 'seconds': 0.0})
         section['seconds'] = row['duration_seconds'] or 0.0
     sections = sorted(sections.values(), key=lambda row: (-row['views'], -row['seconds'], row['name']))
-    return {'ok': True, 'generated_at': now, 'period': {'days': days, 'since': start, 'timezone': 'UTC'},
+    return {'ok': True, 'generated_at': now, 'period': {'days': days, 'hours': hours, 'since': start if hours is None else lower * 60, 'minute_coverage_started_at': coverage_start, 'timezone': 'UTC'},
             'coverage': 'Aggregate events only; no visitor or client identifier is stored. Asset requests are server-observed; browser-cached assets do not generate a request.',
             'sections': sections, 'classes': by_kind['class_interest'], 'characters': by_kind['character_interest'],
             'downloads': by_kind['download_click'], 'web': by_kind['web_click'],

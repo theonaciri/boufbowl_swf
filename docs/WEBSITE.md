@@ -25,7 +25,11 @@ browser presets remain startup defaults. Android defaults to
 including the quick command. Values/stadium overrides come from
 `resources/game_config.json`; fidelity statuses come from `resources/rulebook.json`.
 French explanations live in `tools/website/rules-data.json`; untranslated cases
-or unresolved questions stop the build. The page needs no browser JavaScript.
+or unresolved questions stop the build. The text and formulas work without JavaScript.
+Collapsed calculators add pass/catch/interception, pickup, movement, stun and
+combat curves. `rules-calculators.js` uses coefficients embedded at build time;
+its sliders change examples only. No game rebuild or saved browser settings are
+needed to refresh the page. Check with `bun test tools/website/rules-calculators.test.mjs`.
 
 After installing the [system prerequisites](BUILD.md#tools-and-inputs), run:
 

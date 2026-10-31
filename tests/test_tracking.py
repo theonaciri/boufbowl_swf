@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 from backend.service import Service
 from backend.storage import ServiceError, Store
-from backend.tracking import day_at, metrics_report
+from backend.tracking import day_at, metrics_report, website_metrics_report
 from tests import test_backend as helpers
 
 
@@ -23,6 +23,19 @@ class TrackingTests(unittest.TestCase):
     protocol = helpers.BackendTests.protocol
     start = helpers.BackendTests.start
     identity = helpers.BackendTests.identity
+
+    def test_website_short_periods_use_minute_aggregates_without_inventing_old_history(self):
+        now=time.time()
+        tracker=self.service.tracking
+        for age in (30, 7200, 90000):
+            with patch('backend.tracking.time.time', return_value=now-age):
+                tracker._website_event('section_view','hero')
+        tracker.flush(force=True)
+        self.assertEqual(website_metrics_report(self.service.store, hours=1)['sections'][0]['views'],1)
+        self.assertEqual(website_metrics_report(self.service.store, hours=24)['sections'][0]['views'],2)
+        self.assertEqual(website_metrics_report(self.service.store, days=7)['sections'][0]['views'],3)
+        self.assertIsNotNone(website_metrics_report(self.service.store, hours=1)['period']['minute_coverage_started_at'])
+        with self.assertRaises(ValueError): website_metrics_report(self.service.store, hours=2)
 
     def admin(self):
         with self.service.store.transaction():

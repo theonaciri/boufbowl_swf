@@ -61,6 +61,10 @@ class GameConfigTests(unittest.TestCase):
     def test_boolean_cannot_be_used_as_a_turn_count(self):
         self.assert_invalid(lambda c: c["rules"]["match"].update({"turns_per_match": True}))
 
+    def test_pass_range_settings_are_validated_at_config_boundary(self):
+        self.assert_invalid(lambda c: c['rules']['simulation']['ball'].update(range_multiplier=0))
+        self.assert_invalid(lambda c: c['rules']['simulation']['ball'].update(attempt_out_of_range='yes'))
+
     def test_desktop_and_android_generate_custom_classes_and_stadiums(self):
         config = load_config()
         config["rules"]["classes"]["overrides"]["IOP"].update({"earth": 19, "role": 1})
@@ -70,6 +74,9 @@ class GameConfigTests(unittest.TestCase):
             self.assertIn("if(classId == 6) return new BoufbowlerAttributesModel(19,8,9,8,16,3);", generated)
             self.assertIn("rules.setMaxTurnDuration(6,14);", generated)
             self.assertIn("rules.setClassOrderUseByMatch(6,2);", generated)
+            self.assertIn("Rules.passBaseRange = 7;", generated)
+            self.assertIn("Rules.passAirRangeModifier = 1;", generated)
+            self.assertIn("Rules.passRangeMultiplier = 1.3;", generated)
             enabled = next(line for line in generated.splitlines() if ") stadiums.addItem" in line)
             self.assertNotIn("i == 3", enabled)
             self.assertNotIn("new BoufbowlerAttributesModel(12,10,10,10,16,3)))", generated)

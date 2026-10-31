@@ -146,8 +146,8 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
   const carrier=available.find((e: any)=>e.id===world.ball.holder_entity_id);
   const enemyCarrier=enemies.find((e: any)=>e.id===world.ball.holder_entity_id);
   let strategy='recover',pass: any=null;
-  function projectPass(thrower: Run,receiver: Run): any {
-    const range=cfg.ball.base_range+thrower.elements.AIR*cfg.actions.element_effects.air.range_modifier;
+  function projectPass(thrower: Run,receiver: Run,rangeMultiplier: number): any {
+    const range=(cfg.ball.base_range+thrower.elements.AIR*cfg.actions.element_effects.air.range_modifier)*rangeMultiplier;
     const ballStep=rulebookThrowSpeed(cfg,thrower.elements)*dt;
     for (let release=cfg.simulation.throw_delay_ticks;release<cfg.tick_system.max_ticks_per_turn;release++) {
       const origin=position(thrower,(release+1)*dt);
@@ -216,11 +216,16 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
           -cpuDistance(r.target,receiver.position)*3-pressure(carrier,e,r.target)*6-r.risk*40));
         for (const r of receptionRuns) for (const launch of [...launches,...towardsReceiver]) {
           if (cpuDistance(launch.target,r.target)<1) continue;
-          const flight=projectPass(launch,r);
-          if (!flight) continue;
-          const value=flight.chance*(terminal(r,carrier.position,flight.arrival)+36)-36-1.5+
-            Math.max(0,personality.passing-24)*.08;
-          if (value>best+.5) {best=value;chosen=launch;chosenReceiver=r;pass={...flight,thrower:carrier.id,receiver:receiver.id};}
+          // Keep the later, shorter passing window as a candidate alongside
+          // the newly available long pass. Extra range must not erase it.
+          const extendedRange=cfg.ball.range_multiplier ?? 1;
+          for (const rangeMultiplier of new Set([Math.min(1,extendedRange),extendedRange])) {
+            const flight=projectPass(launch,r,rangeMultiplier);
+            if (!flight) continue;
+            const value=flight.chance*(terminal(r,carrier.position,flight.arrival)+36)-36-1.5+
+              Math.max(0,personality.passing-24)*.08;
+            if (value>best+.5) {best=value;chosen=launch;chosenReceiver=r;pass={...flight,thrower:carrier.id,receiver:receiver.id};}
+          }
         }
       }
     }
@@ -264,7 +269,7 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
     for (const receiver of enemies.filter((e: any)=>e.id!==enemyCarrier.id)) {
       const gain=-direction*(cpuColumn(receiver.position)-cpuColumn(enemyCarrier.position));
       const d=cpuDistance(enemyCarrier.position,receiver.position);
-      if (d>cfg.ball.base_range+2*cfg.actions.element_effects.air.range_modifier || d<2) continue;
+      if (d>(cfg.ball.base_range+2*cfg.actions.element_effects.air.range_modifier)*(cfg.ball.range_multiplier ?? 1) || d<2) continue;
       const value=6+Math.max(0,gain)*2+receiver.stats.precision*.25;
       // Cover the fastest legal flight; opposing allocations remain private.
       const ticks=Math.max(1,Math.ceil(d/(rulebookThrowSpeed(cfg,{AIR:3})*dt)));
@@ -330,7 +335,8 @@ export function prepareCPUOrder(cfg: any, world: any, order: any, settings: any 
     if (!run) {actions.push({entity_id:actor.id,action_type:'wait',params:{elements:{...water}}});continue;}
     const moving=cpuDistance(actor.position,run.target)>0;
     actions.push({entity_id:actor.id,action_type:moving?'move':'wait',params:{elements:{...run.elements},...(moving?{target_position:run.target}:{})}});
-    if (pass?.thrower===actor.id) actions.push({entity_id:actor.id,action_type:'throw',params:{elements:{...run.elements},target_entity_id:pass.receiver}});
+    if (pass?.thrower===actor.id) actions.push({entity_id:actor.id,action_type:'throw',params:{elements:{...run.elements},target_entity_id:pass.receiver,
+      ...(cfg.ball.attempt_out_of_range?{release_tick:pass.release_tick}:{})}});
   }
   return {...order,actions,cpu_plan:{version:2,strategy,roles,protected_ids:[...protectedIds],
     ...(pass?{pass:{thrower:pass.thrower,receiver:pass.receiver,release_tick:pass.release_tick,land_tick:pass.land_tick,

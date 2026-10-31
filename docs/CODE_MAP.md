@@ -22,6 +22,7 @@ Start at the relevant entry point; read dependencies only as needed.
 | Recovered server rules | `resources/rulebook.json` → `backend/rulebook.py` / `Service` → maintained `backend/simulator` resolvers → retained worker | `test_rulebook.py`, `rulebook.test.ts`, `test_recovered_rules.py`, CPU checks; [rulebook](RULEBOOK.md), [choices](RULEBOOK_CHOICES.md) |
 | CPU roster/appearance | `backend/service.py` → `backend/cpu_team.py` | `test_backend.py` |
 | Goal zones and scoring | `resources/game_config.json` → `backend/simulator/ball.ts` → `turn_adapter.py`; CPU uses the same line | `test_gameplay_fixes.py`, `verify_client --area cpu`; [geometry](GOAL_ZONES.md) |
+| Pass range / selection outline | `game_config.json` → simulator `ball.ts` / range overlays → client `Rules` → `FieldMediator` / `FieldView` | `test_ball_attempts.py`, CPU checks; [behavior](PASS_RANGE.md) |
 | Resolution ordering | `backend/turn_adapter.py` → `ScriptBuilder.as`, interaction builders → `ScriptRunner` | resolution-flow tests + 3D fixture |
 | Original 3D effects | `turn_adapter.py` → interaction family, movement, modifiers, stun timing → `HitAndRunFunction.as` / original interaction scripts | [effects and unresolved grading](RESOLUTION_EFFECTS.md) |
 | Scene updates | `ResolutionMediator.as` → `SceneController.as` → UI, scripts, model | shared smoke + ResolutionDone/MATCH_END |

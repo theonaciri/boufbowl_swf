@@ -18,6 +18,7 @@ package com.ankamagames.boufbowl.client.application.controller
    import com.ankamagames.boufbowl.client.login.model.AccountInformations;
    import com.ankamagames.boufbowl.client.match.strategic.model.BoufbowlerAttributesModel;
    import com.ankamagames.boufbowl.client.match.strategic.model.RulesConstants;
+   import com.ankamagames.boufbowl.client.match.strategic.model.Rules;
    import com.ankamagames.boufbowl.client.matchmaking.model.MatchCreationModel;
    import com.ankamagames.boufbowl.client.network.LobbyMessageHandler;
    import com.ankamagames.boufbowl.client.premiumservice.common.model.PremiumContentModel;

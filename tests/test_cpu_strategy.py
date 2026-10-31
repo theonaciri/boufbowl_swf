@@ -90,6 +90,8 @@ class CPUStrategyTests(unittest.TestCase):
         thrown = next(e for e in response['result']['events'] if e['type']=='throw')
         caught = next(e for e in response['result']['events'] if e['type']=='catch')
         self.assertGreater(thrown['tick'], 1)
+        self.assertGreaterEqual(thrown['tick'], response['orders'][0]['cpu_plan']['pass']['release_tick'])
+        self.assertNotIn('range_limited', thrown['params'])
         self.assertNotEqual(thrown['params']['start_position'], world['entities'][0]['position'])
         self.assertEqual(caught['actor'], 12)
         self.assertIn('goal', [e['type'] for e in response['result']['events']])

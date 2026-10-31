@@ -47,6 +47,8 @@ package com.ankamagames.boufbowl.client.match.strategic.view.field
 
       private var _cellsLayer:Sprite;
 
+      private var _passRangeLayer:Sprite;
+
       private var _boufbowlersLayer:Sprite;
 
       private var _ballLayer:Sprite;
@@ -265,6 +267,38 @@ package com.ankamagames.boufbowl.client.match.strategic.view.field
          }
       }
 
+      public function clearPassRangeOutline() : void
+      {
+         this._passRangeLayer.graphics.clear();
+      }
+
+      public function setPassRangeOutline(grid:GridModel, origin:HexPoint, maximum:Number) : void
+      {
+         this.clearPassRangeOutline();
+         var directions:Array = [[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+         var width:Number = CellSpriteView.CELL_WIDTH;
+         var height:Number = CellSpriteView.CELL_HEIGHT;
+         var corners:Array = [[0,-height/2],[width/2,-height/4],[width/2,height/4],
+                              [0,height/2],[-width/2,height/4],[-width/2,-height/4]];
+         this._passRangeLayer.graphics.lineStyle(2,0x000000,1);
+         var cells:IIterator = grid.getCellsIterator();
+         while(cells.hasNext())
+         {
+            var cell:CellModel = cells.getNext();
+            if(origin.getDistance(cell.position) > maximum) continue;
+            var center:Point2 = this._gridViewCoordConverter.viewPointFromGridPoint(cell.position);
+            for(var edge:int = 0; edge < 6; edge++)
+            {
+               var neighbor:HexPoint = new HexPoint(cell.position.x+directions[edge][0],cell.position.y+directions[edge][1]);
+               if(grid.hasCell(neighbor) && origin.getDistance(neighbor) <= maximum) continue;
+               var from:Array = corners[(edge+1)%6];
+               var to:Array = corners[(edge+2)%6];
+               this._passRangeLayer.graphics.moveTo(center.x+from[0],center.y+from[1]);
+               this._passRangeLayer.graphics.lineTo(center.x+to[0],center.y+to[1]);
+            }
+         }
+      }
+
       private function init(param1:GridModel) : void
       {
          this.initLayers();
@@ -282,6 +316,9 @@ package com.ankamagames.boufbowl.client.match.strategic.view.field
          this._cellsLayer.mouseChildren = false;
          // Cache the complete grid in browser runtimes; child changes invalidate it.
          this._cellsLayer.cacheAsBitmap = Capabilities.playerType == "PlugIn";
+         this._passRangeLayer = new Sprite();
+         this._passRangeLayer.mouseEnabled = false;
+         this._passRangeLayer.mouseChildren = false;
          this._boufbowlersLayer = new Sprite();
          this._boufbowlersLayer.mouseEnabled = false;
          this._ballLayer = new Sprite();
@@ -305,6 +342,7 @@ package com.ankamagames.boufbowl.client.match.strategic.view.field
          this._opponentClassOrderIndicatorLayer.visible = false;
          this._opponentClassOrderIndicatorLayer.mouseEnabled = false;
          addChild(this._cellsLayer);
+         addChild(this._passRangeLayer);
          addChild(this._boufbowlersLayer);
          addChild(this._ballLayer);
          addChild(this._directionArrowsLayer);

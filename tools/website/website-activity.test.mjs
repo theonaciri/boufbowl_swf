@@ -16,7 +16,7 @@ test("website activity keeps aggregate metrics distinct and charts accessible", 
         classes: [{ name: "Crâ", count: 7 }], characters: [{ name: "Aria", count: 4 }],
         downloads: [{ name: "Android", count: 5 }], web: [{ name: "Navigateur", count: 2 }], asset_requests: [],
       };
-      window.AdminConsole = { $: id => document.getElementById(id), api: async () => fixture, autoRefresh: () => {}, init: callback => { document.getElementById("console-main").hidden = false; callback(fixture); } };
+      window.requests = []; window.AdminConsole = { $: id => document.getElementById(id), api: async (action, body) => { window.requests.push(body); return { ...fixture, period: { hours: body.hours, minute_coverage_started_at: 1700000000 } }; }, autoRefresh: () => {}, init: callback => { document.getElementById("console-main").hidden = false; callback(fixture); } };
     });
     await page.addScriptTag({ path: "website-activity.js" });
     expect(await page.locator("#website-stats strong").allTextContents()).toEqual(["15", "5", "2"]);
@@ -29,6 +29,11 @@ test("website activity keeps aggregate metrics distinct and charts accessible", 
     await page.selectOption("#website-interest-kind", "characters");
     expect(await page.locator("#website-interest-bars").textContent()).toContain("Aria");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.selectOption("#website-days", "hour");
+    expect(await page.evaluate(() => window.requests.at(-1))).toEqual({ hours: 1 });
+    expect(await page.locator("#website-coverage").textContent()).toContain("données antérieures");
+    await page.selectOption("#website-days", "day");
+    expect(await page.evaluate(() => window.requests.at(-1))).toEqual({ hours: 24 });
     await page.locator("#website-refresh").click();
     expect(await page.locator("#website-status").textContent()).toBe("");
   } finally { await browser.close(); }

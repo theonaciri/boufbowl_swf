@@ -143,7 +143,7 @@
     "C17": [
       "Un étourdissement peut finir pendant le tour",
       "L’étourdissement est temporaire. Un receveur peut récupérer avant l’arrivée d’une passe. La caractéristique Eau réduit sa durée.",
-      "Durée actuelle : {stunFormula}. Cette courbe est provisoire. Être étourdi, au sol, protégé ou à zéro PV sont des états distincts."
+      "La caractéristique Eau réduit la durée de l’étourdissement. Le calcul actuel, détaillé dans le volet interactif, reste provisoire. Être étourdi, au sol, protégé ou à zéro PV sont des états distincts."
     ],
     "C18": [
       "Écaflip et le soin adverse",

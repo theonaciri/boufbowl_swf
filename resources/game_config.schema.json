@@ -1215,6 +1215,13 @@
                 },
                 "contact_cancels_pending_throw": {
                   "type": "boolean"
+                },
+                "range_multiplier": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "attempt_out_of_range": {
+                  "type": "boolean"
                 }
               },
               "additionalProperties": false,
@@ -1723,6 +1730,13 @@
                         },
                         "contact_cancels_pending_throw": {
                           "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -2142,6 +2156,13 @@
                           "type": "boolean"
                         },
                         "contact_cancels_pending_throw": {
+                          "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
                           "type": "boolean"
                         }
                       },
@@ -2563,6 +2584,13 @@
                         },
                         "contact_cancels_pending_throw": {
                           "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -2982,6 +3010,13 @@
                           "type": "boolean"
                         },
                         "contact_cancels_pending_throw": {
+                          "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
                           "type": "boolean"
                         }
                       },
@@ -3403,6 +3438,13 @@
                         },
                         "contact_cancels_pending_throw": {
                           "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -3822,6 +3864,13 @@
                           "type": "boolean"
                         },
                         "contact_cancels_pending_throw": {
+                          "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
                           "type": "boolean"
                         }
                       },
@@ -4243,6 +4292,13 @@
                         },
                         "contact_cancels_pending_throw": {
                           "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -4663,6 +4719,13 @@
                         },
                         "contact_cancels_pending_throw": {
                           "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
+                          "type": "boolean"
                         }
                       },
                       "additionalProperties": false
@@ -5082,6 +5145,13 @@
                           "type": "boolean"
                         },
                         "contact_cancels_pending_throw": {
+                          "type": "boolean"
+                        },
+                        "range_multiplier": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "attempt_out_of_range": {
                           "type": "boolean"
                         }
                       },

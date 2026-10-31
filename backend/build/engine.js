@@ -380,7 +380,7 @@ function maxMovementDistance(cfg, elements) {
   return Math.max(1, d);
 }
 function maxThrowRange(cfg, elements) {
-  return cfg.ball.base_range + elements.AIR * cfg.actions.element_effects.air.range_modifier;
+  return (cfg.ball.base_range + elements.AIR * cfg.actions.element_effects.air.range_modifier) * (cfg.ball.range_multiplier ?? 1);
 }
 function canThrow(elements) {
   return elements.AIR >= 1;
@@ -863,12 +863,30 @@ function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movem
     if (action.action_type !== "throw" || consumed.has(action.entity_id))
       continue;
     const e = state.entities.find((e) => e.id === action.entity_id);
-    if (!e || !active(e) || state.ball.holder_entity_id !== e.id || !canThrow(e.elements))
+    if (!e || !active(e) || state.ball.holder_entity_id !== e.id || !canThrow(e.elements) || tick < (action.params.release_tick ?? 0))
       continue;
-    const targetEntity = state.entities.find((e) => e.id === action.params.target_entity_id), start = fractional(point(e)), throwingCfg = { ...cfg, ball: { ...cfg.ball, throw_speed_cells_per_sec: rulebookThrowSpeed(cfg, e.elements) } }, predicted = targetEntity ? targetedThrow(throwingCfg, start, targetEntity, movements?.get(targetEntity.id)) : void 0, target = predicted?.target ?? action.params.target_position;
-    if (!target || !throwInRange({ ...cfg, ball: { ...cfg.ball, base_range: cfg.ball.base_range + (e.range_bonus ?? 0) } }, start, target, e.elements))
+    const targetEntity = state.entities.find((e) => e.id === action.params.target_entity_id), start = fractional(point(e)), throwingCfg = { ...cfg, ball: { ...cfg.ball, throw_speed_cells_per_sec: rulebookThrowSpeed(cfg, e.elements) } }, predicted = targetEntity ? targetedThrow(throwingCfg, start, targetEntity, movements?.get(targetEntity.id)) : void 0, intendedTarget = predicted?.target ?? action.params.target_position;
+    if (!intendedTarget)
       continue;
-    const distance = hexDistance(start, target), landTick = tick + (predicted?.flightTicks ?? Math.max(1, Math.ceil(distance / throwingCfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds)));
+    const range = maxThrowRange(cfg, e.elements) + (e.range_bonus ?? 0), intendedDistance = hexDistance(start, intendedTarget), rangeLimited = intendedDistance > range;
+    if (rangeLimited && !cfg.ball.attempt_out_of_range)
+      continue;
+    let target = intendedTarget;
+    if (rangeLimited) {
+      let reach = Math.max(0, range);
+      target = hexRound({
+        q: start.q + (intendedTarget.q - start.q) * reach / intendedDistance,
+        r: start.r + (intendedTarget.r - start.r) * reach / intendedDistance
+      });
+      if (hexDistance(start, target) > range) {
+        reach = Math.max(0, reach - 1);
+        target = hexRound({
+          q: start.q + (intendedTarget.q - start.q) * reach / intendedDistance,
+          r: start.r + (intendedTarget.r - start.r) * reach / intendedDistance
+        });
+      }
+    }
+    const distance = hexDistance(start, target), landTick = tick + (!rangeLimited && predicted?.flightTicks || Math.max(1, Math.ceil(distance / throwingCfg.ball.throw_speed_cells_per_sec / cfg.tick_system.tick_dt_seconds)));
     let distances = throwDistances.get(state);
     if (!distances) {
       distances = new Map;
@@ -886,7 +904,12 @@ function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movem
     e.status.carrying_ball = !1;
     state.ball.holder_entity_id = null;
     state.ball.in_flight = !0;
-    const precision = clamp(cfg, cfg.simulation.throw_base + e.stats.precision * cfg.simulation.throw_stat + e.elements.AIR * cfg.probabilities.air_precision_per_action - distance * cfg.simulation.distance_penalty), test = rollRulebookManeuver(cfg, e, precision, rng, "throw"), success = test.success, landing = hexRound(!success && cfg.rulebook?.passing?.scatter_failures ? rulebookScatter(start, target, rng.nextFloat()) : target);
+    const precision = clamp(cfg, cfg.simulation.throw_base + e.stats.precision * cfg.simulation.throw_stat + e.elements.AIR * cfg.probabilities.air_precision_per_action - distance * cfg.simulation.distance_penalty), test = rollRulebookManeuver(cfg, e, precision, rng, "throw"), accurate = test.success;
+    if (rangeLimited && test.success) {
+      test.success = !1;
+      test.tier = "normal";
+    }
+    const success = test.success, landing = hexRound(!accurate && cfg.rulebook?.passing?.scatter_failures ? rulebookScatter(start, target, rng.nextFloat()) : target);
     events.push({
       tick,
       type: "throw",
@@ -898,6 +921,7 @@ function resolveThrows(cfg, state, actions, rng, tick, consumed = new Set, movem
         success,
         precision: test.probability ?? precision,
         ...cfg.rulebook?.maneuvers ? test : {},
+        ...rangeLimited ? { range_limited: !0, max_range: range, intended_target_position: intendedTarget } : {},
         land_tick: landTick,
         arc_height: cfg.ball.arc_height_cells
       }
@@ -1178,7 +1202,7 @@ function hasPendingWork(context, tick, steps, pausedThisTick) {
     const modernTargeting = !context.throwResolver || context.throwResolver === resolveThrows;
     const start = fractional(e.precise_position);
     const target = targetEntity ? modernTargeting ? targetedThrow(cfg, start, targetEntity, context.movements.get(targetEntity.id)).target : fractional(targetEntity.precise_position) : a.params.target_position;
-    const inRange = !!target && throwInRange(cfg, start, target, e.elements);
+    const inRange = !!target && (cfg.ball.attempt_out_of_range || throwInRange(cfg, start, target, e.elements));
     return inRange;
   });
   const pendingRevive = state.entities.some((e) => knockedAtStart.has(e.id) && e.hp > 0 && e.status.knocked_down && canRevive(cfg, e.elements) && tick < cfg.simulation.stand_up_ticks);
@@ -1821,8 +1845,8 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
   }
   const carrier = available.find((e) => e.id === world.ball.holder_entity_id), enemyCarrier = enemies.find((e) => e.id === world.ball.holder_entity_id);
   let strategy = "recover", pass = null;
-  function projectPass(thrower, receiver) {
-    const range = cfg.ball.base_range + thrower.elements.AIR * cfg.actions.element_effects.air.range_modifier, ballStep = rulebookThrowSpeed(cfg, thrower.elements) * dt;
+  function projectPass(thrower, receiver, rangeMultiplier) {
+    const range = (cfg.ball.base_range + thrower.elements.AIR * cfg.actions.element_effects.air.range_modifier) * rangeMultiplier, ballStep = rulebookThrowSpeed(cfg, thrower.elements) * dt;
     for (let release = cfg.simulation.throw_delay_ticks;release < cfg.tick_system.max_ticks_per_turn; release++) {
       const origin = position(thrower, (release + 1) * dt);
       if (forward(origin) > goal && forward(cpuRound(origin)) > goal)
@@ -1890,15 +1914,18 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
           for (const launch of [...launches, ...towardsReceiver]) {
             if (cpuDistance(launch.target, r.target) < 1)
               continue;
-            const flight = projectPass(launch, r);
-            if (!flight)
-              continue;
-            const value = flight.chance * (terminal(r, carrier.position, flight.arrival) + 36) - 36 - 1.5 + Math.max(0, personality.passing - 24) * 0.08;
-            if (value > best + 0.5) {
-              best = value;
-              chosen = launch;
-              chosenReceiver = r;
-              pass = { ...flight, thrower: carrier.id, receiver: receiver.id };
+            const extendedRange = cfg.ball.range_multiplier ?? 1;
+            for (const rangeMultiplier of new Set([Math.min(1, extendedRange), extendedRange])) {
+              const flight = projectPass(launch, r, rangeMultiplier);
+              if (!flight)
+                continue;
+              const value = flight.chance * (terminal(r, carrier.position, flight.arrival) + 36) - 36 - 1.5 + Math.max(0, personality.passing - 24) * 0.08;
+              if (value > best + 0.5) {
+                best = value;
+                chosen = launch;
+                chosenReceiver = r;
+                pass = { ...flight, thrower: carrier.id, receiver: receiver.id };
+              }
             }
           }
       }
@@ -1934,7 +1961,7 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
     const options = [];
     for (const receiver of enemies.filter((e) => e.id !== enemyCarrier.id)) {
       const gain = -direction * (cpuColumn(receiver.position) - cpuColumn(enemyCarrier.position)), d = cpuDistance(enemyCarrier.position, receiver.position);
-      if (d > cfg.ball.base_range + 2 * cfg.actions.element_effects.air.range_modifier || d < 2)
+      if (d > (cfg.ball.base_range + 2 * cfg.actions.element_effects.air.range_modifier) * (cfg.ball.range_multiplier ?? 1) || d < 2)
         continue;
       const value = 6 + Math.max(0, gain) * 2 + receiver.stats.precision * 0.25, ticks = Math.max(1, Math.ceil(d / (rulebookThrowSpeed(cfg, { AIR: 3 }) * dt)));
       for (let t = 1;t <= ticks; t++) {
@@ -2001,7 +2028,11 @@ function prepareCPUOrder(cfg, world, order, settings = {}) {
     const moving = cpuDistance(actor.position, run.target) > 0;
     actions.push({ entity_id: actor.id, action_type: moving ? "move" : "wait", params: { elements: { ...run.elements }, ...moving ? { target_position: run.target } : {} } });
     if (pass?.thrower === actor.id)
-      actions.push({ entity_id: actor.id, action_type: "throw", params: { elements: { ...run.elements }, target_entity_id: pass.receiver } });
+      actions.push({ entity_id: actor.id, action_type: "throw", params: {
+        elements: { ...run.elements },
+        target_entity_id: pass.receiver,
+        ...cfg.ball.attempt_out_of_range ? { release_tick: pass.release_tick } : {}
+      } });
   }
   return { ...order, actions, cpu_plan: {
     version: 2,
@@ -2141,6 +2172,7 @@ for await (const line of createInterface({ input: process.stdin })) {
     if (cfg.ball.interception_uses_fire_stat || cfg.ball.require_arrival_before_turn_end || cfg.ball.contact_cancels_pending_throw ||
         Object.values(cfg.abilities ?? {}).some(r => r.redirect_enemy_heal)) result.simulation_version += "+forum-semantics-2012-1";
     if (cfg.rulebook) result.simulation_version += "+rulebook:" + cfg.rulebook.id;
+    if (cfg.ball.range_multiplier !== undefined || cfg.ball.attempt_out_of_range) result.simulation_version += "+pass-range-1";
     process.stdout.write(JSON.stringify({ ok: true, result, orders, warnings }) + `
 `);
   } catch (error) {

@@ -54,6 +54,8 @@
   }
   function render(data) {
     latest = data;
+    const period = data.period;
+    $("website-coverage").textContent = period?.hours ? "Données par minute depuis le " + new Date(period.minute_coverage_started_at * 1000).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) + " UTC. Les données antérieures ne sont pas disponibles à cette précision ; période arrondie à la minute et actualisation sous une minute." : "Les périodes en jours suivent les dates UTC.";
     const stats = [
       ["Vues de sections", data.sections.reduce((sum, row) => sum + row.views, 0), "Affichages, pas visiteurs"],
       ["Clics de téléchargement", data.downloads.reduce((sum, row) => sum + row.count, 0), "Installations non mesurées"],
@@ -73,7 +75,8 @@
     if (busy) return;
     busy = true; $("website-refresh").disabled = true; $("website-status").textContent = "Chargement…";
     try {
-      render(await api("website_activity", { days: Number($("website-days").value) }));
+      const selection = $("website-days").value;
+      render(await api("website_activity", selection === "hour" ? { hours: 1 } : selection === "day" ? { hours: 24 } : { days: Number(selection) }));
       $("website-status").textContent = "";
     } catch (error) {
       $("website-status").textContent = "Actualisation impossible. " + (latest ? "Les dernières données restent affichées. " : "") + error.message;

@@ -1,4 +1,16 @@
 /** Narrow source overlays keep the archived simulator source untouched. */
+export function passRangeOverlay(name: string, source: string): string {
+  const before = name === 'rules'
+    ? 'return cfg.ball.base_range + elements.AIR * cfg.actions.element_effects.air.range_modifier;'
+    : 'const inRange = !!target && throwInRange(cfg, start, target, e.elements);';
+  const after = name === 'rules'
+    ? 'return (cfg.ball.base_range + elements.AIR * cfg.actions.element_effects.air.range_modifier) * (cfg.ball.range_multiplier ?? 1);'
+    : 'const inRange = !!target && (cfg.ball.attempt_out_of_range || throwInRange(cfg, start, target, e.elements));';
+  if (source.includes(after)) return source;
+  if (source.split(before).length !== 2) throw new Error(`Simulator ${name} pass range boundary changed`);
+  return source.replace(before,after);
+}
+
 export function guardContactThrows(source: string): string {
   const before = "fightPlayers(context, tick);";
   if (source.split(before).length !== 2) throw new Error("Expected one combat call before throws");
@@ -27,6 +39,7 @@ export function guardContactThrows(source: string): string {
 }
 
 export function overlay(name: string, source: string): string {
+  if (name === 'rules' || name === 'turnTick') source = passRangeOverlay(name,source);
   function replace(before: string, after: string) {
     if (!source.includes(before)) throw new Error(`Simulator ${name} changed: missing ${before}`);
     source = source.replace(before, after);

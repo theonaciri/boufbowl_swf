@@ -56,6 +56,8 @@ class BallAttemptTests(unittest.TestCase):
     def fixed_chance(self, chance):
         rules = deepcopy(self.rules)
         rules['simulation']['simulation'].update(probability_min=chance, probability_max=chance)
+        # Budget tests isolate ordinary failures; critical failures stop retries.
+        rules['simulation']['rulebook']['maneuvers']['critical_failures'] = False
         return rules
 
     def successful_throw_failed_catches(self):
@@ -64,7 +66,17 @@ class BallAttemptTests(unittest.TestCase):
             throw_base=1,throw_stat=0,distance_penalty=0,catch_base=0,catch_stat=0,catch_air=0,catch_feu=0)
         rules['simulation']['probabilities']['air_precision_per_action'] = 0
         rules['simulation']['ball']['intercept_height_threshold'] = 10
+        rules['simulation']['rulebook']['maneuvers']['critical_failures'] = False
         return rules
+
+    def test_critical_pickup_failure_stops_retries_despite_remaining_orders(self):
+        rules = self.fixed_chance(0)
+        rules['simulation']['rulebook']['maneuvers']['critical_failures'] = True
+        record = self.run_turn(self.world(), [(1,2)], rules)
+        failures = [e for e in record['result']['events'] if e['type']=='pickup_fail']
+        self.assertEqual(len(failures), 1)
+        self.assertTrue(any(e['type']=='ko' and e['params']['reason'].startswith('critical_pickup')
+                            for e in record['result']['events']))
 
     def test_ground_pickups_fail_and_exhaust_exact_action_budget(self):
         for air,fire in ((0,0),(1,0),(0,1),(2,0),(0,2),(1,1),(1,2),(3,0)):
@@ -98,6 +110,52 @@ class BallAttemptTests(unittest.TestCase):
                 if catches:
                     self.assertFalse(catches[0]['params']['interception'])
                     self.assertEqual(catches[0]['params']['action'],'air')
+
+    def test_pass_range_is_thirty_percent_larger_for_each_air_allocation(self):
+        for air, new_distance in ((1,10),(2,11),(3,13)):
+            with self.subTest(air=air):
+                world = self.world(passing=True)
+                world['entities'][1]['position'] = {'q':new_distance,'r':0}
+                record = self.run_turn(world,[(air,0),(3,0)],self.fixed_chance(1),passing=True)
+                thrown = next(e for e in record['result']['events'] if e['type']=='throw')
+                self.assertTrue(thrown['params']['success'])
+                self.assertNotIn('range_limited',thrown['params'])
+                self.assertEqual(thrown['params']['target_position'],{'q':new_distance,'r':0})
+
+    def test_out_of_range_pass_is_attempted_once_and_lands_short_without_stun(self):
+        world = self.world(passing=True)
+        world['entities'][1]['position'] = {'q':14,'r':0}
+        record = self.run_turn(world,[(1,0),(3,0)],self.fixed_chance(1),passing=True)
+        throws = [e for e in record['result']['events'] if e['type']=='throw']
+        self.assertEqual(len(throws),1)
+        self.assertIn('+pass-range-1',record['result']['simulation_version'])
+        thrown = throws[0]['params']
+        self.assertFalse(thrown['success'])
+        self.assertTrue(thrown['range_limited'])
+        self.assertAlmostEqual(thrown['max_range'],10.4)
+        self.assertEqual(thrown['intended_target_position'],{'q':14,'r':0})
+        self.assertEqual(thrown['target_position'],{'q':10,'r':0})
+        self.assertTrue(any(e['type']=='ball_land' and e['params']['position']=={'q':10,'r':0}
+                            for e in record['result']['events']))
+        self.assertFalse(any(e['type']=='stun' for e in record['result']['events']))
+        self.assertIsNone(record['result']['final_ball_state']['holder_entity_id'])
+        scenario = adapt_turn(record)
+        passed = next(i['interactionDetails'] for i in scenario['interaction'] if i['interactionDetails']['type']==21)
+        self.assertFalse(passed['maneuverTest']['success'])
+        self.assertEqual(passed['passDetails']['ballTarget'],{'x':10,'y':0})
+        Codec().encode('ResolutionScenarioMessage',scenario)
+
+    def test_pass_range_preserves_legacy_rules_and_requires_air(self):
+        world = self.world(passing=True)
+        world['entities'][1]['position'] = {'q':14,'r':0}
+        legacy = self.fixed_chance(1)
+        legacy['simulation']['ball'].pop('range_multiplier')
+        legacy['simulation']['ball'].pop('attempt_out_of_range')
+        for rules, air in ((legacy,3),(self.fixed_chance(1),0)):
+            with self.subTest(air=air,legacy=rules is legacy):
+                record = self.run_turn(world,[(air,0),(3,0)],rules,passing=True)
+                self.assertFalse(any(e['type']=='throw' for e in record['result']['events']))
+                self.assertEqual(record['result']['final_ball_state']['holder_entity_id'],world['entities'][0]['id'])
 
     def test_only_opponents_with_fire_attempt_to_intercept(self):
         for friendly in (False,True):

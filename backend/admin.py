@@ -58,7 +58,7 @@ class Admin:
             elif action in ('website_activity', 'website_analytics', 'website_tracking'):
                 if self.role(actor) != 'admin':
                     raise ServiceError('ADMIN_FORBIDDEN', 'Administrator role required')
-                result = website_metrics_report(self.store, body.get('days', 30))
+                result = website_metrics_report(self.store, body.get('days', 30), body.get('hours'))
             else:
                 raise ServiceError('ADMIN_ACTION', 'Unknown administrator action')
             return {'ok': True, 'role': self.role(actor), **result}

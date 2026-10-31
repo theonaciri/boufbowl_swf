@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import copy from "./rules-data.json";
+import { calculators } from "./rules-calculators.mjs";
 
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const number = (value) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 4 }).format(value);
@@ -89,11 +90,12 @@ export async function rulesPage(root) {
     if (!(key in context)) throw new Error(`Unknown French rule value: ${key}`);
     return context[key];
   }));
+  const experiments = calculators(rules);
   const cases = copy.groups.map(([anchor, title, ids]) => `<section class="rules-section" id="${anchor}" aria-labelledby="heading-${anchor}"><div class="rules-section-title"><span class="eyebrow">LE RÈGLEMENT</span><h2 id="heading-${anchor}">${escape(title)}</h2></div><div class="rule-grid">${ids.map((id) => {
     const rule = indexed.get(id), translation = copy.cases[id];
     if (!translation) throw new Error(`Missing French rule: ${id}`);
     return `<article class="rule-card"><div class="rule-card-top">${badge(rule.status)}<span class="rule-reference">${escape(id)}</span></div><h3>${prose(translation[0])}</h3><p>${prose(translation[1])}</p><p class="rule-note">${prose(translation[2])}</p><p class="rule-sources">Repères d’archives : ${rule.sources.map(escape).join(" · ")}</p></article>`;
-  }).join("")}</div>${anchor === "combat" ? combatTable(policy, sim) : ""}${anchor === "pouvoirs" ? '<p class="rules-crosslink"><a href="#classes">Voir les caractéristiques et tous les pouvoirs ↓</a></p>' : ""}</section>`).join("\n");
+  }).join("")}</div>${anchor === "combat" ? combatTable(policy, sim) : ""}${experiments[anchor] || ""}${anchor === "pouvoirs" ? '<p class="rules-crosslink"><a href="#classes">Voir les caractéristiques et tous les pouvoirs ↓</a></p>' : ""}</section>`).join("\n");
   const attributes = Object.entries(rules.classes.overrides).map(([key, values]) => {
     const value = { ...rules.classes.defaults, ...values };
     if (!names[key] || !roles[value.role]) throw new Error(`Translate the configured class/role: ${key}`);
@@ -119,6 +121,7 @@ export async function rulesPage(root) {
     ["Ramassage", `${number(sim.simulation.catch_base)} + ${policy.maneuvers ? 'Feu avec un ordre Feu, sinon Air' : 'Air'} × ${number(sim.simulation.catch_stat)} + ordres Air × ${number(sim.simulation.catch_air)} + ordres Feu × ${number(sim.simulation.catch_feu)} − pression`],
     ["Bornes des tests de ballon", `${number(100 * sim.simulation.probability_min)} % à ${number(100 * sim.simulation.probability_max)} %`],
     ["Vitesse de passe", `${number(sim.ball.throw_speed_cells_per_sec)} cases/s × (1 + ordres Air × ${number(policy.passing.air_speed_bonus)})`],
+    ["Portée de passe", `(${number(sim.ball.base_range)} + ordres Air × ${number(sim.actions.element_effects.air.range_modifier)}) × ${number(sim.ball.range_multiplier ?? 1)} cases.${sim.ball.attempt_out_of_range ? " Si le destinataire est trop loin, le lancer est tenté et le ballon retombe avant de l’atteindre, dans la limite de portée." : " Le lancer attend que le destinataire soit à portée."}`],
   ];
   const values = {
     CASES: cases,
@@ -134,6 +137,7 @@ export async function rulesPage(root) {
       return `<li>${escape(copy.unresolved[question])}</li>`;
     }).join(""),
     RULEBOOK_ID: escape(registry.id), EVIDENCE_REVISION: escape(registry.evidence_revision),
+    CALCULATOR_CONFIG: JSON.stringify({simulation:sim,client_ranges:rules.client_ranges}).replace(/</g,'\\u003c'),
     REGENERATION: match.regenerate_between_turns ? "activée" : "désactivée",
     ORDERS: sim.ball.action_limited_attempts ? "Les tentatives de ramassage et de réception/interception sont limitées par les ordres Air ou Feu disponibles. Au sol, le Feu est utilisé en priorité pour préserver l’Air." : "Le profil actuel ne limite pas les tentatives par le budget d’ordres Air/Feu.",
   };
